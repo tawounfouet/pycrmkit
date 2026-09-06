@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
 import unicodedata
+from dataclasses import dataclass
 
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.value_objects import ValueObject

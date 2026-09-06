@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import re
 import unicodedata
+from dataclasses import dataclass, field
 
 from pycrmkit.core.value_objects import ValueObject
 from pycrmkit.exceptions import ValidationError

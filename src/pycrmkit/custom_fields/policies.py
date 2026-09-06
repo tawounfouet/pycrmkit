@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
-from datetime import date, datetime
-from decimal import Decimal
 import math
 import re
 import unicodedata
+from copy import deepcopy
+from datetime import date, datetime
+from decimal import Decimal
 from urllib.parse import urlsplit
 
 from pycrmkit.contacts.value_objects import normalize_email, normalize_phone

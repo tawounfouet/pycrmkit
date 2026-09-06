@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import StrEnum
 import re
 import unicodedata
+from dataclasses import dataclass
+from enum import StrEnum
 
 from pycrmkit.core.value_objects import ValueObject
 from pycrmkit.exceptions import ValidationError
