@@ -1,6 +1,12 @@
 import pytest
 
-from pycrmkit.contacts import Address, ContactEmail, ContactPhone, VerificationState, normalize_phone
+from pycrmkit.contacts import (
+    Address,
+    ContactEmail,
+    ContactPhone,
+    VerificationState,
+    normalize_phone,
+)
 from pycrmkit.exceptions import ValidationError
 
 
