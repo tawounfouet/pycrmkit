@@ -9,6 +9,8 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
+  - Facade:
+      - CRM: facade/index.md
   - Core:
       - Primitives: core/primitives.md
   - Contacts:
@@ -32,6 +34,8 @@ nav:
       - Foundation: audit/index.md
   - Storage:
       - Memory Adapter: storage/memory.md
+  - API:
+      - 0.1 Public API Candidate: api/0.1-public-api.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

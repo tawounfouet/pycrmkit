@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.1.0b4 — Events & Audit Foundation**.
+Current version: **0.1.0rc1 — CRM Facade + End-to-End Integration**.
 
-The CRM core now includes typed Contacts, Organizations, Relationships, Tags, Custom Fields, the official Memory persistence adapter, immutable domain-event envelopes, a synchronous in-process event bus, and an append-only audit trail. MemoryUnitOfWork now stages events until commit and persists required audit history atomically. The next implementation milestone is **0.1.0rc1 — CRM Facade & Integration**.
+The CRM core candidate now exposes a transactional `CRM` facade over Contacts, Organizations, Relationships, Tags, Custom Fields, Events, Audit, and the official Memory adapter. `CRM.memory()` is fully wired, facade mutations commit audit atomically and dispatch domain events after commit, and `CRM.with_context()` carries actor/correlation/causation metadata. The next milestone is **0.1.0 — CRM Core Stable**, focused on final audit, compatibility freeze, documentation, and release qualification rather than new domain scope.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -25,6 +25,18 @@ Repository Contracts
     ↓
 Storage / Integrations
 ```
+
+## Quickstart
+
+```python
+from pycrmkit import CRM
+
+crm = CRM.memory()
+contact = crm.contacts.create(first_name="Ada", last_name="Lovelace")
+print(contact.display_name)
+```
+
+Use `crm.with_context(actor_id=..., correlation_id=...)` for mutation context, `crm.events` for in-process subscriptions, and `crm.audit` for append-only mutation history.
 
 ## Install for development
 
@@ -48,8 +60,8 @@ pytest
 0.1.0b2 Tags & Custom Fields               ✓
 0.1.0b3 Memory Adapter                      ✓
 0.1.0b4 Events & Audit                      ✓
-0.1.0rc1 CRM Facade & Integration           →
-0.1.0  CRM Core Foundation
+0.1.0rc1 CRM Facade & Integration           ✓
+0.1.0  CRM Core Foundation                  →
 0.2.0  Activity & Timeline
 0.3.0  Sales Foundation
 0.4.0  Communication

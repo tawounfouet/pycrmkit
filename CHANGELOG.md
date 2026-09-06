@@ -6,6 +6,22 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0rc1] - 2026-09-06
+
+### Added
+- High-level transactional `CRM` facade and fully wired `CRM.memory()` constructor.
+- Public `CRMConfig` and `CRMContext` with actor, correlation, and causation propagation.
+- Facade namespaces for Contacts, Organizations, Relationships, Tags, Custom Fields, Events, and read-only Audit history.
+- Automatic facade-level domain events and privacy-conscious audit entries for CRM Core mutations.
+- Independent Events/Audit feature toggles while preserving domain-service reuse.
+- Shallow root imports: `CRM`, `CRMConfig`, `CRMContext`, and `__version__`.
+- End-to-end Memory scenario covering Contact → Organization → Relationship → Tags → Custom Fields → Events/Audit.
+- Candidate `0.1` public API compatibility document and facade documentation.
+
+### Changed
+- Package version advanced to `0.1.0rc1`.
+- Quickstart now uses the integrated `CRM.memory()` path as the recommended entry point.
+
 ## [0.1.0b4] - 2026-09-06
 
 ### Added
