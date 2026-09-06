@@ -35,8 +35,8 @@ def _organization() -> Organization:
 
 
 def test_memory_uow_is_a_unit_of_work() -> None:
-    uow = MemoryUnitOfWork()
-    assert isinstance(uow, UnitOfWork)
+    uow: UnitOfWork = MemoryUnitOfWork()
+    assert isinstance(uow, MemoryUnitOfWork)
 
 
 def test_uow_requires_context_before_repository_access() -> None:

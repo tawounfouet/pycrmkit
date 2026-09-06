@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from types import TracebackType
-from typing import Protocol, Self, runtime_checkable
+from typing import Protocol, Self
 
 from pycrmkit.contacts.repository import ContactRepository
 from pycrmkit.custom_fields.repository import CustomFieldRepository
@@ -12,7 +12,6 @@ from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
 
 
-@runtime_checkable
 class UnitOfWork(Protocol):
     """Transactional repository grouping used by application services and workflows."""
 
