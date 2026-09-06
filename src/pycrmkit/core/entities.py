@@ -9,7 +9,6 @@ from typing import Generic, TypeVar
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.time import as_utc
 
-
 EntityIdT = TypeVar("EntityIdT", bound=UUIDId)
 
 
