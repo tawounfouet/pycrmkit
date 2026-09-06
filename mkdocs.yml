@@ -1,0 +1,15 @@
+site_name: PyCRMKit
+site_description: Headless CRM building blocks for Python applications.
+repo_url: https://github.com/tawounfouet/pycrmkit
+repo_name: tawounfouet/pycrmkit
+theme:
+  name: mkdocs
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+  - Development:
+      - Contributing: development/contributing.md
+      - Testing: development/testing.md
+      - Release Process: development/release-process.md
