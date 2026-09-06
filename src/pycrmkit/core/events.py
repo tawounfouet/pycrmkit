@@ -36,7 +36,9 @@ class EventType(ValueObject):
     def parse(cls, value: EventType | str) -> EventType:
         """Normalize a raw string into an EventType."""
 
-        return value if isinstance(value, cls) else cls(value)
+        if isinstance(value, EventType):
+            return value
+        return cls(value)
 
     def __str__(self) -> str:
         return self.value
