@@ -6,6 +6,19 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0b1] - 2026-09-06
+
+### Added
+- Strongly typed `RelationshipId`, `RelationshipEndpoint`, and open-ended `RelationshipType`.
+- Typed Contact/Organization endpoints supporting Contact↔Organization, Contact↔Contact, and Organization↔Organization links.
+- Directional relationship aggregate with role, title, primary flag, metadata, and explicit validity intervals.
+- Half-open `[valid_from, valid_until)` activity semantics and idempotent relationship ending.
+- Backend-independent `RelationshipQuery` and typed `RelationshipUpdate`.
+- `RelationshipRepository` protocol with get/find/save/end/search contracts.
+- `RelationshipService` create/get/update/end/search operations.
+- Third reusable repository contract suite, executed against a test-only reference repository.
+- Relationships documentation and repository-contract specification.
+
 ## [0.1.0a3] - 2026-09-06
 
 ### Added

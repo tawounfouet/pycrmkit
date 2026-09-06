@@ -17,6 +17,9 @@ nav:
   - Organizations:
       - Overview: organizations/index.md
       - Repository Contract: organizations/repository-contract.md
+  - Relationships:
+      - Overview: relationships/index.md
+      - Repository Contract: relationships/repository-contract.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
