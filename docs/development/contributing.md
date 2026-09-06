@@ -1,6 +1,6 @@
 # Contributing
 
-See the repository-level [`CONTRIBUTING.md`](../../CONTRIBUTING.md).
+See the repository-level [CONTRIBUTING.md](https://github.com/tawounfouet/pycrmkit/blob/main/CONTRIBUTING.md).
 
 Core rules:
 
