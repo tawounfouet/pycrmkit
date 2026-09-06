@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.1.0a2 — Contacts**.
+Current version: **0.1.0a3 — Organizations**.
 
-The engineering foundation and core primitives are established. The first full CRM vertical slice is now implemented: Contact value objects, aggregate, repository contract, typed queries/pagination, service operations, and reusable repository conformance tests. The next implementation milestone is **0.1.0a3 — Organizations**.
+Contacts and Organizations now form the first two complete CRM vertical slices: typed value objects, aggregates, repository contracts, query/pagination semantics, application services, and reusable repository conformance tests. The next implementation milestone is **0.1.0b1 — Relationships**.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -38,21 +38,23 @@ pytest
 ## Development roadmap
 
 ```text
-0.0.1   Repository Bootstrap              ✓
-0.0.2   Packaging & Quality Tooling       ✓
-0.0.3   CI / Docs / Release Engineering  ✓
-0.1.0a1 Core Primitives                   ✓
-0.1.0a2 Contacts                          ✓
-0.1.0    CRM Core Foundation
-0.2.0    Activity & Timeline
-0.3.0    Sales Foundation
-0.4.0    Communication
-0.5.0    Eventing & Webhooks
-0.6.0    Persistence Foundation
-0.7.0    FastAPI Integration
-0.8.0    Django Integration
-0.9.0    Data Operations
-1.0.0    Production Stable
+0.0.1  Repository Bootstrap              ✓
+0.0.2  Packaging & Quality Tooling       ✓
+0.0.3  CI / Docs / Release Engineering  ✓
+0.1.0a1 Core Primitives                    ✓
+0.1.0a2 Contacts                           ✓
+0.1.0a3 Organizations                      ✓
+0.1.0b1 Relationships                       →
+0.1.0  CRM Core Foundation
+0.2.0  Activity & Timeline
+0.3.0  Sales Foundation
+0.4.0  Communication
+0.5.0  Eventing & Webhooks
+0.6.0  Persistence Foundation
+0.7.0  FastAPI Integration
+0.8.0  Django Integration
+0.9.0  Data Operations
+1.0.0  Production Stable
 ```
 
 ## Quality

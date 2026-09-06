@@ -6,6 +6,18 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0a3] - 2026-09-06
+
+### Added
+- Strongly typed `OrganizationId` and organization lifecycle status.
+- `OrganizationDomain` with DNS/IDNA normalization and `OrganizationAddress` value object.
+- Organization aggregate with legal/trading identity, display-name resolution, registration/tax identifiers, domains, addresses, owner, source, metadata, and archival invariants.
+- Backend-independent `OrganizationQuery` and typed `OrganizationUpdate`.
+- `OrganizationRepository` protocol with get/find/save/archive/search contracts.
+- `OrganizationService` create/get/update/archive/search operations.
+- Second reusable repository contract suite, executed against a test-only reference repository.
+- Organizations documentation and repository-contract specification.
+
 ## [0.1.0a2] - 2026-09-06
 
 ### Added

@@ -1,3 +1,3 @@
 """Package metadata for PyCRMKit."""
 
-__version__ = "0.1.0a2"
+__version__ = "0.1.0a3"
