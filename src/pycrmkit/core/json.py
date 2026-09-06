@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from math import isfinite
 from types import MappingProxyType
-from typing import Mapping
 
 from pycrmkit.exceptions import ValidationError
 

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Mapping, Self
+from typing import Self
 from uuid import UUID
 
 from pycrmkit.core.events import EventId, EventType

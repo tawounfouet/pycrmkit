@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Mapping
 
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.json import freeze_json_mapping, thaw_json_mapping

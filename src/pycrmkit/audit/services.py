@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping
+from collections.abc import Mapping
 
 from pycrmkit.audit.entries import AuditEntry, AuditEntryId
 from pycrmkit.audit.repository import AuditRepository
