@@ -6,6 +6,19 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0b3] - 2026-09-06
+
+### Added
+- Official `MemoryContactRepository`, `MemoryOrganizationRepository`, `MemoryRelationshipRepository`, `MemoryTagRepository`, and `MemoryCustomFieldRepository`.
+- Copy-on-save and copy-on-read isolation so in-memory behavior matches persistent adapter expectations.
+- Shared `MemoryStore` committed-state container.
+- Backend-independent `UnitOfWork` protocol and explicit-commit `MemoryUnitOfWork`.
+- Atomic multi-repository commit, explicit rollback, exception rollback, and rollback-on-exit without commit.
+- Explicit rejection of nested/concurrent Memory UoWs on the same store.
+- Official Memory adapter execution of all five reusable repository contract suites.
+- Adapter-specific tests for mutation isolation and transaction semantics.
+- Memory adapter documentation.
+
 ## [0.1.0b2] - 2026-09-06
 
 ### Added

@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.1.0b2 — Tags & Custom Fields**.
+Current version: **0.1.0b3 — Memory Adapter**.
 
-The CRM core now includes typed Contacts, Organizations, Relationships, reusable Tags, and versioned Custom Fields with repository contracts and reusable conformance suites. The next implementation milestone is **0.1.0b3 — Memory Adapter**.
+The CRM core now includes typed Contacts, Organizations, Relationships, Tags, Custom Fields, and the first official persistence adapter. The Memory repositories pass the shared conformance suites and are coordinated by an explicit-commit MemoryUnitOfWork. The next implementation milestone is **0.1.0b4 — Events & Audit Foundation**.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -46,7 +46,8 @@ pytest
 0.1.0a3 Organizations                      ✓
 0.1.0b1 Relationships                      ✓
 0.1.0b2 Tags & Custom Fields               ✓
-0.1.0b3 Memory Adapter                      →
+0.1.0b3 Memory Adapter                      ✓
+0.1.0b4 Events & Audit                      →
 0.1.0  CRM Core Foundation
 0.2.0  Activity & Timeline
 0.3.0  Sales Foundation

@@ -26,6 +26,8 @@ nav:
   - Custom Fields:
       - Overview: custom-fields/index.md
       - Repository Contract: custom-fields/repository-contract.md
+  - Storage:
+      - Memory Adapter: storage/memory.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

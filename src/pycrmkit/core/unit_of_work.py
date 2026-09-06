@@ -1,0 +1,54 @@
+"""Backend-independent Unit of Work contract."""
+
+from __future__ import annotations
+
+from types import TracebackType
+from typing import Protocol, Self, runtime_checkable
+
+from pycrmkit.contacts.repository import ContactRepository
+from pycrmkit.custom_fields.repository import CustomFieldRepository
+from pycrmkit.organizations.repository import OrganizationRepository
+from pycrmkit.relationships.repository import RelationshipRepository
+from pycrmkit.tags.repository import TagRepository
+
+
+@runtime_checkable
+class UnitOfWork(Protocol):
+    """Transactional repository grouping used by application services and workflows."""
+
+    @property
+    def contacts(self) -> ContactRepository:
+        """Contacts participating in the current transaction."""
+
+    @property
+    def organizations(self) -> OrganizationRepository:
+        """Organizations participating in the current transaction."""
+
+    @property
+    def relationships(self) -> RelationshipRepository:
+        """Relationships participating in the current transaction."""
+
+    @property
+    def tags(self) -> TagRepository:
+        """Tags participating in the current transaction."""
+
+    @property
+    def custom_fields(self) -> CustomFieldRepository:
+        """Custom fields participating in the current transaction."""
+
+    def commit(self) -> None:
+        """Atomically persist the current transaction state."""
+
+    def rollback(self) -> None:
+        """Discard uncommitted transaction changes."""
+
+    def __enter__(self) -> Self:
+        """Enter a transaction context."""
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
+        """Close the transaction, rolling back uncommitted work."""
