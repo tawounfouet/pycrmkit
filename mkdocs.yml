@@ -20,6 +20,12 @@ nav:
   - Relationships:
       - Overview: relationships/index.md
       - Repository Contract: relationships/repository-contract.md
+  - Tags:
+      - Overview: tags/index.md
+      - Repository Contract: tags/repository-contract.md
+  - Custom Fields:
+      - Overview: custom-fields/index.md
+      - Repository Contract: custom-fields/repository-contract.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

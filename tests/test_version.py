@@ -2,4 +2,4 @@ from pycrmkit import __version__
 
 
 def test_package_version() -> None:
-    assert __version__ == "0.1.0b1"
+    assert __version__ == "0.1.0b2"

@@ -6,6 +6,18 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0b2] - 2026-09-06
+
+### Added
+- Generic `EntityReference` core primitive for cross-domain entity targeting without aggregate loading.
+- Normalized `Tag`, `TagAssignment`, `TagRepository`, and `TagService` lifecycle with duplicate-assignment protection.
+- Versioned Custom Field definitions with stable keys, immutable field types, sequential `schema_version`, and historical revision lookup.
+- Supported custom-field types: string, text, integer, decimal, boolean, date, datetime, email, phone, URL, enum, multi-enum, reference, and JSON.
+- Typed custom-field validation including normalized contact-point values, timezone-aware datetimes, enum options, reference-kind restrictions, and defensive JSON validation.
+- Current custom-field values recording the schema revision that validated them.
+- Reusable Tag and Custom Field repository contract suites executed against test-only reference repositories.
+- Tags and Custom Fields documentation and repository-contract specifications.
+
 ## [0.1.0b1] - 2026-09-06
 
 ### Added
