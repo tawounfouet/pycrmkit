@@ -6,6 +6,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from threading import RLock
 
+from pycrmkit.audit.entries import AuditEntry, AuditEntryId
 from pycrmkit.contacts.entities import Contact, ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.custom_fields.entities import (
@@ -34,6 +35,7 @@ class _MemoryState:
     custom_field_values: dict[
         tuple[CustomFieldDefinitionId, EntityReference], CustomFieldValue
     ] = field(default_factory=dict)
+    audit_entries: dict[AuditEntryId, AuditEntry] = field(default_factory=dict)
 
     def clone(self) -> _MemoryState:
         """Return a transaction-safe deep copy of all persisted state."""

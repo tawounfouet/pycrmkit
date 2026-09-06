@@ -5,8 +5,10 @@ from __future__ import annotations
 from types import TracebackType
 from typing import Protocol, Self
 
+from pycrmkit.audit.repository import AuditRepository
 from pycrmkit.contacts.repository import ContactRepository
 from pycrmkit.custom_fields.repository import CustomFieldRepository
+from pycrmkit.events.envelope import DomainEvent
 from pycrmkit.organizations.repository import OrganizationRepository
 from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
@@ -34,6 +36,13 @@ class UnitOfWork(Protocol):
     @property
     def custom_fields(self) -> CustomFieldRepository:
         """Custom fields participating in the current transaction."""
+
+    @property
+    def audit(self) -> AuditRepository:
+        """Audit entries participating atomically in the current transaction."""
+
+    def add_event(self, event: DomainEvent) -> None:
+        """Stage a domain event for post-commit dispatch."""
 
     def commit(self) -> None:
         """Atomically persist the current transaction state."""

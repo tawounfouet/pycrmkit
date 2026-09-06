@@ -5,8 +5,12 @@ from __future__ import annotations
 from types import TracebackType
 from typing import Self
 
+from pycrmkit.events.bus import InProcessEventBus
+from pycrmkit.events.envelope import DomainEvent
+from pycrmkit.events.publisher import EventPublisher
 from pycrmkit.exceptions import InvalidStateError
 from pycrmkit.storage.memory._state import MemoryStore, _MemoryState
+from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
@@ -15,10 +19,21 @@ from pycrmkit.storage.memory.tags import MemoryTagRepository
 
 
 class MemoryUnitOfWork:
-    """Explicit-commit transaction over one shared MemoryStore snapshot."""
+    """Explicit-commit transaction over one shared MemoryStore snapshot.
 
-    def __init__(self, store: MemoryStore | None = None) -> None:
+    Domain events are staged while the transaction is active and become eligible
+    for synchronous in-process dispatch only after committed state has been
+    published to the MemoryStore. Durable retry/outbox semantics are not provided.
+    """
+
+    def __init__(
+        self,
+        store: MemoryStore | None = None,
+        *,
+        event_publisher: EventPublisher | None = None,
+    ) -> None:
         self.store = store or MemoryStore()
+        self.event_publisher = event_publisher or InProcessEventBus()
         self._active = False
         self._committed = False
         self._working: _MemoryState | None = None
@@ -27,6 +42,8 @@ class MemoryUnitOfWork:
         self._relationships: MemoryRelationshipRepository | None = None
         self._tags: MemoryTagRepository | None = None
         self._custom_fields: MemoryCustomFieldRepository | None = None
+        self._audit: MemoryAuditRepository | None = None
+        self._pending_events: list[DomainEvent] = []
 
     @property
     def contacts(self) -> MemoryContactRepository:
@@ -58,6 +75,25 @@ class MemoryUnitOfWork:
         assert self._custom_fields is not None
         return self._custom_fields
 
+    @property
+    def audit(self) -> MemoryAuditRepository:
+        self._ensure_active()
+        assert self._audit is not None
+        return self._audit
+
+    def add_event(self, event: DomainEvent) -> None:
+        """Stage one immutable event for dispatch after the next successful commit."""
+
+        self._ensure_active()
+        self._pending_events.append(event)
+
+    @property
+    def pending_events(self) -> tuple[DomainEvent, ...]:
+        """Expose an immutable snapshot for diagnostics/tests while active."""
+
+        self._ensure_active()
+        return tuple(self._pending_events)
+
     def __enter__(self) -> Self:
         if self._active:
             raise InvalidStateError(
@@ -67,6 +103,7 @@ class MemoryUnitOfWork:
         self._working = self.store._begin()
         self._active = True
         self._committed = False
+        self._pending_events.clear()
         self._bind_repositories(self._working)
         return self
 
@@ -81,6 +118,7 @@ class MemoryUnitOfWork:
             return None
         if exc_type is not None or not self._committed:
             self._discard_working_state()
+        self._pending_events.clear()
         self._active = False
         self.store._end()
         return None
@@ -88,12 +126,17 @@ class MemoryUnitOfWork:
     def commit(self) -> None:
         self._ensure_active()
         assert self._working is not None
+        events = tuple(self._pending_events)
         self.store._commit(self._working)
         self._committed = True
+        self._pending_events.clear()
+        for event in events:
+            self.event_publisher.publish(event)
 
     def rollback(self) -> None:
         self._ensure_active()
         self._discard_working_state()
+        self._pending_events.clear()
         self._committed = False
 
     def _discard_working_state(self) -> None:
@@ -106,6 +149,7 @@ class MemoryUnitOfWork:
         self._relationships = MemoryRelationshipRepository(state)
         self._tags = MemoryTagRepository(state)
         self._custom_fields = MemoryCustomFieldRepository(state)
+        self._audit = MemoryAuditRepository(state)
 
     def _ensure_active(self) -> None:
         if not self._active:

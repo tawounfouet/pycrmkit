@@ -6,6 +6,20 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0b4] - 2026-09-06
+
+### Added
+- Immutable, schema-versioned `DomainEvent` envelope with typed `EventId` and validated dotted `EventType`.
+- JSON-compatible payload/metadata validation, recursive immutability, and stable envelope serialization/deserialization.
+- Fixture-based `contact.created` v1 event compatibility test.
+- Synchronous `InProcessEventBus` with subscribe, unsubscribe, decorator registration, deterministic handler ordering, and explicit failure propagation.
+- Append-only `AuditEntry`, `AuditRepository`, `AuditService`, and privacy-conscious event-to-audit context bridge.
+- Official `MemoryAuditRepository` plus reusable Audit repository contract suite.
+- Audit participation in `MemoryUnitOfWork` so required audit history commits or rolls back with domain mutations.
+- Post-commit event staging in `MemoryUnitOfWork`; rollback and uncommitted exit discard pending events.
+- Explicit behavior that subscriber failures after commit cannot roll back already committed MemoryStore state.
+- Events and Audit documentation.
+
 ## [0.1.0b3] - 2026-09-06
 
 ### Added

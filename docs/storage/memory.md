@@ -1,6 +1,6 @@
 # Memory Adapter
 
-`0.1.0b3` introduces the first official PyCRMKit persistence adapter.
+`0.1.0b3` introduced the first official PyCRMKit persistence adapter. `0.1.0b4` extends the same transaction snapshot with append-only audit entries and post-commit event staging.
 
 The Memory adapter is intended for:
 
@@ -18,6 +18,7 @@ It is a conformant adapter, not a mock. The same repository contracts used to de
 
 ```python
 from pycrmkit.storage.memory import (
+    MemoryAuditRepository,
     MemoryContactRepository,
     MemoryCustomFieldRepository,
     MemoryOrganizationRepository,
@@ -45,7 +46,7 @@ This deliberately mirrors persistent-database semantics: mutating a Python objec
 
 ## Unit of Work
 
-`MemoryStore` owns committed state. `MemoryUnitOfWork` creates a private transaction snapshot shared by all five repositories.
+`MemoryStore` owns committed state. `MemoryUnitOfWork` creates a private transaction snapshot shared by all transactional repositories.
 
 ```python
 store = MemoryStore()
@@ -89,7 +90,8 @@ MemoryUnitOfWork
     ├── organizations
     ├── relationships
     ├── tags
-    └── custom_fields
+    ├── custom_fields
+    └── audit
 ```
 
 `commit()` replaces the committed `MemoryStore` state atomically with a deep copy of that snapshot.
@@ -110,6 +112,7 @@ OrganizationRepository
 RelationshipRepository
 TagRepository
 CustomFieldRepository
+AuditRepository
 ```
 
 Additional adapter tests verify copy isolation and UoW transaction behavior.
@@ -124,8 +127,17 @@ PostgreSQL
 Django ORM
 optimistic database locking
 persistent migrations
-events / audit
+durable outbox / distributed event transport
 CRM facade
 ```
 
 Those remain separate roadmap milestones.
+
+
+## Events and audit
+
+`MemoryUnitOfWork.audit` is transaction-bound like the other repositories. Audit entries are therefore committed or rolled back with the same snapshot.
+
+`MemoryUnitOfWork.add_event()` stages immutable `DomainEvent` objects. They are dispatched through the configured `EventPublisher` only after `MemoryStore` accepts the committed state. Pending events are discarded on rollback or uncommitted exit.
+
+This adapter does not provide durable retry/outbox semantics.

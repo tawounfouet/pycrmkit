@@ -26,6 +26,10 @@ nav:
   - Custom Fields:
       - Overview: custom-fields/index.md
       - Repository Contract: custom-fields/repository-contract.md
+  - Events:
+      - Foundation: events/index.md
+  - Audit:
+      - Foundation: audit/index.md
   - Storage:
       - Memory Adapter: storage/memory.md
   - Development:

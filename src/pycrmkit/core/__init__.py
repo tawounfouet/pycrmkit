@@ -1,6 +1,7 @@
 """Core primitives shared by PyCRMKit domain modules."""
 
 from pycrmkit.core.entities import Entity, TimestampedEntity
+from pycrmkit.core.events import EventId, EventType
 from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory, UUIDId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference, normalize_entity_kind
@@ -12,6 +13,8 @@ __all__ = [
     "Entity",
     "EntityId",
     "EntityReference",
+    "EventId",
+    "EventType",
     "FixedClock",
     "IDFactory",
     "OffsetPageRequest",
