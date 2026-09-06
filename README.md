@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.0.3 — Engineering Foundation**.
+Current version: **0.1.0a1 — Core Primitives**.
 
-The repository foundation, packaging, quality tooling, CI, documentation scaffold, and release engineering are now established. The next implementation milestone is **0.1.0a1 — Core Primitives**.
+The engineering foundation is established and the first CRM core primitives are now implemented: typed UUID identifiers, injectable ID generation, deterministic clocks, entity/value-object conventions, and a typed error hierarchy. The next implementation milestone is **0.1.0a2 — Contacts**.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -41,6 +41,7 @@ pytest
 0.0.1  Repository Bootstrap              ✓
 0.0.2  Packaging & Quality Tooling       ✓
 0.0.3  CI / Docs / Release Engineering  ✓
+0.1.0a1 Core Primitives                    ✓
 0.1.0  CRM Core Foundation
 0.2.0  Activity & Timeline
 0.3.0  Sales Foundation

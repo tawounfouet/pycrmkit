@@ -9,6 +9,8 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
+  - Core:
+      - Primitives: core/primitives.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

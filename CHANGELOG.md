@@ -6,6 +6,18 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0a1] - 2026-09-06
+
+### Added
+- Immutable typed UUID identifiers with `UUIDId` / `EntityId`.
+- Injectable `IDFactory` protocol and `UUID4Factory` default implementation.
+- `Clock`, `SystemClock`, and controllable `FixedClock` primitives.
+- Strict timezone-aware UTC normalization through `as_utc`.
+- Entity identity/equality conventions and timestamped entities.
+- Immutable `ValueObject` convention.
+- Typed, machine-readable PyCRMKit exception hierarchy.
+- Unit tests and public core-primitives documentation.
+
 ## [0.0.3] - 2026-09-06
 
 ### Added
