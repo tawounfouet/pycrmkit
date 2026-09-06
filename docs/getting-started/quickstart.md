@@ -1,6 +1,6 @@
 # Quickstart
 
-`0.1.0rc1` introduces the first high-level `CRM` facade. The in-memory backend is fully wired and requires no external service:
+`0.1.0` provides the first stable high-level `CRM` facade. The in-memory backend is fully wired and requires no external service:
 
 ```python
 from pycrmkit import CRM
@@ -63,7 +63,7 @@ def on_contact_created(event):
     print(event.aggregate_id)
 ```
 
-`0.1.0rc1` intentionally provides only the synchronous in-process bus. Durable outbox, retries, webhooks, and distributed delivery remain later roadmap items.
+`0.1.0` intentionally provides only the synchronous in-process bus. Durable outbox, retries, webhooks, and distributed delivery remain later roadmap items.
 
 ## Audit
 

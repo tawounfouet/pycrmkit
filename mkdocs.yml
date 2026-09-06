@@ -35,7 +35,9 @@ nav:
   - Storage:
       - Memory Adapter: storage/memory.md
   - API:
-      - 0.1 Public API Candidate: api/0.1-public-api.md
+      - 0.1 Public API: api/0.1-public-api.md
+  - Releases:
+      - 0.1.0 CRM Core Stable: releases/0.1.0.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

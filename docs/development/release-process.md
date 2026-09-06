@@ -18,3 +18,7 @@ python scripts/release_check.py
 ```
 
 The release check validates linting, typing, tests, documentation, package build, artifact installation, and smoke import.
+
+## Stable gate
+
+For stable releases, the built wheel must install into a clean virtual environment and execute the functional `scripts/smoke_test.py` path against the installed package. The stable tag must point to the exact qualified commit.

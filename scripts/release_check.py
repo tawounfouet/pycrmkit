@@ -40,7 +40,7 @@ def main() -> None:
         run(sys.executable, "-m", "venv", str(venv))
         python = venv / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
         run(str(python), "-m", "pip", "install", "--no-deps", str(wheels[0]))
-        run(str(python), "-c", "import pycrmkit; print(pycrmkit.__version__)")
+        run(str(python), str(ROOT / "scripts" / "smoke_test.py"))
 
     print("PyCRMKit release-check: PASS")
 

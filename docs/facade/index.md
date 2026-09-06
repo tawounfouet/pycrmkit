@@ -10,7 +10,7 @@ crm = CRM.memory()
 
 ## Namespaces
 
-The `0.1` candidate exposes:
+The stable `0.1` API exposes:
 
 ```text
 crm.contacts

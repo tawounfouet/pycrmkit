@@ -1,6 +1,6 @@
 # Installation
 
-PyCRMKit is currently in pre-alpha engineering development.
+PyCRMKit `0.1.0` is the first stable CRM Core milestone. The project remains pre-1.0, so only the documented `0.1` public surface carries the `0.1.x` compatibility promise.
 
 For repository development:
 
