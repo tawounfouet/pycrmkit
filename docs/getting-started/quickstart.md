@@ -1,20 +1,18 @@
 # Quickstart
 
-The current `0.1.0a1` release exposes the first core primitives.
+The current `0.1.0a2` release includes the Contact vertical slice.
 
 ```python
-from datetime import UTC, datetime
+from pycrmkit.contacts import ContactEmail, ContactService
 
-from pycrmkit import __version__
-from pycrmkit.core import EntityId, FixedClock, UUID4Factory
+service = ContactService(repository=my_contact_repository)
+contact = service.create(
+    first_name="Thomas",
+    emails=(ContactEmail("thomas@example.com", is_primary=True),),
+)
 
-factory = UUID4Factory()
-entity_id = factory.new(EntityId)
-clock = FixedClock(datetime(2026, 9, 6, 10, 0, tzinfo=UTC))
-
-print(__version__)
-print(entity_id)
-print(clock.now())
+print(contact.id)
+print(contact.display_name)
 ```
 
-The CRM facade and Contact domain arrive in the next `0.1.x` implementation milestones.
+`ContactRepository` is an adapter contract. A production Memory adapter arrives later in the `0.1.x` line; `0.1.0a2` intentionally does not make storage infrastructure part of the Contact domain.

@@ -6,6 +6,19 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0a2] - 2026-09-06
+
+### Added
+- Strongly typed `ContactId` and Contact lifecycle status.
+- `ContactEmail`, `ContactPhone`, and `Address` value objects with explicit normalization.
+- Verification-state and primary contact-point foundations.
+- Contact aggregate with identity, archival, metadata, owner, source, and timestamp invariants.
+- Backend-independent `ContactQuery`, `OffsetPageRequest`, and exact `Page` semantics.
+- `ContactRepository` protocol with get/find/save/archive/search contracts.
+- `ContactService` create/get/update/archive/search operations and typed `ContactUpdate`.
+- First reusable repository contract suite, executed against a test-only reference repository.
+- Contacts documentation and repository-contract specification.
+
 ## [0.1.0a1] - 2026-09-06
 
 ### Added

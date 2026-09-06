@@ -11,6 +11,9 @@ nav:
       - Quickstart: getting-started/quickstart.md
   - Core:
       - Primitives: core/primitives.md
+  - Contacts:
+      - Overview: contacts/index.md
+      - Repository Contract: contacts/repository-contract.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

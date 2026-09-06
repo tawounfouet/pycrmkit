@@ -2,6 +2,7 @@
 
 from pycrmkit.core.entities import Entity, TimestampedEntity
 from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory, UUIDId
+from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.time import Clock, FixedClock, SystemClock, as_utc
 from pycrmkit.core.value_objects import ValueObject
 
@@ -11,6 +12,8 @@ __all__ = [
     "EntityId",
     "FixedClock",
     "IDFactory",
+    "OffsetPageRequest",
+    "Page",
     "SystemClock",
     "TimestampedEntity",
     "UUID4Factory",
