@@ -6,6 +6,19 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-06
+
+### Stable
+- Promoted the CRM Core release candidate to the first stable `0.1.x` line without adding new domain scope.
+- Froze the documented `0.1` public API: root imports, CRM facade namespaces, repository/UoW semantics, typed IDs/value objects, and versioned Domain Event envelope.
+- Qualified the complete CRM Core on Python 3.11, 3.12, and 3.13.
+- Hardened public API smoke tests and the installed-wheel smoke path to execute `CRM.memory()` and a real Contact create/get round-trip.
+- Finalized stable documentation, compatibility policy, and release notes.
+
+### Changed
+- Package version advanced from `0.1.0rc1` to `0.1.0`.
+- Project development classifier advanced from Pre-Alpha to Alpha.
+
 ## [0.1.0rc1] - 2026-09-06
 
 ### Added
