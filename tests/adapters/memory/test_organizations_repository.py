@@ -14,6 +14,7 @@ from pycrmkit.organizations import (
     OrganizationRepository,
 )
 from pycrmkit.storage.memory import MemoryOrganizationRepository
+
 from ...contracts.organizations_repository import OrganizationRepositoryContract
 
 

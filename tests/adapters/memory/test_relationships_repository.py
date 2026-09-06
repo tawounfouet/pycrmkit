@@ -17,6 +17,7 @@ from pycrmkit.relationships import (
     RelationshipType,
 )
 from pycrmkit.storage.memory import MemoryRelationshipRepository
+
 from ...contracts.relationships_repository import RelationshipRepositoryContract
 
 

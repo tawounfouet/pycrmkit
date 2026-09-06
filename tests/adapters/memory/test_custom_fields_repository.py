@@ -8,6 +8,7 @@ from uuid import UUID
 from pycrmkit.custom_fields.entities import CustomFieldDefinition, CustomFieldDefinitionId
 from pycrmkit.custom_fields.value_objects import CustomFieldType
 from pycrmkit.storage.memory import MemoryCustomFieldRepository
+
 from ...contracts.custom_fields_repository import assert_custom_field_repository_contract
 
 NOW = datetime(2026, 9, 6, 12, 0, tzinfo=UTC)

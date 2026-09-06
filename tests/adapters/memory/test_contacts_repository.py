@@ -9,6 +9,7 @@ import pytest
 
 from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactRepository
 from pycrmkit.storage.memory import MemoryContactRepository
+
 from ...contracts.contacts_repository import ContactRepositoryContract
 
 

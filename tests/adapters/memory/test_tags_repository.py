@@ -8,6 +8,7 @@ from uuid import UUID
 from pycrmkit.storage.memory import MemoryTagRepository
 from pycrmkit.tags.entities import Tag, TagId
 from pycrmkit.tags.value_objects import TagName
+
 from ...contracts.tags_repository import assert_tag_repository_contract
 
 NOW = datetime(2026, 9, 6, 12, 0, tzinfo=UTC)
