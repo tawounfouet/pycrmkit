@@ -6,6 +6,22 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.2.0a1] - 2026-09-07
+
+### Added
+- First-class `Activity` aggregate with typed `ActivityId`, eight base interaction types, optional direction, occurrence time, duration, source/external reference, participants, generic entity references, and metadata.
+- `ActivityParticipant` value object backed by generic `EntityReference` targets without aggregate loading.
+- Backend-independent `ActivityQuery`, typed `ActivityUpdate`, `ActivityRepository`, and `ActivityService` with `log/get/update/list` operations.
+- Official copy-isolated `MemoryActivityRepository` plus reusable Activity repository contract suite.
+- Activity participation in the shared `MemoryUnitOfWork`, including commit and rollback semantics.
+- Transactional `crm.activities` facade namespace with `activity.created` / `activity.updated` events and privacy-conscious audit entries.
+- End-to-end Contact + Organization + Activity + Events/Audit scenario.
+- Activities documentation and repository-contract specification.
+
+### Changed
+- Package version advanced to `0.2.0a1`.
+- `CRM` now exposes the new `activities` namespace while preserving the frozen `0.1` root imports.
+
 ## [0.1.0] - 2026-09-06
 
 ### Stable
