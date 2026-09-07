@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.2.0b1 — Timeline**.
+Current version: **0.2.0rc1 — Activity & Timeline Integration**.
 
-The stable `0.1` CRM Core remains compatibility-frozen while the `0.2` line now includes first-class Activities, Tasks, and a customer-facing Timeline read model. `crm.timeline` projects meaningful Activity and Task lifecycle domain events into immutable relationship-history entries and supports reverse-chronological Contact/Organization queries. The next milestone is **0.2.0rc1 — Activity & Timeline Integration**.
+The stable `0.1` CRM Core remains compatibility-frozen. `0.2.0rc1` integrates first-class Activities, explicit Task lifecycle semantics, and the customer-facing Timeline read model, with multi-entity, historical-time, rollback, idempotency and pagination qualification. The next milestone is **0.2.0 — Activity & Timeline Stable**.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -84,8 +84,8 @@ pytest
 0.2.0a1 Activities                            ✓
 0.2.0a2 Tasks                                 ✓
 0.2.0b1 Timeline                              ✓
-0.2.0rc1 Activity & Timeline Integration       →
-0.2.0  Activity & Timeline
+0.2.0rc1 Activity & Timeline Integration       ✓
+0.2.0  Activity & Timeline                     →
 0.3.0  Sales Foundation
 0.4.0  Communication
 0.5.0  Eventing & Webhooks
