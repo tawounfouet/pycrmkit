@@ -65,13 +65,18 @@ class TaskService:
 
     def update(self, task_id: TaskId, changes: TaskUpdate) -> Task:
         current = self.repository.get(task_id)
+        priority = (
+            current.priority
+            if isinstance(changes.priority, UnsetType)
+            else parse_priority(changes.priority)
+        )
         candidate = Task(
             id=current.id,
             created_at=current.created_at,
             updated_at=self.clock.now(),
             title=self._value(changes.title, current.title),
             status=current.status,
-            priority=parse_priority(self._value(changes.priority, current.priority)),
+            priority=priority,
             description=self._value(changes.description, current.description),
             due_at=self._value(changes.due_at, current.due_at),
             owner_id=self._value(changes.owner_id, current.owner_id),
