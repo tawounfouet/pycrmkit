@@ -13,6 +13,7 @@ from pycrmkit.events.envelope import DomainEvent
 from pycrmkit.organizations.repository import OrganizationRepository
 from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
+from pycrmkit.tasks.repository import TaskRepository
 
 
 class UnitOfWork(Protocol):
@@ -33,6 +34,10 @@ class UnitOfWork(Protocol):
     @property
     def relationships(self) -> RelationshipRepository:
         """Relationships participating in the current transaction."""
+
+    @property
+    def tasks(self) -> TaskRepository:
+        """Tasks participating in the current transaction."""
 
     @property
     def tags(self) -> TagRepository:

@@ -2,14 +2,14 @@
 
 PyCRMKit is a modular, headless Python CRM domain framework.
 
-The current **`0.2.0a1`** milestone builds on the stable `0.1` CRM Core and introduces first-class interaction history:
+The current **`0.2.0a2`** milestone builds on the stable `0.1` CRM Core with first-class interaction history and transactional action items:
 
 ```text
 Application
     ↓
 CRM facade
     ↓
-Contacts / Organizations / Relationships / Activities
+Contacts / Organizations / Relationships / Activities / Tasks
     ↓
 Domain services + policies
     ↓
@@ -32,8 +32,9 @@ activity = crm.activities.log(
     subject="Commercial follow-up",
     direction="outbound",
 )
+task = crm.tasks.create(title="Prepare renewal", priority="high")
 ```
 
-Activities are generic CRM records. They do not send email, place calls, store documents, or orchestrate workflows.
+Activities record interactions that happened; Tasks represent work still to perform. Neither domain sends email, places calls, stores documents, or orchestrates workflows.
 
 Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations remain optional later milestones.

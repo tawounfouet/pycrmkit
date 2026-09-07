@@ -7,8 +7,8 @@ import pycrmkit
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.2.0a1":
-        raise SystemExit(f"Expected PyCRMKit 0.2.0a1, got {version!r}")
+    if version != "0.2.0a2":
+        raise SystemExit(f"Expected PyCRMKit 0.2.0a2, got {version!r}")
 
     crm = pycrmkit.CRM.memory()
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
@@ -24,7 +24,12 @@ def main() -> None:
     if loaded_activity.id != activity.id or loaded_activity.type.value != "note":
         raise SystemExit("CRM.memory() Activity smoke failed")
 
-    print(f"PyCRMKit {version}: CRM.memory() + Activities smoke OK")
+    task = crm.tasks.create(title="Installed package task smoke", priority="high")
+    loaded_task = crm.tasks.get(task.id)
+    if loaded_task.id != task.id or loaded_task.priority.name != "HIGH":
+        raise SystemExit("CRM.memory() Task smoke failed")
+
+    print(f"PyCRMKit {version}: CRM.memory() + Activities + Tasks smoke OK")
 
 
 if __name__ == "__main__":

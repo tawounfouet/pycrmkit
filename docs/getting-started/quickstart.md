@@ -77,6 +77,7 @@ for entry in history.items:
 
 The facade records changed field names rather than copying raw contact/customer values into audit metadata by default.
 
+
 ## Activities
 
 `0.2.0a1` adds generic interaction history without introducing provider dependencies:
@@ -103,3 +104,26 @@ history = crm.activities.list(
 ```
 
 Activity events are committed and dispatched using the same Unit-of-Work, EventBus, and Audit foundation as the CRM Core.
+
+
+## Tasks
+
+`0.2.0a2` adds transactional CRM action items with explicit lifecycle transitions:
+
+```python
+from pycrmkit.tasks import TaskQuery
+
+follow_up = crm.tasks.create(
+    title="Prepare renewal proposal",
+    priority="high",
+    assignee_id="seller-7",
+    references=(contact_ref,),
+)
+
+follow_up = crm.tasks.start(follow_up.id)
+follow_up = crm.tasks.complete(follow_up.id)
+
+completed = crm.tasks.list(TaskQuery(status="completed"))
+```
+
+Task state transitions, audit writes, and domain events participate in the same Unit-of-Work semantics as the CRM Core and Activities.
