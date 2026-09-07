@@ -6,6 +6,33 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-07
+
+### Stable
+- Promoted the qualified Activity, Task and Timeline release candidate to the stable `0.2.x` line without adding new business scope.
+- Froze the documented `0.2` public API for `crm.activities`, `crm.tasks` and read-only `crm.timeline` while preserving the stable `0.1` root imports and CRM Core namespaces.
+- Qualified historical Activity business-time semantics, explicit Task lifecycle transitions, transactional Timeline projection, idempotent replay, deterministic ordering, exact offset pagination and half-open temporal filtering.
+- Qualified the complete release on Python 3.11, 3.12 and 3.13 plus an installed-wheel `CRM.memory()` Activity/Task/Timeline smoke path.
+- Finalized stable `0.2` API documentation and release notes.
+
+### Changed
+- Package version advanced from `0.2.0rc1` to `0.2.0`.
+- The `0.2` candidate compatibility document is now the stable `0.2.x` compatibility contract.
+
+## [0.2.0rc1] - 2026-09-07
+
+### Added
+- Release-candidate integration coverage for Contact + Organization + imported historical Activity history.
+- Full Task lifecycle qualification across `created`, `started`, `completed`, `reopened` and `cancelled` projections.
+- Multi-entity Timeline consistency checks, exact offset pagination, half-open time-window filtering, source-transaction rollback and replay idempotency qualification.
+- Candidate `0.2` public API freeze preserving the `0.1` root exports and adding `activities`, `tasks` and read-only `timeline` facade namespaces.
+- Installed-wheel smoke path covering historical Activity, Task lifecycle and Timeline pagination.
+- `0.2.0rc1` release notes.
+
+### Changed
+- Package version advanced to `0.2.0rc1`.
+- Activity, Task and Timeline behavior entered compatibility freeze pending stable qualification.
+
 ## [0.2.0b1] - 2026-09-07
 
 ### Added

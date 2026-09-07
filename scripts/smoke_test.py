@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.2 release-candidate public path."""
+"""Installed-package smoke test for the stable 0.2 public path."""
 
 from __future__ import annotations
 
@@ -13,8 +13,8 @@ from pycrmkit.core.time import FixedClock
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.2.0rc1":
-        raise SystemExit(f"Expected PyCRMKit 0.2.0rc1, got {version!r}")
+    if version != "0.2.0":
+        raise SystemExit(f"Expected PyCRMKit 0.2.0, got {version!r}")
 
     clock = FixedClock(datetime(2026, 9, 7, 9, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock)
@@ -58,7 +58,7 @@ def main() -> None:
         raise SystemExit("CRM.memory() Timeline pagination smoke failed")
 
     print(
-        f"PyCRMKit {version}: Activity + Task lifecycle + Timeline RC smoke OK"
+        f"PyCRMKit {version}: Activity + Task lifecycle + Timeline stable smoke OK"
     )
 
 

@@ -1,4 +1,4 @@
-"""Candidate public API freeze for PyCRMKit 0.2."""
+"""Stable public API freeze for PyCRMKit 0.2."""
 
 import pycrmkit
 from pycrmkit import CRM, CRMConfig, CRMContext, __version__
@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.2.0rc1"
+    assert __version__ == "0.2.0"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -26,7 +26,7 @@ def test_0_1_facade_namespaces_remain_available() -> None:
     assert crm.audit is not None
 
 
-def test_0_2_candidate_namespaces_are_available() -> None:
+def test_0_2_stable_namespaces_are_available() -> None:
     crm = CRM.memory()
     assert crm.activities is not None
     assert crm.tasks is not None
