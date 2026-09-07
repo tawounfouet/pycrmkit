@@ -6,6 +6,22 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.2.0a2] - 2026-09-07
+
+### Added
+- First-class `Task` aggregate with typed `TaskId`, explicit lifecycle status, ordered priority, due dates, owner/assignee context, generic CRM references, source/external identity, metadata, and lifecycle timestamps.
+- Explicit `start`, `complete`, `cancel`, and `reopen` transitions; lifecycle status is deliberately excluded from generic `TaskUpdate` patches.
+- Backend-independent `TaskQuery`, typed `TaskUpdate`, `TaskRepository`, and `TaskService` with create/get/update/lifecycle/list operations.
+- Official copy-isolated `MemoryTaskRepository` plus reusable Task repository contract suite.
+- Task participation in the shared `MemoryUnitOfWork`, including commit and rollback semantics.
+- Transactional `crm.tasks` facade namespace with `task.created`, `task.updated`, `task.started`, `task.completed`, `task.cancelled`, and `task.reopened` events plus privacy-conscious audit entries.
+- End-to-end Contact + Task lifecycle + Events/Audit scenario.
+- Tasks documentation and repository-contract specification.
+
+### Changed
+- Package version advanced to `0.2.0a2`.
+- `CRM` now exposes the additive `tasks` namespace while the stable `0.1` root exports remain unchanged.
+
 ## [0.2.0a1] - 2026-09-07
 
 ### Added
