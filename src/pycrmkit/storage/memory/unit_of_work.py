@@ -18,6 +18,7 @@ from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
 from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
+from pycrmkit.storage.memory.timeline import MemoryTimelineRepository
 
 
 class MemoryUnitOfWork:
@@ -44,6 +45,7 @@ class MemoryUnitOfWork:
         self._organizations: MemoryOrganizationRepository | None = None
         self._relationships: MemoryRelationshipRepository | None = None
         self._tasks: MemoryTaskRepository | None = None
+        self._timeline: MemoryTimelineRepository | None = None
         self._tags: MemoryTagRepository | None = None
         self._custom_fields: MemoryCustomFieldRepository | None = None
         self._audit: MemoryAuditRepository | None = None
@@ -78,6 +80,12 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._tasks is not None
         return self._tasks
+
+    @property
+    def timeline(self) -> MemoryTimelineRepository:
+        self._ensure_active()
+        assert self._timeline is not None
+        return self._timeline
 
     @property
     def tags(self) -> MemoryTagRepository:
@@ -165,6 +173,7 @@ class MemoryUnitOfWork:
         self._organizations = MemoryOrganizationRepository(state)
         self._relationships = MemoryRelationshipRepository(state)
         self._tasks = MemoryTaskRepository(state)
+        self._timeline = MemoryTimelineRepository(state)
         self._tags = MemoryTagRepository(state)
         self._custom_fields = MemoryCustomFieldRepository(state)
         self._audit = MemoryAuditRepository(state)

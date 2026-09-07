@@ -28,6 +28,9 @@ nav:
   - Tasks:
       - Overview: tasks/index.md
       - Repository Contract: tasks/repository-contract.md
+  - Timeline:
+      - Overview: timeline/index.md
+      - Repository Contract: timeline/repository-contract.md
   - Tags:
       - Overview: tags/index.md
       - Repository Contract: tags/repository-contract.md

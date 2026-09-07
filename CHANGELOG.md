@@ -6,6 +6,23 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.2.0b1] - 2026-09-07
+
+### Added
+- Immutable `TimelineEntry` projections with typed `TimelineEntryId`, source `EventType` / `EventId`, source aggregate reference, business occurrence timestamp, title/summary, CRM references, actor/correlation context, and privacy-conscious metadata.
+- Backend-neutral `TimelineRepository` contract with idempotent append semantics and deterministic `occurred_at DESC, kind ASC, id ASC` ordering.
+- Domain-event-driven `TimelineProjector` and pure projection helpers for `activity.created` and meaningful Task lifecycle events (`created`, `started`, `completed`, `cancelled`, `reopened`).
+- Atomic timeline projection inside the same Unit of Work as the originating mutation; external EventBus dispatch remains post-commit.
+- Official `MemoryTimelineRepository`, timeline persistence in `MemoryStore`, and Timeline participation in `MemoryUnitOfWork`.
+- Read-only `crm.timeline` facade with `for_contact`, `for_organization`, `get`, kind/event filters, date-window filters, and exact offset pagination.
+- Timeline unit, adapter, idempotency, ordering, filtering, configuration, and Contact/Organization end-to-end tests.
+- Timeline overview and repository-contract documentation.
+
+### Changed
+- Package version advanced to `0.2.0b1`.
+- `CRM` now exposes the additive `timeline` namespace while preserving the frozen root exports.
+- Activity/Task domain events now also feed the customer-facing read model when they represent meaningful relationship history; audit remains a separate system mutation history.
+
 ## [0.2.0a2] - 2026-09-07
 
 ### Added

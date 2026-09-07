@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.2.0a2"
+    assert __version__ == "0.2.0b1"
 
 
 def test_root_public_exports_are_frozen() -> None:
@@ -30,3 +30,4 @@ def test_0_2_facade_namespaces_are_available() -> None:
     crm = CRM.memory()
     assert crm.activities is not None
     assert crm.tasks is not None
+    assert crm.timeline is not None

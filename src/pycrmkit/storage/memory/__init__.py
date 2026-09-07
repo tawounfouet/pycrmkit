@@ -9,6 +9,7 @@ from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
 from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
+from pycrmkit.storage.memory.timeline import MemoryTimelineRepository
 from pycrmkit.storage.memory.unit_of_work import MemoryUnitOfWork
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "MemoryRelationshipRepository",
     "MemoryStore",
     "MemoryTaskRepository",
+    "MemoryTimelineRepository",
     "MemoryTagRepository",
     "MemoryUnitOfWork",
 ]

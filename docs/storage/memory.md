@@ -1,23 +1,14 @@
 # Memory Adapter
 
-`0.1.0b3` introduced the first official PyCRMKit persistence adapter. `0.1.0b4` extends the same transaction snapshot with append-only audit entries and post-commit event staging.
+The official Memory adapter is the reference in-process persistence implementation for tests, examples, CLI prototypes, tutorials, and local development.
 
-The Memory adapter is intended for:
-
-```text
-tests
-examples
-CLI prototypes
-tutorials
-embedded/local development
-```
-
-It is a conformant adapter, not a mock. The same repository contracts used to define Contact, Organization, Relationship, Tag, and Custom Field persistence are executed against the real Memory repositories.
+It is a conformant adapter, not a mock. Repository contracts are executed against the actual Memory repositories.
 
 ## Public components
 
 ```python
 from pycrmkit.storage.memory import (
+    MemoryActivityRepository,
     MemoryAuditRepository,
     MemoryContactRepository,
     MemoryCustomFieldRepository,
@@ -25,119 +16,48 @@ from pycrmkit.storage.memory import (
     MemoryRelationshipRepository,
     MemoryStore,
     MemoryTagRepository,
+    MemoryTaskRepository,
+    MemoryTimelineRepository,
     MemoryUnitOfWork,
 )
 ```
 
-## Copy isolation
+## Copy / immutability semantics
 
-Repositories use copy-on-save and copy-on-read semantics.
-
-```python
-repository.save(contact)
-
-loaded = repository.get(contact.id)
-loaded.source = "changed-without-save"
-
-assert repository.get(contact.id).source != "changed-without-save"
-```
-
-This deliberately mirrors persistent-database semantics: mutating a Python object does not change persisted state until `save()` is called.
+Mutable aggregates use copy-on-save and copy-on-read semantics. Immutable Audit and Timeline entries can safely be shared across transaction snapshots.
 
 ## Unit of Work
 
-`MemoryStore` owns committed state. `MemoryUnitOfWork` creates a private transaction snapshot shared by all transactional repositories.
-
-```python
-store = MemoryStore()
-
-with MemoryUnitOfWork(store) as uow:
-    uow.contacts.save(contact)
-    uow.organizations.save(organization)
-    uow.commit()
-```
-
-A later transaction sees both committed changes:
-
-```python
-with MemoryUnitOfWork(store) as uow:
-    contact = uow.contacts.get(contact_id)
-    organization = uow.organizations.get(organization_id)
-```
-
-## Explicit commit
-
-Leaving a UoW without `commit()` rolls back staged changes.
-
-```python
-with MemoryUnitOfWork(store) as uow:
-    uow.contacts.save(contact)
-    # no commit
-
-# contact was not persisted
-```
-
-Exceptions also roll back staged state. `rollback()` may be called explicitly to discard changes while keeping the current context usable.
-
-## Transaction boundary
-
-All repositories inside one `MemoryUnitOfWork` share the same transaction snapshot:
+`MemoryStore` owns committed state. `MemoryUnitOfWork` creates a private transaction snapshot shared by all repositories:
 
 ```text
 MemoryUnitOfWork
 └── transaction snapshot
+    ├── activities
     ├── contacts
     ├── organizations
     ├── relationships
+    ├── tasks
+    ├── timeline
     ├── tags
     ├── custom_fields
     └── audit
 ```
 
-`commit()` replaces the committed `MemoryStore` state atomically with a deep copy of that snapshot.
+Leaving the context without `commit()` rolls back staged changes. Exceptions and explicit `rollback()` also discard uncommitted work.
 
-## Nested/concurrent transactions
+## Timeline projection
 
-A single `MemoryStore` permits one active `MemoryUnitOfWork` at a time. Nested or concurrent UoWs using the same store fail explicitly with `InvalidStateError`.
+`0.2.0b1` stores immutable `TimelineEntry` values in the same transaction snapshot as source domain mutations. The facade builds a `DomainEvent`, runs the Timeline projector against the active UoW, then commits domain state, audit, and timeline together. Public EventBus subscribers are invoked only after the commit succeeds.
 
-This is intentional for the initial in-process adapter. The Memory adapter does not claim production concurrency semantics.
+This ordering deliberately avoids opening a nested `MemoryUnitOfWork`; one `MemoryStore` permits only one active UoW at a time.
 
 ## Contract qualification
 
-The official Memory repositories execute the reusable suites for:
+The official Memory repositories execute reusable suites for Contacts, Organizations, Relationships, Tags, Custom Fields, Audit, Activities, Tasks, and Timeline.
 
-```text
-ContactRepository
-OrganizationRepository
-RelationshipRepository
-TagRepository
-CustomFieldRepository
-AuditRepository
-```
-
-Additional adapter tests verify copy isolation and UoW transaction behavior.
+Timeline contract requirements include idempotent identical replay, conflicting replay rejection, exact pagination, deterministic reverse chronology, and reference/kind/event/time filters.
 
 ## Boundaries
 
-This milestone does not introduce:
-
-```text
-SQLAlchemy
-PostgreSQL
-Django ORM
-optimistic database locking
-persistent migrations
-durable outbox / distributed event transport
-CRM facade
-```
-
-Those remain separate roadmap milestones.
-
-
-## Events and audit
-
-`MemoryUnitOfWork.audit` is transaction-bound like the other repositories. Audit entries are therefore committed or rolled back with the same snapshot.
-
-`MemoryUnitOfWork.add_event()` stages immutable `DomainEvent` objects. They are dispatched through the configured `EventPublisher` only after `MemoryStore` accepts the committed state. Pending events are discarded on rollback or uncommitted exit.
-
-This adapter does not provide durable retry/outbox semantics.
+The Memory adapter does not claim production concurrency semantics and does not provide SQLAlchemy/PostgreSQL persistence, migrations, durable outbox/retry, or distributed event transport. Those remain dedicated roadmap milestones.

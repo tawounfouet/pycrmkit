@@ -1,6 +1,6 @@
 # CRM Facade
 
-`CRM` is the high-level application surface for PyCRMKit. It coordinates domain services, repositories, Unit of Work boundaries, audit history, and post-commit event dispatch.
+`CRM` is the high-level application surface for PyCRMKit. It coordinates domain services, repositories, Unit of Work boundaries, timeline projections, audit history, and post-commit event dispatch.
 
 ```python
 from pycrmkit import CRM
@@ -10,39 +10,39 @@ crm = CRM.memory()
 
 ## Namespaces
 
-The stable `0.1` API exposes:
+The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags, Custom Fields, Events, and Audit. The additive `0.2` line adds:
 
 ```text
-crm.contacts
-crm.organizations
-crm.relationships
-crm.tags
-crm.custom_fields
-crm.events
-crm.audit
+crm.activities
+crm.tasks
+crm.timeline
 ```
 
-Mutating domain namespaces use one Unit of Work per facade call. Read methods use the same repository contracts but do not commit mutations.
+`crm.timeline` is read-only. It exposes customer/relationship history projected from meaningful Activity/Task domain events.
 
 ## Transaction boundary
 
-A facade mutation follows this sequence:
+A Timeline-producing mutation follows this sequence:
 
 ```text
 open UnitOfWork
     ↓
 domain service mutation
     ↓
-stage AuditEntry in same transaction
+create DomainEvent envelope
     ↓
-stage DomainEvent
+project TimelineEntry in same transaction (when supported)
     ↓
-commit persisted state + audit
+stage AuditEntry (when enabled)
+    ↓
+stage DomainEvent for external subscribers (when enabled)
+    ↓
+commit domain + timeline + audit
     ↓
 dispatch DomainEvent synchronously
 ```
 
-Rollback or exit without commit discards both domain changes and staged audit/event work.
+Rollback or exit without commit discards domain changes, timeline projections, audit entries, and pending events.
 
 Subscriber failures occur after persisted state has committed and therefore do not perform a fake rollback. Durable retry/outbox semantics are intentionally deferred.
 
@@ -55,7 +55,7 @@ scoped = crm.with_context(
 )
 ```
 
-`with_context()` returns a lightweight facade view sharing the same storage and event bus. `causation_id` can also be supplied for event chains.
+Projected Timeline entries preserve actor/correlation context from the source event where provided.
 
 ## Configuration
 
@@ -71,4 +71,4 @@ crm = CRM.memory(
 )
 ```
 
-Events and audit can be disabled independently.
+Events and Audit can be disabled independently. Timeline projection remains active for supported Activity/Task history events because it is a CRM read model, not an external event-delivery feature.

@@ -17,6 +17,7 @@ from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.organizations import OrganizationUpdate
 from pycrmkit.relationships import RelationshipUpdate
 from pycrmkit.tasks import TaskUpdate
+from pycrmkit.timeline import TimelineProjector
 
 Revision = (
     ActivityUpdate
@@ -59,7 +60,12 @@ class CRMRuntime:
         payload: Mapping[str, object] | None = None,
     ) -> DomainEvent | None:
         """Stage one event/audit pair according to facade configuration."""
-        if not self.config.events_enabled and not self.config.audit_enabled:
+        timeline_supported = TimelineProjector.supports(event_type)
+        if (
+            not self.config.events_enabled
+            and not self.config.audit_enabled
+            and not timeline_supported
+        ):
             return None
         event = DomainEvent.create(
             id_factory=self.id_factory,
@@ -72,6 +78,12 @@ class CRMRuntime:
             causation_id=self.context.causation_id,
             payload=payload,
         )
+        if timeline_supported:
+            TimelineProjector(
+                uow.timeline,
+                activities=uow.activities,
+                tasks=uow.tasks,
+            ).project(event)
         if self.config.audit_enabled:
             AuditService(
                 uow.audit,

@@ -14,6 +14,7 @@ from pycrmkit.organizations.repository import OrganizationRepository
 from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
 from pycrmkit.tasks.repository import TaskRepository
+from pycrmkit.timeline.repository import TimelineRepository
 
 
 class UnitOfWork(Protocol):
@@ -38,6 +39,10 @@ class UnitOfWork(Protocol):
     @property
     def tasks(self) -> TaskRepository:
         """Tasks participating in the current transaction."""
+
+    @property
+    def timeline(self) -> TimelineRepository:
+        """Customer-facing timeline projections participating in the transaction."""
 
     @property
     def tags(self) -> TagRepository:
