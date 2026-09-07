@@ -16,9 +16,11 @@ from pycrmkit.custom_fields import CustomFieldDefinitionRevision
 from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.organizations import OrganizationUpdate
 from pycrmkit.relationships import RelationshipUpdate
+from pycrmkit.tasks import TaskUpdate
 
 Revision = (
     ActivityUpdate
+    | TaskUpdate
     | ContactUpdate
     | OrganizationUpdate
     | RelationshipUpdate

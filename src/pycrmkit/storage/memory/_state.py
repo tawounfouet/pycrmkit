@@ -19,6 +19,7 @@ from pycrmkit.exceptions import InvalidStateError
 from pycrmkit.organizations.entities import Organization, OrganizationId
 from pycrmkit.relationships.entities import Relationship, RelationshipId
 from pycrmkit.tags.entities import Tag, TagAssignment, TagId
+from pycrmkit.tasks.entities import Task, TaskId
 
 
 @dataclass(slots=True)
@@ -27,6 +28,7 @@ class _MemoryState:
     contacts: dict[ContactId, Contact] = field(default_factory=dict)
     organizations: dict[OrganizationId, Organization] = field(default_factory=dict)
     relationships: dict[RelationshipId, Relationship] = field(default_factory=dict)
+    tasks: dict[TaskId, Task] = field(default_factory=dict)
     tags: dict[TagId, Tag] = field(default_factory=dict)
     tag_assignments: dict[tuple[TagId, EntityReference], TagAssignment] = field(
         default_factory=dict

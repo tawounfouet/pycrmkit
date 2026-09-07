@@ -19,6 +19,7 @@ from pycrmkit.facade.events import EventsAPI
 from pycrmkit.facade.organizations import OrganizationsAPI
 from pycrmkit.facade.relationships import RelationshipsAPI
 from pycrmkit.facade.tags import TagsAPI
+from pycrmkit.facade.tasks import TasksAPI
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 
 
@@ -60,6 +61,7 @@ class CRM:
         self.contacts = ContactsAPI(runtime)
         self.organizations = OrganizationsAPI(runtime)
         self.relationships = RelationshipsAPI(runtime)
+        self.tasks = TasksAPI(runtime)
         self.tags = TagsAPI(runtime)
         self.custom_fields = CustomFieldsAPI(runtime)
         self.events = EventsAPI(event_bus)
