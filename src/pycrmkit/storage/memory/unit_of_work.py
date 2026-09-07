@@ -10,6 +10,7 @@ from pycrmkit.events.envelope import DomainEvent
 from pycrmkit.events.publisher import EventPublisher
 from pycrmkit.exceptions import InvalidStateError
 from pycrmkit.storage.memory._state import MemoryStore, _MemoryState
+from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
@@ -37,6 +38,7 @@ class MemoryUnitOfWork:
         self._active = False
         self._committed = False
         self._working: _MemoryState | None = None
+        self._activities: MemoryActivityRepository | None = None
         self._contacts: MemoryContactRepository | None = None
         self._organizations: MemoryOrganizationRepository | None = None
         self._relationships: MemoryRelationshipRepository | None = None
@@ -44,6 +46,12 @@ class MemoryUnitOfWork:
         self._custom_fields: MemoryCustomFieldRepository | None = None
         self._audit: MemoryAuditRepository | None = None
         self._pending_events: list[DomainEvent] = []
+
+    @property
+    def activities(self) -> MemoryActivityRepository:
+        self._ensure_active()
+        assert self._activities is not None
+        return self._activities
 
     @property
     def contacts(self) -> MemoryContactRepository:
@@ -144,6 +152,7 @@ class MemoryUnitOfWork:
         self._bind_repositories(self._working)
 
     def _bind_repositories(self, state: _MemoryState) -> None:
+        self._activities = MemoryActivityRepository(state)
         self._contacts = MemoryContactRepository(state)
         self._organizations = MemoryOrganizationRepository(state)
         self._relationships = MemoryRelationshipRepository(state)

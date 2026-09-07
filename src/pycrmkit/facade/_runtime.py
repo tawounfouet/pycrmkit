@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import fields
 
+from pycrmkit.activities import ActivityUpdate
 from pycrmkit.audit import AuditService
 from pycrmkit.config import CRMConfig, CRMContext
 from pycrmkit.contacts import ContactUpdate
@@ -16,7 +17,13 @@ from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.organizations import OrganizationUpdate
 from pycrmkit.relationships import RelationshipUpdate
 
-Revision = ContactUpdate | OrganizationUpdate | RelationshipUpdate | CustomFieldDefinitionRevision
+Revision = (
+    ActivityUpdate
+    | ContactUpdate
+    | OrganizationUpdate
+    | RelationshipUpdate
+    | CustomFieldDefinitionRevision
+)
 
 
 class CRMRuntime:

@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import TracebackType
 from typing import Protocol, Self
 
+from pycrmkit.activities.repository import ActivityRepository
 from pycrmkit.audit.repository import AuditRepository
 from pycrmkit.contacts.repository import ContactRepository
 from pycrmkit.custom_fields.repository import CustomFieldRepository
@@ -16,6 +17,10 @@ from pycrmkit.tags.repository import TagRepository
 
 class UnitOfWork(Protocol):
     """Transactional repository grouping used by application services and workflows."""
+
+    @property
+    def activities(self) -> ActivityRepository:
+        """Activities participating in the current transaction."""
 
     @property
     def contacts(self) -> ContactRepository:

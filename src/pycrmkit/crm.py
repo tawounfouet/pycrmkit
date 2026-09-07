@@ -11,6 +11,7 @@ from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.events import InProcessEventBus
 from pycrmkit.facade._runtime import CRMRuntime
+from pycrmkit.facade.activities import ActivitiesAPI
 from pycrmkit.facade.audit import AuditAPI
 from pycrmkit.facade.contacts import ContactsAPI
 from pycrmkit.facade.custom_fields import CustomFieldsAPI
@@ -55,6 +56,7 @@ class CRM:
             clock=clock or SystemClock(),
         )
         self._runtime = runtime
+        self.activities = ActivitiesAPI(runtime)
         self.contacts = ContactsAPI(runtime)
         self.organizations = OrganizationsAPI(runtime)
         self.relationships = RelationshipsAPI(runtime)

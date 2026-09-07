@@ -22,6 +22,9 @@ nav:
   - Relationships:
       - Overview: relationships/index.md
       - Repository Contract: relationships/repository-contract.md
+  - Activities:
+      - Overview: activities/index.md
+      - Repository Contract: activities/repository-contract.md
   - Tags:
       - Overview: tags/index.md
       - Repository Contract: tags/repository-contract.md

@@ -76,3 +76,30 @@ for entry in history.items:
 ```
 
 The facade records changed field names rather than copying raw contact/customer values into audit metadata by default.
+
+## Activities
+
+`0.2.0a1` adds generic interaction history without introducing provider dependencies:
+
+```python
+from pycrmkit.activities import ActivityParticipant, ActivityQuery
+from pycrmkit.core.references import EntityReference
+
+contact_ref = EntityReference("contact", contact.id)
+
+call = crm.activities.log(
+    type="call",
+    subject="Commercial follow-up",
+    direction="outbound",
+    duration_seconds=480,
+    participants=(
+        ActivityParticipant(contact_ref, role="customer", is_primary=True),
+    ),
+)
+
+history = crm.activities.list(
+    ActivityQuery(participant=contact_ref)
+)
+```
+
+Activity events are committed and dispatched using the same Unit-of-Work, EventBus, and Audit foundation as the CRM Core.

@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.2.0a1"
 
 
 def test_root_public_exports_are_frozen() -> None:

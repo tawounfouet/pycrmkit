@@ -6,6 +6,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from threading import RLock
 
+from pycrmkit.activities.entities import Activity, ActivityId
 from pycrmkit.audit.entries import AuditEntry, AuditEntryId
 from pycrmkit.contacts.entities import Contact, ContactId
 from pycrmkit.core.references import EntityReference
@@ -22,6 +23,7 @@ from pycrmkit.tags.entities import Tag, TagAssignment, TagId
 
 @dataclass(slots=True)
 class _MemoryState:
+    activities: dict[ActivityId, Activity] = field(default_factory=dict)
     contacts: dict[ContactId, Contact] = field(default_factory=dict)
     organizations: dict[OrganizationId, Organization] = field(default_factory=dict)
     relationships: dict[RelationshipId, Relationship] = field(default_factory=dict)
