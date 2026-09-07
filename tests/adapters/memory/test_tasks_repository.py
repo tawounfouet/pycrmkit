@@ -10,7 +10,7 @@ import pytest
 from pycrmkit.contacts import ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.storage.memory import MemoryTaskRepository
-from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskRepository, TaskStatus
+from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskRepository
 
 from ...contracts.tasks_repository import TaskRepositoryContract
 
