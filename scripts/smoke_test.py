@@ -1,22 +1,29 @@
-"""Installed-package smoke test for the stable 0.2 public path."""
+"""Installed-package smoke test for the 0.3.0a1 Money + Lead path."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 import pycrmkit
 from pycrmkit.activities import ActivityParticipant
+from pycrmkit.core import Money
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
+from pycrmkit.leads import LeadStatus
 
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.2.0":
-        raise SystemExit(f"Expected PyCRMKit 0.2.0, got {version!r}")
+    if version != "0.3.0a1":
+        raise SystemExit(f"Expected PyCRMKit 0.3.0a1, got {version!r}")
 
-    clock = FixedClock(datetime(2026, 9, 7, 9, tzinfo=UTC))
+    amount = Money(Decimal("15000"), "eur")
+    if amount.currency != "EUR" or amount.amount != Decimal("15000"):
+        raise SystemExit("Money Decimal/currency smoke failed")
+
+    clock = FixedClock(datetime(2026, 9, 8, 9, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock)
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
     organization = crm.organizations.create(legal_name="Smoke Org")
@@ -57,8 +64,21 @@ def main() -> None:
     if not first_page.has_next or str(first_page.items[0].event_type) != "task.completed":
         raise SystemExit("CRM.memory() Timeline pagination smoke failed")
 
+    lead_events = []
+    crm.events.subscribe("lead.qualified", lead_events.append)
+    lead = crm.leads.create(
+        contact_id=contact.id,
+        organization_id=organization.id,
+        source="website",
+    )
+    lead = crm.leads.qualify(lead.id)
+    if lead.status is not LeadStatus.QUALIFIED or len(lead_events) != 1:
+        raise SystemExit("CRM.memory() Lead qualification smoke failed")
+    if hasattr(crm.leads, "convert"):
+        raise SystemExit("Lead conversion must remain deferred in 0.3.0a1")
+
     print(
-        f"PyCRMKit {version}: Activity + Task lifecycle + Timeline stable smoke OK"
+        f"PyCRMKit {version}: stable 0.2 + Money + Lead foundation smoke OK"
     )
 
 

@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.2.0 — Activity & Timeline Stable**.
+Current version: **0.3.0a1 — Money & Lead Foundation**.
 
-The stable `0.2` line now includes first-class Activities, explicit Task lifecycle semantics, and the customer-facing Timeline read model. The Activity/Task/Timeline public surface is compatibility-frozen for `0.2.x`, including historical business time, transactional projection, idempotent replay and deterministic pagination. The next milestone is **0.3.0a1 — Sales Primitives**.
+The stable `0.2` Activity/Task/Timeline contract remains compatibility-frozen. `0.3.0a1` opens the Sales Foundation with a Decimal-only `Money` primitive and first-class Lead qualification states, a backend-neutral repository/service contract, the official Memory adapter, Unit-of-Work participation, and the deliberately narrow `crm.leads.create/qualify/disqualify` facade. Lead-to-Opportunity conversion remains deferred. The next milestone is **0.3.0a2 — Opportunities**.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -86,7 +86,11 @@ pytest
 0.2.0b1 Timeline                              ✓
 0.2.0rc1 Activity & Timeline Integration       ✓
 0.2.0  Activity & Timeline Stable              ✓
-0.3.0a1 Sales Primitives                      →
+0.3.0a1 Money & Lead Foundation                ✓
+0.3.0a2 Opportunities                           →
+0.3.0b1 Pipelines
+0.3.0b2 Lead Conversion
+0.3.0rc1 Sales Integration
 0.3.0  Sales Foundation
 0.4.0  Communication
 0.5.0  Eventing & Webhooks

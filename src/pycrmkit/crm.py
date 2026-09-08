@@ -16,6 +16,7 @@ from pycrmkit.facade.audit import AuditAPI
 from pycrmkit.facade.contacts import ContactsAPI
 from pycrmkit.facade.custom_fields import CustomFieldsAPI
 from pycrmkit.facade.events import EventsAPI
+from pycrmkit.facade.leads import LeadsAPI
 from pycrmkit.facade.organizations import OrganizationsAPI
 from pycrmkit.facade.relationships import RelationshipsAPI
 from pycrmkit.facade.tags import TagsAPI
@@ -60,6 +61,7 @@ class CRM:
         self._runtime = runtime
         self.activities = ActivitiesAPI(runtime)
         self.contacts = ContactsAPI(runtime)
+        self.leads = LeadsAPI(runtime)
         self.organizations = OrganizationsAPI(runtime)
         self.relationships = RelationshipsAPI(runtime)
         self.tasks = TasksAPI(runtime)

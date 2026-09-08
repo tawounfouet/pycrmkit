@@ -5,6 +5,7 @@ from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
+from pycrmkit.storage.memory.leads import MemoryLeadRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
 from pycrmkit.storage.memory.tags import MemoryTagRepository
@@ -17,6 +18,7 @@ __all__ = [
     "MemoryAuditRepository",
     "MemoryContactRepository",
     "MemoryCustomFieldRepository",
+    "MemoryLeadRepository",
     "MemoryOrganizationRepository",
     "MemoryRelationshipRepository",
     "MemoryStore",

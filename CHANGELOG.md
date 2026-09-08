@@ -6,6 +6,27 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.3.0a1] - 2026-09-08
+
+### Added
+- Immutable Decimal-only `Money` primitive with required normalized three-letter currency and explicit rejection of float/non-finite persistence values.
+- First-class `Lead` aggregate with typed `LeadId`, required `ContactId`, optional `OrganizationId`, normalized source, and lifecycle states `new`, `open`, `contacted`, `qualified`, `disqualified`, and `converted`.
+- Explicit Lead domain transitions plus backend-neutral `LeadQuery`, `LeadRepository`, and `LeadService`.
+- Official copy-isolated `MemoryLeadRepository` and Lead participation in the shared `MemoryStore` / `MemoryUnitOfWork` transaction.
+- Deliberately narrow `crm.leads` facade exposing `create`, `qualify`, and `disqualify`, with post-commit `lead.created`, `lead.qualified`, and `lead.disqualified` events plus privacy-conscious audit entries.
+- Reusable Lead repository contract suite covering state fidelity, filters, deterministic `created_at DESC, id ASC` ordering, exact pagination, NotFound semantics, and terminal-state persistence.
+- Unit, adapter, Unit-of-Work, facade, end-to-end, public API, and installed-package smoke qualification for Money and Leads.
+- Money, Leads, repository-contract, Memory adapter, and `0.3.0a1` release documentation.
+
+### Changed
+- Package version advanced from `0.2.0` to `0.3.0a1`.
+- `CRM` gains the additive `leads` namespace while stable `0.1` and `0.2` root/facade contracts remain unchanged.
+
+### Deferred
+- Opportunities remain scheduled for `0.3.0a2`.
+- Pipelines and Stages remain scheduled for `0.3.0b1`.
+- Public/idempotent Lead-to-Opportunity conversion remains scheduled for `0.3.0b2`; `crm.leads.convert` is intentionally absent in this alpha.
+
 ## [0.2.0] - 2026-09-07
 
 ### Stable

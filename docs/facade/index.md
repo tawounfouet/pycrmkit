@@ -10,7 +10,7 @@ crm = CRM.memory()
 
 ## Namespaces
 
-The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags, Custom Fields, Events, and Audit. The additive `0.2` line adds:
+The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags, Custom Fields, Events, and Audit. The stable `0.2` line adds:
 
 ```text
 crm.activities
@@ -18,11 +18,25 @@ crm.tasks
 crm.timeline
 ```
 
-`crm.timeline` is read-only. It exposes customer/relationship history projected from meaningful Activity/Task domain events.
+`0.3.0a1` opens the Sales Foundation with the additive Lead namespace:
+
+```text
+crm.leads
+```
+
+At this milestone the public Lead facade is intentionally limited to:
+
+```text
+create
+qualify
+disqualify
+```
+
+`convert` remains deferred until the Opportunity model and conversion/idempotency policy are available. `crm.timeline` remains read-only and continues to expose customer/relationship history projected from meaningful Activity/Task domain events.
 
 ## Transaction boundary
 
-A Timeline-producing mutation follows this sequence:
+A mutation follows the shared facade transaction pattern:
 
 ```text
 open UnitOfWork
@@ -42,6 +56,8 @@ commit domain + timeline + audit
 dispatch DomainEvent synchronously
 ```
 
+Lead mutations use the same Unit of Work, audit, and post-commit event infrastructure; `0.3.0a1` does not project Lead events into Timeline.
+
 Rollback or exit without commit discards domain changes, timeline projections, audit entries, and pending events.
 
 Subscriber failures occur after persisted state has committed and therefore do not perform a fake rollback. Durable retry/outbox semantics are intentionally deferred.
@@ -55,7 +71,7 @@ scoped = crm.with_context(
 )
 ```
 
-Projected Timeline entries preserve actor/correlation context from the source event where provided.
+Events and audit entries preserve actor/correlation context where provided.
 
 ## Configuration
 

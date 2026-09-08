@@ -10,6 +10,7 @@ from pycrmkit.audit.repository import AuditRepository
 from pycrmkit.contacts.repository import ContactRepository
 from pycrmkit.custom_fields.repository import CustomFieldRepository
 from pycrmkit.events.envelope import DomainEvent
+from pycrmkit.leads.repository import LeadRepository
 from pycrmkit.organizations.repository import OrganizationRepository
 from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
@@ -27,6 +28,10 @@ class UnitOfWork(Protocol):
     @property
     def contacts(self) -> ContactRepository:
         """Contacts participating in the current transaction."""
+
+    @property
+    def leads(self) -> LeadRepository:
+        """Leads participating in the current transaction."""
 
     @property
     def organizations(self) -> OrganizationRepository:

@@ -3,6 +3,7 @@
 from pycrmkit.core.entities import Entity, TimestampedEntity
 from pycrmkit.core.events import EventId, EventType
 from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory, UUIDId
+from pycrmkit.core.money import Money
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference, normalize_entity_kind
 from pycrmkit.core.time import Clock, FixedClock, SystemClock, as_utc
@@ -17,6 +18,7 @@ __all__ = [
     "EventType",
     "FixedClock",
     "IDFactory",
+    "Money",
     "OffsetPageRequest",
     "Page",
     "SystemClock",

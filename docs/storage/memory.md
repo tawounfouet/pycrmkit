@@ -12,6 +12,7 @@ from pycrmkit.storage.memory import (
     MemoryAuditRepository,
     MemoryContactRepository,
     MemoryCustomFieldRepository,
+    MemoryLeadRepository,
     MemoryOrganizationRepository,
     MemoryRelationshipRepository,
     MemoryStore,
@@ -24,7 +25,7 @@ from pycrmkit.storage.memory import (
 
 ## Copy / immutability semantics
 
-Mutable aggregates use copy-on-save and copy-on-read semantics. Immutable Audit and Timeline entries can safely be shared across transaction snapshots.
+Mutable aggregates, including Leads, use copy-on-save and copy-on-read semantics. Immutable Audit and Timeline entries can safely be shared across transaction snapshots.
 
 ## Unit of Work
 
@@ -35,6 +36,7 @@ MemoryUnitOfWork
 └── transaction snapshot
     ├── activities
     ├── contacts
+    ├── leads
     ├── organizations
     ├── relationships
     ├── tasks
@@ -54,7 +56,9 @@ This ordering deliberately avoids opening a nested `MemoryUnitOfWork`; one `Memo
 
 ## Contract qualification
 
-The official Memory repositories execute reusable suites for Contacts, Organizations, Relationships, Tags, Custom Fields, Audit, Activities, Tasks, and Timeline.
+The official Memory repositories execute reusable suites for Contacts, Organizations, Relationships, Tags, Custom Fields, Audit, Activities, Tasks, Timeline, and Leads.
+
+Lead contract requirements include complete lifecycle-state fidelity, typed Contact/Organization linkage, source/status filtering, exact pagination, deterministic `created_at DESC, id ASC` ordering, and copy isolation.
 
 Timeline contract requirements include idempotent identical replay, conflicting replay rejection, exact pagination, deterministic reverse chronology, and reference/kind/event/time filters.
 

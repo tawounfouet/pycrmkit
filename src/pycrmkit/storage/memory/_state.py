@@ -16,6 +16,7 @@ from pycrmkit.custom_fields.entities import (
     CustomFieldValue,
 )
 from pycrmkit.exceptions import InvalidStateError
+from pycrmkit.leads import Lead, LeadId
 from pycrmkit.organizations.entities import Organization, OrganizationId
 from pycrmkit.relationships.entities import Relationship, RelationshipId
 from pycrmkit.tags.entities import Tag, TagAssignment, TagId
@@ -27,6 +28,7 @@ from pycrmkit.timeline.entries import TimelineEntry, TimelineEntryId
 class _MemoryState:
     activities: dict[ActivityId, Activity] = field(default_factory=dict)
     contacts: dict[ContactId, Contact] = field(default_factory=dict)
+    leads: dict[LeadId, Lead] = field(default_factory=dict)
     organizations: dict[OrganizationId, Organization] = field(default_factory=dict)
     relationships: dict[RelationshipId, Relationship] = field(default_factory=dict)
     tasks: dict[TaskId, Task] = field(default_factory=dict)

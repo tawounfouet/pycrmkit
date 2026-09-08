@@ -14,6 +14,7 @@ from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
+from pycrmkit.storage.memory.leads import MemoryLeadRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
 from pycrmkit.storage.memory.tags import MemoryTagRepository
@@ -42,6 +43,7 @@ class MemoryUnitOfWork:
         self._working: _MemoryState | None = None
         self._activities: MemoryActivityRepository | None = None
         self._contacts: MemoryContactRepository | None = None
+        self._leads: MemoryLeadRepository | None = None
         self._organizations: MemoryOrganizationRepository | None = None
         self._relationships: MemoryRelationshipRepository | None = None
         self._tasks: MemoryTaskRepository | None = None
@@ -62,6 +64,12 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._contacts is not None
         return self._contacts
+
+    @property
+    def leads(self) -> MemoryLeadRepository:
+        self._ensure_active()
+        assert self._leads is not None
+        return self._leads
 
     @property
     def organizations(self) -> MemoryOrganizationRepository:
@@ -170,6 +178,7 @@ class MemoryUnitOfWork:
     def _bind_repositories(self, state: _MemoryState) -> None:
         self._activities = MemoryActivityRepository(state)
         self._contacts = MemoryContactRepository(state)
+        self._leads = MemoryLeadRepository(state)
         self._organizations = MemoryOrganizationRepository(state)
         self._relationships = MemoryRelationshipRepository(state)
         self._tasks = MemoryTaskRepository(state)
