@@ -53,10 +53,10 @@ def test_opportunity_event_is_not_projected_to_timeline_yet() -> None:
     assert crm.timeline.for_contact(contact.id).total == 0
 
 
-def test_opportunity_facade_is_deliberately_creation_only() -> None:
+def test_opportunity_facade_exposes_pipeline_movement_only() -> None:
     crm = CRM.memory()
     assert hasattr(crm.opportunities, "create")
-    assert not hasattr(crm.opportunities, "move")
+    assert hasattr(crm.opportunities, "move")
     assert not hasattr(crm.opportunities, "mark_won")
     assert not hasattr(crm.opportunities, "mark_lost")
     assert not hasattr(crm.opportunities, "get")
