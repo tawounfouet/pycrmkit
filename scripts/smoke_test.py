@@ -1,8 +1,8 @@
-"""Installed-package smoke test for the 0.3.0a1 Money + Lead path."""
+"""Installed-package smoke test for the 0.3.0a2 Opportunity path."""
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 import pycrmkit
@@ -16,14 +16,14 @@ from pycrmkit.leads import LeadStatus
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.3.0a1":
-        raise SystemExit(f"Expected PyCRMKit 0.3.0a1, got {version!r}")
+    if version != "0.3.0a2":
+        raise SystemExit(f"Expected PyCRMKit 0.3.0a2, got {version!r}")
 
     amount = Money(Decimal("15000"), "eur")
     if amount.currency != "EUR" or amount.amount != Decimal("15000"):
         raise SystemExit("Money Decimal/currency smoke failed")
 
-    clock = FixedClock(datetime(2026, 9, 8, 9, tzinfo=UTC))
+    clock = FixedClock(datetime(2026, 9, 9, 9, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock)
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
     organization = crm.organizations.create(legal_name="Smoke Org")
@@ -75,11 +75,32 @@ def main() -> None:
     if lead.status is not LeadStatus.QUALIFIED or len(lead_events) != 1:
         raise SystemExit("CRM.memory() Lead qualification smoke failed")
     if hasattr(crm.leads, "convert"):
-        raise SystemExit("Lead conversion must remain deferred in 0.3.0a1")
+        raise SystemExit("Lead conversion must remain deferred in 0.3.0a2")
 
-    print(
-        f"PyCRMKit {version}: stable 0.2 + Money + Lead foundation smoke OK"
+    opportunity_events = []
+    crm.events.subscribe("opportunity.created", opportunity_events.append)
+    opportunity = crm.opportunities.create(
+        name="Installed package opportunity",
+        contact_id=contact.id,
+        organization_id=organization.id,
+        pipeline_id="sales",
+        stage_id="proposal",
+        estimated_value=Decimal("25000.00"),
+        currency="EUR",
+        probability=Decimal("0.65"),
+        expected_close_date=date(2026, 12, 31),
+        owner_id="seller-1",
     )
+    if opportunity.money != Money(Decimal("25000.00"), "EUR"):
+        raise SystemExit("CRM.memory() Opportunity Money smoke failed")
+    if len(opportunity_events) != 1 or opportunity_events[0].payload["status"] != "open":
+        raise SystemExit("CRM.memory() Opportunity event smoke failed")
+    if hasattr(crm.opportunities, "move") or hasattr(crm.opportunities, "mark_won"):
+        raise SystemExit("Opportunity transition facade must remain deferred in 0.3.0a2")
+    if crm.timeline.for_contact(contact.id).total != 4:
+        raise SystemExit("Opportunity must not project to Timeline in 0.3.0a2")
+
+    print(f"PyCRMKit {version}: stable 0.2 + Lead + Opportunity alpha smoke OK")
 
 
 if __name__ == "__main__":

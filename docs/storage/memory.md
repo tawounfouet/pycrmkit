@@ -13,6 +13,7 @@ from pycrmkit.storage.memory import (
     MemoryContactRepository,
     MemoryCustomFieldRepository,
     MemoryLeadRepository,
+    MemoryOpportunityRepository,
     MemoryOrganizationRepository,
     MemoryRelationshipRepository,
     MemoryStore,
@@ -25,7 +26,7 @@ from pycrmkit.storage.memory import (
 
 ## Copy / immutability semantics
 
-Mutable aggregates, including Leads, use copy-on-save and copy-on-read semantics. Immutable Audit and Timeline entries can safely be shared across transaction snapshots.
+Mutable aggregates, including Leads and Opportunities, use copy-on-save and copy-on-read semantics. Immutable Audit and Timeline entries can safely be shared across transaction snapshots.
 
 ## Unit of Work
 
@@ -37,6 +38,7 @@ MemoryUnitOfWork
     ├── activities
     ├── contacts
     ├── leads
+    ├── opportunities
     ├── organizations
     ├── relationships
     ├── tasks
@@ -56,9 +58,11 @@ This ordering deliberately avoids opening a nested `MemoryUnitOfWork`; one `Memo
 
 ## Contract qualification
 
-The official Memory repositories execute reusable suites for Contacts, Organizations, Relationships, Tags, Custom Fields, Audit, Activities, Tasks, Timeline, and Leads.
+The official Memory repositories execute reusable suites for Contacts, Organizations, Relationships, Tags, Custom Fields, Audit, Activities, Tasks, Timeline, Leads, and Opportunities.
 
 Lead contract requirements include complete lifecycle-state fidelity, typed Contact/Organization linkage, source/status filtering, exact pagination, deterministic `created_at DESC, id ASC` ordering, and copy isolation.
+
+Opportunity contract requirements additionally cover Decimal/currency fidelity, probability, pipeline/stage references, owner, expected close date, won/lost/cancelled state persistence, exact pagination, deterministic ordering, and copy isolation.
 
 Timeline contract requirements include idempotent identical replay, conflicting replay rejection, exact pagination, deterministic reverse chronology, and reference/kind/event/time filters.
 

@@ -35,6 +35,9 @@ nav:
   - Leads:
       - Overview: leads/index.md
       - Repository Contract: leads/repository-contract.md
+  - Opportunities:
+      - Overview: opportunities/index.md
+      - Repository Contract: opportunities/repository-contract.md
   - Tags:
       - Overview: tags/index.md
       - Repository Contract: tags/repository-contract.md
@@ -55,6 +58,7 @@ nav:
       - 0.2.0rc1 Activity & Timeline RC: releases/0.2.0rc1.md
       - 0.2.0 Activity & Timeline Stable: releases/0.2.0.md
       - 0.3.0a1 Money & Lead Foundation: releases/0.3.0a1.md
+      - 0.3.0a2 Opportunities: releases/0.3.0a2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

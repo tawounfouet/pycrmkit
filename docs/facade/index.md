@@ -18,13 +18,14 @@ crm.tasks
 crm.timeline
 ```
 
-`0.3.0a1` opens the Sales Foundation with the additive Lead namespace:
+The Sales Foundation alphas add:
 
 ```text
-crm.leads
+crm.leads          # 0.3.0a1
+crm.opportunities  # 0.3.0a2
 ```
 
-At this milestone the public Lead facade is intentionally limited to:
+At `0.3.0a2`, the public Lead facade remains:
 
 ```text
 create
@@ -32,7 +33,15 @@ qualify
 disqualify
 ```
 
-`convert` remains deferred until the Opportunity model and conversion/idempotency policy are available. `crm.timeline` remains read-only and continues to expose customer/relationship history projected from meaningful Activity/Task domain events.
+and the Opportunity facade is deliberately creation-only:
+
+```text
+crm.opportunities.create(...)
+```
+
+`crm.opportunities.move(...)` is deferred until Pipeline/Stage transition policies exist in `0.3.0b1`. `crm.leads.convert(...)` remains deferred to the atomic conversion milestone `0.3.0b2`.
+
+`crm.timeline` remains read-only and continues to expose customer/relationship history projected from meaningful Activity/Task domain events. Lead and Opportunity events are not projected into Timeline in these alphas.
 
 ## Transaction boundary
 
@@ -55,8 +64,6 @@ commit domain + timeline + audit
     ↓
 dispatch DomainEvent synchronously
 ```
-
-Lead mutations use the same Unit of Work, audit, and post-commit event infrastructure; `0.3.0a1` does not project Lead events into Timeline.
 
 Rollback or exit without commit discards domain changes, timeline projections, audit entries, and pending events.
 
