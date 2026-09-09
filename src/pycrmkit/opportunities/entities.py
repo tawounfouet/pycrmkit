@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unicodedata
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from enum import StrEnum
 
@@ -109,6 +109,7 @@ class Opportunity(TimestampedEntity[OpportunityId]):
     organization_id: OrganizationId | None = None
     pipeline_id: str | None = None
     stage_id: str | None = None
+    stage_entered_at: datetime | None = None
     estimated_value: Decimal | None = None
     currency: str | None = None
     probability: Decimal | None = None
@@ -150,6 +151,31 @@ class Opportunity(TimestampedEntity[OpportunityId]):
                 "stage_id requires pipeline_id",
                 code="opportunity.stage_id.pipeline_required",
             )
+        if self.stage_id is None:
+            if self.stage_entered_at is not None:
+                raise ValidationError(
+                    "stage_entered_at requires stage_id",
+                    code="opportunity.stage_entered_at.stage_required",
+                )
+        else:
+            entered_at = self.stage_entered_at or self.created_at
+            if not isinstance(entered_at, datetime):
+                raise ValidationError(
+                    "stage_entered_at must be a datetime",
+                    code="opportunity.stage_entered_at.invalid",
+                )
+            entered_at = as_utc(entered_at)
+            if entered_at < self.created_at:
+                raise ValidationError(
+                    "stage_entered_at cannot be earlier than created_at",
+                    code="opportunity.stage_entered_at.before_creation",
+                )
+            if entered_at > self.updated_at:
+                raise ValidationError(
+                    "stage_entered_at cannot be later than updated_at",
+                    code="opportunity.stage_entered_at.after_update",
+                )
+            self.stage_entered_at = entered_at
         self.estimated_value, self.currency = _normalize_value(
             self.estimated_value,
             self.currency,
@@ -170,7 +196,6 @@ class Opportunity(TimestampedEntity[OpportunityId]):
     @property
     def money(self) -> Money | None:
         """Return the estimated commercial value as a Money value object."""
-
         if self.estimated_value is None:
             return None
         assert self.currency is not None
@@ -180,19 +205,79 @@ class Opportunity(TimestampedEntity[OpportunityId]):
     def is_terminal(self) -> bool:
         return self.status is not OpportunityStatus.OPEN
 
+    def move_to_stage(
+        self,
+        stage_id: str,
+        *,
+        probability: Decimal | None,
+        at: datetime,
+        outcome: OpportunityStatus | None = None,
+    ) -> None:
+        """Move an open opportunity after a Pipeline policy has approved the transition."""
+        if self.status is not OpportunityStatus.OPEN:
+            raise InvalidStateError(
+                "cannot move a closed opportunity through a pipeline",
+                code="opportunity.stage.transition.closed",
+                context={"status": self.status.value},
+            )
+        if self.pipeline_id is None:
+            raise InvalidStateError(
+                "opportunity requires pipeline_id before stage movement",
+                code="opportunity.pipeline.required",
+            )
+        instant = as_utc(at)
+        if instant < self.created_at:
+            raise ValidationError(
+                "stage transition time cannot be earlier than created_at",
+                code="opportunity.stage.transition.before_creation",
+            )
+        if self.stage_entered_at is not None and instant < self.stage_entered_at:
+            raise ValidationError(
+                "stage transition time cannot precede current stage entry",
+                code="opportunity.stage.transition.before_current_entry",
+            )
+        normalized_stage = _normalize_optional_text(
+            stage_id,
+            field_name="stage_id",
+            max_length=255,
+        )
+        assert normalized_stage is not None
+        self.stage_id = normalized_stage.casefold()
+        self.stage_entered_at = instant
+        if probability is not None:
+            self.probability = _normalize_probability(probability)
+        if outcome is not None:
+            target = OpportunityStatus(outcome)
+            if target is OpportunityStatus.OPEN:
+                raise ValidationError(
+                    "terminal stage outcome cannot be open",
+                    code="opportunity.stage.outcome.invalid",
+                )
+            self.status = target
+        self.updated_at = instant
+
+    def stage_duration(self, at: datetime) -> timedelta | None:
+        """Return elapsed time in the current stage when the entry time is known."""
+        if self.stage_entered_at is None:
+            return None
+        instant = as_utc(at)
+        if instant < self.stage_entered_at:
+            raise ValidationError(
+                "stage duration endpoint cannot precede stage entry",
+                code="opportunity.stage.duration.invalid",
+            )
+        return instant - self.stage_entered_at
+
     def mark_won(self, at: datetime) -> None:
         """Close an open opportunity as won."""
-
         self._close(OpportunityStatus.WON, at)
 
     def mark_lost(self, at: datetime) -> None:
         """Close an open opportunity as lost."""
-
         self._close(OpportunityStatus.LOST, at)
 
     def cancel(self, at: datetime) -> None:
         """Cancel an open opportunity without declaring a commercial outcome."""
-
         self._close(OpportunityStatus.CANCELLED, at)
 
     def _close(self, target: OpportunityStatus, at: datetime) -> None:

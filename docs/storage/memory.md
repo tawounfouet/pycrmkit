@@ -1,71 +1,38 @@
 # Memory Adapter
 
-The official Memory adapter is the reference in-process persistence implementation for tests, examples, CLI prototypes, tutorials, and local development.
-
-It is a conformant adapter, not a mock. Repository contracts are executed against the actual Memory repositories.
+The official Memory adapter is the reference in-process persistence implementation for tests, examples, CLI prototypes, tutorials, and local development. It is a conformant adapter, not a mock.
 
 ## Public components
 
-```python
-from pycrmkit.storage.memory import (
-    MemoryActivityRepository,
-    MemoryAuditRepository,
-    MemoryContactRepository,
-    MemoryCustomFieldRepository,
-    MemoryLeadRepository,
-    MemoryOpportunityRepository,
-    MemoryOrganizationRepository,
-    MemoryRelationshipRepository,
-    MemoryStore,
-    MemoryTagRepository,
-    MemoryTaskRepository,
-    MemoryTimelineRepository,
-    MemoryUnitOfWork,
-)
-```
-
-## Copy / immutability semantics
-
-Mutable aggregates, including Leads and Opportunities, use copy-on-save and copy-on-read semantics. Immutable Audit and Timeline entries can safely be shared across transaction snapshots.
+`0.3.0b1` adds `MemoryPipelineRepository` to the existing Memory repositories.
 
 ## Unit of Work
 
-`MemoryStore` owns committed state. `MemoryUnitOfWork` creates a private transaction snapshot shared by all repositories:
+`MemoryUnitOfWork` creates one private transaction snapshot shared by all repositories, including:
 
 ```text
-MemoryUnitOfWork
-└── transaction snapshot
-    ├── activities
-    ├── contacts
-    ├── leads
-    ├── opportunities
-    ├── organizations
-    ├── relationships
-    ├── tasks
-    ├── timeline
-    ├── tags
-    ├── custom_fields
-    └── audit
+activities
+contacts
+leads
+opportunities
+pipelines
+organizations
+relationships
+tasks
+timeline
+tags
+custom_fields
+audit
 ```
 
-Leaving the context without `commit()` rolls back staged changes. Exceptions and explicit `rollback()` also discard uncommitted work.
+Leaving without `commit()` rolls back staged changes. Exceptions and explicit `rollback()` also discard uncommitted work.
 
-## Timeline projection
-
-`0.2.0b1` stores immutable `TimelineEntry` values in the same transaction snapshot as source domain mutations. The facade builds a `DomainEvent`, runs the Timeline projector against the active UoW, then commits domain state, audit, and timeline together. Public EventBus subscribers are invoked only after the commit succeeds.
-
-This ordering deliberately avoids opening a nested `MemoryUnitOfWork`; one `MemoryStore` permits only one active UoW at a time.
+Mutable aggregates/definitions are copy isolated on save/read.
 
 ## Contract qualification
 
-The official Memory repositories execute reusable suites for Contacts, Organizations, Relationships, Tags, Custom Fields, Audit, Activities, Tasks, Timeline, Leads, and Opportunities.
+The official Memory repositories execute reusable contract suites. Pipeline qualification covers normalized IDs, ordered stages, transition declarations, terminal outcomes, probability defaults, exact pagination, deterministic ordering, NotFound semantics, and copy isolation.
 
-Lead contract requirements include complete lifecycle-state fidelity, typed Contact/Organization linkage, source/status filtering, exact pagination, deterministic `created_at DESC, id ASC` ordering, and copy isolation.
+Opportunity movement loads the Pipeline definition through the same Unit of Work, validates the transition in the domain service, persists the Opportunity mutation, stages Audit/Event records, and only then commits.
 
-Opportunity contract requirements additionally cover Decimal/currency fidelity, probability, pipeline/stage references, owner, expected close date, won/lost/cancelled state persistence, exact pagination, deterministic ordering, and copy isolation.
-
-Timeline contract requirements include idempotent identical replay, conflicting replay rejection, exact pagination, deterministic reverse chronology, and reference/kind/event/time filters.
-
-## Boundaries
-
-The Memory adapter does not claim production concurrency semantics and does not provide SQLAlchemy/PostgreSQL persistence, migrations, durable outbox/retry, or distributed event transport. Those remain dedicated roadmap milestones.
+The Memory adapter does not claim production concurrency semantics and does not provide SQLAlchemy/PostgreSQL persistence, migrations, durable outbox/retry, or distributed event transport.

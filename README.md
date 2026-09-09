@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.3.0a2 — Opportunities**.
+Current version: **0.3.0b1 — Pipeline & Stage**.
 
-The stable `0.2` Activity/Task/Timeline contract remains compatibility-frozen. `0.3.0a2` extends the Sales Foundation with first-class Opportunities: Decimal-safe estimated value, probability, expected close date, owner, optional pipeline/stage references, backend-neutral repository/service contracts, Memory/UoW participation, and a deliberately creation-only `crm.opportunities.create(...)` facade. Pipeline transition rules remain deferred to **0.3.0b1 — Pipelines**; Lead-to-Opportunity conversion remains deferred to `0.3.0b2`.
+The stable `0.2` Activity/Task/Timeline contract remains compatibility-frozen. `0.3.0b1` adds configurable Pipeline/Stage definitions, explicit transition policies, terminal outcomes, Decimal probability defaults, stage-entry timestamps and policy-driven `crm.opportunities.move(...)`. Lead-to-Opportunity conversion remains deferred to **0.3.0b2 — Lead Conversion**.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -88,8 +88,8 @@ pytest
 0.2.0  Activity & Timeline Stable              ✓
 0.3.0a1 Money & Lead Foundation                ✓
 0.3.0a2 Opportunities                           ✓
-0.3.0b1 Pipelines                                →
-0.3.0b2 Lead Conversion
+0.3.0b1 Pipeline & Stage                         ✓
+0.3.0b2 Lead Conversion                           →
 0.3.0rc1 Sales Integration
 0.3.0  Sales Foundation
 0.4.0  Communication

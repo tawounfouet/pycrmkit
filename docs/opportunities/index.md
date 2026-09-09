@@ -1,6 +1,6 @@
 # Opportunities
 
-`0.3.0a2` introduces the first-class Opportunity domain without yet introducing configurable Pipeline/Stage definitions.
+`0.3.0a2` introduced first-class Opportunities; `0.3.0b1` connects them to configurable Pipeline/Stage transition policies.
 
 An Opportunity represents a potential commercial transaction or business outcome.
 
@@ -19,44 +19,20 @@ opportunity = crm.opportunities.create(
     name="Enterprise renewal",
     contact_id=contact.id,
     pipeline_id="sales",
-    stage_id="proposal",
+    stage_id="new",
     estimated_value=Decimal("25000.00"),
     currency="EUR",
-    probability=Decimal("0.65"),
+    probability=Decimal("0.10"),
     expected_close_date=date(2026, 12, 31),
     owner_id="seller-1",
 )
 ```
 
-Fields:
+`stage_entered_at` records the UTC instant at which the current stage was entered. If an Opportunity is created with a stage and no explicit stage-entry time, it starts at `created_at`.
 
-```text
-name
-contact_id
-organization_id
-pipeline_id
-stage_id
-estimated_value
-currency
-probability
-expected_close_date
-owner_id
-status
-```
+## Lifecycle and movement
 
-## Invariants
-
-- `name` is required and normalized.
-- `contact_id` is a typed `ContactId`.
-- `organization_id` is an optional typed `OrganizationId`.
-- `stage_id` requires `pipeline_id`; stage validity is not checked until `0.3.0b1`.
-- estimated value uses `Decimal` and requires a currency; float persistence is rejected through `Money`.
-- probability is optional `Decimal` in the closed interval `[0, 1]`.
-- expected close is a calendar `date`, not a timestamp.
-
-## Lifecycle
-
-The Opportunity aggregate supports:
+The aggregate statuses remain:
 
 ```text
 open → won
@@ -64,23 +40,25 @@ open → lost
 open → cancelled
 ```
 
-Terminal opportunities reject a second outcome transition.
+At `0.3.0b1`, stage changes must satisfy the persisted Pipeline definition:
 
-These lifecycle operations are available on the aggregate/service contract in `0.3.0a2`, but the public facade remains deliberately narrow while the Pipeline API is still under construction.
+```python
+opportunity = crm.opportunities.move(opportunity.id, to="qualified")
+```
+
+Invalid transitions raise `InvalidStageTransition`. A target stage's default probability is applied automatically. Entering a terminal stage closes the Opportunity with the configured outcome.
+
+`Opportunity.stage_duration(at)` reports elapsed time since the current `stage_entered_at`.
 
 ## Public facade
 
-`0.3.0a2` exposes only:
-
 ```text
 crm.opportunities.create(...)
+crm.opportunities.move(...)
 ```
 
-The following remain deferred:
+Direct `mark_won`, `mark_lost`, `get`, and `list` remain outside the facade for this beta; terminal outcomes are reached through pipeline policy.
 
-```text
-crm.opportunities.move(...)       → 0.3.0b1
-crm.leads.convert(...)            → 0.3.0b2
-```
+`opportunity.created`, `opportunity.stage_changed`, and terminal outcome events are emitted after commit and preserve normal actor/correlation context. Sales events are not yet projected into Timeline.
 
-`opportunity.created` is emitted after commit and receives the normal facade actor/correlation context. Opportunity events are not projected into Timeline in this alpha.
+`crm.leads.convert(...)` remains deferred to `0.3.0b2`.

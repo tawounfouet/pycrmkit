@@ -8,6 +8,7 @@ from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
 from pycrmkit.storage.memory.leads import MemoryLeadRepository
 from pycrmkit.storage.memory.opportunities import MemoryOpportunityRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
+from pycrmkit.storage.memory.pipelines import MemoryPipelineRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
 from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
@@ -21,6 +22,7 @@ __all__ = [
     "MemoryCustomFieldRepository",
     "MemoryLeadRepository",
     "MemoryOpportunityRepository",
+    "MemoryPipelineRepository",
     "MemoryOrganizationRepository",
     "MemoryRelationshipRepository",
     "MemoryStore",

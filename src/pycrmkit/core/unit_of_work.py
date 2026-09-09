@@ -13,6 +13,7 @@ from pycrmkit.events.envelope import DomainEvent
 from pycrmkit.leads.repository import LeadRepository
 from pycrmkit.opportunities.repository import OpportunityRepository
 from pycrmkit.organizations.repository import OrganizationRepository
+from pycrmkit.pipelines.repository import PipelineRepository
 from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
 from pycrmkit.tasks.repository import TaskRepository
@@ -37,6 +38,10 @@ class UnitOfWork(Protocol):
     @property
     def opportunities(self) -> OpportunityRepository:
         """Opportunities participating in the current transaction."""
+
+    @property
+    def pipelines(self) -> PipelineRepository:
+        """Pipeline definitions participating in the current transaction."""
 
     @property
     def organizations(self) -> OrganizationRepository:
