@@ -119,11 +119,7 @@ class Opportunity(TimestampedEntity[OpportunityId]):
 
     def __post_init__(self) -> None:
         TimestampedEntity.__post_init__(self)
-        self.name = _normalize_required_text(
-            self.name,
-            field_name="name",
-            max_length=300,
-        )
+        self.name = _normalize_required_text(self.name, field_name="name", max_length=300)
         if not isinstance(self.contact_id, ContactId):
             raise ValidationError(
                 "opportunity contact_id must be a ContactId",
@@ -137,14 +133,10 @@ class Opportunity(TimestampedEntity[OpportunityId]):
                 code="opportunity.organization_id.invalid",
             )
         self.pipeline_id = _normalize_optional_text(
-            self.pipeline_id,
-            field_name="pipeline_id",
-            max_length=255,
+            self.pipeline_id, field_name="pipeline_id", max_length=255
         )
         self.stage_id = _normalize_optional_text(
-            self.stage_id,
-            field_name="stage_id",
-            max_length=255,
+            self.stage_id, field_name="stage_id", max_length=255
         )
         if self.stage_id is not None and self.pipeline_id is None:
             raise ValidationError(
@@ -159,11 +151,6 @@ class Opportunity(TimestampedEntity[OpportunityId]):
                 )
         else:
             entered_at = self.stage_entered_at or self.created_at
-            if not isinstance(entered_at, datetime):
-                raise ValidationError(
-                    "stage_entered_at must be a datetime",
-                    code="opportunity.stage_entered_at.invalid",
-                )
             entered_at = as_utc(entered_at)
             if entered_at < self.created_at:
                 raise ValidationError(
@@ -177,8 +164,7 @@ class Opportunity(TimestampedEntity[OpportunityId]):
                 )
             self.stage_entered_at = entered_at
         self.estimated_value, self.currency = _normalize_value(
-            self.estimated_value,
-            self.currency,
+            self.estimated_value, self.currency
         )
         self.probability = _normalize_probability(self.probability)
         if self.expected_close_date is not None and type(self.expected_close_date) is not date:
@@ -187,15 +173,12 @@ class Opportunity(TimestampedEntity[OpportunityId]):
                 code="opportunity.expected_close_date.invalid",
             )
         self.owner_id = _normalize_optional_text(
-            self.owner_id,
-            field_name="owner_id",
-            max_length=255,
+            self.owner_id, field_name="owner_id", max_length=255
         )
         self.status = OpportunityStatus(self.status)
 
     @property
     def money(self) -> Money | None:
-        """Return the estimated commercial value as a Money value object."""
         if self.estimated_value is None:
             return None
         assert self.currency is not None
@@ -213,7 +196,6 @@ class Opportunity(TimestampedEntity[OpportunityId]):
         at: datetime,
         outcome: OpportunityStatus | None = None,
     ) -> None:
-        """Move an open opportunity after a Pipeline policy has approved the transition."""
         if self.status is not OpportunityStatus.OPEN:
             raise InvalidStateError(
                 "cannot move a closed opportunity through a pipeline",
@@ -237,9 +219,7 @@ class Opportunity(TimestampedEntity[OpportunityId]):
                 code="opportunity.stage.transition.before_current_entry",
             )
         normalized_stage = _normalize_optional_text(
-            stage_id,
-            field_name="stage_id",
-            max_length=255,
+            stage_id, field_name="stage_id", max_length=255
         )
         assert normalized_stage is not None
         self.stage_id = normalized_stage.casefold()
@@ -257,7 +237,6 @@ class Opportunity(TimestampedEntity[OpportunityId]):
         self.updated_at = instant
 
     def stage_duration(self, at: datetime) -> timedelta | None:
-        """Return elapsed time in the current stage when the entry time is known."""
         if self.stage_entered_at is None:
             return None
         instant = as_utc(at)
@@ -269,15 +248,12 @@ class Opportunity(TimestampedEntity[OpportunityId]):
         return instant - self.stage_entered_at
 
     def mark_won(self, at: datetime) -> None:
-        """Close an open opportunity as won."""
         self._close(OpportunityStatus.WON, at)
 
     def mark_lost(self, at: datetime) -> None:
-        """Close an open opportunity as lost."""
         self._close(OpportunityStatus.LOST, at)
 
     def cancel(self, at: datetime) -> None:
-        """Cancel an open opportunity without declaring a commercial outcome."""
         self._close(OpportunityStatus.CANCELLED, at)
 
     def _close(self, target: OpportunityStatus, at: datetime) -> None:

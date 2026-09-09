@@ -6,16 +6,23 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from decimal import Decimal
+from enum import StrEnum
 
 from pycrmkit.exceptions import ValidationError
-from pycrmkit.opportunities.entities import OpportunityStatus
 
 _STAGE_KEY = re.compile(r"^[a-z0-9][a-z0-9._-]{0,119}$")
 
 
+class StageOutcome(StrEnum):
+    """Commercial outcome represented by a terminal stage."""
+
+    WON = "won"
+    LOST = "lost"
+    CANCELLED = "cancelled"
+
+
 def normalize_stage_id(value: str) -> str:
     """Normalize and validate a stable pipeline-stage key."""
-
     normalized = unicodedata.normalize("NFKC", value).strip().casefold()
     if not _STAGE_KEY.fullmatch(normalized):
         raise ValidationError(
@@ -29,10 +36,7 @@ def normalize_stage_id(value: str) -> str:
 def _normalize_name(value: str) -> str:
     normalized = " ".join(unicodedata.normalize("NFKC", value).strip().split())
     if not normalized:
-        raise ValidationError(
-            "stage name is required",
-            code="pipeline.stage.name.required",
-        )
+        raise ValidationError("stage name is required", code="pipeline.stage.name.required")
     if len(normalized) > 160:
         raise ValidationError(
             "stage name must be at most 160 characters",
@@ -66,7 +70,7 @@ class Stage:
     position: int
     default_probability: Decimal | None = None
     terminal: bool = False
-    outcome: OpportunityStatus | None = None
+    outcome: StageOutcome | str | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "id", normalize_stage_id(self.id))
@@ -81,12 +85,13 @@ class Stage:
 
         outcome = self.outcome
         if outcome is not None:
-            outcome = OpportunityStatus(outcome)
-            if outcome is OpportunityStatus.OPEN:
+            try:
+                outcome = StageOutcome(outcome)
+            except ValueError as exc:
                 raise ValidationError(
-                    "terminal stage outcome cannot be open",
+                    "terminal stage outcome must be won, lost, or cancelled",
                     code="pipeline.stage.outcome.invalid",
-                )
+                ) from exc
             object.__setattr__(self, "outcome", outcome)
         if self.terminal and outcome is None:
             raise ValidationError(
@@ -98,9 +103,8 @@ class Stage:
                 "non-terminal stage cannot declare an opportunity outcome",
                 code="pipeline.stage.outcome.non_terminal",
             )
-
         if outcome is not None:
-            expected = Decimal("1") if outcome is OpportunityStatus.WON else Decimal("0")
+            expected = Decimal("1") if outcome is StageOutcome.WON else Decimal("0")
             if probability is None:
                 object.__setattr__(self, "default_probability", expected)
             elif probability != expected:

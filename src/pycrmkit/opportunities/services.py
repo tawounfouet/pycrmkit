@@ -11,7 +11,7 @@ from pycrmkit.core.ids import IDFactory, UUID4Factory
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.exceptions import InvalidStateError
-from pycrmkit.opportunities.entities import Opportunity, OpportunityId
+from pycrmkit.opportunities.entities import Opportunity, OpportunityId, OpportunityStatus
 from pycrmkit.opportunities.queries import OpportunityQuery
 from pycrmkit.opportunities.repository import OpportunityRepository
 from pycrmkit.organizations import OrganizationId
@@ -21,6 +21,7 @@ from pycrmkit.pipelines import PipelineRepository, PipelineTransitionPolicy
 @dataclass(slots=True)
 class OpportunityService:
     """Framework-agnostic service for commercial opportunities."""
+
     repository: OpportunityRepository
     id_factory: IDFactory = field(default_factory=UUID4Factory)
     clock: Clock = field(default_factory=SystemClock)
@@ -86,7 +87,11 @@ class OpportunityService:
             target.id,
             probability=target.default_probability,
             at=self.clock.now(),
-            outcome=target.outcome if target.terminal else None,
+            outcome=(
+                OpportunityStatus(target.outcome)
+                if target.terminal and target.outcome is not None
+                else None
+            ),
         )
         self.repository.save(opportunity)
         return opportunity

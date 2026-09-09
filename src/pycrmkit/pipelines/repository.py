@@ -1,47 +1,25 @@
-"""Pipeline stage-transition policies."""
+"""Persistence contract for Pipeline definitions."""
 
 from __future__ import annotations
 
+from typing import Protocol, runtime_checkable
+
+from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.pipelines.entities import Pipeline
-from pycrmkit.pipelines.stages import Stage, normalize_stage_id
-from pycrmkit.pipelines.transitions import InvalidStageTransition
 
 
-class PipelineTransitionPolicy:
-    """Validate one movement against a persisted pipeline definition."""
+@runtime_checkable
+class PipelineRepository(Protocol):
+    """Backend-neutral repository for immutable pipeline definitions."""
 
-    @staticmethod
-    def resolve(
-        pipeline: Pipeline,
-        *,
-        from_stage: str | None,
-        to_stage: str,
-    ) -> Stage:
-        target = pipeline.stage(to_stage)
-        if from_stage is None:
-            if target.id != pipeline.initial_stage.id:
-                raise InvalidStageTransition(
-                    pipeline_id=pipeline.id,
-                    from_stage=None,
-                    to_stage=target.id,
-                    reason="an unassigned opportunity must enter the initial stage",
-                )
-            return target
+    def get(self, pipeline_id: str) -> Pipeline:
+        """Return a pipeline or raise NotFoundError."""
 
-        source_id = normalize_stage_id(from_stage)
-        source = pipeline.stage(source_id)
-        if source.terminal:
-            raise InvalidStageTransition(
-                pipeline_id=pipeline.id,
-                from_stage=source.id,
-                to_stage=target.id,
-                reason="terminal stages cannot be exited",
-            )
-        if not pipeline.allows(source.id, target.id):
-            raise InvalidStageTransition(
-                pipeline_id=pipeline.id,
-                from_stage=source.id,
-                to_stage=target.id,
-                reason="transition is not declared by the pipeline",
-            )
-        return target
+    def find(self, pipeline_id: str) -> Pipeline | None:
+        """Return a pipeline or None."""
+
+    def save(self, pipeline: Pipeline) -> None:
+        """Persist one pipeline definition inside the outer transaction."""
+
+    def list(self, page: OffsetPageRequest) -> Page[Pipeline]:
+        """List definitions in deterministic id order."""

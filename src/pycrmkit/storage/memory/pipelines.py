@@ -1,48 +1,46 @@
-"""Application service for pipeline definitions."""
+"""Official in-memory Pipeline repository."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from copy import deepcopy
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
-from pycrmkit.exceptions import DuplicateError
-from pycrmkit.pipelines.entities import Pipeline
-from pycrmkit.pipelines.repository import PipelineRepository
-from pycrmkit.pipelines.stages import Stage
-from pycrmkit.pipelines.transitions import StageTransition
+from pycrmkit.exceptions import NotFoundError
+from pycrmkit.pipelines import Pipeline, PipelineRepository, normalize_pipeline_id
+from pycrmkit.storage.memory._state import _MemoryState
 
 
-@dataclass(slots=True)
-class PipelineService:
-    """Framework-agnostic service for defining and reading pipelines."""
+class MemoryPipelineRepository(PipelineRepository):
+    """Copy-isolated pipeline repository backed by one memory snapshot."""
 
-    repository: PipelineRepository
-
-    def define(
-        self,
-        *,
-        id: str,
-        name: str,
-        stages: tuple[Stage, ...],
-        transitions: tuple[StageTransition, ...] = (),
-    ) -> Pipeline:
-        pipeline = Pipeline(
-            id=id,
-            name=name,
-            stages=stages,
-            transitions=transitions,
-        )
-        if self.repository.find(pipeline.id) is not None:
-            raise DuplicateError(
-                "pipeline already exists",
-                code="pipeline.duplicate",
-                context={"pipeline_id": pipeline.id},
-            )
-        self.repository.save(pipeline)
-        return pipeline
+    def __init__(self, state: _MemoryState | None = None) -> None:
+        self._state = state or _MemoryState()
 
     def get(self, pipeline_id: str) -> Pipeline:
-        return self.repository.get(pipeline_id)
+        key = normalize_pipeline_id(pipeline_id)
+        pipeline = self._state.pipelines.get(key)
+        if pipeline is None:
+            raise NotFoundError(
+                "pipeline not found",
+                code="pipeline.not_found",
+                context={"pipeline_id": key},
+            )
+        return deepcopy(pipeline)
 
-    def list(self, page: OffsetPageRequest | None = None) -> Page[Pipeline]:
-        return self.repository.list(page or OffsetPageRequest())
+    def find(self, pipeline_id: str) -> Pipeline | None:
+        pipeline = self._state.pipelines.get(normalize_pipeline_id(pipeline_id))
+        return deepcopy(pipeline) if pipeline is not None else None
+
+    def save(self, pipeline: Pipeline) -> None:
+        self._state.pipelines[pipeline.id] = deepcopy(pipeline)
+
+    def list(self, page: OffsetPageRequest) -> Page[Pipeline]:
+        pipelines = sorted(self._state.pipelines.values(), key=lambda item: item.id)
+        total = len(pipelines)
+        selected = pipelines[page.offset : page.offset + page.limit]
+        return Page(
+            items=tuple(deepcopy(selected)),
+            limit=page.limit,
+            offset=page.offset,
+            total=total,
+        )

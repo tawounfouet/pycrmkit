@@ -1,46 +1,51 @@
-"""Official in-memory Pipeline repository."""
+"""Pipelines facade namespace."""
 
 from __future__ import annotations
 
-from copy import deepcopy
-
 from pycrmkit.core.pagination import OffsetPageRequest, Page
-from pycrmkit.exceptions import NotFoundError
-from pycrmkit.pipelines import Pipeline, PipelineRepository, normalize_pipeline_id
-from pycrmkit.storage.memory._state import _MemoryState
+from pycrmkit.facade._runtime import CRMRuntime
+from pycrmkit.pipelines import Pipeline, PipelineService, Stage, StageTransition
 
 
-class MemoryPipelineRepository(PipelineRepository):
-    """Copy-isolated pipeline repository backed by one memory snapshot."""
+class PipelinesAPI:
+    """Transactional facade for commercial pipeline definitions."""
 
-    def __init__(self, state: _MemoryState | None = None) -> None:
-        self._state = state or _MemoryState()
+    def __init__(self, runtime: CRMRuntime) -> None:
+        self._runtime = runtime
+
+    def define(
+        self,
+        *,
+        id: str,
+        name: str,
+        stages: tuple[Stage, ...],
+        transitions: tuple[StageTransition, ...] = (),
+    ) -> Pipeline:
+        with self._runtime.uow_factory() as uow:
+            pipeline = PipelineService(uow.pipelines).define(
+                id=id,
+                name=name,
+                stages=stages,
+                transitions=transitions,
+            )
+            self._runtime.record_change(
+                uow,
+                event_type="pipeline.created",
+                aggregate_type="pipeline",
+                aggregate_id=pipeline.id,
+                changes={"fields": ["name", "stages", "transitions"]},
+                payload={
+                    "stage_count": len(pipeline.stages),
+                    "transition_count": len(pipeline.transitions),
+                },
+            )
+            uow.commit()
+            return pipeline
 
     def get(self, pipeline_id: str) -> Pipeline:
-        key = normalize_pipeline_id(pipeline_id)
-        pipeline = self._state.pipelines.get(key)
-        if pipeline is None:
-            raise NotFoundError(
-                "pipeline not found",
-                code="pipeline.not_found",
-                context={"pipeline_id": key},
-            )
-        return deepcopy(pipeline)
+        with self._runtime.uow_factory() as uow:
+            return PipelineService(uow.pipelines).get(pipeline_id)
 
-    def find(self, pipeline_id: str) -> Pipeline | None:
-        pipeline = self._state.pipelines.get(normalize_pipeline_id(pipeline_id))
-        return deepcopy(pipeline) if pipeline is not None else None
-
-    def save(self, pipeline: Pipeline) -> None:
-        self._state.pipelines[pipeline.id] = deepcopy(pipeline)
-
-    def list(self, page: OffsetPageRequest) -> Page[Pipeline]:
-        pipelines = sorted(self._state.pipelines.values(), key=lambda item: item.id)
-        total = len(pipelines)
-        selected = pipelines[page.offset : page.offset + page.limit]
-        return Page(
-            items=tuple(deepcopy(selected)),
-            limit=page.limit,
-            offset=page.offset,
-            total=total,
-        )
+    def list(self, page: OffsetPageRequest | None = None) -> Page[Pipeline]:
+        with self._runtime.uow_factory() as uow:
+            return PipelineService(uow.pipelines).list(page)
