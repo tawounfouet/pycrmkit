@@ -6,6 +6,43 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.3.0b1] - 2026-09-09
+
+### Added
+- Configurable `Pipeline` and ordered `Stage` definitions with normalized identifiers, finite Decimal default probabilities, terminal outcomes, and explicit `StageTransition` rules.
+- `PipelineTransitionPolicy` and typed `InvalidStageTransition` failures for rejected commercial stage movement.
+- Backend-neutral `PipelineRepository` / `PipelineService`, official copy-isolated `MemoryPipelineRepository`, and Pipeline participation in `MemoryUnitOfWork`.
+- Transactional `crm.pipelines.define(...)`, `crm.pipelines.get(...)`, and `crm.pipelines.list(...)` facade operations.
+- Public `crm.opportunities.move(...)` with transition-policy validation, `stage_entered_at`, current-stage duration, stage-default probability, and terminal outcome mapping.
+- Post-commit `pipeline.created`, `opportunity.stage_changed`, `opportunity.won`, `opportunity.lost`, and `opportunity.cancelled` events with privacy-conscious audit history.
+- Unit, adapter, Unit-of-Work, facade, end-to-end, public API, and installed-package smoke qualification for Pipeline/Stage integration.
+
+### Changed
+- Package version advanced from `0.3.0a2` to `0.3.0b1`.
+- `crm.opportunities` now exposes additive pipeline movement through `move(...)`; direct `mark_won`, `mark_lost`, `get`, and `list` remain outside the public facade.
+- Pipeline terminal semantics use pipeline-local `StageOutcome` values that are mapped to `OpportunityStatus` at the Opportunity service boundary.
+
+### Deferred
+- Public and idempotent Lead-to-Opportunity conversion remains scheduled for `0.3.0b2`; `crm.leads.convert` remains intentionally absent.
+
+## [0.3.0a2] - 2026-09-09
+
+### Added
+- First-class `Opportunity` aggregate with typed `OpportunityId` and commercial lifecycle states `open`, `won`, `lost`, and `cancelled`.
+- Opportunity commercial context including required Contact, optional Organization, opaque pipeline/stage references, Decimal estimated value/currency/probability, expected close date, and owner.
+- Backend-neutral `OpportunityQuery`, `OpportunityRepository`, and `OpportunityService` contracts.
+- Official copy-isolated `MemoryOpportunityRepository` and Opportunity participation in the shared `MemoryStore` / `MemoryUnitOfWork` transaction.
+- Deliberately narrow transactional `crm.opportunities.create(...)` facade with post-commit `opportunity.created` events and privacy-conscious audit entries.
+- Unit, repository, Unit-of-Work, facade, end-to-end, public API, and package-smoke qualification for Opportunities.
+
+### Changed
+- Package version advanced from `0.3.0a1` to `0.3.0a2`.
+- `CRM` gains the additive `opportunities` namespace while preserving the existing `0.1`, `0.2`, and Lead contracts.
+
+### Deferred
+- Configurable Pipelines/Stages and public `crm.opportunities.move(...)` remained scheduled for `0.3.0b1`.
+- Public/idempotent Lead-to-Opportunity conversion remains scheduled for `0.3.0b2`.
+
 ## [0.3.0a1] - 2026-09-08
 
 ### Added
