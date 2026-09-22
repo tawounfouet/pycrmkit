@@ -1,6 +1,8 @@
 # CRM Facade
 
-`CRM` is the high-level application surface for PyCRMKit. It coordinates domain services, repositories, Unit of Work boundaries, timeline projections, audit history, and post-commit event dispatch.
+`CRM` is the high-level application surface for PyCRMKit. It coordinates domain
+services, repositories, Unit of Work boundaries, timeline projections, audit
+history, and post-commit event dispatch.
 
 ```python
 from pycrmkit import CRM
@@ -10,27 +12,38 @@ crm = CRM.memory()
 
 ## Namespaces
 
-The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags, Custom Fields, Events, and Audit. The stable `0.2` line adds `crm.activities`, `crm.tasks`, and read-only `crm.timeline`.
+The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags,
+Custom Fields, Events, and Audit. The stable `0.2` line adds `crm.activities`,
+`crm.tasks`, and read-only `crm.timeline`.
 
-The Sales Foundation now adds:
+The Sales Foundation currently exposes:
 
 ```text
-crm.leads          # 0.3.0a1
+crm.leads          # 0.3.0a1 + conversion in 0.3.0b2
 crm.opportunities  # 0.3.0a2 + stage movement in 0.3.0b1
 crm.pipelines      # 0.3.0b1
 ```
 
-At `0.3.0b1`:
+At `0.3.0b2`:
 
 ```text
-crm.leads.create/qualify/disqualify
+crm.leads.create/qualify/disqualify/convert
 crm.opportunities.create/move
 crm.pipelines.define/get/list
 ```
 
-`crm.leads.convert(...)` remains deferred to `0.3.0b2`. Direct Opportunity `mark_won/mark_lost` remain outside the facade: configured terminal stages own those outcomes.
+Direct Opportunity `mark_won`, `mark_lost`, `get`, and `list` remain outside the
+facade: configured terminal stages own public won/lost outcomes.
 
-`crm.timeline` remains read-only and Sales events are not projected into Timeline in this beta.
+`crm.timeline` remains read-only and Sales events are not projected into
+Timeline in this beta.
+
+## Lead conversion boundary
+
+`crm.leads.convert(...)` coordinates one cross-aggregate Unit of Work. It
+creates the Opportunity and marks the qualified Lead converted atomically. A
+retry with the same idempotency key and equivalent request returns the already
+created Opportunity without duplicating events or audit entries.
 
 ## Transaction boundary
 
@@ -52,4 +65,6 @@ commit domain + audit
 dispatch DomainEvent synchronously
 ```
 
-Rollback or exit without commit discards domain changes, audit entries, and pending events. Subscriber failures occur after persisted state has committed. Durable retry/outbox semantics remain deferred.
+Rollback or exit without commit discards domain changes, audit entries, and
+pending events. Subscriber failures occur after persisted state has committed.
+Durable retry/outbox semantics remain deferred.
