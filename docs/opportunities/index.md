@@ -61,4 +61,4 @@ Direct `mark_won`, `mark_lost`, `get`, and `list` remain outside the facade for 
 
 `opportunity.created`, `opportunity.stage_changed`, and terminal outcome events are emitted after commit and preserve normal actor/correlation context. Sales events are not yet projected into Timeline.
 
-`crm.leads.convert(...)` remains deferred to `0.3.0b2`.
+`0.3.0b2` now exposes `crm.leads.convert(...)`, which creates the Opportunity atomically from a qualified Lead.

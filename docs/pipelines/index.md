@@ -65,4 +65,4 @@ Each accepted movement updates `stage_id`, `stage_entered_at`, `updated_at`, and
 
 Pipeline creation emits `pipeline.created`. Opportunity movement emits `opportunity.stage_changed`; entering a terminal stage additionally emits `opportunity.won`, `opportunity.lost`, or `opportunity.cancelled`. Audit records are staged in the same Unit of Work and external event subscribers run after commit.
 
-Lead conversion remains outside this milestone and is scheduled for `0.3.0b2`.
+`0.3.0b2` now composes this Pipeline foundation with atomic, idempotent Lead-to-Opportunity conversion.

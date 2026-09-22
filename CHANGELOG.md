@@ -6,6 +6,26 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.3.0b2] - 2026-09-23
+
+### Added
+- Atomic `LeadConversionService` coordinating Lead and Opportunity repositories inside one Unit of Work.
+- Public `crm.leads.convert(...)` with optional name, value/currency, pipeline, expected-close date, owner, and idempotency key.
+- Conversion provenance linking a converted Lead to exactly one Opportunity plus canonical request fingerprint.
+- Domain-level idempotent replay: same key/equivalent request returns the existing Opportunity without duplicate events or audit; conflicting replay raises `ConflictError`.
+- Pipeline-aware conversion entering the initial Stage and applying its default probability.
+- Post-commit `opportunity.created` and `lead.converted` events with transactional, privacy-conscious audit history.
+- Unit, facade, rollback, post-commit transport-retry, end-to-end, compatibility-smoke, and installed-package qualification.
+
+### Changed
+- Package version advanced from `0.3.0b1` to `0.3.0b2`.
+- `crm.leads` gains the additive `convert(...)` method while `get` and `list` remain outside the public facade.
+- Lead `converted` state may now retain conversion provenance needed for deterministic replay.
+
+### Deferred
+- Sales-wide end-to-end compatibility freeze and release-candidate hardening remain scheduled for `0.3.0rc1`.
+- Durable event delivery/outbox, retries, and dead-letter handling remain part of the later Eventing & Webhooks roadmap.
+
 ## [0.3.0b1] - 2026-09-09
 
 ### Added

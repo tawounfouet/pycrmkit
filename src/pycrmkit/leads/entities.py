@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
 
@@ -12,6 +12,7 @@ from pycrmkit.core.entities import TimestampedEntity
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import InvalidStateError, ValidationError
+from pycrmkit.opportunities.entities import OpportunityId
 from pycrmkit.organizations import OrganizationId
 
 
@@ -52,6 +53,9 @@ class Lead(TimestampedEntity[LeadId]):
     organization_id: OrganizationId | None = None
     source: str | None = None
     status: LeadStatus = LeadStatus.NEW
+    converted_opportunity_id: OpportunityId | None = None
+    conversion_idempotency_key: str | None = field(default=None, repr=False)
+    conversion_request_fingerprint: str | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         TimestampedEntity.__post_init__(self)
@@ -69,6 +73,7 @@ class Lead(TimestampedEntity[LeadId]):
             )
         self.source = _normalize_optional_text(self.source, field_name="source")
         self.status = LeadStatus(self.status)
+        self._validate_conversion_provenance()
 
     def open(self, at: datetime) -> None:
         """Move a newly captured lead into active handling."""
@@ -111,19 +116,43 @@ class Lead(TimestampedEntity[LeadId]):
             },
         )
 
-    def mark_converted(self, at: datetime) -> None:
-        """Mark a qualified lead converted.
+    def mark_converted(
+        self,
+        at: datetime,
+        *,
+        opportunity_id: OpportunityId | None = None,
+        idempotency_key: str | None = None,
+        request_fingerprint: str | None = None,
+    ) -> None:
+        """Mark a qualified lead converted and optionally record conversion provenance.
 
-        Public lead-to-opportunity conversion is intentionally deferred to
-        0.3.0b2; this aggregate transition exists so repositories can already
-        preserve the complete declared Lead state model.
+        The optional arguments preserve the pre-0.3.0b2 aggregate-level transition
+        while the public conversion workflow records the complete provenance tuple.
         """
 
+        provided = (
+            opportunity_id is not None,
+            idempotency_key is not None,
+            request_fingerprint is not None,
+        )
+        if any(provided) and not all(provided):
+            raise ValidationError(
+                "conversion provenance must include opportunity, idempotency key, and fingerprint",
+                code="lead.conversion.provenance.incomplete",
+            )
+        if opportunity_id is not None and not isinstance(opportunity_id, OpportunityId):
+            raise ValidationError(
+                "converted opportunity id must be an OpportunityId",
+                code="lead.conversion.opportunity_id.invalid",
+            )
         self._transition(
             LeadStatus.CONVERTED,
             at,
             allowed_from={LeadStatus.QUALIFIED},
         )
+        self.converted_opportunity_id = opportunity_id
+        self.conversion_idempotency_key = idempotency_key
+        self.conversion_request_fingerprint = request_fingerprint
 
     def _transition(
         self,
@@ -150,3 +179,29 @@ class Lead(TimestampedEntity[LeadId]):
             )
         self.status = target
         self.updated_at = timestamp
+
+    def _validate_conversion_provenance(self) -> None:
+        values = (
+            self.converted_opportunity_id,
+            self.conversion_idempotency_key,
+            self.conversion_request_fingerprint,
+        )
+        if self.status is not LeadStatus.CONVERTED and any(value is not None for value in values):
+            raise ValidationError(
+                "conversion provenance is only valid for converted leads",
+                code="lead.conversion.provenance.status_mismatch",
+            )
+        populated = tuple(value is not None for value in values)
+        if self.status is LeadStatus.CONVERTED and any(populated) and not all(populated):
+            raise ValidationError(
+                "converted lead provenance must be complete when present",
+                code="lead.conversion.provenance.incomplete",
+            )
+        if (
+            self.converted_opportunity_id is not None
+            and not isinstance(self.converted_opportunity_id, OpportunityId)
+        ):
+            raise ValidationError(
+                "converted opportunity id must be an OpportunityId",
+                code="lead.conversion.opportunity_id.invalid",
+            )

@@ -1,6 +1,8 @@
 # Leads
 
-A `Lead` represents an unqualified or partially qualified commercial interest. `0.3.0a1` introduces the Lead aggregate, repository/service contracts, the Memory adapter, Unit-of-Work participation, and a deliberately narrow facade surface.
+A `Lead` represents an unqualified or partially qualified commercial interest.
+`0.3.0b2` completes the public Lead workflow with atomic, idempotent
+Lead-to-Opportunity conversion.
 
 ## State model
 
@@ -13,11 +15,13 @@ disqualified
 converted
 ```
 
-Domain transitions are explicit. `disqualified` and `converted` are terminal in the initial model. The aggregate can preserve the full declared state model, but public lead-to-opportunity conversion is not exposed until `0.3.0b2`.
+Domain transitions are explicit. `disqualified` and `converted` are terminal.
+Public conversion accepts only a `qualified` Lead.
 
 ## Identity and links
 
-A Lead requires a typed `ContactId` and may reference an `OrganizationId`. It can also record a normalized acquisition `source`.
+A Lead requires a typed `ContactId` and may reference an `OrganizationId`. It can
+also record a normalized acquisition `source`.
 
 ```python
 lead = crm.leads.create(
@@ -25,26 +29,82 @@ lead = crm.leads.create(
     organization_id=organization.id,
     source="website",
 )
+lead = crm.leads.qualify(lead.id)
 ```
 
-## `0.3.0a1` facade surface
+## Public facade
 
 ```python
 crm.leads.create(...)
 crm.leads.qualify(lead.id)
 crm.leads.disqualify(lead.id)
+crm.leads.convert(...)
 ```
 
-`crm.leads.convert(...)` is intentionally absent at this milestone. Conversion requires Opportunities and idempotency rules that belong to `0.3.0b2`.
+`get` and `list` remain domain/service capabilities rather than facade methods in
+the `0.3` beta surface.
+
+## Lead conversion
+
+```python
+from decimal import Decimal
+
+opportunity = crm.leads.convert(
+    lead.id,
+    name="Enterprise rollout",
+    estimated_value=Decimal("25000"),
+    currency="EUR",
+    pipeline_id="sales",
+    idempotency_key="lead:123:conversion",
+)
+```
+
+The conversion runs inside one Unit of Work:
+
+```text
+load Lead
+    ↓
+validate qualified / replay state
+    ↓
+load Pipeline when supplied
+    ↓
+create Opportunity
+    ↓
+mark Lead converted
+    ↓
+stage audit + events
+    ↓
+commit once
+```
+
+The resulting Opportunity inherits the Lead's `contact_id` and
+`organization_id`. When a pipeline is supplied, conversion enters its initial
+stage and applies that stage's default probability.
+
+## Idempotency
+
+A conversion stores the resulting Opportunity identity together with an
+idempotency key and a canonical request fingerprint.
+
+- same Lead + same key + equivalent request → returns the existing Opportunity;
+- same Lead + same key + conflicting request → `ConflictError`;
+- already-converted Lead + different key → `InvalidStateError`;
+- omitted key → PyCRMKit derives a deterministic key from the Lead identity.
+
+An idempotent replay does not create another Opportunity and does not emit a
+second conversion event/audit pair.
+
+This is domain-level exactly-once behavior. Durable event delivery, outbox,
+retry, and dead-letter handling remain later eventing/webhook concerns.
 
 ## Events and audit
 
-Facade mutations participate in the same Unit of Work as Lead persistence and audit recording. Successful commits can emit:
+Successful first conversion commits both aggregates and can emit:
 
 ```text
-lead.created
-lead.qualified
-lead.disqualified
+opportunity.created
+lead.converted
 ```
 
-Event payloads and audit changes avoid embedding raw contact or organization data.
+Audit records are staged in the same Unit of Work and avoid persisting raw
+contact or organization payloads.
