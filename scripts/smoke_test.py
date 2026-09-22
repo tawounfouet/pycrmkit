@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.3.0b1 Pipeline/Stage path."""
+"""Installed-package smoke test for the 0.3.0b2 Lead Conversion path."""
 
 from __future__ import annotations
 
@@ -18,14 +18,14 @@ from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.3.0b1":
-        raise SystemExit(f"Expected PyCRMKit 0.3.0b1, got {version!r}")
+    if version != "0.3.0b2":
+        raise SystemExit(f"Expected PyCRMKit 0.3.0b2, got {version!r}")
 
     amount = Money(Decimal("15000"), "eur")
     if amount.currency != "EUR" or amount.amount != Decimal("15000"):
         raise SystemExit("Money Decimal/currency smoke failed")
 
-    clock = FixedClock(datetime(2026, 9, 9, 9, tzinfo=UTC))
+    clock = FixedClock(datetime(2026, 9, 23, 9, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock)
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
     organization = crm.organizations.create(legal_name="Smoke Org")
@@ -57,18 +57,23 @@ def main() -> None:
         raise SystemExit("CRM.memory() multi-entity Timeline smoke failed")
     if contact_timeline.items[-1].occurred_at != historical_at:
         raise SystemExit("CRM.memory() historical occurrence Timeline smoke failed")
-    first_page = crm.timeline.for_contact(contact.id, OffsetPageRequest(limit=1, offset=0))
+    first_page = crm.timeline.for_contact(
+        contact.id,
+        OffsetPageRequest(limit=1, offset=0),
+    )
     if not first_page.has_next or str(first_page.items[0].event_type) != "task.completed":
         raise SystemExit("CRM.memory() Timeline pagination smoke failed")
 
     lead_events = []
     crm.events.subscribe("lead.qualified", lead_events.append)
-    lead = crm.leads.create(contact_id=contact.id, organization_id=organization.id, source="website")
+    lead = crm.leads.create(
+        contact_id=contact.id,
+        organization_id=organization.id,
+        source="website",
+    )
     lead = crm.leads.qualify(lead.id)
     if lead.status is not LeadStatus.QUALIFIED or len(lead_events) != 1:
         raise SystemExit("CRM.memory() Lead qualification smoke failed")
-    if hasattr(crm.leads, "convert"):
-        raise SystemExit("Lead conversion must remain deferred in 0.3.0b1")
 
     crm.pipelines.define(
         id="sales",
@@ -87,22 +92,39 @@ def main() -> None:
             StageTransition("proposal", "lost"),
         ),
     )
-    opportunity = crm.opportunities.create(
+
+    converted_events = []
+    opportunity_created_events = []
+    crm.events.subscribe("lead.converted", converted_events.append)
+    crm.events.subscribe("opportunity.created", opportunity_created_events.append)
+    opportunity = crm.leads.convert(
+        lead.id,
         name="Installed package opportunity",
-        contact_id=contact.id,
-        organization_id=organization.id,
-        pipeline_id="sales",
-        stage_id="new",
         estimated_value=Decimal("25000.00"),
         currency="EUR",
-        probability=Decimal("0.10"),
+        pipeline_id="sales",
         expected_close_date=date(2026, 12, 31),
         owner_id="seller-1",
+        idempotency_key="installed-smoke-conversion",
     )
+    retry = crm.leads.convert(
+        lead.id,
+        name="Installed package opportunity",
+        estimated_value=Decimal("25000.0"),
+        currency="eur",
+        pipeline_id="SALES",
+        expected_close_date=date(2026, 12, 31),
+        owner_id="seller-1",
+        idempotency_key="installed-smoke-conversion",
+    )
+    if retry.id != opportunity.id:
+        raise SystemExit("Lead conversion idempotent replay smoke failed")
+    if len(converted_events) != 1 or len(opportunity_created_events) != 1:
+        raise SystemExit("Lead conversion duplicate event smoke failed")
     if opportunity.money != Money(Decimal("25000.00"), "EUR"):
-        raise SystemExit("CRM.memory() Opportunity Money smoke failed")
-    if opportunity.stage_entered_at != clock.now():
-        raise SystemExit("CRM.memory() initial stage timestamp smoke failed")
+        raise SystemExit("CRM.memory() converted Opportunity Money smoke failed")
+    if opportunity.stage_id != "new" or opportunity.probability != Decimal("0.10"):
+        raise SystemExit("CRM.memory() conversion pipeline initialization smoke failed")
 
     try:
         crm.opportunities.move(opportunity.id, to="won")
@@ -126,9 +148,9 @@ def main() -> None:
     if len(stage_events) != 3 or len(won_events) != 1:
         raise SystemExit("CRM.memory() Pipeline events smoke failed")
     if crm.timeline.for_contact(contact.id).total != 4:
-        raise SystemExit("Sales events must not project to Timeline in 0.3.0b1")
+        raise SystemExit("Sales events must not project to Timeline in 0.3.0b2")
 
-    print(f"PyCRMKit {version}: Pipeline/Stage transition smoke OK")
+    print(f"PyCRMKit {version}: Lead conversion and Pipeline smoke OK")
 
 
 if __name__ == "__main__":
