@@ -6,6 +6,50 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.4.0b1] - 2026-09-24
+
+### Added
+- Provider-neutral `EmailTemplate` and runtime-checkable `TemplateRenderer` contracts.
+- Optional strict `Jinja2TemplateRenderer` behind the `email` extra, with HTML autoescaping.
+- Standard-library `SMTPEmailProvider` with plain, STARTTLS, and implicit TLS connection modes.
+- MIME text/HTML construction, generated Message-ID, PyCRMKit intent/idempotency headers, partial-recipient metadata, and normalized SMTP failure mapping.
+- Network-free SMTP adapter tests plus installed-package qualification.
+
+### Changed
+- Package version advanced from `0.4.0a2` to `0.4.0b1`.
+- Jinja2 is governed as an optional email dependency; the base runtime remains dependency-free.
+
+### Deferred
+- Resend remains scheduled for `0.4.0b2`.
+- Delivery/open/click/bounce events and Communication history integration remain scheduled for `0.4.0rc1`.
+
+## [0.4.0a2] - 2026-09-24
+
+### Added
+- Runtime-checkable `EmailProvider.send(...)` protocol and normalized `EmailProviderResult`.
+- Immutable provider-neutral `EmailMessage`.
+- `EmailDeliveryService` mapping provider acceptance/failure to `DeliveryAttempt`.
+- Provider message ID, provider metadata, failure-code, contract, service, and installed-package qualification.
+
+### Changed
+- Package version advanced from `0.4.0a1` to `0.4.0a2`.
+
+### Deferred
+- Concrete SMTP/Resend providers and templates remained outside this alpha.
+
+## [0.4.0a1] - 2026-09-24
+
+### Added
+- Provider-independent `CommunicationIntent`, `DeliveryAttempt`, and `CommunicationRecord` domain foundation.
+- Typed Communication identifiers, channels, directions, lifecycle statuses, addresses, recipients, and content.
+- Explicit separation between communication intent, transport attempt, and CRM relationship-history record.
+
+### Changed
+- Package version advanced from `0.3.0` to `0.4.0a1`.
+
+### Deferred
+- Provider contracts, concrete providers, templates, and downstream delivery events remained outside this alpha.
+
 ## [0.3.0] - 2026-09-24
 
 ### Stable
