@@ -21,8 +21,6 @@ from pycrmkit.exceptions import ValidationError
 from pycrmkit.providers.email import SMTPConfig, SMTPEmailProvider, SMTPSecurity
 from pycrmkit.providers.email import smtp as smtp_module
 
-BASE = datetime(2026, 9, 24, 21, 0, tzinfo=UTC)
-
 
 def _message() -> EmailMessage:
     return EmailMessage(
