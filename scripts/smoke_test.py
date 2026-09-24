@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.4.0a1 Communication Domain prerelease."""
+"""Installed-package smoke test for the 0.4.0a2 Email Provider Protocol prerelease."""
 
 from __future__ import annotations
 
@@ -7,7 +7,12 @@ from decimal import Decimal
 
 import pycrmkit
 from pycrmkit.activities import ActivityParticipant
-from pycrmkit.communication import CommunicationAddress, CommunicationChannel
+from pycrmkit.communication import (
+    CommunicationAddress,
+    CommunicationChannel,
+    EmailDeliveryStatus,
+    EmailProviderResult,
+)
 from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
@@ -29,8 +34,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.4.0a1":
-        raise SystemExit(f"Expected PyCRMKit 0.4.0a1, got {version!r}")
+    if version != "0.4.0a2":
+        raise SystemExit(f"Expected PyCRMKit 0.4.0a2, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -39,6 +44,15 @@ def main() -> None:
     if address.normalized != "smoke.user@example.com":
         raise SystemExit("Communication address normalization smoke failed")
 
+    provider_result = EmailProviderResult(
+        provider="installed-smoke",
+        status=EmailDeliveryStatus.ACCEPTED,
+        provider_message_id="smoke-message",
+        provider_metadata={"transport": "fake"},
+    )
+    if provider_result.provider_message_id != "smoke-message":
+        raise SystemExit("Email provider result smoke failed")
+
     amount = Money(Decimal("15000"), "eur")
     if amount.currency != "EUR" or amount.amount != Decimal("15000"):
         raise SystemExit("Money Decimal/currency smoke failed")
@@ -46,7 +60,7 @@ def main() -> None:
     clock = FixedClock(datetime(2026, 9, 24, 7, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock).with_context(
         actor_id="installed-smoke",
-        correlation_id="communication-a1-smoke",
+        correlation_id="communication-a2-smoke",
     )
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
     organization = crm.organizations.create(legal_name="Smoke Org")
@@ -151,9 +165,9 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing Sales RC events: {sorted(missing)!r}")
     if crm.timeline.for_contact(contact.id).total != 3:
-        raise SystemExit("Sales events must remain outside Timeline in 0.4.0a1")
+        raise SystemExit("Sales events must remain outside Timeline in 0.4.0a2")
 
-    print(f"PyCRMKit {version}: Communication Domain + stable 0.3 smoke OK")
+    print(f"PyCRMKit {version}: Email Provider Protocol + stable 0.3 smoke OK")
 
 
 if __name__ == "__main__":
