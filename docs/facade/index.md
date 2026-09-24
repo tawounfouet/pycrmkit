@@ -16,7 +16,7 @@ The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags,
 Custom Fields, Events, and Audit. The stable `0.2` line adds `crm.activities`,
 `crm.tasks`, and read-only `crm.timeline`.
 
-The `0.3.0rc1` Sales candidate freezes:
+The stable `0.3.x` Sales surface is:
 
 ```text
 crm.leads.create/qualify/disqualify/convert
@@ -30,7 +30,7 @@ facade: configured terminal Stages own public won/lost outcomes. Lead
 methods.
 
 `crm.timeline` remains read-only and Sales events are not projected into
-Timeline in the `0.3` candidate.
+Timeline in `0.3.x`.
 
 ## Lead conversion boundary
 
