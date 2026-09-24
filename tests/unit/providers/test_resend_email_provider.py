@@ -18,8 +18,8 @@ from pycrmkit.communication import (
     EmailProvider,
 )
 from pycrmkit.exceptions import ValidationError
-from pycrmkit.providers.email.resend import ResendConfig, ResendEmailProvider
 from pycrmkit.providers.email import resend as resend_module
+from pycrmkit.providers.email.resend import ResendConfig, ResendEmailProvider
 
 
 def _message() -> EmailMessage:
