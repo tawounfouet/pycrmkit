@@ -1,4 +1,4 @@
-"""Release-candidate qualification for the complete 0.3 Sales Foundation."""
+"""Stable qualification for the complete 0.3 Sales Foundation."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ def subscribe_sales_events(crm: CRM) -> list[DomainEvent]:
     return events
 
 
-def test_sales_candidate_won_path_is_atomic_idempotent_and_auditable() -> None:
+def test_sales_stable_won_path_is_atomic_idempotent_and_auditable() -> None:
     clock = FixedClock(NOW)
     crm = CRM.memory(clock=clock).with_context(
         actor_id="seller-rc",
@@ -139,7 +139,7 @@ def test_sales_candidate_won_path_is_atomic_idempotent_and_auditable() -> None:
     assert opportunities.total == 1
 
 
-def test_sales_candidate_qualifies_disqualified_and_lost_outcomes() -> None:
+def test_sales_stable_qualifies_disqualified_and_lost_outcomes() -> None:
     clock = FixedClock(NOW)
     crm = CRM.memory(clock=clock).with_context(correlation_id="corr-sales-rc-outcomes")
     events = subscribe_sales_events(crm)
@@ -182,7 +182,7 @@ def test_sales_candidate_qualifies_disqualified_and_lost_outcomes() -> None:
     assert rejected.total == 1
 
 
-def test_0_3_candidate_public_facade_surface_is_frozen() -> None:
+def test_0_3_stable_public_facade_surface_is_frozen() -> None:
     assert pycrmkit.__all__ == ["CRM", "CRMConfig", "CRMContext", "__version__"]
     crm = CRM.memory(clock=FixedClock(NOW))
 
