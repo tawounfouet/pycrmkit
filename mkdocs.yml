@@ -47,6 +47,8 @@ nav:
   - Custom Fields:
       - Overview: custom-fields/index.md
       - Repository Contract: custom-fields/repository-contract.md
+  - Communication:
+      - Domain Foundation: communication/index.md
   - Events:
       - Foundation: events/index.md
   - Audit:
@@ -67,6 +69,7 @@ nav:
       - 0.3.0b2 Lead Conversion: releases/0.3.0b2.md
       - 0.3.0rc1 Sales Integration: releases/0.3.0rc1.md
       - 0.3.0 Sales Foundation Stable: releases/0.3.0.md
+      - 0.4.0a1 Communication Domain: releases/0.4.0a1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
