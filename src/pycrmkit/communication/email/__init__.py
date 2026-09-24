@@ -7,6 +7,7 @@ from pycrmkit.communication.email.provider import (
     EmailProviderResult,
 )
 from pycrmkit.communication.email.services import EmailDeliveryService
+from pycrmkit.communication.email.templates import EmailTemplate, TemplateRenderer
 
 __all__ = [
     "EmailDeliveryService",
@@ -14,4 +15,6 @@ __all__ = [
     "EmailMessage",
     "EmailProvider",
     "EmailProviderResult",
+    "EmailTemplate",
+    "TemplateRenderer",
 ]

@@ -6,6 +6,8 @@ from pycrmkit.communication.email import (
     EmailMessage,
     EmailProvider,
     EmailProviderResult,
+    EmailTemplate,
+    TemplateRenderer,
 )
 from pycrmkit.communication.entities import (
     CommunicationIntent,
@@ -45,5 +47,7 @@ __all__ = [
     "EmailMessage",
     "EmailProvider",
     "EmailProviderResult",
+    "EmailTemplate",
+    "TemplateRenderer",
     "normalize_communication_address",
 ]
