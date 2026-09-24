@@ -6,6 +6,24 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.4.0b2] - 2026-09-24
+
+### Added
+- Optional official Resend SDK adapter implementing the existing `EmailProvider` contract.
+- `ResendConfig` with secret-safe representation and provider naming.
+- Request mapping for sender, recipients, subject, text/HTML content, PyCRMKit intent header, and Resend idempotency options.
+- Provider message ID capture plus selected response/request metadata.
+- Normalized Resend API/client failures without persisting provider error messages.
+- Serialized SDK API-key set/send/restore behavior to prevent cross-instance credential leakage.
+- Network-free Resend adapter tests covering request mapping, idempotency, provider IDs, error mapping, invalid responses, and credential restoration.
+
+### Changed
+- Package version advanced from `0.4.0b1` to `0.4.0b2`.
+- Resend is governed through the optional `resend` extra; the base package remains runtime dependency-free.
+
+### Deferred
+- Delivery/open/click/bounce event ingestion, Communication persistence/history projection, and release-candidate integration remain scheduled for `0.4.0rc1`.
+
 ## [0.4.0b1] - 2026-09-24
 
 ### Added
