@@ -6,6 +6,24 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.3.0rc1] - 2026-09-24
+
+### Added
+- Release-candidate end-to-end qualification for the complete Sales Foundation across Lead capture, qualification, conversion, Pipeline movement, invalid-transition rejection, won/lost outcomes, Events and Audit.
+- Explicit candidate `0.3` public API document freezing `crm.leads.create/qualify/disqualify/convert`, `crm.opportunities.create/move`, and `crm.pipelines.define/get/list`.
+- Qualification of the documented Sales event set: `lead.created`, `lead.qualified`, `lead.disqualified`, `lead.converted`, `opportunity.created`, `opportunity.stage_changed`, `opportunity.won`, and `opportunity.lost`.
+- Installed-wheel smoke coverage for both won and lost sales paths plus disqualification, conversion replay idempotency, invalid transition rejection, and stable Activity/Task/Timeline compatibility.
+- `0.3.0rc1` release notes and candidate documentation.
+
+### Changed
+- Package version advanced from `0.3.0b2` to `0.3.0rc1`.
+- The `0.3` Sales facade surface enters compatibility freeze pending stable promotion.
+- No new business feature scope is introduced by the release candidate.
+
+### Deferred
+- `0.3.0` stable remains a qualification/promotion step with no planned new Sales feature scope.
+- Sales Timeline projection, durable outbox/delivery, SQLAlchemy/PostgreSQL, Communication, FastAPI, Django and later integrations remain outside `0.3.x`.
+
 ## [0.3.0b2] - 2026-09-23
 
 ### Added
