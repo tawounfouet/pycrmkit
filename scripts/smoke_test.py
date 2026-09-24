@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.3.0 Sales Foundation Stable path."""
+"""Installed-package smoke test for the 0.4.0a1 Communication Domain prerelease."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import pycrmkit
 from pycrmkit.activities import ActivityParticipant
+from pycrmkit.communication import CommunicationAddress, CommunicationChannel
 from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
@@ -28,8 +29,15 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.3.0":
-        raise SystemExit(f"Expected PyCRMKit 0.3.0, got {version!r}")
+    if version != "0.4.0a1":
+        raise SystemExit(f"Expected PyCRMKit 0.4.0a1, got {version!r}")
+
+    address = CommunicationAddress(
+        CommunicationChannel.EMAIL,
+        "Smoke.User@Example.COM",
+    )
+    if address.normalized != "smoke.user@example.com":
+        raise SystemExit("Communication address normalization smoke failed")
 
     amount = Money(Decimal("15000"), "eur")
     if amount.currency != "EUR" or amount.amount != Decimal("15000"):
@@ -38,7 +46,7 @@ def main() -> None:
     clock = FixedClock(datetime(2026, 9, 24, 7, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock).with_context(
         actor_id="installed-smoke",
-        correlation_id="sales-rc-smoke",
+        correlation_id="communication-a1-smoke",
     )
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
     organization = crm.organizations.create(legal_name="Smoke Org")
@@ -143,9 +151,9 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing Sales RC events: {sorted(missing)!r}")
     if crm.timeline.for_contact(contact.id).total != 3:
-        raise SystemExit("Sales events must remain outside Timeline in 0.3.0")
+        raise SystemExit("Sales events must remain outside Timeline in 0.4.0a1")
 
-    print(f"PyCRMKit {version}: complete Sales RC smoke OK")
+    print(f"PyCRMKit {version}: Communication Domain + stable 0.3 smoke OK")
 
 
 if __name__ == "__main__":

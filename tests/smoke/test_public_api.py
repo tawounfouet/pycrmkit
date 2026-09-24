@@ -1,4 +1,4 @@
-"""Compatibility smoke for the stable PyCRMKit 0.3 public surface."""
+"""Compatibility smoke for the stable PyCRMKit 0.3 surface under 0.4 prerelease."""
 
 import pycrmkit
 from pycrmkit import CRM, CRMConfig, CRMContext, __version__
@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.3.0"
+    assert __version__ == "0.4.0a1"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
