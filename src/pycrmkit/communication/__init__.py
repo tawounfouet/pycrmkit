@@ -1,5 +1,12 @@
 """Public Communication-domain API."""
 
+from pycrmkit.communication.email import (
+    EmailDeliveryService,
+    EmailDeliveryStatus,
+    EmailMessage,
+    EmailProvider,
+    EmailProviderResult,
+)
 from pycrmkit.communication.entities import (
     CommunicationIntent,
     CommunicationIntentId,
@@ -33,5 +40,10 @@ __all__ = [
     "DeliveryAttempt",
     "DeliveryAttemptId",
     "DeliveryAttemptStatus",
+    "EmailDeliveryService",
+    "EmailDeliveryStatus",
+    "EmailMessage",
+    "EmailProvider",
+    "EmailProviderResult",
     "normalize_communication_address",
 ]
