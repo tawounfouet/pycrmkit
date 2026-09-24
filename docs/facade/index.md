@@ -16,15 +16,7 @@ The stable `0.1` API exposes Contacts, Organizations, Relationships, Tags,
 Custom Fields, Events, and Audit. The stable `0.2` line adds `crm.activities`,
 `crm.tasks`, and read-only `crm.timeline`.
 
-The Sales Foundation currently exposes:
-
-```text
-crm.leads          # 0.3.0a1 + conversion in 0.3.0b2
-crm.opportunities  # 0.3.0a2 + stage movement in 0.3.0b1
-crm.pipelines      # 0.3.0b1
-```
-
-At `0.3.0b2`:
+The `0.3.0rc1` Sales candidate freezes:
 
 ```text
 crm.leads.create/qualify/disqualify/convert
@@ -33,10 +25,12 @@ crm.pipelines.define/get/list
 ```
 
 Direct Opportunity `mark_won`, `mark_lost`, `get`, and `list` remain outside the
-facade: configured terminal stages own public won/lost outcomes.
+facade: configured terminal Stages own public won/lost outcomes. Lead
+`get/list` likewise remain service/repository capabilities rather than facade
+methods.
 
 `crm.timeline` remains read-only and Sales events are not projected into
-Timeline in this beta.
+Timeline in the `0.3` candidate.
 
 ## Lead conversion boundary
 
@@ -44,6 +38,12 @@ Timeline in this beta.
 creates the Opportunity and marks the qualified Lead converted atomically. A
 retry with the same idempotency key and equivalent request returns the already
 created Opportunity without duplicating events or audit entries.
+
+## Pipeline boundary
+
+`crm.opportunities.move(...)` resolves the persisted Pipeline definition,
+rejects undeclared transitions, applies target-Stage probability defaults and
+maps terminal Stages to won/lost/cancelled Opportunity status.
 
 ## Transaction boundary
 
