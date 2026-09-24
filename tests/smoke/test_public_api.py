@@ -1,4 +1,4 @@
-"""Compatibility smoke for the PyCRMKit 0.3.0rc1 candidate surface."""
+"""Compatibility smoke for the stable PyCRMKit 0.3 public surface."""
 
 import pycrmkit
 from pycrmkit import CRM, CRMConfig, CRMContext, __version__
@@ -8,14 +8,14 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.3.0rc1"
+    assert __version__ == "0.3.0"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
     assert pycrmkit.__all__ == ["CRM", "CRMConfig", "CRMContext", "__version__"]
 
 
-def test_stable_and_sales_candidate_namespaces_remain_available() -> None:
+def test_stable_0_3_namespaces_remain_available() -> None:
     crm = CRM.memory()
     for name in (
         "contacts",
@@ -35,7 +35,7 @@ def test_stable_and_sales_candidate_namespaces_remain_available() -> None:
         assert getattr(crm, name) is not None
 
 
-def test_0_3_candidate_lead_facade_surface() -> None:
+def test_stable_0_3_lead_facade_surface() -> None:
     crm = CRM.memory()
     assert hasattr(crm.leads, "create")
     assert hasattr(crm.leads, "qualify")
@@ -45,7 +45,7 @@ def test_0_3_candidate_lead_facade_surface() -> None:
     assert not hasattr(crm.leads, "list")
 
 
-def test_0_3_candidate_opportunity_facade_surface() -> None:
+def test_stable_0_3_opportunity_facade_surface() -> None:
     crm = CRM.memory()
     assert hasattr(crm.opportunities, "create")
     assert hasattr(crm.opportunities, "move")
@@ -55,7 +55,7 @@ def test_0_3_candidate_opportunity_facade_surface() -> None:
     assert not hasattr(crm.opportunities, "list")
 
 
-def test_0_3_candidate_pipeline_facade_surface() -> None:
+def test_stable_0_3_pipeline_facade_surface() -> None:
     crm = CRM.memory()
     assert hasattr(crm.pipelines, "define")
     assert hasattr(crm.pipelines, "get")

@@ -6,6 +6,19 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-24
+
+### Stable
+- Promoted the fully qualified `0.3.0rc1` Sales Foundation to stable without adding new business scope.
+- Froze the documented `0.3.x` facade contract for Leads, Opportunities and Pipelines while preserving the stable `0.1` and `0.2` surfaces.
+- Qualified atomic/idempotent Lead conversion, Pipeline initial-stage defaults, invalid-transition rejection, won/lost outcomes, Sales Events and transactional Audit as one integrated domain line.
+- Qualified the release on Python 3.11, 3.12 and 3.13 plus installed-wheel smoke of both won and lost sales paths.
+- Finalized stable `0.3` API documentation and release notes.
+
+### Changed
+- Package version advanced from `0.3.0rc1` to `0.3.0`.
+- The former candidate Sales compatibility document is now the stable `0.3.x` compatibility contract.
+
 ## [0.3.0rc1] - 2026-09-24
 
 ### Added

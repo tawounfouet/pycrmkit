@@ -56,7 +56,7 @@ nav:
   - API:
       - 0.1 Public API: api/0.1-public-api.md
       - 0.2 Public API: api/0.2-public-api.md
-      - 0.3 Public API Candidate: api/0.3-public-api.md
+      - 0.3 Public API: api/0.3-public-api.md
   - Releases:
       - 0.1.0 CRM Core Stable: releases/0.1.0.md
       - 0.2.0rc1 Activity & Timeline RC: releases/0.2.0rc1.md
@@ -66,6 +66,7 @@ nav:
       - 0.3.0b1 Pipeline & Stage: releases/0.3.0b1.md
       - 0.3.0b2 Lead Conversion: releases/0.3.0b2.md
       - 0.3.0rc1 Sales Integration: releases/0.3.0rc1.md
+      - 0.3.0 Sales Foundation Stable: releases/0.3.0.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

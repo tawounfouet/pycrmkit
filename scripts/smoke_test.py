@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.3.0rc1 Sales Integration path."""
+"""Installed-package smoke test for the 0.3.0 Sales Foundation Stable path."""
 
 from __future__ import annotations
 
@@ -28,8 +28,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.3.0rc1":
-        raise SystemExit(f"Expected PyCRMKit 0.3.0rc1, got {version!r}")
+    if version != "0.3.0":
+        raise SystemExit(f"Expected PyCRMKit 0.3.0, got {version!r}")
 
     amount = Money(Decimal("15000"), "eur")
     if amount.currency != "EUR" or amount.amount != Decimal("15000"):
@@ -143,7 +143,7 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing Sales RC events: {sorted(missing)!r}")
     if crm.timeline.for_contact(contact.id).total != 3:
-        raise SystemExit("Sales events must remain outside Timeline in 0.3.0rc1")
+        raise SystemExit("Sales events must remain outside Timeline in 0.3.0")
 
     print(f"PyCRMKit {version}: complete Sales RC smoke OK")
 
