@@ -26,6 +26,9 @@ classifiers = [
 email = [
   "Jinja2>=3.1,<4",
 ]
+resend = [
+  "resend>=2.47,<3",
+]
 dev = [
   "pytest>=8",
   "pytest-cov>=6",
@@ -36,6 +39,7 @@ dev = [
   "twine>=6",
   "mkdocs>=1.6,<2",
   "Jinja2>=3.1,<4",
+  "resend>=2.47,<3",
 ]
 
 [project.urls]
