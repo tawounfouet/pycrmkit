@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.3.0rc1 — Sales Integration**.
+Current version: **0.3.0 — Sales Foundation Stable**.
 
-The stable `0.2` Activity/Task/Timeline contract remains compatibility-frozen. `0.3.0rc1` qualifies the complete Sales Foundation end-to-end: Leads, Opportunities, Pipelines/Stages, atomic/idempotent conversion, invalid-transition rejection, won/lost outcomes, Sales events, audit, and the candidate `0.3` public API.
+The stable `0.2` Activity/Task/Timeline contract remains compatibility-frozen. `0.3.0` promotes the fully qualified Sales Foundation to stable: Leads, Opportunities, Pipelines/Stages, atomic/idempotent conversion, invalid-transition rejection, won/lost outcomes, Sales events, audit, and the documented `0.3.x` public API.
 
 The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
 
@@ -90,9 +90,9 @@ pytest
 0.3.0a2 Opportunities                           ✓
 0.3.0b1 Pipeline & Stage                         ✓
 0.3.0b2 Lead Conversion                           ✓
-0.3.0rc1 Sales Integration                         →
-0.3.0  Sales Foundation
-0.4.0  Communication
+0.3.0rc1 Sales Integration                         ✓
+0.3.0  Sales Foundation                             ✓
+0.4.0  Communication                                →
 0.5.0  Eventing & Webhooks
 0.6.0  Persistence Foundation
 0.7.0  FastAPI Integration
