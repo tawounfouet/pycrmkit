@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import smtplib
+from typing import Self
 from uuid import UUID
 
 import pytest
