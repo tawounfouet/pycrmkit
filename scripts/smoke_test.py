@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.4.0a2 Email Provider Protocol prerelease."""
+"""Installed-package smoke test for the 0.4.0b1 Email Provider Protocol prerelease."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ from pycrmkit.core.time import FixedClock
 from pycrmkit.leads import LeadStatus
 from pycrmkit.opportunities import OpportunityStatus
 from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
+from pycrmkit.providers.email import SMTPConfig
 
 SALES_EVENTS = (
     "lead.created",
@@ -34,8 +35,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.4.0a2":
-        raise SystemExit(f"Expected PyCRMKit 0.4.0a2, got {version!r}")
+    if version != "0.4.0b1":
+        raise SystemExit(f"Expected PyCRMKit 0.4.0b1, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -43,6 +44,10 @@ def main() -> None:
     )
     if address.normalized != "smoke.user@example.com":
         raise SystemExit("Communication address normalization smoke failed")
+
+    smtp_config = SMTPConfig(host="smtp.example.com")
+    if smtp_config.port != 587:
+        raise SystemExit("SMTP config smoke failed")
 
     provider_result = EmailProviderResult(
         provider="installed-smoke",
@@ -165,9 +170,9 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing Sales RC events: {sorted(missing)!r}")
     if crm.timeline.for_contact(contact.id).total != 3:
-        raise SystemExit("Sales events must remain outside Timeline in 0.4.0a2")
+        raise SystemExit("Sales events must remain outside Timeline in 0.4.0b1")
 
-    print(f"PyCRMKit {version}: Email Provider Protocol + stable 0.3 smoke OK")
+    print(f"PyCRMKit {version}: Templates/SMTP + stable 0.3 smoke OK")
 
 
 if __name__ == "__main__":

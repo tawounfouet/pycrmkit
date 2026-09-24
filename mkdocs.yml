@@ -50,6 +50,8 @@ nav:
   - Communication:
       - Domain Foundation: communication/index.md
       - Email Provider Protocol: communication/email-provider.md
+      - Templates: communication/templates.md
+      - SMTP Provider: communication/smtp.md
   - Events:
       - Foundation: events/index.md
   - Audit:
@@ -72,6 +74,7 @@ nav:
       - 0.3.0 Sales Foundation Stable: releases/0.3.0.md
       - 0.4.0a1 Communication Domain: releases/0.4.0a1.md
       - 0.4.0a2 Email Provider Protocol: releases/0.4.0a2.md
+      - 0.4.0b1 Templates & SMTP: releases/0.4.0b1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

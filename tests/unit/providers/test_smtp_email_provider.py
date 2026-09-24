@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import smtplib
-from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
@@ -25,7 +24,6 @@ BASE = datetime(2026, 9, 24, 21, 0, tzinfo=UTC)
 
 
 def _message() -> EmailMessage:
-    del BASE
     return EmailMessage(
         intent_id=CommunicationIntentId(
             UUID("00000000-0000-0000-0000-000000000501")
