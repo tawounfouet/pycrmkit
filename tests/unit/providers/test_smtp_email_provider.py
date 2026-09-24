@@ -72,7 +72,7 @@ class FakeSMTP:
         self.sent = None
         type(self).instances.append(self)
 
-    def __enter__(self) -> FakeSMTP:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
