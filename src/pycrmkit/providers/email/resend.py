@@ -11,8 +11,8 @@ from threading import Lock
 from typing import cast
 
 try:
-    import resend  # type: ignore[import-untyped]
-    from resend.exceptions import ResendError  # type: ignore[import-untyped]
+    import resend
+    from resend.exceptions import ResendError
 except ModuleNotFoundError as exc:  # pragma: no cover - exercised without the extra
     raise ImportError(
         "The Resend email provider requires the optional dependency: "
@@ -117,10 +117,10 @@ class ResendEmailProvider(EmailProvider):
             provider_metadata=metadata,
         )
 
-    def build_params(self, message: EmailMessage) -> dict[str, object]:
+    def build_params(self, message: EmailMessage) -> resend.Emails.SendParams:
         """Map EmailMessage into the Resend Send Email request shape."""
 
-        params: dict[str, object] = {
+        params: resend.Emails.SendParams = {
             "from": message.sender.value,
             "to": [
                 formataddr((recipient.display_name or "", recipient.address.value))
@@ -139,7 +139,7 @@ class ResendEmailProvider(EmailProvider):
         return params
 
     @staticmethod
-    def build_options(message: EmailMessage) -> dict[str, str] | None:
+    def build_options(message: EmailMessage) -> resend.Emails.SendOptions | None:
         """Map provider-independent idempotency onto Resend send options."""
 
         if message.idempotency_key is None:
@@ -148,8 +148,8 @@ class ResendEmailProvider(EmailProvider):
 
     def _sdk_send(
         self,
-        params: dict[str, object],
-        options: dict[str, str] | None,
+        params: resend.Emails.SendParams,
+        options: resend.Emails.SendOptions | None,
     ) -> Mapping[str, object]:
         # Resend's sync SDK uses module-level api_key configuration. Serialize the
         # set/send/restore sequence so multiple provider instances cannot leak keys.
@@ -157,7 +157,7 @@ class ResendEmailProvider(EmailProvider):
             previous_api_key = resend.api_key
             resend.api_key = self.config.api_key
             try:
-                response = resend.Emails.send(params, options)  # type: ignore[no-untyped-call]
+                response = resend.Emails.send(params, options)
             finally:
                 resend.api_key = previous_api_key
         return cast(Mapping[str, object], response)
