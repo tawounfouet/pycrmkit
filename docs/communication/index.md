@@ -1,11 +1,13 @@
 # Communication Domain
 
-PyCRMKit `0.4.0a1` introduces the provider-agnostic foundation for CRM communications.
-
-The architectural boundary is explicit:
+PyCRMKit `0.4.x` separates CRM communication semantics from transport providers:
 
 ```text
 CommunicationIntent
+    ↓
+EmailDeliveryService
+    ↓
+EmailProvider
     ↓
 DeliveryAttempt
     ↓
@@ -16,34 +18,28 @@ These concepts deliberately do **not** mean the same thing.
 
 ## Communication intent
 
-`CommunicationIntent` represents what the CRM wants to communicate before a transport provider is involved. The current alpha is email-first and exposes normalized recipients, provider-neutral content, generic CRM references, optional idempotency metadata, and explicit draft/queued/cancelled lifecycle semantics.
+`CommunicationIntent` represents what the CRM wants to communicate before a transport provider is involved. The current line is email-first and exposes normalized recipients, provider-neutral content, generic CRM references, optional idempotency metadata, and explicit draft/queued/cancelled lifecycle semantics.
 
-An intent is outbound in this initial foundation. Inbound history is represented by CRM records and can later be populated by provider/webhook integrations.
+## Provider boundary
 
-## Delivery attempt
+Starting with `0.4.0a2`, email transport is expressed through `EmailProvider.send(EmailMessage)`.
 
-`DeliveryAttempt` represents one attempt to hand a queued intent to a provider or transport:
+Providers return a normalized `EmailProviderResult` carrying:
 
-```text
-pending
-  ├── accepted
-  └── failed
-```
+- provider name;
+- immediate transport status;
+- optional `provider_message_id`;
+- provider metadata;
+- optional failure code.
 
-`accepted` means that the provider or transport accepted the message. It does **not** mean that the recipient mailbox delivered, opened, or clicked it.
+`accepted` means the provider accepted the message for transport. It does **not** mean the recipient mailbox delivered, opened, or clicked it.
+
+See [Email Provider Protocol](email-provider.md).
 
 ## CRM communication record
 
-`CommunicationRecord` is the relationship-history representation consumed by CRM read models. It stores channel/direction, business occurrence time, counterparties, subject, CRM references, optional intent/delivery-attempt provenance, external identity, and metadata.
+`CommunicationRecord` remains the relationship-history representation consumed by CRM read models. Message bodies are deliberately not duplicated into the record.
 
-Message bodies are deliberately not duplicated into the record. The intent owns message content; the CRM record owns relationship-history context.
+## Still deferred
 
-## What 0.4.0a1 does not include
-
-This release does not provide `crm.email.send(...)`, an `EmailProvider` protocol, SMTP, Resend, templates, provider network calls, communication repositories, delivery webhooks, or open/click/bounce ingestion.
-
-Those capabilities are intentionally split across the remaining `0.4.x` prereleases.
-
-## Next milestone
-
-`0.4.0a2` adds the Email Provider Protocol and provider-independent email send service boundary.
+The provider protocol does not implement SMTP or Resend. Templates and the stdlib SMTP adapter arrive in `0.4.0b1`; Resend follows in `0.4.0b2`. Delivery/open/click/bounce events remain reserved for `0.4.0rc1`.

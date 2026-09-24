@@ -49,6 +49,7 @@ nav:
       - Repository Contract: custom-fields/repository-contract.md
   - Communication:
       - Domain Foundation: communication/index.md
+      - Email Provider Protocol: communication/email-provider.md
   - Events:
       - Foundation: events/index.md
   - Audit:
@@ -70,6 +71,7 @@ nav:
       - 0.3.0rc1 Sales Integration: releases/0.3.0rc1.md
       - 0.3.0 Sales Foundation Stable: releases/0.3.0.md
       - 0.4.0a1 Communication Domain: releases/0.4.0a1.md
+      - 0.4.0a2 Email Provider Protocol: releases/0.4.0a2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
