@@ -4,11 +4,18 @@ from __future__ import annotations
 
 from pycrmkit.activities import ActivityId
 from pycrmkit.activities.repository import ActivityRepository
+from pycrmkit.communication import CommunicationIntentId, CommunicationRecordId
+from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.events import DomainEvent
 from pycrmkit.tasks import TaskId
 from pycrmkit.tasks.repository import TaskRepository
 from pycrmkit.timeline.entries import TimelineEntry
-from pycrmkit.timeline.projections import project_activity_created, project_task_event
+from pycrmkit.timeline.projections import (
+    project_activity_created,
+    project_email_queued,
+    project_email_record_event,
+    project_task_event,
+)
 from pycrmkit.timeline.repository import TimelineRepository
 
 _ACTIVITY_EVENTS = frozenset({"activity.created"})
@@ -21,7 +28,11 @@ _TASK_EVENTS = frozenset(
         "task.reopened",
     }
 )
-_SUPPORTED_EVENTS = _ACTIVITY_EVENTS | _TASK_EVENTS
+_EMAIL_EVENTS = frozenset({
+    "email.queued", "email.sent", "email.delivered", "email.opened",
+    "email.clicked", "email.bounced", "email.failed",
+})
+_SUPPORTED_EVENTS = _ACTIVITY_EVENTS | _TASK_EVENTS | _EMAIL_EVENTS
 
 
 class TimelineProjector:
@@ -38,10 +49,12 @@ class TimelineProjector:
         *,
         activities: ActivityRepository,
         tasks: TaskRepository,
+        communications: CommunicationRepository | None = None,
     ) -> None:
         self.repository = repository
         self.activities = activities
         self.tasks = tasks
+        self.communications = communications
 
     @staticmethod
     def supports(event_type: object) -> bool:
@@ -58,6 +71,19 @@ class TimelineProjector:
         elif event_name in _TASK_EVENTS:
             task = self.tasks.get(TaskId.parse(event.aggregate_id))
             entry = project_task_event(event, task)
+        elif event_name in _EMAIL_EVENTS:
+            if self.communications is None:
+                return None
+            if event_name == "email.queued":
+                intent = self.communications.get_intent(
+                    CommunicationIntentId.parse(event.aggregate_id)
+                )
+                entry = project_email_queued(event, intent)
+            else:
+                record = self.communications.get_record(
+                    CommunicationRecordId.parse(event.aggregate_id)
+                )
+                entry = project_email_record_event(event, record)
         else:
             return None
         self.repository.append(entry)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from pycrmkit.communication import CommunicationAddress, EmailProvider, TemplateRenderer
 from pycrmkit.config import CRMConfig, CRMContext
 from pycrmkit.core.events import EventId
 from pycrmkit.core.ids import IDFactory, UUID4Factory
@@ -15,6 +16,7 @@ from pycrmkit.facade.activities import ActivitiesAPI
 from pycrmkit.facade.audit import AuditAPI
 from pycrmkit.facade.contacts import ContactsAPI
 from pycrmkit.facade.custom_fields import CustomFieldsAPI
+from pycrmkit.facade.email import EmailAPI
 from pycrmkit.facade.events import EventsAPI
 from pycrmkit.facade.leads import LeadsAPI
 from pycrmkit.facade.opportunities import OpportunitiesAPI
@@ -46,6 +48,9 @@ class CRM:
         context: CRMContext | None = None,
         id_factory: IDFactory | None = None,
         clock: Clock | None = None,
+        email_provider: EmailProvider | None = None,
+        email_sender: CommunicationAddress | None = None,
+        template_renderer: TemplateRenderer | None = None,
     ) -> None:
         effective_config = config or CRMConfig()
         effective_context = context or CRMContext(
@@ -61,7 +66,11 @@ class CRM:
             clock=clock or SystemClock(),
         )
         self._runtime = runtime
+        self._email_provider = email_provider
+        self._email_sender = email_sender
+        self._template_renderer = template_renderer
         self.activities = ActivitiesAPI(runtime)
+        self.email = EmailAPI(runtime, provider=email_provider, sender=email_sender, renderer=template_renderer)
         self.contacts = ContactsAPI(runtime)
         self.leads = LeadsAPI(runtime)
         self.opportunities = OpportunitiesAPI(runtime)
@@ -84,6 +93,9 @@ class CRM:
         id_factory: IDFactory | None = None,
         clock: Clock | None = None,
         event_bus: InProcessEventBus | None = None,
+        email_provider: EmailProvider | None = None,
+        email_sender: CommunicationAddress | None = None,
+        template_renderer: TemplateRenderer | None = None,
     ) -> CRM:
         """Create an isolated, fully wired in-memory CRM instance."""
         store = MemoryStore()
@@ -99,6 +111,9 @@ class CRM:
             context=context,
             id_factory=id_factory,
             clock=clock,
+            email_provider=email_provider,
+            email_sender=email_sender,
+            template_renderer=template_renderer,
         )
 
     @property
@@ -138,4 +153,7 @@ class CRM:
             context=context,
             id_factory=self._runtime.id_factory,
             clock=self._runtime.clock,
+            email_provider=self._email_provider,
+            email_sender=self._email_sender,
+            template_renderer=self._template_renderer,
         )

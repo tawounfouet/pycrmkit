@@ -6,6 +6,7 @@ from collections.abc import Iterable, Mapping
 from datetime import datetime
 
 from pycrmkit.activities import Activity
+from pycrmkit.communication import CommunicationIntent, CommunicationRecord
 from pycrmkit.core.events import EventType
 from pycrmkit.core.references import EntityReference
 from pycrmkit.events import DomainEvent
@@ -102,4 +103,42 @@ def project_task_event(event: DomainEvent, task: Task) -> TimelineEntry:
         actor_id=event.actor_id,
         correlation_id=event.correlation_id,
         metadata=metadata,
+    )
+
+def _email_business_time(event: DomainEvent, fallback: datetime) -> datetime:
+    raw = event.payload.get("business_occurred_at")
+    if isinstance(raw, str):
+        try:
+            return datetime.fromisoformat(raw)
+        except ValueError:
+            pass
+    return fallback
+
+def _email_title(event: DomainEvent, subject: str | None) -> str:
+    action = str(event.type).partition(".")[2]
+    labels = {
+        "queued":"Email queued", "sent":"Email sent", "delivered":"Email delivered",
+        "opened":"Email opened", "clicked":"Email clicked", "bounced":"Email bounced",
+        "failed":"Email failed",
+    }
+    return f"{labels.get(action, 'Email event')}: {subject}" if subject else labels.get(action, "Email event")
+
+def project_email_queued(event: DomainEvent, intent: CommunicationIntent) -> TimelineEntry:
+    return TimelineEntry(
+        id=_entry_id(event), kind=TimelineEntryKind.COMMUNICATION, event_type=event.type,
+        source_event_id=event.id, entity=EntityReference("communication_intent", intent.id),
+        occurred_at=_email_business_time(event, intent.queued_at or intent.updated_at),
+        title=_email_title(event, intent.content.subject), references=intent.references,
+        actor_id=event.actor_id, correlation_id=event.correlation_id,
+        metadata={"delivery_status":"queued"},
+    )
+
+def project_email_record_event(event: DomainEvent, record: CommunicationRecord) -> TimelineEntry:
+    return TimelineEntry(
+        id=_entry_id(event), kind=TimelineEntryKind.COMMUNICATION, event_type=event.type,
+        source_event_id=event.id, entity=EntityReference("communication_record", record.id),
+        occurred_at=_email_business_time(event, record.last_delivery_event_at or record.occurred_at),
+        title=_email_title(event, record.subject), references=record.references,
+        actor_id=event.actor_id, correlation_id=event.correlation_id,
+        metadata={"delivery_status":str(event.type).partition(".")[2], "provider":event.payload.get("provider")},
     )
