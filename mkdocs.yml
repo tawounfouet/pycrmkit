@@ -55,7 +55,7 @@ nav:
       - Resend Provider: communication/resend.md
       - Delivery History: communication/history.md
   - Events:
-      - Foundation: events/index.md
+      - Registry & Serialization: events/index.md
   - Audit:
       - Foundation: audit/index.md
   - Storage:
@@ -81,6 +81,7 @@ nav:
       - 0.4.0b2 Resend Adapter: releases/0.4.0b2.md
       - 0.4.0rc1 Delivery Events & History: releases/0.4.0rc1.md
       - 0.4.0 Communication Stable: releases/0.4.0.md
+      - 0.5.0a1 Event Registry & Serialization: releases/0.5.0a1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
