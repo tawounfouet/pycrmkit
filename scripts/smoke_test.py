@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.4.0b2 Email Provider Protocol prerelease."""
+"""Installed-package smoke test for the 0.4.0rc1 Email Provider Protocol prerelease."""
 
 from __future__ import annotations
 
@@ -35,8 +35,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.4.0b2":
-        raise SystemExit(f"Expected PyCRMKit 0.4.0b2, got {version!r}")
+    if version != "0.4.0rc1":
+        raise SystemExit(f"Expected PyCRMKit 0.4.0rc1, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -170,9 +170,9 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing Sales RC events: {sorted(missing)!r}")
     if crm.timeline.for_contact(contact.id).total != 3:
-        raise SystemExit("Sales events must remain outside Timeline in 0.4.0b2")
+        raise SystemExit("Sales events must remain outside Timeline in 0.4.0rc1")
 
-    print(f"PyCRMKit {version}: Resend-ready Communication + stable 0.3 smoke OK")
+    print(f"PyCRMKit {version}: Communication RC + stable 0.3 smoke OK")
 
 
 if __name__ == "__main__":
