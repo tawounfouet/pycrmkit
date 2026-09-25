@@ -8,6 +8,7 @@ from threading import RLock
 
 from pycrmkit.activities.entities import Activity, ActivityId
 from pycrmkit.audit.entries import AuditEntry, AuditEntryId
+from pycrmkit.communication import CommunicationIntent, CommunicationIntentId, CommunicationRecord, CommunicationRecordId, DeliveryAttempt, DeliveryAttemptId, EmailDeliveryEvent, EmailDeliveryEventId
 from pycrmkit.contacts.entities import Contact, ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.custom_fields.entities import (
@@ -29,6 +30,10 @@ from pycrmkit.timeline.entries import TimelineEntry, TimelineEntryId
 @dataclass(slots=True)
 class _MemoryState:
     activities: dict[ActivityId, Activity] = field(default_factory=dict)
+    communication_intents: dict[CommunicationIntentId, CommunicationIntent] = field(default_factory=dict)
+    delivery_attempts: dict[DeliveryAttemptId, DeliveryAttempt] = field(default_factory=dict)
+    communication_records: dict[CommunicationRecordId, CommunicationRecord] = field(default_factory=dict)
+    email_delivery_events: dict[EmailDeliveryEventId, EmailDeliveryEvent] = field(default_factory=dict)
     contacts: dict[ContactId, Contact] = field(default_factory=dict)
     leads: dict[LeadId, Lead] = field(default_factory=dict)
     opportunities: dict[OpportunityId, Opportunity] = field(default_factory=dict)

@@ -24,6 +24,22 @@ class CommunicationDirection(StrEnum):
     OUTBOUND = "outbound"
 
 
+class EmailDeliveryEventType(StrEnum):
+    """Normalized email lifecycle event."""
+
+    QUEUED = "queued"
+    SENT = "sent"
+    DELIVERED = "delivered"
+    OPENED = "opened"
+    CLICKED = "clicked"
+    BOUNCED = "bounced"
+    FAILED = "failed"
+
+    @property
+    def event_name(self) -> str:
+        return f"email.{self.value}"
+
+
 def _clean_single_line(value: str) -> str:
     return " ".join(unicodedata.normalize("NFKC", value).strip().split())
 
