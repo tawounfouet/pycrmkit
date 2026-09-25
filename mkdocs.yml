@@ -64,6 +64,7 @@ nav:
       - 0.1 Public API: api/0.1-public-api.md
       - 0.2 Public API: api/0.2-public-api.md
       - 0.3 Public API: api/0.3-public-api.md
+      - 0.4 Public API: api/0.4-public-api.md
   - Releases:
       - 0.1.0 CRM Core Stable: releases/0.1.0.md
       - 0.2.0rc1 Activity & Timeline RC: releases/0.2.0rc1.md
@@ -79,6 +80,7 @@ nav:
       - 0.4.0b1 Templates & SMTP: releases/0.4.0b1.md
       - 0.4.0b2 Resend Adapter: releases/0.4.0b2.md
       - 0.4.0rc1 Delivery Events & History: releases/0.4.0rc1.md
+      - 0.4.0 Communication Stable: releases/0.4.0.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

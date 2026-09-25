@@ -12,6 +12,10 @@ EmailProvider
 DeliveryAttempt
     ↓
 CommunicationRecord
+    ↓
+EmailDeliveryEvent history
+    ↓
+TimelineEntryKind.COMMUNICATION
 ```
 
 These concepts deliberately do **not** mean the same thing.
@@ -40,6 +44,16 @@ See [Email Provider Protocol](email-provider.md).
 
 `CommunicationRecord` remains the relationship-history representation consumed by CRM read models. Message bodies are deliberately not duplicated into the record.
 
-## Still deferred
+## Stable 0.4.x scope
 
-The provider protocol does not implement SMTP or Resend. Templates and the stdlib SMTP adapter arrive in `0.4.0b1`; Resend follows in `0.4.0b2`. Delivery/open/click/bounce events remain reserved for `0.4.0rc1`.
+The stable line includes provider-neutral templates, the stdlib SMTP adapter,
+the optional Resend adapter, normalized delivery/open/click/bounce/failure
+history, Memory persistence, `crm.email`, and Communication Timeline
+projection.
+
+Communication is not mirrored into `Activity(type="email")`. Its source of
+truth remains `CommunicationRecord`, while Timeline provides the
+cross-domain customer-history view.
+
+Durable webhooks/event delivery remain part of `0.5.x`; production
+SQLAlchemy/PostgreSQL persistence remains part of `0.6.x`.

@@ -4,11 +4,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.3.0 — Sales Foundation Stable**.
+Current version: **0.4.0 — Communication Stable**.
 
-The stable `0.2` Activity/Task/Timeline contract remains compatibility-frozen. `0.3.0` promotes the fully qualified Sales Foundation to stable: Leads, Opportunities, Pipelines/Stages, atomic/idempotent conversion, invalid-transition rejection, won/lost outcomes, Sales events, audit, and the documented `0.3.x` public API.
+The stable `0.1`–`0.3` CRM, Activity/Timeline and Sales contracts remain compatibility-frozen. `0.4.0` promotes the fully qualified Communication line to stable: provider-neutral email, templates, stdlib SMTP, optional Resend, transactional `crm.email`, delivery history, normalized lifecycle events and Communication Timeline projection.
 
-The project is intentionally framework-agnostic at its core. Django, FastAPI, SQLAlchemy, PostgreSQL, communication providers, AI, and agent integrations are optional capabilities introduced through dedicated milestones.
+The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2 and Resend remain optional extras. Django, FastAPI, SQLAlchemy, PostgreSQL, durable webhooks, AI, and agent integrations are introduced through later milestones.
 
 ## Architecture
 
@@ -92,8 +92,13 @@ pytest
 0.3.0b2 Lead Conversion                           ✓
 0.3.0rc1 Sales Integration                         ✓
 0.3.0  Sales Foundation                             ✓
-0.4.0  Communication                                →
-0.5.0  Eventing & Webhooks
+0.4.0a1 Communication Domain                         ✓
+0.4.0a2 Email Provider Protocol                      ✓
+0.4.0b1 Templates & SMTP                             ✓
+0.4.0b2 Resend Adapter                               ✓
+0.4.0rc1 Delivery Events & History                   ✓
+0.4.0  Communication Stable                          ✓
+0.5.0  Eventing & Webhooks                           →
 0.6.0  Persistence Foundation
 0.7.0  FastAPI Integration
 0.8.0  Django Integration

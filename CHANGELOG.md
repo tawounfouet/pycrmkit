@@ -6,6 +6,21 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-25
+
+### Stable
+- Promoted the fully qualified `0.4.0rc1` Communication line to stable without adding new business scope.
+- Froze the documented `0.4.x` `crm.email` facade, provider-neutral email contracts, normalized lifecycle events, Memory Communication persistence, and Communication Timeline projection.
+- Qualified templates, stdlib SMTP, optional Resend, provider-result persistence, callback idempotency, out-of-order delivery history, and communication-history E2E as one integrated release line.
+- Preserved the stable `0.1`–`0.3` public surfaces and shallow root exports.
+- Finalized the architectural decision that Communication projects directly into Timeline rather than creating duplicate email Activity entities.
+
+### Changed
+- Package version advanced from `0.4.0rc1` to `0.4.0`.
+- Communication documentation now reflects the complete stable scope and removes prerelease deferrals.
+- Installed-wheel smoke now exercises transactional `crm.email` send, delivery callback ingestion, history and Timeline projection.
+
+
 ## [0.4.0rc1] - 2026-09-25
 
 ### Added

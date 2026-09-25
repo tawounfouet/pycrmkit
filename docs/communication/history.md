@@ -31,3 +31,15 @@ External event IDs provide idempotent callback replay. Events arriving out of ch
 crm.email.for_contact and crm.email.for_organization return CommunicationRecord history. crm.email.delivery_history returns the normalized lifecycle events for one record.
 
 The customer Timeline projects Communication events as kind communication while preserving Activity and Task entries as separate domains.
+
+
+## Stable architecture decision
+
+`CommunicationRecord` is the authoritative CRM communication-history entity.
+Delivery lifecycle occurrences are stored as `EmailDeliveryEvent` values and
+projected into Timeline as `TimelineEntryKind.COMMUNICATION`.
+
+PyCRMKit does not automatically create `Activity(type="email")` for the same
+communication. Doing so would duplicate identity, timestamps, provider state
+and lifecycle history across two source entities. Activity and Communication
+remain separate domains that converge only in the Timeline read model.
