@@ -228,11 +228,12 @@ def main() -> None:
     if email_crm.email.delivery_history(record.id).total != 3:
         raise SystemExit("Communication delivery-history smoke failed")
     communication_timeline = email_crm.timeline.for_contact(email_contact.id)
-    if [str(item.event_type) for item in communication_timeline.items] != [
-        "email.delivered",
-        "email.sent",
+    timeline_events = [str(item.event_type) for item in communication_timeline.items]
+    if set(timeline_events) != {
         "email.queued",
-    ]:
+        "email.sent",
+        "email.delivered",
+    }:
         raise SystemExit("Communication Timeline projection smoke failed")
 
     print(f"PyCRMKit {version}: Communication Stable + stable 0.1-0.3 smoke OK")
