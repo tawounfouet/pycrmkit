@@ -1,4 +1,4 @@
-"""Compatibility smoke for the stable PyCRMKit 0.3 surface under 0.4 prerelease."""
+"""Compatibility smoke for the stable PyCRMKit 0.4 public surface."""
 
 import pycrmkit
 from pycrmkit import CRM, CRMConfig, CRMContext, __version__
@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.4.0rc1"
+    assert __version__ == "0.4.0"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -31,6 +31,7 @@ def test_stable_0_3_namespaces_remain_available() -> None:
         "leads",
         "opportunities",
         "pipelines",
+        "email",
     ):
         assert getattr(crm, name) is not None
 
@@ -60,3 +61,16 @@ def test_stable_0_3_pipeline_facade_surface() -> None:
     assert hasattr(crm.pipelines, "define")
     assert hasattr(crm.pipelines, "get")
     assert hasattr(crm.pipelines, "list")
+
+
+def test_stable_0_4_email_facade_surface() -> None:
+    crm = CRM.memory()
+    for name in (
+        "send",
+        "record_delivery_event",
+        "get",
+        "for_contact",
+        "for_organization",
+        "delivery_history",
+    ):
+        assert hasattr(crm.email, name)

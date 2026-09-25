@@ -1,4 +1,4 @@
-"""Installed-package smoke test for the 0.4.0rc1 Email Provider Protocol prerelease."""
+"""Installed-package smoke test for PyCRMKit 0.4.0 Communication Stable."""
 
 from __future__ import annotations
 
@@ -10,7 +10,11 @@ from pycrmkit.activities import ActivityParticipant
 from pycrmkit.communication import (
     CommunicationAddress,
     CommunicationChannel,
+    CommunicationContent,
+    CommunicationRecipient,
+    EmailDeliveryEventType,
     EmailDeliveryStatus,
+    EmailMessage,
     EmailProviderResult,
 )
 from pycrmkit.core import Money
@@ -35,8 +39,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.4.0rc1":
-        raise SystemExit(f"Expected PyCRMKit 0.4.0rc1, got {version!r}")
+    if version != "0.4.0":
+        raise SystemExit(f"Expected PyCRMKit 0.4.0, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -65,7 +69,7 @@ def main() -> None:
     clock = FixedClock(datetime(2026, 9, 24, 7, tzinfo=UTC))
     crm = pycrmkit.CRM.memory(clock=clock).with_context(
         actor_id="installed-smoke",
-        correlation_id="communication-b2-smoke",
+        correlation_id="communication-stable-smoke",
     )
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
     organization = crm.organizations.create(legal_name="Smoke Org")
@@ -170,9 +174,68 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing Sales RC events: {sorted(missing)!r}")
     if crm.timeline.for_contact(contact.id).total != 3:
-        raise SystemExit("Sales events must remain outside Timeline in 0.4.0rc1")
+        raise SystemExit("Sales events must remain outside Timeline in 0.4.0")
 
-    print(f"PyCRMKit {version}: Communication RC + stable 0.3 smoke OK")
+    class SmokeEmailProvider:
+        def send(self, message: EmailMessage) -> EmailProviderResult:
+            if message.content.subject != "Stable communication smoke":
+                raise SystemExit("Email provider received unexpected content")
+            return EmailProviderResult(
+                provider="smoke",
+                status=EmailDeliveryStatus.ACCEPTED,
+                provider_message_id="smoke-provider-message",
+            )
+
+    email_crm = pycrmkit.CRM.memory(
+        clock=clock,
+        email_provider=SmokeEmailProvider(),
+        email_sender=CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "sender@example.com",
+        ),
+    )
+    email_contact = email_crm.contacts.create(display_name="Communication Smoke")
+    email_ref = EntityReference("contact", email_contact.id)
+    record = email_crm.email.send(
+        to=(
+            CommunicationRecipient(
+                CommunicationAddress(
+                    CommunicationChannel.EMAIL,
+                    "recipient@example.com",
+                ),
+                reference=email_ref,
+            ),
+        ),
+        content=CommunicationContent(
+            subject="Stable communication smoke",
+            text_body="Smoke body",
+        ),
+        idempotency_key="stable-communication-smoke",
+    )
+    if record.delivery_status is not EmailDeliveryEventType.SENT:
+        raise SystemExit("Communication send/history smoke failed")
+
+    email_crm.email.record_delivery_event(
+        provider="smoke",
+        provider_message_id="smoke-provider-message",
+        event_type=EmailDeliveryEventType.DELIVERED,
+        occurred_at=clock.now(),
+        external_event_id="smoke-delivered",
+    )
+    current = email_crm.email.get(record.id)
+    if current.delivery_status is not EmailDeliveryEventType.DELIVERED:
+        raise SystemExit("Communication callback state smoke failed")
+    if email_crm.email.delivery_history(record.id).total != 3:
+        raise SystemExit("Communication delivery-history smoke failed")
+    communication_timeline = email_crm.timeline.for_contact(email_contact.id)
+    if [str(item.event_type) for item in communication_timeline.items] != [
+        "email.delivered",
+        "email.sent",
+        "email.queued",
+    ]:
+        raise SystemExit("Communication Timeline projection smoke failed")
+
+    print(f"PyCRMKit {version}: Communication Stable + stable 0.1-0.3 smoke OK")
 
 
 if __name__ == "__main__":
