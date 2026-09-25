@@ -1,10 +1,12 @@
 # Events Foundation
 
-`0.1.0b4` introduces the first CRM domain-event surface.
+PyCRMKit's event foundation started in `0.1.0b4`. `0.5.0a1` promotes the
+existing event envelope toward a stable integration surface by adding an
+explicit registry and deterministic serialization.
 
 ## DomainEvent envelope
 
-Every event uses the same immutable envelope:
+Every event keeps the existing immutable envelope:
 
 ```text
 id
@@ -20,52 +22,56 @@ payload
 metadata
 ```
 
-Public event names are normalized dotted identifiers such as:
+The schema version belongs to the event contract and is independent from the
+PyCRMKit package version.
 
-```text
-contact.created
-organization.updated
-relationship.removed
+## Event registry
+
+`EventRegistry` registers exact `(event_type, schema_version)` pairs.
+
+```python
+from pycrmkit.events import EventRegistry
+
+registry = EventRegistry()
+registry.register("contact.created", 1)
+registry.register("contact.created", 2)
+assert registry.latest("contact.created").schema_version == 2
 ```
 
-`schema_version` belongs to the event contract and is independent from the PyCRMKit package version.
+Duplicate type/version registrations raise `DuplicateError`. Unknown
+contracts raise `NotFoundError`.
 
-## JSON contract
+`default_event_registry()` returns a fresh registry containing the 41 stable
+v1 event names emitted by the stable 0.1–0.4 facade domains.
 
-`payload` and `metadata` must contain JSON-compatible values. They are recursively frozen inside the event so a published occurrence cannot be mutated casually after creation.
+## Stable serialization
 
-`DomainEvent.to_dict()` exposes the stable JSON-compatible envelope used by compatibility fixtures. `DomainEvent.from_dict()` reconstructs that envelope without introducing an event registry yet.
+`EventSerializer` validates every event against its registry before
+serialization and after deserialization.
+
+```python
+from pycrmkit.events import EventSerializer, default_event_registry
+
+serializer = EventSerializer(default_event_registry())
+encoded = serializer.dumps(event)
+restored = serializer.loads(encoded)
+```
+
+The JSON representation is deterministic: sorted keys, compact separators and
+`ensure_ascii=False`. A canonical `contact.created` v1 fixture is maintained
+under `tests/fixtures/events/` as a compatibility guard.
+
+Registry enforcement applies to the public serialization/integration boundary;
+this alpha does not force arbitrary internal/custom `DomainEvent` creation
+through the registry.
 
 ## In-process event bus
 
-`InProcessEventBus` supports exact event-type subscriptions:
+`InProcessEventBus` remains synchronous and exact-type based. A subscriber
+failure after commit does not roll back already committed domain state.
 
-```python
-bus.subscribe("contact.created", handler)
+## Deferred
 
-@bus.on("contact.updated")
-def on_contact_updated(event):
-    ...
-```
-
-Handlers run synchronously in subscription order. Duplicate registration of the same handler/event pair is idempotent. Handler exceptions propagate to the publisher.
-
-No distributed transport, webhook delivery, retry, dead-letter queue, transactional outbox, or durable event store is part of `0.1.0b4`.
-
-## Transaction boundary
-
-`MemoryUnitOfWork.add_event()` stages events while the transaction is active:
-
-```text
-domain mutation
-    +
-staged DomainEvent
-    ↓
-commit state
-    ↓
-dispatch staged events
-```
-
-Rollback, exceptions before commit, and context exit without commit discard pending events.
-
-A subscriber failure after commit does **not** roll back state that was already committed. Durable delivery/retry semantics require the later outbox/webhook milestones.
+`0.5.0a1` does not add webhook subscriptions, HMAC signing, retry/backoff,
+dead-letter state, durable delivery or a transactional outbox. Those belong to
+later `0.5.x` milestones.

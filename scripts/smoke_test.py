@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.4.0 Communication Stable."""
+"""Installed-package smoke test for PyCRMKit 0.5.0a1 Event Registry."""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ from pycrmkit.communication import (
 from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
+from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
 from pycrmkit.leads import LeadStatus
 from pycrmkit.opportunities import OpportunityStatus
 from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
@@ -39,8 +40,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.4.0":
-        raise SystemExit(f"Expected PyCRMKit 0.4.0, got {version!r}")
+    if version != "0.5.0a1":
+        raise SystemExit(f"Expected PyCRMKit 0.5.0a1, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -236,7 +237,17 @@ def main() -> None:
     }:
         raise SystemExit("Communication Timeline projection smoke failed")
 
-    print(f"PyCRMKit {version}: Communication Stable + stable 0.1-0.3 smoke OK")
+    captured_events: list[DomainEvent] = []
+    registry_crm = pycrmkit.CRM.memory(clock=clock)
+    registry_crm.events.subscribe("contact.created", captured_events.append)
+    registry_crm.contacts.create(display_name="Event Registry Smoke")
+    serializer = EventSerializer(default_event_registry())
+    encoded = serializer.dumps(captured_events[0])
+    restored = serializer.loads(encoded)
+    if restored.to_dict() != captured_events[0].to_dict():
+        raise SystemExit("Event registry/serialization installed smoke failed")
+
+    print(f"PyCRMKit {version}: Event Registry + stable 0.1-0.4 smoke OK")
 
 
 if __name__ == "__main__":
