@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.4.0 — Communication Stable**.
+Current version: **0.5.0a1 — Event Registry & Serialization**.
 
-The stable `0.1`–`0.3` CRM, Activity/Timeline and Sales contracts remain compatibility-frozen. `0.4.0` promotes the fully qualified Communication line to stable: provider-neutral email, templates, stdlib SMTP, optional Resend, transactional `crm.email`, delivery history, normalized lifecycle events and Communication Timeline projection.
+The stable `0.1`–`0.4` CRM, Activity/Timeline, Sales and Communication contracts remain compatibility-frozen. `0.5.0a1` begins the Eventing & Webhooks line with a version-aware event registry and deterministic public JSON serialization.
 
 The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2 and Resend remain optional extras. Django, FastAPI, SQLAlchemy, PostgreSQL, durable webhooks, AI, and agent integrations are introduced through later milestones.
 
@@ -98,7 +98,8 @@ pytest
 0.4.0b2 Resend Adapter                               ✓
 0.4.0rc1 Delivery Events & History                   ✓
 0.4.0  Communication Stable                          ✓
-0.5.0  Eventing & Webhooks                           →
+0.5.0a1 Event Registry & Serialization                →
+0.5.0  Eventing & Webhooks
 0.6.0  Persistence Foundation
 0.7.0  FastAPI Integration
 0.8.0  Django Integration

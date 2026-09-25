@@ -6,6 +6,24 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.5.0a1] - 2026-09-25
+
+### Added
+- Version-aware `EventDefinition` and `EventRegistry` for exact public event type/schema pairs.
+- Fresh `default_event_registry()` containing the 41 stable v1 events emitted by the `0.1`–`0.4` domains.
+- Registry-governed `EventSerializer` with deterministic compact JSON serialization and validated deserialization.
+- Canonical `contact.created` v1 serialization fixture for integration compatibility.
+- Unit/smoke coverage for registration, duplicate detection, version resolution, unknown schemas, canonical JSON, and installed-package round trips.
+
+### Changed
+- Package version advanced from `0.4.0` to `0.5.0a1`.
+- Events documentation now distinguishes flexible internal event creation from the registered public serialization boundary.
+
+### Deferred
+- Correlation/causation integration remains scheduled for `0.5.0a2`.
+- Webhook registrations, HMAC signing, retry/backoff, delivery logs, idempotent external delivery and dead-letter behavior remain later `0.5.x` milestones.
+
+
 ## [0.4.0] - 2026-09-25
 
 ### Stable
