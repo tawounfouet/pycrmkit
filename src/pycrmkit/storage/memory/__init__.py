@@ -3,6 +3,7 @@
 from pycrmkit.storage.memory._state import MemoryStore
 from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
+from pycrmkit.storage.memory.communication import MemoryCommunicationRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
 from pycrmkit.storage.memory.leads import MemoryLeadRepository
@@ -18,6 +19,7 @@ from pycrmkit.storage.memory.unit_of_work import MemoryUnitOfWork
 __all__ = [
     "MemoryActivityRepository",
     "MemoryAuditRepository",
+    "MemoryCommunicationRepository",
     "MemoryContactRepository",
     "MemoryCustomFieldRepository",
     "MemoryLeadRepository",

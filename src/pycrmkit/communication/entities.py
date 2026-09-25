@@ -13,6 +13,7 @@ from pycrmkit.communication.value_objects import (
     CommunicationContent,
     CommunicationDirection,
     CommunicationRecipient,
+    EmailDeliveryEventType,
 )
 from pycrmkit.core.entities import TimestampedEntity
 from pycrmkit.core.ids import UUIDId
@@ -364,6 +365,8 @@ class CommunicationRecord(TimestampedEntity[CommunicationRecordId]):
     intent_id: CommunicationIntentId | None = None
     delivery_attempt_id: DeliveryAttemptId | None = None
     external_id: str | None = None
+    delivery_status: EmailDeliveryEventType | None = None
+    last_delivery_event_at: datetime | None = None
     metadata: dict[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -421,4 +424,42 @@ class CommunicationRecord(TimestampedEntity[CommunicationRecordId]):
             field_name="external_id",
             max_length=500,
         )
+        if self.delivery_status is not None:
+            self.delivery_status = EmailDeliveryEventType(self.delivery_status)
+            if self.delivery_status is EmailDeliveryEventType.QUEUED:
+                raise ValidationError(
+                    "communication records cannot use queued as delivery status",
+                    code="communication.record.delivery_status.queued_invalid",
+                )
+        self.last_delivery_event_at = (
+            as_utc(self.last_delivery_event_at)
+            if self.last_delivery_event_at is not None
+            else None
+        )
+        if (self.delivery_status is None) != (self.last_delivery_event_at is None):
+            raise ValidationError(
+                "delivery_status and last_delivery_event_at must be set together",
+                code="communication.record.delivery_state.incomplete",
+            )
         self.metadata = dict(self.metadata)
+
+    def apply_delivery_event(
+        self,
+        event_type: EmailDeliveryEventType | str,
+        *,
+        occurred_at: datetime,
+        recorded_at: datetime,
+    ) -> None:
+        parsed = EmailDeliveryEventType(event_type)
+        if parsed is EmailDeliveryEventType.QUEUED:
+            raise ValidationError(
+                "queued events belong to intents",
+                code="communication.record.delivery_status.queued_invalid",
+            )
+        business_time = as_utc(occurred_at)
+        ingestion_time = as_utc(recorded_at)
+        if self.last_delivery_event_at is None or business_time >= self.last_delivery_event_at:
+            self.delivery_status = parsed
+            self.last_delivery_event_at = business_time
+        if ingestion_time > self.updated_at:
+            self.updated_at = ingestion_time

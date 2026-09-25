@@ -6,6 +6,22 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.4.0rc1] - 2026-09-25
+
+### Added
+- Transactional crm.email send/history namespace with direct and templated email support.
+- Memory persistence for communication intents, attempts, CRM records and append-only delivery events.
+- Normalized email.queued, email.sent, email.delivered, email.opened, email.clicked, email.bounced and email.failed events.
+- Provider callback replay idempotency by external event ID and provider-message correlation.
+- Communication Timeline projections and contact/organization communication-history queries.
+- Out-of-order callback protection for current CommunicationRecord delivery state.
+- Communication-history release-candidate E2E qualification.
+
+### Changed
+- Package version advanced from 0.4.0b2 to 0.4.0rc1.
+- The 0.4 Communication feature scope is now frozen pending stable promotion.
+
+
 ## [0.4.0b2] - 2026-09-24
 
 ### Added

@@ -25,6 +25,7 @@ class TimelineEntryKind(StrEnum):
 
     ACTIVITY = "activity"
     TASK = "task"
+    COMMUNICATION = "communication"
 
 
 def _required_text(value: str, *, field_name: str, max_length: int) -> str:

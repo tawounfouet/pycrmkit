@@ -83,6 +83,7 @@ class CRMRuntime:
                 uow.timeline,
                 activities=uow.activities,
                 tasks=uow.tasks,
+                communications=uow.communications,
             ).project(event)
         if self.config.audit_enabled:
             AuditService(

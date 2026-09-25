@@ -7,6 +7,7 @@ from typing import Protocol, Self
 
 from pycrmkit.activities.repository import ActivityRepository
 from pycrmkit.audit.repository import AuditRepository
+from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.contacts.repository import ContactRepository
 from pycrmkit.custom_fields.repository import CustomFieldRepository
 from pycrmkit.events.envelope import DomainEvent
@@ -26,6 +27,10 @@ class UnitOfWork(Protocol):
     @property
     def activities(self) -> ActivityRepository:
         """Activities participating in the current transaction."""
+
+    @property
+    def communications(self) -> CommunicationRepository:
+        """Communication state in the current transaction."""
 
     @property
     def contacts(self) -> ContactRepository:

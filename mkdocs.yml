@@ -53,6 +53,7 @@ nav:
       - Templates: communication/templates.md
       - SMTP Provider: communication/smtp.md
       - Resend Provider: communication/resend.md
+      - Delivery History: communication/history.md
   - Events:
       - Foundation: events/index.md
   - Audit:
@@ -77,6 +78,7 @@ nav:
       - 0.4.0a2 Email Provider Protocol: releases/0.4.0a2.md
       - 0.4.0b1 Templates & SMTP: releases/0.4.0b1.md
       - 0.4.0b2 Resend Adapter: releases/0.4.0b2.md
+      - 0.4.0rc1 Delivery Events & History: releases/0.4.0rc1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
