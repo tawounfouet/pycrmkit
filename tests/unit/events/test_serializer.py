@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 from uuid import UUID
 
 import pytest
@@ -69,3 +70,20 @@ def test_serializer_rejects_invalid_json_and_non_object_envelope() -> None:
     with pytest.raises(ValidationError) as non_object:
         serializer.loads("[]")
     assert non_object.value.code == "event.serialization.invalid_envelope"
+
+
+def test_canonical_contact_created_v1_fixture_is_stable() -> None:
+    registry = EventRegistry()
+    registry.register("contact.created", 1)
+    serializer = EventSerializer(registry)
+    fixture = Path("tests/fixtures/events/contact-created-v1.canonical.json")
+
+    assert serializer.dumps(
+        DomainEvent.from_dict(
+            json.loads(
+                Path("tests/fixtures/events/contact-created-v1.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+        )
+    ) == fixture.read_text(encoding="utf-8")
