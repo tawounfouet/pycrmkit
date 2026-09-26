@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
@@ -44,7 +44,7 @@ class SQLAlchemyTagRepository:
     def find_by_normalized(self, normalized_name: str) -> Tag | None:
         model = self.session.scalar(
             select(TagModel).where(
-                func.lower(TagModel.name) == normalized_name
+                TagModel.normalized_name == normalized_name
             )
         )
         return None if model is None else tag_from_model(model)
@@ -71,7 +71,7 @@ class SQLAlchemyTagRepository:
         statement = select(TagModel)
         if query.name is not None:
             statement = statement.where(
-                func.lower(TagModel.name) == query.name.normalized
+                TagModel.normalized_name == query.name.normalized
             )
         statement = statement.order_by(
             TagModel.created_at.asc(),
@@ -147,7 +147,7 @@ class SQLAlchemyTagRepository:
                 TagAssignmentModel.entity_id == str(entity.id),
             )
             .order_by(
-                func.lower(TagModel.name).asc(),
+                TagModel.normalized_name.asc(),
                 TagModel.id.asc(),
             )
         )
