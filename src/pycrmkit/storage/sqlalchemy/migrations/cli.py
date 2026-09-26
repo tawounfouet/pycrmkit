@@ -5,12 +5,16 @@ from __future__ import annotations
 import argparse
 import os
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from alembic.config import Config
 
 SCRIPT_LOCATION = "pycrmkit.storage.sqlalchemy:migrations"
 DATABASE_ENV = "PYCRMKIT_DATABASE_URL"
 
 
-def migration_config(database_url: str | None = None):
+def migration_config(database_url: str | None = None) -> Config:
     """Build an Alembic Config using the packaged migration environment."""
 
     try:
