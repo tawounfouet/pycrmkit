@@ -13,6 +13,11 @@ if not settings.configured:
     settings.configure(
         SECRET_KEY="pycrmkit-django-tests",
         INSTALLED_APPS=[
+            "django.contrib.admin",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "django.contrib.sessions",
+            "django.contrib.messages",
             "pycrmkit.integrations.django.apps.PyCRMKitDjangoConfig",
         ],
         DATABASES={
