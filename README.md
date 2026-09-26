@@ -4,12 +4,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current stable version: **0.7.0 — FastAPI Integration Stable**.  
-Latest integration prerelease: **0.8.0rc1 — Django Example + E2E**.
+Current stable version: **0.8.0 — Django Integration Stable**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.7.0` is the stable FastAPI line. `0.8.0rc1` now qualifies the Django app/persistence bridge, migrations, admin, transactions and optional DRF surface together through a PostgreSQL 17 reference application and clean-wheel E2E.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` promotes the fully qualified Django release candidate without new functional scope: the Django app/persistence bridge, migrations, admin, transaction bridge and optional DRF surface are now the stable Django integration line, qualified through PostgreSQL 17 and clean-wheel E2E.
 
 ## Architecture
 
@@ -121,8 +120,8 @@ pytest
 0.8.0b1 Django Migrations & Admin                                      ✓
 0.8.0b2 Optional DRF                                                   ✓
 0.8.0rc1 Django Example + E2E                                          ✓
-0.8.0  Django Integration                                              →
-0.9.0  Data Operations
+0.8.0  Django Integration                                              ✓
+0.9.0  Data Operations                                                   →
 1.0.0  Production Stable
 ```
 
