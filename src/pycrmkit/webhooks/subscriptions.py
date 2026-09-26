@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
 from pycrmkit.core.events import EventType
 from pycrmkit.core.ids import IDFactory, UUID4Factory
@@ -11,6 +12,9 @@ from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.events import DomainEvent, EventRegistry
 from pycrmkit.webhooks.entities import WebhookSubscription, WebhookSubscriptionId
+
+if TYPE_CHECKING:
+    from pycrmkit.webhooks.repository import WebhookSubscriptionRepository
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,7 +37,7 @@ class WebhookSubscriptionQuery:
 class WebhookSubscriptionService:
     """Manage webhook registrations without delivering network requests."""
 
-    repository: object
+    repository: WebhookSubscriptionRepository
     registry: EventRegistry
     id_factory: IDFactory = field(default_factory=UUID4Factory)
     clock: Clock = field(default_factory=SystemClock)
