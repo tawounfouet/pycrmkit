@@ -11,7 +11,7 @@ from pycrmkit.audit import AuditEntry, AuditEntryId
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.core.events import EventId, EventType
 from pycrmkit.events import DomainEvent, InProcessEventBus
-from pycrmkit.exceptions import NotFoundError
+from pycrmkit.exceptions import InvalidStateError, NotFoundError
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 
 NOW = datetime(2026, 9, 6, 19, 0, tzinfo=UTC)
@@ -133,3 +133,35 @@ def test_handler_failure_does_not_undo_already_committed_state() -> None:
 
     with MemoryUnitOfWork(store) as uow:
         assert uow.contacts.get(contact.id) == contact
+
+
+def test_post_commit_subscriber_can_open_follow_up_uow_on_same_store() -> None:
+    store = MemoryStore()
+    bus = InProcessEventBus()
+    contact = _contact()
+    observed: list[Contact] = []
+
+    def inspect_committed_state(event: DomainEvent) -> None:
+        del event
+        with MemoryUnitOfWork(store) as follow_up:
+            observed.append(follow_up.contacts.get(contact.id))
+
+    bus.subscribe("contact.created", inspect_committed_state)
+
+    with MemoryUnitOfWork(store, event_publisher=bus) as uow:
+        uow.contacts.save(contact)
+        uow.add_event(_event())
+        uow.commit()
+
+    assert observed == [contact]
+
+
+def test_second_commit_on_same_memory_uow_is_rejected() -> None:
+    store = MemoryStore()
+
+    with MemoryUnitOfWork(store) as uow:
+        uow.commit()
+        with pytest.raises(InvalidStateError) as error:
+            uow.commit()
+
+    assert error.value.code == "memory.uow.already_committed"
