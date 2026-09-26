@@ -5,11 +5,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **0.6.0 — Persistence Foundation Stable**.  
-Latest integration prerelease: **0.7.0b2 — OpenAPI & Error Mapping**.
+Latest integration prerelease: **0.7.0rc1 — FastAPI Example + E2E**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2, Resend, SQLAlchemy/PostgreSQL, and FastAPI remain opt-in integrations. `0.7.0b2` adds stable FastAPI error mapping, exception handlers and selective OpenAPI contracts on top of the reusable router layer while keeping the core independent from FastAPI/Pydantic. Django, data operations, AI, and agent integrations remain later milestones.
+The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2, Resend, SQLAlchemy/PostgreSQL, and FastAPI remain opt-in integrations. `0.7.0rc1` qualifies the complete FastAPI line against PostgreSQL with a reference application, migration-first deployment flow, API E2E and installed-wheel smoke while keeping the core independent from FastAPI/Pydantic. Django, data operations, AI, and agent integrations remain later milestones.
 
 ## Architecture
 
@@ -115,8 +115,8 @@ pytest
 0.7.0a1 Schemas & Dependency Bridge                              ✓
 0.7.0b1 Routers                                                   ✓
 0.7.0b2 OpenAPI & Error Mapping                                  ✓
-0.7.0rc1 Example + E2E                                             →
-0.7.0  FastAPI Integration
+0.7.0rc1 Example + E2E                                             ✓
+0.7.0  FastAPI Integration                                           →
 0.8.0  Django Integration
 0.9.0  Data Operations
 1.0.0  Production Stable
