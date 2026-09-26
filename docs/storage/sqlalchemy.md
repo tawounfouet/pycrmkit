@@ -239,8 +239,11 @@ downgrade.
 Released migration revisions are immutable. Persistence-model changes require a
 new reviewed Alembic revision.
 
-The `0.6.0rc1` qualification additionally executes the reusable repository
-contract suite against PostgreSQL and verifies the packaged migration chain from
-an installed wheel.
+The `0.6.0rc1` qualification executes the reusable repository contract suite
+against PostgreSQL and verifies the packaged migration chain from an installed
+wheel.
 
-The next milestone is **`0.6.0 — Persistence Foundation Stable`**.
+`0.6.0` promotes that qualified behavior to the stable persistence contract
+without changing the migration head or persistence semantics.
+
+The next milestone is **`0.7.0 — FastAPI Integration`**.
