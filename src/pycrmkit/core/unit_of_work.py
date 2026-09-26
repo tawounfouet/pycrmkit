@@ -11,6 +11,7 @@ from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.contacts.repository import ContactRepository
 from pycrmkit.custom_fields.repository import CustomFieldRepository
 from pycrmkit.events.envelope import DomainEvent
+from pycrmkit.external_identities.repository import ExternalIdentityRepository
 from pycrmkit.leads.repository import LeadRepository
 from pycrmkit.opportunities.repository import OpportunityRepository
 from pycrmkit.organizations.repository import OrganizationRepository
@@ -75,6 +76,10 @@ class UnitOfWork(Protocol):
     @property
     def custom_fields(self) -> CustomFieldRepository:
         """Custom fields participating in the current transaction."""
+
+    @property
+    def external_identities(self) -> ExternalIdentityRepository:
+        """External identity mappings participating in the current transaction."""
 
     @property
     def audit(self) -> AuditRepository:
