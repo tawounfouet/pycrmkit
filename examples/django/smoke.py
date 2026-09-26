@@ -78,6 +78,16 @@ def seed(state_path: Path) -> None:
     )
     _expect(organization, 201)
 
+    from pycrmkit_example.crm import get_crm
+
+    external_identity = get_crm().external_identities.attach(
+        get_crm().contacts.get(contact.data["id"]),
+        system="hubspot",
+        external_id="django-contact-ada-001",
+        metadata={"reference_app": "django-postgresql"},
+    )
+    assert external_identity.system == "hubspot"
+
     relationship = client.post(
         "/crm/relationships/",
         {
@@ -128,6 +138,14 @@ def verify(state_path: Path) -> None:
 
     state = json.loads(state_path.read_text(encoding="utf-8"))
     client = APIClient()
+
+    from pycrmkit_example.crm import get_crm
+
+    external_identity = get_crm().external_identities.resolve(
+        "hubspot",
+        "django-contact-ada-001",
+    )
+    assert str(external_identity.entity_id) == state["contact_id"]
 
     contact = client.get(f"/crm/contacts/{state['contact_id']}/")
     _expect(contact, 200)
