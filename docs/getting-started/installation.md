@@ -65,7 +65,7 @@ Install the optional Django bridge with:
 pip install "pycrmkit[django]"
 ```
 
-The `0.8.0b2` prerelease targets Django 5.2 LTS while preserving PyCRMKit's
+The `0.8.0rc1` prerelease targets Django 5.2 LTS while preserving PyCRMKit's
 Python 3.11–3.13 compatibility matrix.
 
 Add the PyCRMKit application explicitly:
@@ -141,6 +141,27 @@ REST_FRAMEWORK = {
 The packaged PyCRMKit ViewSets already normalize PyCRMKit domain errors and DRF
 request-validation errors. The global setting extends the same handler to other
 DRF views in the consuming application.
+
+## Django + PostgreSQL reference application
+
+The release-candidate example is available under `examples/django/`.
+
+Install the required capabilities together:
+
+```bash
+pip install "pycrmkit[django,drf,postgresql]"
+```
+
+Then configure `PYCRMKIT_DATABASE_URL`, apply Django migrations explicitly and
+start the project:
+
+```bash
+python examples/django/manage.py migrate
+python examples/django/manage.py runserver
+```
+
+The reference path uses PostgreSQL 17 and never runs migrations implicitly at
+import or startup time.
 
 ## Repository development
 
