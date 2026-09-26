@@ -1,0 +1,82 @@
+name: FastAPI PostgreSQL E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  fastapi-postgresql-e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_api
+          POSTGRES_USER: pycrmkit
+          POSTGRES_PASSWORD: pycrmkit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_api"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_api
+      PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install source checkout with integration extras
+        run: python -m pip install -e ".[fastapi,postgresql,migrations,dev]"
+
+      - name: PostgreSQL-backed FastAPI API E2E
+        run: pytest -m postgresql tests/integrations/fastapi/test_postgresql_e2e.py -q
+
+      - name: Build release artifacts
+        run: python -m build
+
+      - name: Reset PostgreSQL for installed-wheel qualification
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from sqlalchemy import create_engine
+
+          engine = create_engine(os.environ["PYCRMKIT_TEST_POSTGRES_URL"])
+          with engine.begin() as connection:
+              connection.exec_driver_sql("DROP SCHEMA IF EXISTS public CASCADE")
+              connection.exec_driver_sql("CREATE SCHEMA public")
+          engine.dispose()
+          PY
+
+      - name: Install wheel with FastAPI/PostgreSQL/migration extras
+        shell: bash
+        run: |
+          python -m venv .venv-fastapi-wheel
+          .venv-fastapi-wheel/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-fastapi-wheel/bin/python -m pip install             "${wheel}[fastapi,postgresql,migrations]"             "httpx>=0.28,<1"
+
+      - name: Apply packaged wheel migrations
+        env:
+          PYTHONPATH: ""
+        shell: bash
+        run: |
+          .venv-fastapi-wheel/bin/pycrmkit-migrate upgrade head
+          .venv-fastapi-wheel/bin/pycrmkit-migrate current
+          .venv-fastapi-wheel/bin/pycrmkit-migrate check
+
+      - name: Installed-wheel FastAPI + PostgreSQL smoke
+        env:
+          PYTHONPATH: ""
+        run: .venv-fastapi-wheel/bin/python -m examples.fastapi_postgres.smoke
