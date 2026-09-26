@@ -11,8 +11,8 @@ pip install "pycrmkit[django]"
 
 ## Current prerelease scope
 
-`0.8.0b1 — Django Migrations & Admin` builds on the `0.8.0a1` application
-bridge.
+`0.8.0b2 — Optional DRF` builds on the Django application, persistence,
+migration, admin, and transaction bridge delivered by the preceding milestones.
 
 ```text
 src/pycrmkit/integrations/django/
@@ -243,6 +243,45 @@ pip install "pycrmkit[django]"
 Typing uses `django-stubs` only as a development dependency. Runtime admin
 classes do not require `django-stubs-ext` monkeypatching.
 
+## Optional DRF bridge
+
+Django REST Framework remains a separate install:
+
+```bash
+pip install "pycrmkit[drf]"
+```
+
+The plain `pycrmkit[django]` extra deliberately does not include DRF.
+
+The DRF transport preserves the application boundary:
+
+```text
+HTTP / DRF
+    ↓
+serializer / ViewSet
+    ↓
+CRM facade
+    ↓
+domain service
+    ↓
+Unit of Work / Repository Protocol
+    ↓
+selected adapter
+```
+
+The initial router exposes Contacts, Organizations, and Relationships. It does
+not use Django ORM models or repositories directly.
+
+The application supplies a request-time CRM factory with
+`PYCRMKIT_CRM_FACTORY`. `X-Actor-ID` and `X-Correlation-ID` are propagated
+into the CRM context when present.
+
+The error bridge maps stable PyCRMKit exceptions to 404/409/422/500/502 and
+normalizes DRF input validation into `request.validation_error` payloads
+without echoing submitted input values.
+
+See the dedicated [DRF Integration](drf.md) guide.
+
 ## Compatibility target
 
 ```text
@@ -255,11 +294,10 @@ Python 3.11–3.13
 Still intentionally deferred:
 
 ```text
-0.8.0b2   optional DRF helpers
 0.8.0rc1  reference Django application + E2E
 0.8.0     stable Django integration
 ```
 
 ## Next milestone
 
-The next delivery is **`0.8.0b2 — Optional DRF`**.
+The next delivery is **`0.8.0rc1 — Django Example + E2E`**.
