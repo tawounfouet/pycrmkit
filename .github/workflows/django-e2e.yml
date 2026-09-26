@@ -59,6 +59,24 @@ jobs:
       - name: Build release artifacts
         run: python -m build
 
+      - name: Core-only wheel remains Django-free
+        shell: bash
+        run: |
+          python -m venv .venv-core-boundary
+          .venv-core-boundary/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-core-boundary/bin/python -m pip install "${wheel}"
+          PYTHONPATH="" .venv-core-boundary/bin/python - <<'PY'
+          import importlib.util
+
+          import pycrmkit
+
+          assert pycrmkit.__version__ == "0.8.0rc1"
+          assert importlib.util.find_spec("django") is None
+          assert importlib.util.find_spec("rest_framework") is None
+          print("PyCRMKit core-only installed wheel remains Django/DRF-free: OK")
+          PY
+
       - name: Reset PostgreSQL before installed-wheel qualification
         shell: bash
         run: |
