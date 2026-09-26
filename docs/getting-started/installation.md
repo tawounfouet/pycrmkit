@@ -1,7 +1,7 @@
 # Installation
 
 PyCRMKit `0.6.0` is the current stable Persistence Foundation release.
-The latest integration prerelease is `0.7.0a1 — Schemas & Dependency Bridge`.
+The latest integration prerelease is `0.7.0b1 — Routers`.
 
 ## Core
 
@@ -25,8 +25,8 @@ Install the optional FastAPI bridge with:
 pip install "pycrmkit[fastapi]"
 ```
 
-This adds FastAPI and Pydantic transport/dependency support without making them
-core runtime dependencies.
+This adds FastAPI/Pydantic transport support, request-scoped dependency bridging
+and reusable routers without making them core runtime dependencies.
 
 ## SQLAlchemy / PostgreSQL
 
