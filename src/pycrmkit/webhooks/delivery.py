@@ -16,6 +16,7 @@ from pycrmkit.core.time import Clock, SystemClock, as_utc
 from pycrmkit.events import DomainEvent, EventSerializer
 from pycrmkit.exceptions import DuplicateError, InvalidStateError, ValidationError
 from pycrmkit.webhooks.entities import WebhookSubscription, WebhookSubscriptionId
+from pycrmkit.webhooks.subscriptions import WebhookSubscriptionQuery
 from pycrmkit.webhooks.retry import WebhookRetryPolicy
 from pycrmkit.webhooks.signing import sign_webhook_payload
 from pycrmkit.webhooks.transport import (
@@ -416,9 +417,7 @@ class WebhookDeliveryEngine:
         )
 
     @staticmethod
-    def _active_query(event_type: EventType) -> object:
-        from pycrmkit.webhooks.subscriptions import WebhookSubscriptionQuery
-
+    def _active_query(event_type: EventType) -> WebhookSubscriptionQuery:
         return WebhookSubscriptionQuery(enabled=True, event_type=event_type)
 
 
