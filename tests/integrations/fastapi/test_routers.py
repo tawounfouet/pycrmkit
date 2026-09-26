@@ -16,23 +16,21 @@ def _client(crm: CRM) -> TestClient:
 
 
 def test_composite_router_exposes_all_v0_7_b1_surfaces() -> None:
-    crm = CRM.memory()
-    app = FastAPI()
-    app.include_router(create_crm_router(lambda: crm), prefix="/crm")
+    client = _client(CRM.memory())
+    missing_id = "00000000-0000-4000-8000-000000000001"
 
-    paths = {route.path for route in app.routes if hasattr(route, "path")}
+    assert client.get("/crm/contacts").status_code == 200
+    assert client.get("/crm/organizations").status_code == 200
+    assert client.get("/crm/relationships").status_code == 200
+    assert client.get("/crm/activities").status_code == 200
+    assert client.get("/crm/tasks").status_code == 200
 
-    assert {
-        "/crm/contacts",
-        "/crm/organizations",
-        "/crm/relationships",
-        "/crm/activities",
-        "/crm/tasks",
-        "/crm/leads",
-        "/crm/opportunities",
-        "/crm/timeline/contacts/{contact_id}",
-        "/crm/timeline/organizations/{organization_id}",
-    }.issubset(paths)
+    # Command-oriented surfaces exist even though GET is intentionally absent.
+    assert client.post("/crm/leads", json={}).status_code == 422
+    assert client.post("/crm/opportunities", json={}).status_code == 422
+
+    assert client.get(f"/crm/timeline/contacts/{missing_id}").status_code == 200
+    assert client.get(f"/crm/timeline/organizations/{missing_id}").status_code == 200
 
 
 def test_contact_and_organization_http_lifecycle() -> None:
