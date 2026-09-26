@@ -30,10 +30,9 @@ def main() -> None:
 
         schema = client.get("/openapi.json")
         assert schema.status_code == 200
-        assert "/crm/contacts/{contact_id}" in schema.json()["paths"]
-
-    if __version__ != "0.7.0":
-        raise SystemExit(f"Expected PyCRMKit 0.7.0, got {__version__!r}")
+        schema_document = schema.json()
+        assert schema_document["info"]["version"] == __version__
+        assert "/crm/contacts/{contact_id}" in schema_document["paths"]
 
     print(f"PyCRMKit {__version__} installed-wheel FastAPI PostgreSQL smoke: OK")
 
