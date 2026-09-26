@@ -5,7 +5,7 @@ This page records the currently qualified compatibility baseline for PyCRMKit.
 ## Current stable line
 
 ```text
-PyCRMKit 0.7.0 — FastAPI Integration Stable
+PyCRMKit 0.8.0 — Django Integration Stable
 ```
 
 ## Python
@@ -21,7 +21,7 @@ Python 3.13
 ## Core installation
 
 The core package remains framework-agnostic and has no mandatory runtime
-dependency on FastAPI, Pydantic, SQLAlchemy or Django.
+dependency on FastAPI, Pydantic, SQLAlchemy, Django or Django REST Framework.
 
 ```bash
 pip install pycrmkit
@@ -39,18 +39,18 @@ Pydantic       >=2.13,<3
 SQLAlchemy     >=2.0,<3
 psycopg        >=3.2,<4
 Alembic        >=1.16,<2
-Django         >=5.2,<6   (0.8.x prerelease line)
-DRF            >=3.18,<4  (0.8.x prerelease line)
+Django         >=5.2,<6
+DRF            >=3.18,<4
 ```
 
 These ranges describe install compatibility. CI qualification uses
 representative current versions within those ranges rather than every possible
 combination.
 
-## Django prerelease qualification
+## Django stable qualification
 
-The `0.8.0rc1` Django/DRF integration remains a prerelease line, not part of the
-stable `0.7.x` compatibility promise.
+`0.8.0` promotes the qualified Django/DRF release candidate to the stable
+`0.8.x` integration line without adding new functional scope.
 
 It is currently qualified with:
 
@@ -65,7 +65,7 @@ PostgreSQL 17 reference application E2E
 clean installed-wheel Django/PostgreSQL/DRF E2E
 ```
 
-The release candidate qualifies application loading,
+The stable line qualifies application loading,
 Contact/Organization/Relationship repository semantics, packaged migration
 `0001_initial`, migration/model drift checking, admin registration, explicit
 transaction semantics, the optional facade-backed DRF transport and a real
@@ -81,8 +81,8 @@ Relationships in the `0.8.x` line.
 
 ## PostgreSQL
 
-The production-reference persistence, FastAPI E2E and Django release-candidate
-reference paths are qualified against:
+The production-reference persistence, FastAPI E2E and stable Django reference
+paths are qualified against:
 
 ```text
 PostgreSQL 17
@@ -93,15 +93,23 @@ qualified.
 
 ## Persistence schema
 
-The stable `0.7.0` FastAPI line builds on the stable `0.6.0` persistence
-foundation and its packaged Alembic migration history. Applications should
-always migrate through:
+The stable `0.8.0` line keeps the SQLAlchemy/Alembic and Django migration
+histories explicit and separate.
+
+SQLAlchemy-backed applications migrate through:
 
 ```bash
 pycrmkit-migrate upgrade head
 ```
 
-rather than creating production schemas with ORM metadata helpers.
+Django-backed applications migrate the Django adapter through:
+
+```bash
+python manage.py migrate pycrmkit_crm
+```
+
+Applications should not create production schemas from ORM metadata helpers or
+run migrations implicitly at import/startup time.
 
 ## FastAPI compatibility contract
 
@@ -122,6 +130,30 @@ install_error_handlers(...)
 
 Internal module layout and undocumented implementation details are not public
 compatibility promises.
+
+## Django compatibility contract
+
+Within `0.8.x`, backward compatibility covers the documented stable Django
+integration surface:
+
+```text
+PyCRMKitDjangoConfig and the pycrmkit_crm app label
+Contact / Organization / Relationship Django repositories
+packaged Django migration history beginning at 0001_initial
+DjangoTransactionBridge explicit commit/rollback semantics
+post-commit event publication semantics
+Django admin registrations for the three persisted aggregate families
+create_drf_router()
+DRF serializer/update semantics
+DRF pagination shape
+DRF domain/request error mapping
+X-Actor-ID / X-Correlation-ID propagation
+PYCRMKIT_CRM_FACTORY application-owned wiring
+```
+
+The stable Django adapter is intentionally bounded to Contacts, Organizations
+and Relationships. `0.8.0` does not claim a complete cross-domain Django
+`UnitOfWork` or a persistent Django implementation for every PyCRMKit module.
 
 ## Pre-1.0 policy
 
