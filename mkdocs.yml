@@ -70,6 +70,8 @@ nav:
   - External Identities:
       - Overview: external-identities/index.md
       - Repository Contract: external-identities/repository-contract.md
+  - Imports:
+      - Import Framework: imports/index.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
