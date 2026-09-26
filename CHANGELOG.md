@@ -4,6 +4,34 @@ All notable changes to PyCRMKit will be documented in this file.
 
 The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
+## [Unreleased]
+
+## [0.6.0a2] - 2026-09-26
+
+### Added
+- Session-scoped SQLAlchemy repository adapters for Contacts, Organizations, Relationships, Activities, Tasks, Leads, Opportunities and Pipelines, satisfying the repository-adapter milestone defined by the implementation plan.
+- SQLAlchemy adapters for the additional persisted 0.1–0.5 boundaries: Tags, Custom Fields, Timeline, Audit, Communication, webhook subscriptions and webhook delivery history.
+- Explicit Domain ↔ ORM mappers preserving typed identifiers, value objects, deterministic ordering, pagination, uniqueness/idempotency semantics and normalized repository errors.
+- Timeline persistence metadata required to round-trip the exact typed-ID class carried by generic EntityReference values.
+- Correct composite persistence identity for versioned Custom Field definitions using (id, schema_version).
+- Reusable repository conformance execution against isolated SQLite SQLAlchemy sessions plus targeted Communication adapter qualification.
+
+### Changed
+- Package version advanced from `0.6.0a1` to `0.6.0a2`.
+- SQLAlchemy repository adapters are exported from `pycrmkit.storage.sqlalchemy`.
+- Repository writes remain session-scoped and do not commit internally; transaction ownership is reserved for the upcoming SQLAlchemy Unit of Work.
+
+### Qualification
+- Ruff, mypy, docs, package build and aggregate CI pass.
+- Repository/adapter tests pass on Python 3.11, 3.12 and 3.13.
+- Existing Memory adapter and stable 0.1–0.5 compatibility tests remain green.
+
+### Deferred
+- SQLAlchemy Unit of Work and transaction orchestration remain scheduled for `0.6.0b1`.
+- PostgreSQL integration/concurrency qualification remains scheduled for `0.6.0b2`.
+- Alembic migrations remain scheduled for `0.6.0b3`.
+- Full PostgreSQL persistence qualification remains scheduled for `0.6.0rc1`.
+
 ## [0.6.0a1] - 2026-09-26
 
 ### Added
@@ -16,8 +44,6 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 ### Compatibility
 - SQLAlchemy remains optional; importing the PyCRMKit core does not require the ORM.
 - Repository adapters, SQLAlchemy Unit of Work, PostgreSQL qualification, and Alembic migrations remain deferred to later 0.6.x prereleases.
-
-## [Unreleased]
 
 ## [0.5.0] - 2026-09-26
 
