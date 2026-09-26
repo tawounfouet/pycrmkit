@@ -6,12 +6,11 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import pytest
+from sqlalchemy.orm import Session
 
 from pycrmkit.contacts import ContactId
 from pycrmkit.core.events import EventId, EventType
 from pycrmkit.core.references import EntityReference
-from sqlalchemy.orm import Session
-
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyTimelineRepository
 from pycrmkit.timeline import (
     TimelineEntry,
