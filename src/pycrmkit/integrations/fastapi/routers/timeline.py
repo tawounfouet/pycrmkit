@@ -8,6 +8,10 @@ from fastapi import APIRouter, Depends
 from pycrmkit import CRM
 from pycrmkit.contacts import ContactId
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    LIST_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -23,7 +27,7 @@ def create_timeline_router(dependency: CRMDependency) -> APIRouter:
 
     router = APIRouter(prefix="/timeline", tags=["timeline"])
 
-    @router.get("/entries/{entry_id}", response_model=TimelineEntryResponse)
+    @router.get("/entries/{entry_id}", response_model=TimelineEntryResponse, responses=READ_ERROR_RESPONSES)
     def get_timeline_entry(
         entry_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
@@ -34,6 +38,8 @@ def create_timeline_router(dependency: CRMDependency) -> APIRouter:
     @router.get(
         "/contacts/{contact_id}",
         response_model=PageResponse[TimelineEntryResponse],
+        responses=LIST_ERROR_RESPONSES,
+        responses=LIST_ERROR_RESPONSES,
     )
     def contact_timeline(
         contact_id: UUID,
