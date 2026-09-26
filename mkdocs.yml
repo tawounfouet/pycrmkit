@@ -94,6 +94,7 @@ nav:
       - 0.6.0a1 SQLAlchemy Foundation: releases/0.6.0a1.md
       - 0.6.0a2 Repository Adapters: releases/0.6.0a2.md
       - 0.6.0b1 Unit of Work & Transactions: releases/0.6.0b1.md
+      - 0.6.0b2 PostgreSQL: releases/0.6.0b2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
