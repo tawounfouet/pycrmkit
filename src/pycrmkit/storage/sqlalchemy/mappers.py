@@ -6,7 +6,13 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
 
-from pycrmkit.activities import Activity, ActivityDirection, ActivityId, ActivityParticipant, ActivityType
+from pycrmkit.activities import (
+    Activity,
+    ActivityDirection,
+    ActivityId,
+    ActivityParticipant,
+    ActivityType,
+)
 from pycrmkit.audit import AuditEntry, AuditEntryId
 from pycrmkit.communication import (
     CommunicationAddress,
