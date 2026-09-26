@@ -6,6 +6,46 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.8.0b1] - 2026-09-26
+
+### Added
+- Packaged Django migration history with `pycrmkit_crm.0001_initial` for the current Contact, Organization and Relationship persistence models.
+- Migration qualification covering discovery, empty-database upgrade, downgrade to zero and model/migration drift detection.
+- Django admin helpers for Contacts, Organizations and Relationships, including embedded contact and organization rows through inlines.
+- `DjangoTransactionBridge` over the currently implemented Django repositories.
+- Explicit commit, rollback-on-uncommitted-exit, explicit rollback-and-continue, and multi-repository atomic write coverage.
+- Ambient `transaction.atomic()` integration with domain-event publication deferred until the real outer commit.
+- Installed-wheel Django smoke that applies packaged migrations and persists/reads a Contact through the transaction bridge.
+
+### Transaction semantics
+- Repositories never commit independently.
+- Top-level bridge commits publish staged events only after database commit succeeds.
+- When the bridge joins an ambient Django transaction, staged events use `transaction.on_commit()` and are discarded if the outer transaction rolls back.
+- Post-commit subscriber failure does not undo already committed database state.
+- Repository access after bridge commit is rejected to prevent accidental autocommit writes outside the intended transaction boundary.
+
+### Architecture
+- Django migrations remain adapter-specific and separate from the Alembic history.
+- Admin views are operational persistence views; they do not define CRM business truth.
+- The transaction bridge is deliberately bounded to Contact, Organization and Relationship repositories currently implemented by the Django adapter; this beta does not claim full `UnitOfWork` protocol conformance.
+- The package root for the Django integration remains app-registry safe and avoids eager model/repository/admin imports.
+
+### Qualification
+- Django repository contracts remain green.
+- Django migration lifecycle and admin smoke pass.
+- Transaction semantics pass for top-level and ambient transactions.
+- Core import remains valid without Django installed.
+- Clean wheel + `[django]` installation applies packaged migrations and exercises the transaction bridge.
+- Stable FastAPI/PostgreSQL and SQLAlchemy persistence regression gates remain required.
+
+### Changed
+- Package version advanced from `0.8.0a1` to `0.8.0b1`.
+- Development roadmap advances to `0.8.0b2 — Optional DRF`.
+
+### Deferred
+- DRF remains scheduled for `0.8.0b2`.
+- Reference Django application and full Django E2E remain scheduled for `0.8.0rc1`.
+
 ## [0.8.0a1] - 2026-09-26
 
 ### Added
