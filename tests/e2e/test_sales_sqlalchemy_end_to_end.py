@@ -7,7 +7,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from pycrmkit import CRM
 from pycrmkit.core.time import FixedClock
