@@ -41,6 +41,10 @@ from pycrmkit.storage.sqlalchemy.models.pipeline import (
 from pycrmkit.storage.sqlalchemy.models.relationship import RelationshipModel
 from pycrmkit.storage.sqlalchemy.models.tag import TagAssignmentModel, TagModel
 from pycrmkit.storage.sqlalchemy.models.task import TaskModel, TaskReferenceModel
+from pycrmkit.storage.sqlalchemy.models.timeline import (
+    TimelineEntryModel,
+    TimelineReferenceModel,
+)
 from pycrmkit.storage.sqlalchemy.models.webhook import (
     WebhookDeliveryAttemptModel,
     WebhookDeliveryModel,
@@ -80,6 +84,8 @@ __all__ = [
     "TagModel",
     "TaskModel",
     "TaskReferenceModel",
+    "TimelineEntryModel",
+    "TimelineReferenceModel",
     "WebhookDeliveryAttemptModel",
     "WebhookDeliveryModel",
     "WebhookSubscriptionEventModel",
