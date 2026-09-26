@@ -1,0 +1,1 @@
+"""Reference Django project package."""
