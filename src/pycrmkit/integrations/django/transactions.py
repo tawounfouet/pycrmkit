@@ -37,6 +37,7 @@ class DjangoTransactionBridge:
         self._active = False
         self._committed = False
         self._transaction_open = False
+        self._joined_ambient_transaction = False
         self._atomic: transaction.Atomic | None = None
         self._pending_events: list[DomainEvent] = []
         self._contacts: DjangoContactRepository | None = None
@@ -127,7 +128,10 @@ class DjangoTransactionBridge:
             for event in events:
                 self.event_publisher.publish(event)
 
-        transaction.on_commit(publish_events)
+        joined_ambient = self._joined_ambient_transaction
+        if joined_ambient:
+            transaction.on_commit(publish_events)
+
         atomic = self._require_atomic()
         try:
             atomic.__exit__(None, None, None)
@@ -145,6 +149,9 @@ class DjangoTransactionBridge:
         self._atomic = None
         self._pending_events.clear()
 
+        if not joined_ambient:
+            publish_events()
+
     def rollback(self) -> None:
         """Rollback staged work, then begin a fresh bridge transaction."""
 
@@ -155,6 +162,7 @@ class DjangoTransactionBridge:
         self._open_atomic()
 
     def _open_atomic(self) -> None:
+        self._joined_ambient_transaction = transaction.get_connection().in_atomic_block
         atomic = transaction.atomic()
         try:
             atomic.__enter__()
