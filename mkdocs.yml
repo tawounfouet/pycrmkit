@@ -57,7 +57,7 @@ nav:
   - Events:
       - Registry & Serialization: events/index.md
   - Webhooks:
-      - Registrations: webhooks/index.md
+      - Registrations & Delivery: webhooks/index.md
   - Audit:
       - Foundation: audit/index.md
   - Storage:
@@ -86,6 +86,7 @@ nav:
       - 0.5.0a1 Event Registry & Serialization: releases/0.5.0a1.md
       - 0.5.0a2 Correlation & Causation: releases/0.5.0a2.md
       - 0.5.0b1 Webhook Registrations: releases/0.5.0b1.md
+      - 0.5.0b2 Webhook Delivery Engine: releases/0.5.0b2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
