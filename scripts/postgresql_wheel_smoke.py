@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from pycrmkit import CRM, __version__
 from pycrmkit.core.time import FixedClock
