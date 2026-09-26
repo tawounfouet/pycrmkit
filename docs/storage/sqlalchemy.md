@@ -4,7 +4,8 @@ PyCRMKit keeps SQLAlchemy behind the persistence boundary. Domain entities,
 services, repository contracts and the public CRM facade remain ORM-neutral.
 
 The `0.6.0b1` milestone adds the SQLAlchemy Unit of Work on top of the
-repository adapters delivered in `0.6.0a2`.
+repository adapters delivered in `0.6.0a2`. `0.6.0b2` qualifies PostgreSQL
+as the production-reference backend.
 
 ## Dependency direction
 
@@ -100,10 +101,73 @@ The "contact merge foundation" is intentionally a transaction capability, not a
 new public merge API. The dedicated data merge feature remains part of the later
 Data Operations roadmap.
 
-## Current database scope
+## PostgreSQL production reference
 
-SQLite is used in `0.6.0b1` for deterministic adapter/UoW qualification.
+Install the PostgreSQL adapter dependencies with:
 
-The next milestone, `0.6.0b2 — PostgreSQL`, adds the production reference
-backend, database constraints/index qualification, transaction tests and
-concurrency tests. Alembic migrations follow in `0.6.0b3`.
+```bash
+pip install "pycrmkit[postgresql]"
+```
+
+A PostgreSQL session factory can be wired with standard SQLAlchemy primitives:
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from pycrmkit.storage.sqlalchemy import SQLAlchemyUnitOfWork
+
+engine = create_engine(
+    "postgresql+psycopg://crm:secret@localhost:5432/crm",
+    pool_pre_ping=True,
+)
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+
+with SQLAlchemyUnitOfWork(SessionLocal) as uow:
+    contact = uow.contacts.get(contact_id)
+    contact.source = "postgresql"
+    uow.contacts.save(contact)
+    uow.commit()
+```
+
+PostgreSQL is now exercised in CI against a live PostgreSQL 17 service.
+
+The qualification validates:
+
+- generated tables, named constraints and indexes;
+- foreign-key enforcement;
+- Unicode and timezone-aware datetime round trips;
+- Decimal precision used by Sales;
+- JSON and Custom Field persistence;
+- transaction commit/rollback behavior;
+- concurrent uniqueness races across independent Sessions.
+
+### Concurrency and normalized uniqueness
+
+Application-level duplicate checks are useful for early feedback, but they are
+not sufficient under concurrency. Two transactions may both observe "missing"
+before either commits.
+
+For invariants that must survive such races, `0.6.0b2` adds corresponding
+database constraints. In particular:
+
+- Tag `normalized_name` is persisted and unique;
+- one Tag may be assigned to a given `(entity_kind, entity_id)` at most once.
+
+A competing commit that loses the race is translated from PostgreSQL SQLSTATE
+`23505` into PyCRMKit `DuplicateError`.
+
+### Backend error boundary
+
+The SQLAlchemy Unit of Work translates commit-time SQLAlchemy/driver errors into
+the public PyCRMKit persistence hierarchy. PostgreSQL diagnostic metadata is
+restricted to safe fields such as SQLSTATE and constraint/table/column names;
+SQL text and bound parameter values are not exposed.
+
+## Schema lifecycle
+
+`Base.metadata.create_all(...)` remains appropriate for tests and local
+experimentation at this stage. Production schema evolution is not frozen yet.
+
+The next milestone, **`0.6.0b3 — Alembic / Migrations`**, introduces
+versioned migrations and upgrade-path qualification.

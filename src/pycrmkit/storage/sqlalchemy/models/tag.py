@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import JSON, ForeignKey, Index, String
+from sqlalchemy import JSON, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from pycrmkit.storage.sqlalchemy.base import Base, TimestampedModelMixin
@@ -12,8 +12,16 @@ class TagModel(TimestampedModelMixin, Base):
     __tablename__ = "pycrmkit_tags"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    normalized_name: Mapped[str] = mapped_column(String(255), nullable=False)
     metadata_json: Mapped[dict[str, object]] = mapped_column("metadata", JSON, default=dict)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "normalized_name",
+            name="uq_pycrmkit_tags_normalized_name",
+        ),
+    )
 
 
 class TagAssignmentModel(TimestampedModelMixin, Base):
@@ -28,4 +36,10 @@ class TagAssignmentModel(TimestampedModelMixin, Base):
 
     __table_args__ = (
         Index("ix_pycrmkit_tag_assignments_entity", "entity_kind", "entity_id"),
+        UniqueConstraint(
+            "tag_id",
+            "entity_kind",
+            "entity_id",
+            name="uq_pycrmkit_tag_assignments_target",
+        ),
     )

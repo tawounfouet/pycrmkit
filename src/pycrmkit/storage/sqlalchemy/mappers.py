@@ -387,6 +387,7 @@ def tag_to_model(tag: Tag, model: TagModel | None = None) -> TagModel:
         updated_at=tag.updated_at,
     )
     target.name = tag.name.value
+    target.normalized_name = tag.name.normalized
     target.metadata_json = dict(tag.metadata)
     target.created_at = tag.created_at
     target.updated_at = tag.updated_at

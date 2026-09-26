@@ -6,12 +6,14 @@ from collections.abc import Callable
 from types import TracebackType
 from typing import Self
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from pycrmkit.events.bus import InProcessEventBus
 from pycrmkit.events.envelope import DomainEvent
 from pycrmkit.events.publisher import EventPublisher
 from pycrmkit.exceptions import InvalidStateError
+from pycrmkit.storage.sqlalchemy.errors import translate_sqlalchemy_error
 from pycrmkit.storage.sqlalchemy.repositories import (
     SQLAlchemyActivityRepository,
     SQLAlchemyAuditRepository,
@@ -228,6 +230,10 @@ class SQLAlchemyUnitOfWork:
         events = tuple(self._pending_events)
         try:
             session.commit()
+        except SQLAlchemyError as error:
+            session.rollback()
+            self._pending_events.clear()
+            raise translate_sqlalchemy_error(error) from error
         except BaseException:
             session.rollback()
             self._pending_events.clear()
