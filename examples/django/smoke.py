@@ -7,26 +7,14 @@ import json
 import os
 from pathlib import Path
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pycrmkit_example.settings")
-
-import django
-
-django.setup()
-
-from django.apps import apps
-from django.contrib import admin
-from django.db import connection
-from django.db.migrations.recorder import MigrationRecorder
-from rest_framework.test import APIClient
-
-from pycrmkit import __version__
-from pycrmkit.integrations.django.models import (
-    ContactModel,
-    OrganizationModel,
-    RelationshipModel,
-)
-
 EXPECTED_VERSION = "0.8.0rc1"
+
+
+def _setup_django() -> None:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pycrmkit_example.settings")
+    import django
+
+    django.setup()
 
 
 def _expect(response, status_code: int) -> None:
@@ -38,6 +26,12 @@ def _expect(response, status_code: int) -> None:
 
 def seed(state_path: Path) -> None:
     """Create a connected CRM graph through HTTP and persist only its IDs."""
+
+    _setup_django()
+
+    from rest_framework.test import APIClient
+
+    from pycrmkit import __version__
 
     client = APIClient()
 
@@ -116,6 +110,21 @@ def seed(state_path: Path) -> None:
 
 def verify(state_path: Path) -> None:
     """Re-open persisted data in a fresh Python/Django process and mutate it."""
+
+    _setup_django()
+
+    from django.apps import apps
+    from django.contrib import admin
+    from django.db import connection
+    from django.db.migrations.recorder import MigrationRecorder
+    from rest_framework.test import APIClient
+
+    from pycrmkit import __version__
+    from pycrmkit.integrations.django.models import (
+        ContactModel,
+        OrganizationModel,
+        RelationshipModel,
+    )
 
     state = json.loads(state_path.read_text(encoding="utf-8"))
     client = APIClient()
