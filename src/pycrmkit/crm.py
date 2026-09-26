@@ -33,6 +33,7 @@ from pycrmkit.webhooks import (
     WebhookRetryPolicy,
     WebhookTransport,
 )
+from pycrmkit.webhooks.integration import WebhookEventBridge
 
 
 class _Unset:
@@ -61,6 +62,8 @@ class CRM:
         webhook_transport: WebhookTransport | None = None,
         webhook_retry_policy: WebhookRetryPolicy | None = None,
         webhook_timeout_seconds: float = 10.0,
+        webhook_auto_delivery: bool = True,
+        _webhook_bridge: WebhookEventBridge | None = None,
     ) -> None:
         effective_config = config or CRMConfig()
         effective_context = context or CRMContext(
@@ -83,6 +86,7 @@ class CRM:
         self._webhook_transport = webhook_transport or StdlibWebhookTransport()
         self._webhook_retry_policy = webhook_retry_policy or WebhookRetryPolicy()
         self._webhook_timeout_seconds = webhook_timeout_seconds
+        self._webhook_auto_delivery = webhook_auto_delivery
         self.activities = ActivitiesAPI(runtime)
         self.email = EmailAPI(runtime, provider=email_provider, sender=email_sender, renderer=template_renderer)
         self.contacts = ContactsAPI(runtime)
@@ -104,6 +108,14 @@ class CRM:
             retry_policy=self._webhook_retry_policy,
             timeout_seconds=self._webhook_timeout_seconds,
         )
+        self._webhook_bridge = _webhook_bridge
+        if self._webhook_bridge is None and self._webhook_auto_delivery:
+            self._webhook_bridge = WebhookEventBridge(
+                event_bus=event_bus,
+                registry=self._event_registry,
+                deliver=self.webhooks.deliver,
+            )
+            self._webhook_bridge.install()
 
     @classmethod
     def memory(
@@ -121,6 +133,7 @@ class CRM:
         webhook_transport: WebhookTransport | None = None,
         webhook_retry_policy: WebhookRetryPolicy | None = None,
         webhook_timeout_seconds: float = 10.0,
+        webhook_auto_delivery: bool = True,
     ) -> CRM:
         """Create an isolated, fully wired in-memory CRM instance."""
         store = MemoryStore()
@@ -143,6 +156,7 @@ class CRM:
             webhook_transport=webhook_transport,
             webhook_retry_policy=webhook_retry_policy,
             webhook_timeout_seconds=webhook_timeout_seconds,
+            webhook_auto_delivery=webhook_auto_delivery,
         )
 
     @property
@@ -171,6 +185,8 @@ class CRM:
             webhook_transport=self._webhook_transport,
             webhook_retry_policy=self._webhook_retry_policy,
             webhook_timeout_seconds=self._webhook_timeout_seconds,
+            webhook_auto_delivery=self._webhook_auto_delivery,
+            _webhook_bridge=self._webhook_bridge,
         )
 
     def with_context(
@@ -209,4 +225,6 @@ class CRM:
             webhook_transport=self._webhook_transport,
             webhook_retry_policy=self._webhook_retry_policy,
             webhook_timeout_seconds=self._webhook_timeout_seconds,
+            webhook_auto_delivery=self._webhook_auto_delivery,
+            _webhook_bridge=self._webhook_bridge,
         )
