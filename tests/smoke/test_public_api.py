@@ -83,6 +83,12 @@ def test_0_5_causal_context_surface_is_additive() -> None:
     assert hasattr(CRMContext, "from_event")
 
 
+def test_0_9_external_identity_facade_surface() -> None:
+    crm = CRM.memory()
+    for name in ("attach", "resolve", "list_for_entity", "detach"):
+        assert hasattr(crm.external_identities, name)
+
+
 def test_0_5_webhook_delivery_surface() -> None:
     crm = CRM.memory()
     for name in (
