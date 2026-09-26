@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from rest_framework import serializers, status
 from rest_framework.exceptions import ErrorDetail, ValidationError as DRFValidationError
@@ -20,7 +20,14 @@ from pycrmkit.exceptions import (
 )
 
 
-class ErrorResponseSerializer(serializers.Serializer[Any]):
+if TYPE_CHECKING:
+    class _SerializerBase(serializers.Serializer[Any]):
+        pass
+else:
+    _SerializerBase = serializers.Serializer
+
+
+class ErrorResponseSerializer(_SerializerBase):
     """Stable JSON representation of API-visible PyCRMKit errors."""
 
     code = serializers.CharField()
