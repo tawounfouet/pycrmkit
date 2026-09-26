@@ -39,11 +39,32 @@ Pydantic       >=2.13,<3
 SQLAlchemy     >=2.0,<3
 psycopg        >=3.2,<4
 Alembic        >=1.16,<2
+Django         >=5.2,<6   (0.8.x prerelease line)
 ```
 
 These ranges describe install compatibility. CI qualification uses
 representative current versions within those ranges rather than every possible
 combination.
+
+## Django prerelease qualification
+
+The `0.8.0a1` Django bridge is a prerelease integration line, not part of the
+stable `0.7.x` compatibility promise.
+
+It is currently qualified with:
+
+```text
+Django 5.2 LTS
+Python 3.11
+Python 3.12
+Python 3.13
+SQLite in-memory contract execution for the alpha repository bridge
+```
+
+The alpha qualifies application loading and Contact/Organization/Relationship
+repository semantics. It does **not** yet claim Django migrations, transaction
+bridge, admin, DRF, or Django/PostgreSQL E2E; those belong to later `0.8.x`
+milestones.
 
 ## PostgreSQL
 
