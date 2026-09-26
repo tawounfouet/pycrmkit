@@ -111,6 +111,7 @@ def test_organization_and_relationship_flow_uses_public_facade() -> None:
                 },
                 "relationship_type": "employee_of",
                 "role": "CTO",
+                "valid_from": "2026-09-26T20:59:00Z",
             },
             format="json",
         )
