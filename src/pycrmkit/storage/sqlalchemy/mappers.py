@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, overload
 
 from pycrmkit.activities import (
     Activity,
@@ -131,8 +131,16 @@ from pycrmkit.webhooks import (
 )
 
 
+@overload
+def aware(value: datetime) -> datetime: ...
+
+
+@overload
+def aware(value: None) -> None: ...
+
+
 def aware(value: datetime | None) -> datetime | None:
-    """Normalize DB-returned timestamps, including SQLite's naive DateTime values, to UTC."""
+    """Normalize DB-returned timestamps, including SQLite naive values, to UTC."""
     if value is None:
         return None
     if value.tzinfo is None or value.utcoffset() is None:
