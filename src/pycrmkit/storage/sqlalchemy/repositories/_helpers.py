@@ -16,7 +16,7 @@ DomainT = TypeVar("DomainT")
 
 def page_models(
     session: Session,
-    statement: Select[tuple[ModelT]],
+    statement: Select[ModelT],
     page: OffsetPageRequest,
     mapper: Callable[[ModelT], DomainT],
 ) -> Page[DomainT]:
