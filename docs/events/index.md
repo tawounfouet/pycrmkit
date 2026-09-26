@@ -1,8 +1,8 @@
 # Events Foundation
 
-PyCRMKit's event foundation started in `0.1.0b4`. `0.5.0a1` promotes the
-existing event envelope toward a stable integration surface by adding an
-explicit registry and deterministic serialization.
+PyCRMKit's event foundation started in `0.1.0b4`. `0.5.0a1` added an
+explicit registry and deterministic serialization; `0.5.0a2` defines
+correlation, causation and actor propagation for event-triggered work.
 
 ## DomainEvent envelope
 
@@ -28,50 +28,56 @@ PyCRMKit package version.
 ## Event registry
 
 `EventRegistry` registers exact `(event_type, schema_version)` pairs.
-
-```python
-from pycrmkit.events import EventRegistry
-
-registry = EventRegistry()
-registry.register("contact.created", 1)
-registry.register("contact.created", 2)
-assert registry.latest("contact.created").schema_version == 2
-```
-
-Duplicate type/version registrations raise `DuplicateError`. Unknown
-contracts raise `NotFoundError`.
-
-`default_event_registry()` returns a fresh registry containing the 41 stable
-v1 event names emitted by the stable 0.1–0.4 facade domains.
+`default_event_registry()` returns a fresh registry containing the stable v1
+event names emitted by the stable `0.1`–`0.4` domains.
 
 ## Stable serialization
 
-`EventSerializer` validates every event against its registry before
-serialization and after deserialization.
+`EventSerializer` validates each event against its registry and emits
+deterministic JSON using sorted keys, compact separators and
+`ensure_ascii=False`.
+
+## Correlation and causation
+
+For work caused by a parent event:
 
 ```python
-from pycrmkit.events import EventSerializer, default_event_registry
-
-serializer = EventSerializer(default_event_registry())
-encoded = serializer.dumps(event)
-restored = serializer.loads(encoded)
+child_crm = crm.with_event(parent_event)
+child_crm.tasks.create(title="Follow up")
 ```
 
-The JSON representation is deterministic: sorted keys, compact separators and
-`ensure_ascii=False`. A canonical `contact.created` v1 fixture is maintained
-under `tests/fixtures/events/` as a compatibility guard.
+the emitted child event follows this rule:
 
-Registry enforcement applies to the public serialization/integration boundary;
-this alpha does not force arbitrary internal/custom `DomainEvent` creation
-through the registry.
+```text
+actor_id       = parent.actor_id
+correlation_id = parent.correlation_id
+causation_id   = parent.id
+```
+
+If the parent has no explicit correlation identifier, its own event ID becomes
+the correlation root for descendants.
+
+A multi-hop chain therefore behaves like:
+
+```text
+A: correlation=request-1, causation=None
+B: correlation=request-1, causation=A
+C: correlation=request-1, causation=B
+```
+
+`CRMContext.from_event(event)` exposes the same propagation rule independently
+of the facade helper.
+
+The serialized public event envelope preserves `actor_id`, `correlation_id`
+and `causation_id` unchanged.
 
 ## In-process event bus
 
-`InProcessEventBus` remains synchronous and exact-type based. A subscriber
-failure after commit does not roll back already committed domain state.
+`InProcessEventBus` remains synchronous and exact-type based. Subscriber
+failures after commit do not roll back already committed domain state.
 
 ## Deferred
 
-`0.5.0a1` does not add webhook subscriptions, HMAC signing, retry/backoff,
-dead-letter state, durable delivery or a transactional outbox. Those belong to
-later `0.5.x` milestones.
+Webhook registration begins in `0.5.0b1`. HMAC signing, retry/backoff,
+delivery logging, idempotent external delivery and dead-letter behavior remain
+scheduled for `0.5.0b2`.
