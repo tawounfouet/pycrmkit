@@ -8,7 +8,6 @@ from rest_framework import serializers
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 
-
 if TYPE_CHECKING:
     class _SerializerBase(serializers.Serializer[Any]):
         pass
