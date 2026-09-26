@@ -1,0 +1,35 @@
+name: PostgreSQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  postgresql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit
+          POSTGRES_USER: pycrmkit
+          POSTGRES_PASSWORD: pycrmkit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[postgresql,dev]"
+      - run: pytest -m postgresql tests/adapters/postgresql -q
