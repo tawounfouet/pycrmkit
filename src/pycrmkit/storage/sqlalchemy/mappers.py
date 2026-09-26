@@ -420,11 +420,7 @@ def tag_assignment_from_model(model: TagAssignmentModel) -> TagAssignment:
         created_at=aware(model.created_at),
         updated_at=aware(model.updated_at),
         tag_id=TagId.parse(model.tag_id),
-        entity=entity_reference(
-            model.entity_kind,
-            model.entity_id,
-            model.entity_id_type,
-        ),
+        entity=entity_reference(model.entity_kind, model.entity_id),
     )
 
 
@@ -614,11 +610,7 @@ def activity_from_model(
             for row in sorted(participants, key=lambda item: item.position)
         ),
         references=tuple(
-            entity_reference(
-                row.entity_kind,
-                row.entity_id,
-                row.entity_id_type,
-            )
+            entity_reference(row.entity_kind, row.entity_id)
             for row in sorted(references, key=lambda item: item.position)
         ),
         source=model.source,
@@ -1215,12 +1207,20 @@ def timeline_from_model(
         kind=TimelineEntryKind(model.kind),
         event_type=EventType.parse(model.event_type),
         source_event_id=EventId.parse(model.source_event_id),
-        entity=entity_reference(model.entity_kind, model.entity_id),
+        entity=entity_reference(
+            model.entity_kind,
+            model.entity_id,
+            model.entity_id_type,
+        ),
         occurred_at=aware(model.occurred_at),
         title=model.title,
         summary=model.summary,
         references=tuple(
-            entity_reference(row.entity_kind, row.entity_id)
+            entity_reference(
+                row.entity_kind,
+                row.entity_id,
+                row.entity_id_type,
+            )
             for row in sorted(references, key=lambda item: item.position)
         ),
         actor_id=model.actor_id,
