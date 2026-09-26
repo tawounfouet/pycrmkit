@@ -16,9 +16,11 @@ class SQLAlchemyMapper(Protocol[DomainT, ModelT]):
 
     def to_model(self, domain: DomainT) -> ModelT:
         """Convert a domain object into its persistence representation."""
+        ...
 
     def to_domain(self, model: ModelT) -> DomainT:
         """Rehydrate a domain object from its persistence representation."""
+        ...
 
 
 @dataclass(frozen=True, slots=True)
