@@ -22,3 +22,8 @@ The release check validates linting, typing, tests, documentation, package build
 ## Stable gate
 
 For stable releases, the built wheel must install into a clean virtual environment and execute the functional `scripts/smoke_test.py` path against the installed package. The stable tag must point to the exact qualified commit.
+
+Persistence-bearing stable releases must additionally qualify the installed
+wheel against the production-reference PostgreSQL backend, including packaged
+Alembic migrations, `upgrade head`, `current`, `check`, repository
+conformance and the persistence smoke path.
