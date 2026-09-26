@@ -3,12 +3,11 @@ from decimal import Decimal
 from uuid import UUID
 
 import pytest
+from sqlalchemy.orm import Session
 
 from pycrmkit.contacts import ContactId
 from pycrmkit.opportunities import Opportunity, OpportunityId, OpportunityRepository
 from pycrmkit.organizations import OrganizationId
-from sqlalchemy.orm import Session
-
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyOpportunityRepository
 
 from ...contracts.opportunities_repository import OpportunityRepositoryContract
