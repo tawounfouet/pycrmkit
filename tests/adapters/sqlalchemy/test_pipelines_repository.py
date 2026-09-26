@@ -1,10 +1,9 @@
 from decimal import Decimal
 
 import pytest
-
-from pycrmkit.pipelines import Pipeline, PipelineRepository, Stage, StageTransition
 from sqlalchemy.orm import Session
 
+from pycrmkit.pipelines import Pipeline, PipelineRepository, Stage, StageTransition
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyPipelineRepository
 
 from ...contracts.pipelines_repository import PipelineRepositoryContract
