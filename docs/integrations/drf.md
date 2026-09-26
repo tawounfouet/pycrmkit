@@ -74,7 +74,7 @@ urlpatterns = [
 ]
 ```
 
-The beta router exposes:
+The stable `0.8.0` router exposes:
 
 ```text
 GET    /crm/contacts/
@@ -203,8 +203,9 @@ REST_FRAMEWORK = {
 
 ## Current boundary
 
-`0.8.0rc1` now qualifies this DRF surface inside the Django + PostgreSQL
-reference application and repeats the API journey from a clean installed wheel.
+`0.8.0` promotes the qualified DRF surface to the stable `0.8.x` Django
+integration line. The reference application and clean installed-wheel journey
+remain the production-reference qualification path.
 
 The current router still deliberately covers only the Django-persisted aggregate
 families:
@@ -215,9 +216,11 @@ Organizations
 Relationships
 ```
 
-Full cross-domain DRF persistence remains outside the current Django adapter
-scope, and stable `0.8.x` compatibility is promoted only at `0.8.0`.
+Full cross-domain DRF persistence remains outside the stable Django adapter
+scope. Stable `0.8.x` compatibility covers only the documented router,
+serializer, pagination, request-context and error contracts for the three
+persisted aggregate families.
 
 ## Next
 
-**`0.8.0 — Django Integration Stable`**.
+The roadmap continues with **`0.9.0a1 — External Identities`**.
