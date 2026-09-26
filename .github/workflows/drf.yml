@@ -1,0 +1,82 @@
+name: DRF Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  drf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install DRF integration extra
+        run: python -m pip install -e ".[drf]" "pytest>=8"
+
+      - name: DRF serializer, router and error bridge tests
+        env:
+          PYTHONPATH: "."
+        run: pytest tests/integrations/drf -q
+
+      - name: Build release artifacts
+        run: |
+          python -m pip install "build>=1.2"
+          python -m build
+
+      - name: Install wheel with DRF extra in clean environment
+        shell: bash
+        run: |
+          python -m venv .venv-drf-wheel
+          .venv-drf-wheel/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-drf-wheel/bin/python -m pip install "${wheel}[drf]"
+
+      - name: Installed-wheel DRF facade smoke
+        shell: bash
+        run: |
+          PYTHONPATH="" .venv-drf-wheel/bin/python - <<'PY'
+          from django.conf import settings
+
+          settings.configure(
+              SECRET_KEY="pycrmkit-drf-wheel-smoke",
+              INSTALLED_APPS=[],
+              ROOT_URLCONF=__name__,
+              USE_TZ=True,
+              REST_FRAMEWORK={"UNAUTHENTICATED_USER": None},
+          )
+
+          import django
+          django.setup()
+
+          from django.test import override_settings
+          from django.urls import include, path
+          from rest_framework.test import APIClient
+
+          from pycrmkit import CRM, __version__
+          from pycrmkit.integrations.django.drf import create_drf_router
+
+          router = create_drf_router()
+          urlpatterns = [path("crm/", include(router.urls))]
+
+          crm = CRM.memory()
+          client = APIClient()
+          with override_settings(PYCRMKIT_CRM_FACTORY=lambda: crm):
+              response = client.post(
+                  "/crm/contacts/",
+                  {"display_name": "Installed Wheel DRF"},
+                  format="json",
+              )
+
+          assert __version__ == "0.8.0b2"
+          assert response.status_code == 201, response.data
+          assert response.data["display_name"] == "Installed Wheel DRF"
+          print(f"PyCRMKit {__version__} installed-wheel DRF facade smoke: OK")
+          PY
