@@ -13,6 +13,7 @@ from sqlalchemy import Engine, inspect
 from sqlalchemy.orm import Session, sessionmaker
 
 from pycrmkit.contacts import Contact, ContactId
+from pycrmkit.core.references import EntityReference
 from pycrmkit.custom_fields import (
     CustomFieldDefinition,
     CustomFieldDefinitionId,
@@ -20,7 +21,6 @@ from pycrmkit.custom_fields import (
     CustomFieldValue,
     CustomFieldValueId,
 )
-from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import DuplicateError, RepositoryError
 from pycrmkit.leads import Lead, LeadId
 from pycrmkit.opportunities import Opportunity, OpportunityId
