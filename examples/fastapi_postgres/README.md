@@ -1,6 +1,6 @@
 # FastAPI + PostgreSQL reference application
 
-This example demonstrates the complete PyCRMKit 0.7 release-candidate path:
+This example demonstrates the stable PyCRMKit 0.7 FastAPI + PostgreSQL path:
 
 ```text
 FastAPI
@@ -99,5 +99,4 @@ pycrmkit-migrate upgrade head
 start ASGI application
 ```
 
-The release-candidate E2E workflow in this repository executes this same
-migration-first sequence against PostgreSQL 17 before calling the API.
+The stable FastAPI E2E workflow in this repository executes this same migration-first sequence against PostgreSQL 17 before calling the API.

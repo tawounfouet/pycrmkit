@@ -16,7 +16,7 @@ import pycrmkit
 
 does not import FastAPI.
 
-## 0.7.0rc1 scope
+## 0.7.0 stable scope
 
 The FastAPI integration now provides:
 
@@ -44,9 +44,10 @@ Milestone progression:
 0.7.0b1  reusable routers
 0.7.0b2  OpenAPI + error mapping
 0.7.0rc1 PostgreSQL example + API E2E
+0.7.0    stable integration
 ```
 
-The release candidate adds the reference PostgreSQL application and API E2E required by the FastAPI stable gate.
+`0.7.0` promotes the fully qualified release candidate without adding new FastAPI feature scope.
 
 ## Application setup
 
@@ -76,7 +77,7 @@ SQLAlchemy/PostgreSQL-backed CRM without changing route code.
 
 ## Reference PostgreSQL application
 
-The release candidate includes:
+The stable integration includes:
 
 ```text
 examples/fastapi_postgres/
@@ -114,8 +115,7 @@ The application does not run Alembic automatically at startup. Its lifespan
 checks database connectivity and disposes the SQLAlchemy Engine cleanly on
 shutdown.
 
-The release-candidate CI path repeats this flow against PostgreSQL 17 and then
-repeats it again with a wheel installed in a clean virtual environment.
+The stable CI path repeats this flow against PostgreSQL 17 and then repeats it again with a wheel installed in a clean virtual environment.
 
 ## Dependency direction
 
@@ -342,9 +342,9 @@ default limit: 50
 - all existing router flows with installed handlers;
 - continued core import independence from FastAPI.
 
-## Release-candidate qualification
+## Stable qualification
 
-`0.7.0rc1` verifies:
+`0.7.0` freezes the behavior already verified by `0.7.0rc1`:
 
 ```text
 TestClient/API integration tests
@@ -357,7 +357,11 @@ installed-wheel FastAPI/PostgreSQL smoke
 core import without FastAPI
 ```
 
-## Next milestone
+## Compatibility commitment
 
-The next delivery is **`0.7.0 — FastAPI Integration Stable`**. It should
-promote the qualified RC without introducing new FastAPI feature scope.
+Within the `0.7.x` line, documented FastAPI request/response schemas, router
+paths, error payloads, status mappings and pagination semantics are treated as
+stable public integration contracts. Backward-compatible fixes belong in patch
+releases.
+
+The next planned integration milestone is **`0.8.0a1 — Django Application Bridge`**.

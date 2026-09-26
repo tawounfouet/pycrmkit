@@ -27,3 +27,21 @@ Persistence-bearing stable releases must additionally qualify the installed
 wheel against the production-reference PostgreSQL backend, including packaged
 Alembic migrations, `upgrade head`, `current`, `check`, repository
 conformance and the persistence smoke path.
+
+## Integration stable gate
+
+From `0.7.0`, a FastAPI-bearing stable release additionally requires:
+
+```text
+real FastAPI application tests
+OpenAPI generation
+PostgreSQL-backed API E2E
+core import without FastAPI
+clean wheel install with integration extras
+packaged migrations before API smoke
+```
+
+Stable promotion from an RC closes feature scope. New features move to the next
+milestone; the stable branch may contain only release-compatible fixes and
+documentation/packaging corrections.
+

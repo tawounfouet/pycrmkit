@@ -1,4 +1,4 @@
-"""Installed-wheel FastAPI + PostgreSQL release-candidate smoke."""
+"""Installed-wheel FastAPI + PostgreSQL stable smoke."""
 
 from __future__ import annotations
 
@@ -32,8 +32,8 @@ def main() -> None:
         assert schema.status_code == 200
         assert "/crm/contacts/{contact_id}" in schema.json()["paths"]
 
-    if __version__ != "0.7.0rc1":
-        raise SystemExit(f"Expected PyCRMKit 0.7.0rc1, got {__version__!r}")
+    if __version__ != "0.7.0":
+        raise SystemExit(f"Expected PyCRMKit 0.7.0, got {__version__!r}")
 
     print(f"PyCRMKit {__version__} installed-wheel FastAPI PostgreSQL smoke: OK")
 
