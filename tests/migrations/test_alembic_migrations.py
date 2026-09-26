@@ -11,7 +11,7 @@ from alembic.autogenerate import compare_metadata
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from sqlalchemy import Engine, inspect, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.storage.sqlalchemy import Base, SQLAlchemyUnitOfWork
