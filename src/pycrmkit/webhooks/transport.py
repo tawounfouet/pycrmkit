@@ -163,7 +163,7 @@ class StdlibWebhookTransport(WebhookTransport):
                     "webhook destination could not be resolved",
                     code="webhook.transport.dns_error",
                 ) from exc
-            addresses = {item[4][0] for item in resolved}
+            addresses = {str(item[4][0]) for item in resolved}
         else:
             addresses = {str(literal)}
 
