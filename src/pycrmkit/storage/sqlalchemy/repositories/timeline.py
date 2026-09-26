@@ -70,6 +70,7 @@ class SQLAlchemyTimelineRepository:
                     position=position,
                     entity_kind=reference.kind,
                     entity_id=str(reference.id),
+                    entity_id_type=type(reference.id).__name__,
                 )
                 for position, reference in enumerate(
                     entry.references
