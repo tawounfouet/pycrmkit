@@ -4,11 +4,12 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current stable version: **0.7.0 — FastAPI Integration Stable**.
+Current stable version: **0.7.0 — FastAPI Integration Stable**.  
+Latest integration prerelease: **0.8.0a1 — Django Application Bridge**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2, Resend, SQLAlchemy/PostgreSQL, and FastAPI remain opt-in integrations. `0.7.0` promotes the fully qualified FastAPI line to stable: reusable routers, typed transport schemas, pagination, error mapping, OpenAPI contracts and the PostgreSQL reference application are now compatibility-governed together. Django, data operations, AI, and agent integrations remain later milestones.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, and Django remain opt-in integrations. `0.7.0` is the stable FastAPI line. `0.8.0a1` starts the Django line with an application bootstrap, distinct Django ORM persistence models, and contract-backed repositories for Contacts, Organizations, and Relationships while keeping Django out of the core package.
 
 ## Architecture
 
@@ -116,8 +117,8 @@ pytest
 0.7.0b2 OpenAPI & Error Mapping                                  ✓
 0.7.0rc1 Example + E2E                                             ✓
 0.7.0  FastAPI Integration                                           ✓
-0.8.0a1 Django Application Bridge                                     →
-0.8.0b1 Django Migrations & Admin
+0.8.0a1 Django Application Bridge                                     ✓
+0.8.0b1 Django Migrations & Admin                                      →
 0.8.0b2 Optional DRF
 0.8.0rc1 Django Example + E2E
 0.8.0  Django Integration
