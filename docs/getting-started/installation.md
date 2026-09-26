@@ -65,8 +65,8 @@ Install the optional Django bridge with:
 pip install "pycrmkit[django]"
 ```
 
-The `0.8.0a1` alpha targets Django 5.2 LTS while preserving PyCRMKit's Python
-3.11–3.13 compatibility matrix.
+The `0.8.0b1` prerelease targets Django 5.2 LTS while preserving PyCRMKit's
+Python 3.11–3.13 compatibility matrix.
 
 Add the PyCRMKit application explicitly:
 
@@ -77,10 +77,28 @@ INSTALLED_APPS = [
 ]
 ```
 
-At `0.8.0a1`, the adapter provides the app bootstrap plus initial ORM models
-and repositories. Django migrations, the transaction bridge and admin helpers
-are scheduled for `0.8.0b1`; do not treat the alpha as a migration-complete
-Django deployment yet.
+At `0.8.0b1`, the adapter provides its initial ORM models/repositories, packaged
+Django migration `0001_initial`, admin helpers, and an explicit transaction bridge.
+Apply the adapter migration through Django's normal deployment lifecycle:
+
+```bash
+python manage.py migrate pycrmkit_crm
+```
+
+Transactional code may use:
+
+```python
+from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+
+with DjangoTransactionBridge() as bridge:
+    bridge.contacts.save(contact)
+    bridge.commit()
+```
+
+The bridge currently exposes the Django repositories implemented by the `0.8.x`
+line (Contacts, Organizations and Relationships); it is not yet the complete
+cross-domain `UnitOfWork` implementation. DRF remains optional and deferred to
+`0.8.0b2`.
 
 ## Repository development
 
