@@ -6,6 +6,31 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-26
+
+### Stable
+- Promoted the fully qualified `0.6.0rc1` persistence line to stable without adding new persistence feature scope.
+- Froze the SQLAlchemy repository, Unit-of-Work, PostgreSQL and Alembic behavior qualified by the release candidate.
+- Established migration revision `0002` as the stable `0.6.x` schema head.
+- Preserved the stable `0.1`–`0.5` public CRM facade unchanged.
+
+### Qualification
+- Stable `0.1`–`0.5` CRM scenario passes on Alembic-migrated PostgreSQL.
+- Reusable SQLAlchemy repository contracts pass against PostgreSQL.
+- Multi-repository rollback semantics pass against PostgreSQL.
+- Migration `0001 → 0002` preserves data and head has no SQLAlchemy metadata drift.
+- Installed wheel contains packaged migrations and successfully runs `pycrmkit-migrate upgrade head`, `current`, `check` and the PostgreSQL persistence smoke.
+- PostgreSQL 17, Python 3.11/3.12/3.13, Ruff, strict mypy, Docs, Build, Migrations, Persistence Qualification and aggregate CI all pass.
+
+### Changed
+- Package version advanced from `0.6.0rc1` to `0.6.0`.
+- Persistence Foundation becomes the current stable line.
+- Development roadmap advances to `0.7.0 — FastAPI Integration`.
+
+### Deferred
+- FastAPI, Django and Data Operations remain later roadmap lines.
+- Durable distributed outbox/claiming semantics remain outside the current `0.6.x` persistence contract.
+
 ## [0.6.0rc1] - 2026-09-26
 
 ### Added
