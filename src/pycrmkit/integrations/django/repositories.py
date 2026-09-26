@@ -21,6 +21,7 @@ from pycrmkit.contacts import (
 )
 from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
+from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import ConflictError, DuplicateError, NotFoundError
 from pycrmkit.external_identities import (
