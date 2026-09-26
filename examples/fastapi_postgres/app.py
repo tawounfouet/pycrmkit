@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from pycrmkit import CRM
+from pycrmkit import CRM, __version__
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.events import InProcessEventBus
 from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
@@ -89,7 +89,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
 
     app = FastAPI(
         title="PyCRMKit FastAPI + PostgreSQL Example",
-        version="0.7.0rc1",
+        version=__version__,
         lifespan=lifespan,
     )
     install_error_handlers(app)
