@@ -68,7 +68,7 @@ class SQLAlchemyPipelineRepository:
                     default_probability=stage.default_probability,
                     terminal=stage.terminal,
                     outcome=(
-                        stage.outcome.value
+                        str(stage.outcome)
                         if stage.outcome is not None
                         else None
                     ),
