@@ -6,10 +6,9 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
-
-from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactRepository
 from sqlalchemy.orm import Session
 
+from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactRepository
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyContactRepository
 
 from ...contracts.contacts_repository import ContactRepositoryContract
