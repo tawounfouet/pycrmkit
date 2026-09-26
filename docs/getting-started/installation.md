@@ -57,6 +57,31 @@ For packaged Alembic migration tooling:
 pip install "pycrmkit[migrations]"
 ```
 
+## Django integration
+
+Install the optional Django bridge with:
+
+```bash
+pip install "pycrmkit[django]"
+```
+
+The `0.8.0a1` alpha targets Django 5.2 LTS while preserving PyCRMKit's Python
+3.11–3.13 compatibility matrix.
+
+Add the PyCRMKit application explicitly:
+
+```python
+INSTALLED_APPS = [
+    # ...
+    "pycrmkit.integrations.django.apps.PyCRMKitDjangoConfig",
+]
+```
+
+At `0.8.0a1`, the adapter provides the app bootstrap plus initial ORM models
+and repositories. Django migrations, the transaction bridge and admin helpers
+are scheduled for `0.8.0b1`; do not treat the alpha as a migration-complete
+Django deployment yet.
+
 ## Repository development
 
 ```bash
