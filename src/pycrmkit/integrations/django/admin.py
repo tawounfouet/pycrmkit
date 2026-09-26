@@ -19,22 +19,22 @@ from pycrmkit.integrations.django.models import (
 
 
 if TYPE_CHECKING:
-    class _ContactEmailInlineBase(admin.TabularInline[ContactEmailModel]):
+    class _ContactEmailInlineBase(admin.TabularInline[ContactModel, ContactEmailModel]):
         pass
 
-    class _ContactPhoneInlineBase(admin.TabularInline[ContactPhoneModel]):
+    class _ContactPhoneInlineBase(admin.TabularInline[ContactModel, ContactPhoneModel]):
         pass
 
-    class _ContactAddressInlineBase(admin.StackedInline[ContactAddressModel]):
+    class _ContactAddressInlineBase(admin.StackedInline[ContactModel, ContactAddressModel]):
         pass
 
     class _ContactModelAdminBase(admin.ModelAdmin[ContactModel]):
         pass
 
-    class _OrganizationDomainInlineBase(admin.TabularInline[OrganizationDomainModel]):
+    class _OrganizationDomainInlineBase(admin.TabularInline[OrganizationModel, OrganizationDomainModel]):
         pass
 
-    class _OrganizationAddressInlineBase(admin.StackedInline[OrganizationAddressModel]):
+    class _OrganizationAddressInlineBase(admin.StackedInline[OrganizationModel, OrganizationAddressModel]):
         pass
 
     class _OrganizationModelAdminBase(admin.ModelAdmin[OrganizationModel]):
