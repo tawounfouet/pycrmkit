@@ -35,14 +35,16 @@ class CRMDependency:
         ] = None,
     ) -> CRM:
         crm = self._factory()
-        context: dict[str, str] = {}
-        if actor_id is not None:
-            context["actor_id"] = actor_id
-        if correlation_id is not None:
-            context["correlation_id"] = correlation_id
-        if not context:
+        if actor_id is None and correlation_id is None:
             return crm
-        return crm.with_context(**context)
+        return crm.with_context(
+            actor_id=crm.context.actor_id if actor_id is None else actor_id,
+            correlation_id=(
+                crm.context.correlation_id
+                if correlation_id is None
+                else correlation_id
+            ),
+        )
 
 
 __all__ = ["CRMDependency", "CRMFactory"]
