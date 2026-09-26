@@ -58,7 +58,7 @@ def test_upgrade_empty_database_to_head_matches_metadata(
 ) -> None:
     command.upgrade(_config(), "head")
 
-    assert _current_revision(migration_engine) == "0002"
+    assert _current_revision(migration_engine) == "0003"
     assert _application_tables(migration_engine) == set(Base.metadata.tables)
     assert _schema_diffs(migration_engine) == []
 
@@ -167,4 +167,4 @@ def test_migration_version_table_tracks_head(
             text("SELECT version_num FROM alembic_version")
         ).scalars().all()
 
-    assert rows == ["0002"]
+    assert rows == ["0003"]
