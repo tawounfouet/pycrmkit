@@ -4,6 +4,7 @@ from __future__ import annotations
 
 try:
     from pycrmkit.integrations.django.apps import PyCRMKitDjangoConfig
+    from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
 except ModuleNotFoundError as exc:  # pragma: no cover - exercised in clean-install smoke.
     if exc.name == "django":
         raise RuntimeError(
@@ -11,4 +12,4 @@ except ModuleNotFoundError as exc:  # pragma: no cover - exercised in clean-inst
         ) from exc
     raise
 
-__all__ = ["PyCRMKitDjangoConfig"]
+__all__ = ["DjangoTransactionBridge", "PyCRMKitDjangoConfig"]
