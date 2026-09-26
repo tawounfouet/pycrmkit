@@ -45,6 +45,7 @@ class MemoryUnitOfWork:
         self.event_publisher = event_publisher or InProcessEventBus()
         self._active = False
         self._committed = False
+        self._store_transaction_open = False
         self._working: _MemoryState | None = None
         self._activities: MemoryActivityRepository | None = None
         self._communications: MemoryCommunicationRepository | None = None
@@ -175,6 +176,7 @@ class MemoryUnitOfWork:
         self._working = self.store._begin()
         self._active = True
         self._committed = False
+        self._store_transaction_open = True
         self._pending_events.clear()
         self._bind_repositories(self._working)
         return self
@@ -188,20 +190,34 @@ class MemoryUnitOfWork:
         del exc, traceback
         if not self._active:
             return None
-        if exc_type is not None or not self._committed:
-            self._discard_working_state()
+        if self._store_transaction_open:
+            if exc_type is not None or not self._committed:
+                self._discard_working_state()
+            self.store._end()
+            self._store_transaction_open = False
         self._pending_events.clear()
         self._active = False
-        self.store._end()
         return None
 
     def commit(self) -> None:
         self._ensure_active()
+        if self._committed or not self._store_transaction_open:
+            raise InvalidStateError(
+                "MemoryUnitOfWork transaction is already committed",
+                code="memory.uow.already_committed",
+            )
         assert self._working is not None
         events = tuple(self._pending_events)
         self.store._commit(self._working)
         self._committed = True
         self._pending_events.clear()
+
+        # Release the MemoryStore transaction before synchronous post-commit
+        # subscribers run. This lets subscribers open a fresh UoW against the
+        # newly committed state without creating a nested transaction.
+        self.store._end()
+        self._store_transaction_open = False
+
         for event in events:
             self.event_publisher.publish(event)
 
