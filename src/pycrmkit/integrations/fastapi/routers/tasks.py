@@ -7,6 +7,12 @@ from fastapi import APIRouter, Depends, status
 
 from pycrmkit import CRM
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    LIST_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -25,7 +31,7 @@ def create_tasks_router(dependency: CRMDependency) -> APIRouter:
 
     router = APIRouter(prefix="/tasks", tags=["tasks"])
 
-    @router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
+    @router.post("", response_model=TaskResponse, status_code=status.HTTP_201_CREATED, responses=CREATE_ERROR_RESPONSES)
     def create_task(
         request: TaskCreateRequest,
         crm: Annotated[CRM, Depends(dependency)],
@@ -33,7 +39,7 @@ def create_tasks_router(dependency: CRMDependency) -> APIRouter:
         task = crm.tasks.create(**request.to_domain_kwargs())
         return TaskResponse.from_domain(task)
 
-    @router.get("", response_model=PageResponse[TaskResponse])
+    @router.get("", response_model=PageResponse[TaskResponse], responses=LIST_ERROR_RESPONSES)
     def list_tasks(
         crm: Annotated[CRM, Depends(dependency)],
         page: Annotated[PaginationParams, Depends(pagination_params)],
@@ -41,7 +47,7 @@ def create_tasks_router(dependency: CRMDependency) -> APIRouter:
         result = crm.tasks.list(page=page.to_domain())
         return PageResponse[TaskResponse].from_page(result, TaskResponse.from_domain)
 
-    @router.get("/{task_id}", response_model=TaskResponse)
+    @router.get("/{task_id}", response_model=TaskResponse, responses=READ_ERROR_RESPONSES)
     def get_task(
         task_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
@@ -49,7 +55,7 @@ def create_tasks_router(dependency: CRMDependency) -> APIRouter:
         task = crm.tasks.get(TaskId(task_id))
         return TaskResponse.from_domain(task)
 
-    @router.patch("/{task_id}", response_model=TaskResponse)
+    @router.patch("/{task_id}", response_model=TaskResponse, responses=MUTATION_ERROR_RESPONSES)
     def update_task(
         task_id: UUID,
         request: TaskUpdateRequest,
@@ -58,28 +64,28 @@ def create_tasks_router(dependency: CRMDependency) -> APIRouter:
         task = crm.tasks.update(TaskId(task_id), request.to_domain())
         return TaskResponse.from_domain(task)
 
-    @router.post("/{task_id}/start", response_model=TaskResponse)
+    @router.post("/{task_id}/start", response_model=TaskResponse, responses=MUTATION_ERROR_RESPONSES)
     def start_task(
         task_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
     ) -> TaskResponse:
         return TaskResponse.from_domain(crm.tasks.start(TaskId(task_id)))
 
-    @router.post("/{task_id}/complete", response_model=TaskResponse)
+    @router.post("/{task_id}/complete", response_model=TaskResponse, responses=MUTATION_ERROR_RESPONSES)
     def complete_task(
         task_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
     ) -> TaskResponse:
         return TaskResponse.from_domain(crm.tasks.complete(TaskId(task_id)))
 
-    @router.post("/{task_id}/cancel", response_model=TaskResponse)
+    @router.post("/{task_id}/cancel", response_model=TaskResponse, responses=MUTATION_ERROR_RESPONSES)
     def cancel_task(
         task_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
     ) -> TaskResponse:
         return TaskResponse.from_domain(crm.tasks.cancel(TaskId(task_id)))
 
-    @router.post("/{task_id}/reopen", response_model=TaskResponse)
+    @router.post("/{task_id}/reopen", response_model=TaskResponse, responses=MUTATION_ERROR_RESPONSES)
     def reopen_task(
         task_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
