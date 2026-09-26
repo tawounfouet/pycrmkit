@@ -4,11 +4,12 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current stable version: **0.8.0 — Django Integration Stable**.
+Current stable version: **0.8.0 — Django Integration Stable**.  
+Latest data-operations prerelease: **0.9.0a1 — External Identities**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` promotes the fully qualified Django release candidate without new functional scope: the Django app/persistence bridge, migrations, admin, transaction bridge and optional DRF surface are now the stable Django integration line, qualified through PostgreSQL 17 and clean-wheel E2E.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` starts Data Operations with provider-neutral external identities that map upstream records to PyCRMKit entities across Memory, SQLAlchemy/PostgreSQL, and Django persistence.
 
 ## Architecture
 
@@ -121,7 +122,13 @@ pytest
 0.8.0b2 Optional DRF                                                   ✓
 0.8.0rc1 Django Example + E2E                                          ✓
 0.8.0  Django Integration                                              ✓
-0.9.0  Data Operations                                                   →
+0.9.0a1 External Identities                                               ✓
+0.9.0a2 Import Framework                                                   →
+0.9.0b1 CSV / JSON / JSONL
+0.9.0b2 Deduplication
+0.9.0b3 Merge
+0.9.0rc1 Data Operations E2E
+0.9.0  Data Operations
 1.0.0  Production Stable
 ```
 
