@@ -1,0 +1,73 @@
+name: Django Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  django:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install Django integration extra
+        run: python -m pip install -e ".[django]" "pytest>=8"
+
+      - name: Django application bridge contract tests
+        env:
+          PYTHONPATH: "."
+        run: pytest tests/integrations/django -q
+
+      - name: Build release artifacts
+        run: |
+          python -m pip install "build>=1.2"
+          python -m build
+
+      - name: Install wheel with Django extra in clean environment
+        shell: bash
+        run: |
+          python -m venv .venv-django-wheel
+          .venv-django-wheel/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-django-wheel/bin/python -m pip install "${wheel}[django]"
+
+      - name: Installed-wheel Django app loading smoke
+        shell: bash
+        run: |
+          PYTHONPATH="" .venv-django-wheel/bin/python - <<'PY'
+          from django.conf import settings
+
+          settings.configure(
+              SECRET_KEY="pycrmkit-django-wheel-smoke",
+              INSTALLED_APPS=[
+                  "pycrmkit.integrations.django.apps.PyCRMKitDjangoConfig",
+              ],
+              DATABASES={
+                  "default": {
+                      "ENGINE": "django.db.backends.sqlite3",
+                      "NAME": ":memory:",
+                  }
+              },
+              USE_TZ=True,
+          )
+
+          import django
+          django.setup()
+
+          from django.apps import apps
+          from pycrmkit import __version__
+          from pycrmkit.integrations.django.models import ContactModel
+
+          assert __version__ == "0.8.0a1"
+          assert apps.get_app_config("pycrmkit_crm").name == "pycrmkit.integrations.django"
+          assert ContactModel._meta.db_table == "pycrmkit_contacts"
+          print(f"PyCRMKit {__version__} installed-wheel Django bridge smoke: OK")
+          PY
