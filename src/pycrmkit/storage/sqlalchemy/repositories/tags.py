@@ -85,14 +85,13 @@ class SQLAlchemyTagRepository:
         )
 
     def assign(self, assignment: TagAssignment) -> TagAssignment:
-        with self.session.no_autoflush:
-            existing = self.session.scalar(
-                select(TagAssignmentModel).where(
-                    TagAssignmentModel.tag_id == str(assignment.tag_id),
-                    TagAssignmentModel.entity_kind == assignment.entity.kind,
-                    TagAssignmentModel.entity_id == str(assignment.entity.id),
-                )
+        existing = self.session.scalar(
+            select(TagAssignmentModel).where(
+                TagAssignmentModel.tag_id == str(assignment.tag_id),
+                TagAssignmentModel.entity_kind == assignment.entity.kind,
+                TagAssignmentModel.entity_id == str(assignment.entity.id),
             )
+        )
         if existing is not None:
             raise DuplicateError(
                 "Tag is already assigned to this entity",
