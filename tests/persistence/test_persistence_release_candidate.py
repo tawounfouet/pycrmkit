@@ -272,9 +272,11 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
     assert reloaded.relationships.get(relationship.id) == relationship
     assert reloaded.tags.list_for_entity(contact_ref).items == (vip,)
     assert reloaded.custom_fields.get_value(tier.id, contact_ref) == tier_value
-    assert reloaded.activities.get(activity.id) == activity
-    assert reloaded.tasks.get(task.id) == task
-    assert reloaded.opportunities.get(opportunity.id) == opportunity
+    with reloaded._runtime.uow_factory() as uow:
+        assert uow.activities.get(activity.id) == activity
+        assert uow.tasks.get(task.id) == task
+        assert uow.opportunities.get(opportunity.id) == opportunity
+
     assert reloaded.email.get(record.id).delivery_status is EmailDeliveryEventType.DELIVERED
     assert reloaded.webhooks.deliveries(
         state=WebhookDeliveryState.SUCCEEDED
