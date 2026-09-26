@@ -9,8 +9,8 @@ import pytest
 from django.db import transaction
 
 from pycrmkit.contacts import Contact, ContactId
-from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.core.events import EventId, EventType
+from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.exceptions import InvalidStateError
 from pycrmkit.integrations.django.repositories import (
     DjangoContactRepository,
