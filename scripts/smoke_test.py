@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.5.0b2 webhook delivery."""
+"""Installed-package smoke test for PyCRMKit 0.5.0rc1 webhook E2E."""
 
 from __future__ import annotations
 
@@ -45,8 +45,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.5.0b2":
-        raise SystemExit(f"Expected PyCRMKit 0.5.0b2, got {version!r}")
+    if version != "0.5.0rc1":
+        raise SystemExit(f"Expected PyCRMKit 0.5.0rc1, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -292,21 +292,30 @@ def main() -> None:
     ):
         raise SystemExit("Webhook subscription filtering smoke failed")
 
-    delivered = webhook_crm.webhooks.deliver(captured_events[0])
-    if len(delivered) != 1 or delivered[0].state is not WebhookDeliveryState.SUCCEEDED:
-        raise SystemExit("Webhook delivery smoke failed")
-    if webhook_crm.webhooks.attempts(delivered[0].id).total != 1:
-        raise SystemExit("Webhook delivery log smoke failed")
+    webhook_events: list[DomainEvent] = []
+    webhook_crm.events.subscribe("contact.created", webhook_events.append)
+    webhook_crm.contacts.create(display_name="Automatic Webhook Smoke")
 
-    replay = webhook_crm.webhooks.deliver(captured_events[0])
-    if replay[0].id != delivered[0].id or len(webhook_transport.requests) != 1:
+    deliveries = webhook_crm.webhooks.deliveries()
+    if deliveries.total != 1:
+        raise SystemExit("Automatic webhook delivery smoke failed")
+    delivered = deliveries.items[0]
+    if delivered.state is not WebhookDeliveryState.SUCCEEDED:
+        raise SystemExit("Automatic webhook did not succeed")
+    if webhook_crm.webhooks.attempts(delivered.id).total != 1:
+        raise SystemExit("Webhook delivery log smoke failed")
+    if len(webhook_transport.requests) != 1:
+        raise SystemExit("Automatic webhook transport smoke failed")
+
+    replay = webhook_crm.webhooks.deliver(webhook_events[0])
+    if replay[0].id != delivered.id or len(webhook_transport.requests) != 1:
         raise SystemExit("Webhook idempotency smoke failed")
 
     disabled = webhook_crm.webhooks.disable(subscription.id)
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: Webhook delivery + stable 0.1-0.4 smoke OK")
+    print(f"PyCRMKit {version}: Automatic webhook E2E + stable 0.1-0.4 smoke OK")
 
 
 if __name__ == "__main__":
