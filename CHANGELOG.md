@@ -6,6 +6,24 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-26
+
+### Stable
+- Promoted the fully qualified `0.5.0rc1` Eventing & Webhooks line to stable without adding new functional scope.
+- Froze the documented `0.5.x` event registry, serialization, trace propagation, webhook registration, signing, delivery, retry/backoff, idempotency, dead-letter, history, and automatic post-commit bridge surfaces.
+- Preserved stable `0.1`–`0.4` root/facade contracts and the shallow package root.
+- Qualified the complete Contact create → `contact.created` → match → sign → deliver → retry → history path as the stable Eventing/Webhooks integration contract.
+- Confirmed Memory Unit-of-Work post-commit sequencing supports subscriber-owned follow-up transactions against committed state.
+
+### Changed
+- Package version advanced from `0.5.0rc1` to `0.5.0`.
+- Candidate API and webhook documentation now reflect the stable `0.5.x` compatibility promise.
+- Development roadmap now advances to `0.6.0a1 — SQLAlchemy Foundation`.
+
+### Deferred
+- Production SQLAlchemy/PostgreSQL persistence, durable cross-process outbox/claiming, distributed delivery coordination, FastAPI, Django, and data operations remain later milestones.
+
+
 ## [0.5.0rc1] - 2026-09-26
 
 ### Added

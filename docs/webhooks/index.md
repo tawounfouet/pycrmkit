@@ -1,6 +1,6 @@
 # Webhooks
 
-PyCRMKit `0.5.0rc1` integrates persistent webhook registrations, signed retryable
+PyCRMKit `0.5.0` stabilizes persistent webhook registrations, signed retryable
 delivery, and automatic post-commit EventBus bridging.
 
 ## Registration
@@ -143,7 +143,7 @@ These checks reduce common SSRF exposure but are not presented as a complete
 network-isolation boundary. Production deployments should still enforce
 appropriate egress controls.
 
-## Release-candidate integration
+## Stable integration
 
 Memory transactions now release their transaction boundary after committed state
 is published and before synchronous post-commit event subscribers execute. This
