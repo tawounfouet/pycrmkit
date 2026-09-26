@@ -149,7 +149,29 @@ def aware(value: datetime | None) -> datetime | None:
 
 
 def entity_reference(kind: str, identifier: str) -> EntityReference:
-    return EntityReference(kind=kind, id=UUIDId.parse(identifier))
+    """Restore the strongest known domain ID for a persisted entity reference."""
+
+    id_types: dict[str, type[UUIDId]] = {
+        "activity": ActivityId,
+        "communication_intent": CommunicationIntentId,
+        "communication_record": CommunicationRecordId,
+        "contact": ContactId,
+        "custom_field_definition": CustomFieldDefinitionId,
+        "custom_field_value": CustomFieldValueId,
+        "delivery_attempt": DeliveryAttemptId,
+        "lead": LeadId,
+        "opportunity": OpportunityId,
+        "organization": OrganizationId,
+        "relationship": RelationshipId,
+        "tag": TagId,
+        "tag_assignment": TagAssignmentId,
+        "task": TaskId,
+        "timeline_entry": TimelineEntryId,
+        "webhook_delivery": WebhookDeliveryId,
+        "webhook_subscription": WebhookSubscriptionId,
+    }
+    id_type = id_types.get(kind, UUIDId)
+    return EntityReference(kind=kind, id=id_type.parse(identifier))
 
 
 def contact_to_model(contact: Contact, model: ContactModel | None = None) -> ContactModel:
