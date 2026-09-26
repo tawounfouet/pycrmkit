@@ -39,6 +39,9 @@ fastapi = [
   "fastapi>=0.141,<1",
   "pydantic>=2.13,<3",
 ]
+django = [
+  "Django>=5.2,<6",
+]
 email = [
   "Jinja2>=3.1,<4",
 ]
@@ -62,6 +65,8 @@ dev = [
   "fastapi>=0.141,<1",
   "pydantic>=2.13,<3",
   "httpx>=0.28,<1",
+  "Django>=5.2,<6",
+  "django-stubs>=6.0,<7",
 ]
 
 [project.urls]
