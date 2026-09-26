@@ -32,6 +32,7 @@ def seed(state_path: Path) -> None:
     from rest_framework.test import APIClient
 
     from pycrmkit import __version__
+    from pycrmkit.contacts import ContactId
 
     client = APIClient()
 
@@ -81,7 +82,7 @@ def seed(state_path: Path) -> None:
     from pycrmkit_example.crm import get_crm
 
     external_identity = get_crm().external_identities.attach(
-        get_crm().contacts.get(contact.data["id"]),
+        get_crm().contacts.get(ContactId.parse(contact.data["id"])),
         system="hubspot",
         external_id="django-contact-ada-001",
         metadata={"reference_app": "django-postgresql"},
