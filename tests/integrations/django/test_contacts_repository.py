@@ -9,7 +9,6 @@ import pytest
 
 from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactRepository
 from pycrmkit.integrations.django.repositories import DjangoContactRepository
-
 from tests.contracts.contacts_repository import ContactRepositoryContract
 
 
