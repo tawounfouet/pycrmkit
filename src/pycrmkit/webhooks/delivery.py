@@ -16,9 +16,9 @@ from pycrmkit.core.time import Clock, SystemClock, as_utc
 from pycrmkit.events import DomainEvent, EventSerializer
 from pycrmkit.exceptions import DuplicateError, ValidationError
 from pycrmkit.webhooks.entities import WebhookSubscription, WebhookSubscriptionId
-from pycrmkit.webhooks.subscriptions import WebhookSubscriptionQuery
 from pycrmkit.webhooks.retry import WebhookRetryPolicy
 from pycrmkit.webhooks.signing import sign_webhook_payload
+from pycrmkit.webhooks.subscriptions import WebhookSubscriptionQuery
 from pycrmkit.webhooks.transport import (
     WebhookRequest,
     WebhookTransport,
