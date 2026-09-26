@@ -25,14 +25,23 @@ crm.webhooks.disable(subscription.id)
 
 ## Explicit delivery
 
-`0.5.0b2` intentionally keeps delivery explicit:
+`0.5.0rc1` enables automatic delivery for committed registered CRM events by
+default. After a matching subscription exists, a normal facade mutation such as
+`crm.contacts.create(...)` can emit `contact.created`, which is bridged into the
+same delivery engine after the source transaction has committed.
 
 ```python
-deliveries = crm.webhooks.deliver(event)
+crm.webhooks.register(
+    url="https://example.com/hooks/crm",
+    events=["contact.created"],
+)
+
+crm.contacts.create(display_name="Ada")
 ```
 
-Automatic subscription to the CRM event bus is reserved for the release
-candidate so the engine can be qualified independently first.
+Manual `crm.webhooks.deliver(event)` remains available and uses the same
+idempotency boundary. Automatic bridging can be disabled explicitly with
+`CRM.memory(webhook_auto_delivery=False)`.
 
 One `WebhookDelivery` exists for each:
 
@@ -134,9 +143,28 @@ These checks reduce common SSRF exposure but are not presented as a complete
 network-isolation boundary. Production deployments should still enforce
 appropriate egress controls.
 
-## Scope boundary
+## Release-candidate integration
 
-`0.5.0b2` does not automatically subscribe the delivery engine to all CRM
-Domain Events. That integration and the complete
-create → emit → match → sign → deliver → retry → history scenario belong to
-`0.5.0rc1`.
+Memory transactions now release their transaction boundary after committed state
+is published and before synchronous post-commit event subscribers execute. This
+allows the webhook bridge to open a fresh Unit of Work against the committed
+state without creating a nested transaction.
+
+The candidate qualifies the complete path:
+
+```text
+create contact
+→ commit source state
+→ emit contact.created
+→ match active subscription
+→ serialize canonical event JSON
+→ sign HMAC payload
+→ deliver HTTP request
+→ record response / retry schedule
+→ retry due delivery
+→ inspect delivery + attempt history
+```
+
+The bridge is shared by `CRM.with_context(...)` and `CRM.with_event(...)` views,
+so creating lightweight facade views does not install additional bridge
+instances.
