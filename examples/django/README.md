@@ -1,7 +1,7 @@
 # PyCRMKit Django + PostgreSQL Reference Application
 
-This example is the release-candidate reference path for PyCRMKit's optional
-Django integration.
+This example is the stable reference path for PyCRMKit's optional Django
+integration as of `0.8.0`.
 
 It deliberately assembles the pieces delivered across the `0.8.x` line:
 
@@ -75,7 +75,7 @@ POST /crm/relationships/
 
 ## Reproduce the E2E smoke
 
-The release gate intentionally uses two Python processes so the verification
+The stable release gate intentionally uses two Python processes so the verification
 does not depend on process-local state:
 
 ```bash
