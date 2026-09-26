@@ -103,6 +103,7 @@ nav:
       - 0.7.0a1 Schemas & Dependency Bridge: releases/0.7.0a1.md
       - 0.7.0b1 Routers: releases/0.7.0b1.md
       - 0.7.0b2 OpenAPI & Error Mapping: releases/0.7.0b2.md
+      - 0.7.0rc1 FastAPI Example & E2E: releases/0.7.0rc1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

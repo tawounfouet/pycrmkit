@@ -16,7 +16,7 @@ import pycrmkit
 
 does not import FastAPI.
 
-## 0.7.0b2 scope
+## 0.7.0rc1 scope
 
 The FastAPI integration now provides:
 
@@ -43,9 +43,10 @@ Milestone progression:
 0.7.0a1  schemas + dependency bridge
 0.7.0b1  reusable routers
 0.7.0b2  OpenAPI + error mapping
+0.7.0rc1 PostgreSQL example + API E2E
 ```
 
-The reference PostgreSQL application remains the `0.7.0rc1` milestone.
+The release candidate adds the reference PostgreSQL application and API E2E required by the FastAPI stable gate.
 
 ## Application setup
 
@@ -72,6 +73,49 @@ app.include_router(
 
 The same router and handler layer can be mounted around a
 SQLAlchemy/PostgreSQL-backed CRM without changing route code.
+
+## Reference PostgreSQL application
+
+The release candidate includes:
+
+```text
+examples/fastapi_postgres/
+├── app.py
+├── compose.yaml
+├── .env.example
+├── smoke.py
+└── README.md
+```
+
+The application uses a production-style dependency direction:
+
+```text
+FastAPI
+  ↓
+create_crm_router(...)
+  ↓
+CRM facade
+  ↓
+SQLAlchemyUnitOfWork
+  ↓
+PostgreSQL
+```
+
+Schema evolution is deliberately explicit. Start PostgreSQL, configure
+`PYCRMKIT_DATABASE_URL`, apply the packaged migrations, then start the ASGI
+application:
+
+```bash
+pycrmkit-migrate upgrade head
+uvicorn examples.fastapi_postgres.app:create_app --factory
+```
+
+The application does not run Alembic automatically at startup. Its lifespan
+checks database connectivity and disposes the SQLAlchemy Engine cleanly on
+shutdown.
+
+The release-candidate CI path repeats this flow against PostgreSQL 17 and then
+repeats it again with a wheel installed in a clean virtual environment.
 
 ## Dependency direction
 
@@ -298,13 +342,22 @@ default limit: 50
 - all existing router flows with installed handlers;
 - continued core import independence from FastAPI.
 
-## Next milestone
+## Release-candidate qualification
 
-`0.7.0rc1 — FastAPI Example + E2E` will add:
+`0.7.0rc1` verifies:
 
 ```text
-examples/fastapi_postgres/
+TestClient/API integration tests
+request validation and error mapping
+OpenAPI generation
 PostgreSQL-backed API E2E
-reference application wiring
-full FastAPI release-candidate qualification
+data persistence across application restart
+packaged Alembic migrations
+installed-wheel FastAPI/PostgreSQL smoke
+core import without FastAPI
 ```
+
+## Next milestone
+
+The next delivery is **`0.7.0 — FastAPI Integration Stable`**. It should
+promote the qualified RC without introducing new FastAPI feature scope.

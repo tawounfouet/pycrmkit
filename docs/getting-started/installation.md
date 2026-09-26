@@ -1,7 +1,7 @@
 # Installation
 
 PyCRMKit `0.6.0` is the current stable Persistence Foundation release.
-The latest integration prerelease is `0.7.0b2 — OpenAPI & Error Mapping`.
+The latest integration prerelease is `0.7.0rc1 — FastAPI Example + E2E`.
 
 ## Core
 
@@ -28,6 +28,15 @@ pip install "pycrmkit[fastapi]"
 This adds FastAPI/Pydantic transport support, request-scoped dependency bridging,
 reusable routers, error handlers and OpenAPI error contracts without making them
 core runtime dependencies.
+
+For the PostgreSQL-backed FastAPI reference path, install the compatible extras
+together:
+
+```bash
+pip install "pycrmkit[fastapi,postgresql,migrations]"
+```
+
+The reference application is available in `examples/fastapi_postgres/`.
 
 ## SQLAlchemy / PostgreSQL
 

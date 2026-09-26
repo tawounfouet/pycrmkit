@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.6.0 — Persistence Foundation Stable`**.  
-The latest integration prerelease is **`0.7.0b2 — OpenAPI & Error Mapping`**.
+The latest integration prerelease is **`0.7.0rc1 — FastAPI Example + E2E`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -72,5 +72,11 @@ Sessions or repositories directly.
 status mapping, normalized request-validation errors, application-level
 exception handlers and selective OpenAPI response examples.
 
-The next roadmap milestone is **`0.7.0rc1 — FastAPI Example + E2E`**: a
-reference FastAPI + PostgreSQL application and PostgreSQL-backed API E2E.
+`0.7.0rc1` qualifies the complete FastAPI integration against PostgreSQL 17.
+The reference application under `examples/fastapi_postgres/` uses packaged
+Alembic migrations, `SQLAlchemyUnitOfWork`, the reusable router/error layer,
+real API E2E and a clean installed-wheel smoke.
+
+The next roadmap milestone is **`0.7.0 — FastAPI Integration Stable`**. No new
+FastAPI feature scope is required for that promotion; the stable gate is a
+qualification and compatibility decision.

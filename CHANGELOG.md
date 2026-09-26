@@ -6,6 +6,38 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.7.0rc1] - 2026-09-26
+
+### Added
+- Reference FastAPI + PostgreSQL application under `examples/fastapi_postgres/`.
+- PostgreSQL 17 Docker Compose service and example environment configuration.
+- Production-style application factory wiring `CRM` through `SQLAlchemyUnitOfWork`.
+- Database health endpoint and SQLAlchemy Engine lifecycle disposal.
+- PostgreSQL-backed API E2E covering migrations, CRM writes, Timeline, typed errors and persistence across application restart.
+- Dedicated FastAPI PostgreSQL E2E GitHub Actions gate.
+- Installed-wheel FastAPI + PostgreSQL smoke after packaged Alembic migrations.
+
+### Changed
+- Package version advanced from `0.7.0b2` to `0.7.0rc1`.
+- FastAPI integration moves from beta contract qualification to full PostgreSQL-backed release-candidate qualification.
+- Development roadmap advances to `0.7.0 — FastAPI Integration Stable`.
+
+### Deployment semantics
+- Database migrations remain an explicit deployment step via `pycrmkit-migrate upgrade head`.
+- The reference application never runs Alembic implicitly during startup.
+- The application owns the SQLAlchemy Engine/session factory while routers continue to depend only on the CRM facade.
+- Application shutdown disposes database pool resources explicitly.
+
+### Qualification
+- Real FastAPI TestClient journey runs against Alembic-migrated PostgreSQL 17.
+- Contact, Organization, Relationship, Activity, Task and Timeline flows cross the HTTP → facade → UoW → PostgreSQL boundary.
+- Data is re-read after application restart to prove persistence beyond one process/application instance.
+- Built wheel is installed with `fastapi`, `postgresql` and `migrations` extras in a clean environment.
+- Packaged wheel migrations run before installed-wheel FastAPI/PostgreSQL smoke.
+
+### Next
+- `0.7.0` stable promotion should add no new FastAPI feature scope.
+
 ## [0.7.0b2] - 2026-09-26
 
 ### Added
