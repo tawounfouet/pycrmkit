@@ -17,7 +17,6 @@ from pycrmkit.integrations.django.models import (
     RelationshipModel,
 )
 
-
 if TYPE_CHECKING:
     class _ContactEmailInlineBase(admin.TabularInline[ContactModel, ContactEmailModel]):
         pass
