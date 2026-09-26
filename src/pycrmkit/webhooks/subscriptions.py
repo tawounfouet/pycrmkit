@@ -12,6 +12,7 @@ from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.events import DomainEvent, EventRegistry
 from pycrmkit.webhooks.entities import WebhookSubscription, WebhookSubscriptionId
+from pycrmkit.webhooks.signing import generate_webhook_secret
 
 if TYPE_CHECKING:
     from pycrmkit.webhooks.repository import WebhookSubscriptionRepository
@@ -47,6 +48,7 @@ class WebhookSubscriptionService:
         *,
         url: str,
         events: Sequence[EventType | str],
+        signing_secret: str | None = None,
     ) -> WebhookSubscription:
         """Register one endpoint for one or more registered event types."""
 
@@ -61,6 +63,11 @@ class WebhookSubscriptionService:
             updated_at=now,
             url=url,
             event_types=event_types,
+            signing_secret=(
+                signing_secret
+                if signing_secret is not None
+                else generate_webhook_secret()
+            ),
         )
         self.repository.save(subscription)
         return subscription
