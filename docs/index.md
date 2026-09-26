@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.6.0 — Persistence Foundation Stable`**.  
-The latest integration prerelease is **`0.7.0a1 — Schemas & Dependency Bridge`**.
+The latest integration prerelease is **`0.7.0b1 — Routers`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -60,11 +60,13 @@ without adding new persistence scope. SQLAlchemy repositories, Unit-of-Work
 transactions, PostgreSQL and Alembic revision `0002` now form the stable
 production-reference persistence baseline.
 
-`0.7.0a1` opens the FastAPI integration line with optional Pydantic transport
-schemas, request-context dependency bridging, pagination conversion and a typed
-error payload foundation. The domain and core package remain independent from
-FastAPI/Pydantic.
+`0.7.0a1` introduced the optional Pydantic transport schemas, request-context
+dependency bridge, pagination conversion and typed error payload foundation.
 
-The next roadmap milestone is **`0.7.0b1 — Routers`**. OpenAPI/error mapping
-follows in `0.7.0b2`, then the example application and PostgreSQL-backed API
-E2E in `0.7.0rc1`.
+`0.7.0b1` adds reusable facade-backed routers for Contacts, Organizations,
+Relationships, Activities, Tasks, Leads, Opportunities and Timeline. The core
+remains FastAPI/Pydantic-independent, and routers never access ORM models,
+Sessions or repositories directly.
+
+The next roadmap milestone is **`0.7.0b2 — OpenAPI / Error Mapping`**, followed
+by the example application and PostgreSQL-backed API E2E in `0.7.0rc1`.

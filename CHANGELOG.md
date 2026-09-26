@@ -6,6 +6,30 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.7.0b1] - 2026-09-26
+
+### Added
+- Reusable `create_crm_router(...)` composite `APIRouter` factory.
+- FastAPI routers for Contacts, Organizations, Relationships, Activities, Tasks, Leads, Opportunities and Timeline.
+- Explicit HTTP command routes for archive/end, Task lifecycle transitions, Lead qualification/conversion and Opportunity stage movement.
+- Router integration tests covering composite registration, pagination, cross-module CRM flows and the Sales conversion flow.
+
+### Changed
+- Package version advanced from `0.7.0a1` to `0.7.0b1`.
+- FastAPI consumers can mount the complete CRM HTTP surface under an application-defined prefix.
+- Development roadmap advances to `0.7.0b2 — OpenAPI / Error Mapping`.
+
+### Router semantics
+- Every router receives a request-scoped CRM facade through `CRMDependency`.
+- Routers call only documented CRM facade namespaces and never access repositories, Unit of Work objects, SQLAlchemy models or Sessions directly.
+- Leads and Opportunities expose only operations currently present on their public facade APIs; this beta does not reach through internal runtime state to invent read endpoints.
+- Collection and Timeline routes reuse the framework-neutral `OffsetPageRequest` / `PageResponse` pagination contract.
+
+### Deferred
+- Global domain-error → HTTP status/handler mapping remains scheduled for `0.7.0b2`.
+- OpenAPI examples and final API contract hardening remain scheduled for `0.7.0b2`.
+- The PostgreSQL-backed example application and full API E2E remain scheduled for `0.7.0rc1`.
+
 ## [0.7.0a1] - 2026-09-26
 
 ### Added

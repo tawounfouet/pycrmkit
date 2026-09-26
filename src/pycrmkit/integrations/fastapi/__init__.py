@@ -7,6 +7,7 @@ from pycrmkit.integrations.fastapi.pagination import (
     PaginationParams,
     pagination_params,
 )
+from pycrmkit.integrations.fastapi.router import create_crm_router
 from pycrmkit.integrations.fastapi.schemas import (
     ActivityCreateRequest,
     ActivityParticipantSchema,
@@ -78,5 +79,6 @@ __all__ = [
     "TaskResponse",
     "TaskUpdateRequest",
     "TimelineEntryResponse",
+    "create_crm_router",
     "pagination_params",
 ]

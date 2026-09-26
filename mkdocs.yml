@@ -64,7 +64,7 @@ nav:
       - Memory Adapter: storage/memory.md
       - SQLAlchemy Persistence: storage/sqlalchemy.md
   - Integrations:
-      - FastAPI Foundation: integrations/fastapi.md
+      - FastAPI Integration: integrations/fastapi.md
   - API:
       - 0.1 Public API: api/0.1-public-api.md
       - 0.2 Public API: api/0.2-public-api.md
@@ -101,6 +101,7 @@ nav:
       - 0.6.0rc1 Persistence Qualification: releases/0.6.0rc1.md
       - 0.6.0 Persistence Foundation Stable: releases/0.6.0.md
       - 0.7.0a1 Schemas & Dependency Bridge: releases/0.7.0a1.md
+      - 0.7.0b1 Routers: releases/0.7.0b1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
