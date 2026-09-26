@@ -1,7 +1,7 @@
 # Webhooks
 
-PyCRMKit `0.5.0b2` combines persistent webhook registrations with an explicit,
-retryable delivery engine.
+PyCRMKit `0.5.0rc1` integrates persistent webhook registrations, signed retryable
+delivery, and automatic post-commit EventBus bridging.
 
 ## Registration
 
