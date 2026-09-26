@@ -1,7 +1,7 @@
 """Django ORM persistence models for the initial PyCRMKit adapter.
 
-These are persistence representations, not domain entities. Django migrations
-are intentionally deferred to PyCRMKit 0.8.0b1.
+These are persistence representations, not domain entities. Their schema is
+managed by the adapter-specific Django migrations shipped with PyCRMKit.
 """
 
 from __future__ import annotations
