@@ -4,7 +4,6 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.orm import Session
-
 from pycrmkit.contacts import ContactId
 from pycrmkit.opportunities import Opportunity, OpportunityId, OpportunityRepository
 from pycrmkit.organizations import OrganizationId
