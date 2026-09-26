@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import pytest
+from sqlalchemy.orm import Session
 
 from pycrmkit.activities import (
     Activity,
@@ -17,8 +18,6 @@ from pycrmkit.activities import (
 from pycrmkit.contacts import ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.organizations import OrganizationId
-from sqlalchemy.orm import Session
-
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyActivityRepository
 
 from ...contracts.activities_repository import ActivityRepositoryContract
