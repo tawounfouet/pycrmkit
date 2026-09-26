@@ -6,9 +6,8 @@ from collections.abc import Callable
 from datetime import datetime
 from typing import TypeVar
 
-from django.db.models import Model, Q, QuerySet
+from django.db.models import Model, Q, QuerySet, Value
 from django.db.models.functions import Coalesce, Concat, Lower
-from django.db.models import Value
 
 from pycrmkit.contacts import (
     Address,
@@ -24,6 +23,16 @@ from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import NotFoundError
+from pycrmkit.integrations.django.models import (
+    ContactAddressModel,
+    ContactEmailModel,
+    ContactModel,
+    ContactPhoneModel,
+    OrganizationAddressModel,
+    OrganizationDomainModel,
+    OrganizationModel,
+    RelationshipModel,
+)
 from pycrmkit.organizations import (
     Organization,
     OrganizationAddress,
@@ -39,17 +48,6 @@ from pycrmkit.relationships import (
     RelationshipId,
     RelationshipQuery,
     RelationshipType,
-)
-
-from pycrmkit.integrations.django.models import (
-    ContactAddressModel,
-    ContactEmailModel,
-    ContactModel,
-    ContactPhoneModel,
-    OrganizationAddressModel,
-    OrganizationDomainModel,
-    OrganizationModel,
-    RelationshipModel,
 )
 
 ModelT = TypeVar("ModelT", bound=Model)
