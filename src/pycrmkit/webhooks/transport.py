@@ -117,13 +117,13 @@ class StdlibWebhookTransport(WebhookTransport):
                 status_code=exc.code,
                 headers=dict(exc.headers.items()) if exc.headers is not None else {},
             )
-        except (TimeoutError, socket.timeout) as exc:
+        except TimeoutError as exc:
             raise WebhookTransportError(
                 "webhook request timed out",
                 code="webhook.transport.timeout",
             ) from exc
         except URLError as exc:
-            if isinstance(exc.reason, (TimeoutError, socket.timeout)):
+            if isinstance(exc.reason, TimeoutError):
                 raise WebhookTransportError(
                     "webhook request timed out",
                     code="webhook.transport.timeout",
