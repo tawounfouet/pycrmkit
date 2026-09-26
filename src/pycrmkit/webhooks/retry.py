@@ -43,7 +43,11 @@ class WebhookRetryPolicy:
                 code="webhook.retry.attempt_number.invalid",
             )
         factor = 2 ** (attempt_number - 1)
-        return min(self.base_delay * factor, self.max_delay)
+        delay_seconds = min(
+            self.base_delay.total_seconds() * factor,
+            self.max_delay.total_seconds(),
+        )
+        return timedelta(seconds=delay_seconds)
 
     def next_attempt_at(self, failed_at: datetime, attempt_number: int) -> datetime:
         """Return the UTC retry instant after a failed attempt."""
