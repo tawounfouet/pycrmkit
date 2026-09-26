@@ -75,7 +75,7 @@ jobs:
                   format="json",
               )
 
-          assert __version__ == "0.8.0rc1"
+          assert __version__ == "0.8.0"
           assert response.status_code == 201, response.data
           assert response.data["display_name"] == "Installed Wheel DRF"
           print(f"PyCRMKit {__version__} installed-wheel DRF facade smoke: OK")
