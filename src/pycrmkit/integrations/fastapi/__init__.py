@@ -1,7 +1,16 @@
 """Optional FastAPI integration foundation for PyCRMKit."""
 
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency, CRMFactory
-from pycrmkit.integrations.fastapi.errors import ErrorResponse
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    LIST_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+    ErrorResponse,
+    error_responses,
+    install_error_handlers,
+    status_code_for_error,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -50,6 +59,7 @@ __all__ = [
     "AddressSchema",
     "CRMDependency",
     "CRMFactory",
+    "CREATE_ERROR_RESPONSES",
     "ContactCreateRequest",
     "ContactEmailSchema",
     "ContactPhoneSchema",
@@ -57,6 +67,9 @@ __all__ = [
     "ContactUpdateRequest",
     "EntityReferenceSchema",
     "ErrorResponse",
+    "LIST_ERROR_RESPONSES",
+    "MUTATION_ERROR_RESPONSES",
+    "READ_ERROR_RESPONSES",
     "LeadConversionRequest",
     "LeadCreateRequest",
     "LeadResponse",
@@ -80,5 +93,8 @@ __all__ = [
     "TaskUpdateRequest",
     "TimelineEntryResponse",
     "create_crm_router",
+    "error_responses",
+    "install_error_handlers",
     "pagination_params",
+    "status_code_for_error",
 ]

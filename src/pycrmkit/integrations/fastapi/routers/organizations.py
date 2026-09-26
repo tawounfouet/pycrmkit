@@ -7,6 +7,12 @@ from fastapi import APIRouter, Depends, status
 
 from pycrmkit import CRM
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    LIST_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -29,6 +35,7 @@ def create_organizations_router(dependency: CRMDependency) -> APIRouter:
         "",
         response_model=OrganizationResponse,
         status_code=status.HTTP_201_CREATED,
+        responses=CREATE_ERROR_RESPONSES,
     )
     def create_organization(
         request: OrganizationCreateRequest,
@@ -37,7 +44,7 @@ def create_organizations_router(dependency: CRMDependency) -> APIRouter:
         organization = crm.organizations.create(**request.to_domain_kwargs())
         return OrganizationResponse.from_domain(organization)
 
-    @router.get("", response_model=PageResponse[OrganizationResponse])
+    @router.get("", response_model=PageResponse[OrganizationResponse], responses=LIST_ERROR_RESPONSES)
     def list_organizations(
         crm: Annotated[CRM, Depends(dependency)],
         page: Annotated[PaginationParams, Depends(pagination_params)],
@@ -48,7 +55,7 @@ def create_organizations_router(dependency: CRMDependency) -> APIRouter:
             OrganizationResponse.from_domain,
         )
 
-    @router.get("/{organization_id}", response_model=OrganizationResponse)
+    @router.get("/{organization_id}", response_model=OrganizationResponse, responses=READ_ERROR_RESPONSES)
     def get_organization(
         organization_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
@@ -56,7 +63,7 @@ def create_organizations_router(dependency: CRMDependency) -> APIRouter:
         organization = crm.organizations.get(OrganizationId(organization_id))
         return OrganizationResponse.from_domain(organization)
 
-    @router.patch("/{organization_id}", response_model=OrganizationResponse)
+    @router.patch("/{organization_id}", response_model=OrganizationResponse, responses=MUTATION_ERROR_RESPONSES)
     def update_organization(
         organization_id: UUID,
         request: OrganizationUpdateRequest,
@@ -68,7 +75,7 @@ def create_organizations_router(dependency: CRMDependency) -> APIRouter:
         )
         return OrganizationResponse.from_domain(organization)
 
-    @router.post("/{organization_id}/archive", response_model=OrganizationResponse)
+    @router.post("/{organization_id}/archive", response_model=OrganizationResponse, responses=MUTATION_ERROR_RESPONSES)
     def archive_organization(
         organization_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],

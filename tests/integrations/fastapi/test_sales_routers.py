@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from pycrmkit import CRM
-from pycrmkit.integrations.fastapi import create_crm_router
+from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
 from pycrmkit.pipelines import Stage, StageTransition
 
 
@@ -24,6 +24,7 @@ def test_lead_conversion_and_opportunity_move_remain_facade_commands() -> None:
         transitions=(StageTransition("new", "won"),),
     )
     app = FastAPI()
+    install_error_handlers(app)
     app.include_router(create_crm_router(lambda: crm), prefix="/crm")
     client = TestClient(app)
 

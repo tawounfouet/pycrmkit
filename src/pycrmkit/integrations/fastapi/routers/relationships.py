@@ -7,6 +7,12 @@ from fastapi import APIRouter, Depends, status
 
 from pycrmkit import CRM
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    LIST_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -29,6 +35,7 @@ def create_relationships_router(dependency: CRMDependency) -> APIRouter:
         "",
         response_model=RelationshipResponse,
         status_code=status.HTTP_201_CREATED,
+        responses=CREATE_ERROR_RESPONSES,
     )
     def create_relationship(
         request: RelationshipCreateRequest,
@@ -37,7 +44,7 @@ def create_relationships_router(dependency: CRMDependency) -> APIRouter:
         relationship = crm.relationships.create(**request.to_domain_kwargs())
         return RelationshipResponse.from_domain(relationship)
 
-    @router.get("", response_model=PageResponse[RelationshipResponse])
+    @router.get("", response_model=PageResponse[RelationshipResponse], responses=LIST_ERROR_RESPONSES)
     def list_relationships(
         crm: Annotated[CRM, Depends(dependency)],
         page: Annotated[PaginationParams, Depends(pagination_params)],
@@ -48,7 +55,7 @@ def create_relationships_router(dependency: CRMDependency) -> APIRouter:
             RelationshipResponse.from_domain,
         )
 
-    @router.get("/{relationship_id}", response_model=RelationshipResponse)
+    @router.get("/{relationship_id}", response_model=RelationshipResponse, responses=READ_ERROR_RESPONSES)
     def get_relationship(
         relationship_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
@@ -56,7 +63,7 @@ def create_relationships_router(dependency: CRMDependency) -> APIRouter:
         relationship = crm.relationships.get(RelationshipId(relationship_id))
         return RelationshipResponse.from_domain(relationship)
 
-    @router.patch("/{relationship_id}", response_model=RelationshipResponse)
+    @router.patch("/{relationship_id}", response_model=RelationshipResponse, responses=MUTATION_ERROR_RESPONSES)
     def update_relationship(
         relationship_id: UUID,
         request: RelationshipUpdateRequest,
@@ -68,7 +75,7 @@ def create_relationships_router(dependency: CRMDependency) -> APIRouter:
         )
         return RelationshipResponse.from_domain(relationship)
 
-    @router.post("/{relationship_id}/end", response_model=RelationshipResponse)
+    @router.post("/{relationship_id}/end", response_model=RelationshipResponse, responses=MUTATION_ERROR_RESPONSES)
     def end_relationship(
         relationship_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],

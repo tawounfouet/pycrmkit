@@ -7,6 +7,10 @@ from fastapi import APIRouter, Depends, status
 
 from pycrmkit import CRM
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.schemas import (
     OpportunityCreateRequest,
     OpportunityMoveRequest,
@@ -24,6 +28,7 @@ def create_opportunities_router(dependency: CRMDependency) -> APIRouter:
         "",
         response_model=OpportunityResponse,
         status_code=status.HTTP_201_CREATED,
+        responses=CREATE_ERROR_RESPONSES,
     )
     def create_opportunity(
         request: OpportunityCreateRequest,
@@ -32,7 +37,7 @@ def create_opportunities_router(dependency: CRMDependency) -> APIRouter:
         opportunity = crm.opportunities.create(**request.to_domain_kwargs())
         return OpportunityResponse.from_domain(opportunity)
 
-    @router.post("/{opportunity_id}/move", response_model=OpportunityResponse)
+    @router.post("/{opportunity_id}/move", response_model=OpportunityResponse, responses=MUTATION_ERROR_RESPONSES)
     def move_opportunity(
         opportunity_id: UUID,
         request: OpportunityMoveRequest,
