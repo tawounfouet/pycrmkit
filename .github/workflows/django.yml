@@ -39,6 +39,21 @@ jobs:
           wheel="$(ls dist/pycrmkit-*.whl)"
           .venv-django-wheel/bin/python -m pip install "${wheel}[django]"
 
+      - name: Installed-wheel Django-only dependency boundary
+        shell: bash
+        run: |
+          PYTHONPATH="" .venv-django-wheel/bin/python - <<'PY'
+          import importlib.util
+
+          assert importlib.util.find_spec("rest_framework") is None
+          try:
+              import pycrmkit.integrations.django.drf
+          except ModuleNotFoundError as exc:
+              assert "pycrmkit[drf]" in str(exc)
+          else:
+              raise AssertionError("DRF bridge imported without the optional DRF dependency")
+          PY
+
       - name: Installed-wheel Django migration + transaction smoke
         shell: bash
         run: |
@@ -78,7 +93,7 @@ jobs:
 
           call_command("migrate", "pycrmkit_crm", verbosity=0, interactive=False)
 
-          assert __version__ == "0.8.0b1"
+          assert __version__ == "0.8.0b2"
           assert apps.get_app_config("pycrmkit_crm").name == "pycrmkit.integrations.django"
           assert ContactModel._meta.db_table == "pycrmkit_contacts"
           assert ("pycrmkit_crm", "0001_initial") in MigrationRecorder(connection).applied_migrations()

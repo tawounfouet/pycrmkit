@@ -5,11 +5,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **0.7.0 — FastAPI Integration Stable**.  
-Latest integration prerelease: **0.8.0b1 — Django Migrations & Admin**.
+Latest integration prerelease: **0.8.0b2 — Optional DRF**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, and Django remain opt-in integrations. `0.7.0` is the stable FastAPI line. The `0.8.x` prerelease line now includes a native Django app bridge, adapter-specific migrations, admin helpers, and an explicit transaction bridge over the Django repositories currently implemented, while keeping Django out of the core package.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.7.0` is the stable FastAPI line. The `0.8.x` prerelease line now includes the Django app/persistence bridge, migrations, admin, transactions, plus an optional facade-backed DRF transport for Contacts, Organizations, and Relationships.
 
 ## Architecture
 
@@ -119,8 +119,8 @@ pytest
 0.7.0  FastAPI Integration                                           ✓
 0.8.0a1 Django Application Bridge                                     ✓
 0.8.0b1 Django Migrations & Admin                                      ✓
-0.8.0b2 Optional DRF                                                   →
-0.8.0rc1 Django Example + E2E
+0.8.0b2 Optional DRF                                                   ✓
+0.8.0rc1 Django Example + E2E                                          →
 0.8.0  Django Integration
 0.9.0  Data Operations
 1.0.0  Production Stable

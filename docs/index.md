@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.7.0 — FastAPI Integration Stable`**.  
-The latest integration prerelease is **`0.8.0b1 — Django Migrations & Admin`**.
+The latest integration prerelease is **`0.8.0b2 — Optional DRF`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -86,4 +86,6 @@ qualification now form one compatibility-governed integration line.
 
 `0.8.0b1` adds the adapter-specific Django migration lifecycle, admin helpers and an explicit `DjangoTransactionBridge`. The bridge preserves explicit commit/rollback semantics and defers staged domain events until the actual outer Django transaction commits when it joins an ambient `transaction.atomic()` block. It is intentionally bounded to the Django repositories currently implemented; full Django application qualification remains scheduled for the release candidate.
 
-The next roadmap milestone is **`0.8.0b2 — Optional DRF`**.
+`0.8.0b2` adds an optional Django REST Framework bridge. Its serializers preserve PyCRMKit domain/value-object semantics, its ViewSets call the public `CRM` facade rather than ORM models, request actor/correlation headers flow into the facade context, and PyCRMKit errors retain stable machine-readable codes over HTTP. The plain `django` extra remains DRF-free.
+
+The next roadmap milestone is **`0.8.0rc1 — Django Example + E2E`**.

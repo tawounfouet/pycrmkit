@@ -65,7 +65,7 @@ Install the optional Django bridge with:
 pip install "pycrmkit[django]"
 ```
 
-The `0.8.0b1` prerelease targets Django 5.2 LTS while preserving PyCRMKit's
+The `0.8.0b2` prerelease targets Django 5.2 LTS while preserving PyCRMKit's
 Python 3.11–3.13 compatibility matrix.
 
 Add the PyCRMKit application explicitly:
@@ -97,8 +97,50 @@ with DjangoTransactionBridge() as bridge:
 
 The bridge currently exposes the Django repositories implemented by the `0.8.x`
 line (Contacts, Organizations and Relationships); it is not yet the complete
-cross-domain `UnitOfWork` implementation. DRF remains optional and deferred to
-`0.8.0b2`.
+cross-domain `UnitOfWork` implementation.
+
+## Django REST Framework integration
+
+DRF is a separate optional capability. Installing the plain Django adapter does
+not install Django REST Framework:
+
+```bash
+pip install "pycrmkit[drf]"
+```
+
+Configure an application-owned CRM factory:
+
+```python
+PYCRMKIT_CRM_FACTORY = "project.crm.get_crm"
+```
+
+or provide any callable through the same setting. Mount the reusable router:
+
+```python
+from django.urls import include, path
+from pycrmkit.integrations.django.drf import create_drf_router
+
+router = create_drf_router()
+
+urlpatterns = [
+    path("crm/", include(router.urls)),
+]
+```
+
+For consistent error handling across additional application-owned DRF views:
+
+```python
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": (
+        "pycrmkit.integrations.django.drf.errors."
+        "pycrmkit_exception_handler"
+    ),
+}
+```
+
+The packaged PyCRMKit ViewSets already normalize PyCRMKit domain errors and DRF
+request-validation errors. The global setting extends the same handler to other
+DRF views in the consuming application.
 
 ## Repository development
 

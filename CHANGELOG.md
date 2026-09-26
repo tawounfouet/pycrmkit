@@ -6,6 +6,42 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.8.0b2] - 2026-09-26
+
+### Added
+- Separate `drf` optional dependency extra targeting Django REST Framework 3.18.x.
+- DRF serializer helpers for Contacts, Organizations and Relationships, including nested value-object mapping and partial-update `UNSET` semantics.
+- Facade-backed `ContactViewSet`, `OrganizationViewSet` and `RelationshipViewSet`.
+- Reusable `create_drf_router()` helper.
+- Application-owned `PYCRMKIT_CRM_FACTORY` setting supporting callables or dotted import paths.
+- Request-context propagation from `X-Actor-ID` and `X-Correlation-ID`.
+- DRF offset pagination bridge using PyCRMKit's `OffsetPageRequest` limits/metadata.
+- PyCRMKit domain-error → DRF response bridge and normalized DRF request-validation errors.
+- Dedicated DRF CI and clean installed-wheel API smoke.
+- Django-only clean-wheel gate proving that `pycrmkit[django]` does not install DRF.
+
+### Architecture
+- DRF ViewSets invoke only the public CRM facade and never access Django ORM models or repositories directly.
+- Serializer validation remains a transport concern; PyCRMKit domain value objects and services remain authoritative for CRM invariants.
+- Authentication and authorization remain consuming-application concerns.
+- The beta DRF surface intentionally matches the Django repositories currently qualified: Contacts, Organizations and Relationships.
+
+### Qualification
+- Serializer/domain conversion tests cover nested values and explicit-null vs omitted update semantics.
+- Router/API tests cover create/list/retrieve/PATCH/archive/end flows.
+- Offset pagination and actor/correlation propagation are qualified.
+- Domain errors retain stable machine-readable codes; request validation does not echo submitted input.
+- Plain Django installation remains DRF-independent.
+- Python 3.11/3.12/3.13, Ruff, strict mypy, persistence and FastAPI regression gates remain required.
+
+### Changed
+- Package version advanced from `0.8.0b1` to `0.8.0b2`.
+- Development roadmap advances to `0.8.0rc1 — Django Example + E2E`.
+
+### Deferred
+- Reference Django application and full Django E2E remain scheduled for `0.8.0rc1`.
+- Stable Django/DRF compatibility remains scheduled for `0.8.0`.
+
 ## [0.8.0b1] - 2026-09-26
 
 ### Added
