@@ -26,6 +26,10 @@ classifiers = [
 sqlalchemy = [
   "SQLAlchemy>=2.0,<3",
 ]
+postgresql = [
+  "SQLAlchemy>=2.0,<3",
+  "psycopg[binary]>=3.2,<4",
+]
 email = [
   "Jinja2>=3.1,<4",
 ]
@@ -34,6 +38,7 @@ resend = [
 ]
 dev = [
   "SQLAlchemy>=2.0,<3",
+  "psycopg[binary]>=3.2,<4",
   "pytest>=8",
   "pytest-cov>=6",
   "ruff>=0.6",
@@ -80,6 +85,9 @@ mypy_path = "src"
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-ra --strict-markers"
+markers = [
+  "postgresql: requires a live PostgreSQL test database",
+]
 
 [tool.coverage.run]
 branch = true
