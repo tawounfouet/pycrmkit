@@ -13,8 +13,15 @@ class TagModel(TimestampedModelMixin, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    normalized_name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True, index=True)
+    normalized_name: Mapped[str] = mapped_column(String(255), nullable=False)
     metadata_json: Mapped[dict[str, object]] = mapped_column("metadata", JSON, default=dict)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "normalized_name",
+            name="uq_pycrmkit_tags_normalized_name",
+        ),
+    )
 
 
 class TagAssignmentModel(TimestampedModelMixin, Base):
