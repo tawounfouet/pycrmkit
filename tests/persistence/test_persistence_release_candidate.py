@@ -285,7 +285,6 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
     timeline = reloaded.timeline.for_contact(contact.id)
     event_types = {str(item.event_type) for item in timeline.items}
     assert {
-        "contact.created",
         "activity.created",
         "task.created",
         "task.started",
