@@ -13,6 +13,7 @@ from pycrmkit.contacts import (
     Address,
     Contact,
     ContactEmail,
+    ContactId,
     ContactPhone,
     ContactStatus,
     ContactUpdate,
@@ -24,6 +25,7 @@ from pycrmkit.organizations import (
     Organization,
     OrganizationAddress,
     OrganizationDomain,
+    OrganizationId,
     OrganizationStatus,
     OrganizationUpdate,
 )
@@ -35,8 +37,6 @@ from pycrmkit.relationships import (
     RelationshipType,
     RelationshipUpdate,
 )
-from pycrmkit.contacts import ContactId
-from pycrmkit.organizations import OrganizationId
 
 if TYPE_CHECKING:
     class _SerializerBase(serializers.Serializer[Any]):
