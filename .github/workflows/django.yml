@@ -39,10 +39,13 @@ jobs:
           wheel="$(ls dist/pycrmkit-*.whl)"
           .venv-django-wheel/bin/python -m pip install "${wheel}[django]"
 
-      - name: Installed-wheel Django app loading smoke
+      - name: Installed-wheel Django migration + transaction smoke
         shell: bash
         run: |
           PYTHONPATH="" .venv-django-wheel/bin/python - <<'PY'
+          from datetime import UTC, datetime
+          from uuid import UUID
+
           from django.conf import settings
 
           settings.configure(
@@ -63,11 +66,34 @@ jobs:
           django.setup()
 
           from django.apps import apps
-          from pycrmkit import __version__
-          from pycrmkit.integrations.django.models import ContactModel
+          from django.core.management import call_command
+          from django.db import connection
+          from django.db.migrations.recorder import MigrationRecorder
 
-          assert __version__ == "0.8.0a1"
+          from pycrmkit import __version__
+          from pycrmkit.contacts import Contact, ContactId
+          from pycrmkit.integrations.django.models import ContactModel
+          from pycrmkit.integrations.django.repositories import DjangoContactRepository
+          from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+
+          call_command("migrate", "pycrmkit_crm", verbosity=0, interactive=False)
+
+          assert __version__ == "0.8.0b1"
           assert apps.get_app_config("pycrmkit_crm").name == "pycrmkit.integrations.django"
           assert ContactModel._meta.db_table == "pycrmkit_contacts"
-          print(f"PyCRMKit {__version__} installed-wheel Django bridge smoke: OK")
+          assert ("pycrmkit_crm", "0001_initial") in MigrationRecorder(connection).applied_migrations()
+
+          now = datetime(2026, 9, 26, 20, 30, tzinfo=UTC)
+          contact = Contact(
+              id=ContactId(UUID("00000000-0000-4000-8000-000000008901")),
+              created_at=now,
+              updated_at=now,
+              first_name="Installed Wheel",
+          )
+          with DjangoTransactionBridge() as bridge:
+              bridge.contacts.save(contact)
+              bridge.commit()
+
+          assert DjangoContactRepository().get(contact.id) == contact
+          print(f"PyCRMKit {__version__} installed-wheel Django migration/transaction smoke: OK")
           PY

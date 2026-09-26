@@ -3,15 +3,16 @@
 PyCRMKit's Django integration is optional. The domain layer remains
 framework-agnostic.
 
-Install the alpha bridge with:
+Install it with:
 
 ```bash
 pip install "pycrmkit[django]"
 ```
 
-## 0.8.0a1 scope
+## Current prerelease scope
 
-The initial application bridge provides:
+`0.8.0b1 — Django Migrations & Admin` builds on the `0.8.0a1` application
+bridge.
 
 ```text
 src/pycrmkit/integrations/django/
@@ -19,12 +20,16 @@ src/pycrmkit/integrations/django/
 ├── apps.py
 ├── models.py
 ├── repositories.py
+├── transactions.py
+├── admin.py
+├── migrations/
+│   ├── __init__.py
+│   └── 0001_initial.py
 └── typecheck_settings.py
 ```
 
-Public runtime pieces are the application config, ORM persistence models and
-repository adapters. `typecheck_settings.py` exists only to let
-`django-stubs` understand the optional app under strict mypy.
+The runtime integration remains optional. `typecheck_settings.py` exists only
+for strict `django-stubs` analysis.
 
 ## Application registration
 
@@ -37,17 +42,17 @@ INSTALLED_APPS = [
 ]
 ```
 
-The application uses the non-generic label:
+The application label is:
 
 ```text
 pycrmkit_crm
 ```
 
-to reduce collision risk inside larger Django projects.
+The package `pycrmkit.integrations.django` deliberately stays registry-safe:
+it does not eagerly import models, repositories, admin or the transaction
+bridge while Django is still populating the app registry.
 
 ## Dependency direction
-
-The bridge preserves the persistence architecture:
 
 ```text
 Django application
@@ -63,20 +68,10 @@ Django ORM model
 Database
 ```
 
-Never:
+Django models are persistence representations only. They do not become
+PyCRMKit domain entities.
 
-```text
-Django model
-      ↓
-becomes PyCRMKit domain entity
-```
-
-The ORM classes are adapter representations only.
-
-## Initial models
-
-`0.8.0a1` introduces persistence representations for the first core CRM
-aggregate set:
+## Current persistence models
 
 ```text
 Contact
@@ -91,13 +86,11 @@ Organization
 Relationship
 ```
 
-The initial table names follow the existing `pycrmkit_*` naming convention.
-This does not create a general promise that every SQLAlchemy and Django physical
-schema will always be interchangeable without migration.
+The initial physical tables follow the existing `pycrmkit_*` naming
+convention. Behavioral adapter equivalence does not imply that arbitrary
+SQLAlchemy and Django schemas can always be swapped without migration.
 
-## Initial repositories
-
-The alpha provides:
+## Repositories
 
 ```python
 from pycrmkit.integrations.django.repositories import (
@@ -107,97 +100,166 @@ from pycrmkit.integrations.django.repositories import (
 )
 ```
 
-These implement the existing backend-neutral contracts:
+These implement the existing backend-neutral repository contracts and replay
+the same contract suites used by other supported adapters.
+
+## Django migrations
+
+`0.8.0b1` introduces the adapter-specific migration history:
 
 ```text
-ContactRepository
-OrganizationRepository
-RelationshipRepository
+pycrmkit_crm
+└── 0001_initial
 ```
 
-Observable semantics remain defined by PyCRMKit, not by Django QuerySet
-behavior.
+Apply it through Django's normal migration lifecycle:
 
-## Contract qualification
+```bash
+python manage.py migrate pycrmkit_crm
+```
 
-The exact reusable repository suites already used for Memory and SQLAlchemy are
-replayed against Django:
+Importing PyCRMKit never runs migrations automatically.
+
+The test gate verifies:
 
 ```text
-ContactRepositoryContract
-OrganizationRepositoryContract
-RelationshipRepositoryContract
+migration discovery
+empty database → 0001_initial
+0001_initial → zero
+model/migration state drift via makemigrations --check --dry-run
+packaged-wheel migration execution
 ```
 
-They verify, among other behavior:
+Django and Alembic migrations remain separate infrastructure histories.
+
+## Transaction bridge
+
+Use:
+
+```python
+from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+
+with DjangoTransactionBridge() as bridge:
+    bridge.contacts.save(contact)
+    bridge.organizations.save(organization)
+    bridge.commit()
+```
+
+Observable semantics are:
 
 ```text
-get/find missing semantics
-save replacement semantics
-deterministic ordering
-exact offset pagination
-normalized email/domain filtering
-archive visibility
-relationship filtering
-historical relationship activity
+enter
+  ↓
+Django transaction.atomic()
+  ↓
+repository writes
+  ↓
+explicit commit
+  ├─ success → durable state
+  └─ failure → mapped RepositoryError
+
+exit without commit → rollback
+exception → rollback
+explicit rollback → discard work + fresh transaction
 ```
 
-The alpha contract tests use an isolated in-memory SQLite database and create
-the temporary schema through Django's schema editor. That mechanism is test
-infrastructure only.
-
-## Migrations are intentionally deferred
-
-`0.8.0a1` does **not** ship the Django migration lifecycle yet.
-
-Production applications should not treat schema-editor bootstrap as an
-application setup API. The next milestone, `0.8.0b1`, owns:
+The bridge currently exposes the Django repositories implemented in this
+prerelease line:
 
 ```text
-Django migrations
-transaction / Unit-of-Work bridge
-admin helpers
+contacts
+organizations
+relationships
 ```
 
-Migration execution will remain explicit; importing PyCRMKit must never mutate a
-production database schema.
+It should therefore not be described as the complete PyCRMKit
+`UnitOfWork` protocol yet. Full cross-domain Django persistence conformance
+belongs to later qualification.
+
+### Ambient Django transactions
+
+If the bridge is opened inside an existing `transaction.atomic()` block, its
+internal atomic block participates through Django's savepoint semantics.
+
+Staged PyCRMKit domain events are deferred until the actual outer transaction
+commits:
+
+```text
+outer transaction
+    ↓
+DjangoTransactionBridge
+    ↓
+bridge.commit()
+    ↓
+savepoint released
+    ↓
+NO event yet
+    ↓
+outer COMMIT
+    ↓
+event published
+```
+
+If the outer transaction rolls back, the staged callback is discarded and the
+event is not published.
+
+For a top-level bridge transaction, events are published only after its
+database commit has succeeded. A post-commit subscriber failure therefore does
+not make already committed database state appear rolled back.
+
+## Django admin
+
+When `django.contrib.admin` is installed, Django's normal admin autodiscovery
+loads the PyCRMKit admin helpers.
+
+Registered parents:
+
+```text
+ContactModel
+OrganizationModel
+RelationshipModel
+```
+
+Contact exposes inline Email/Phone/Address rows. Organization exposes inline
+Domain/Address rows.
+
+The admin is an operational persistence view; domain correctness still belongs
+to PyCRMKit services and policies, not Django admin hooks or signals.
 
 ## Optional dependency boundary
-
-The normal core installation remains:
 
 ```bash
 pip install pycrmkit
 ```
 
-and must not import Django transitively.
+still works without Django installed or configured.
 
-Django-specific imports require:
+Django-specific code requires:
 
 ```bash
 pip install "pycrmkit[django]"
 ```
 
-The integration package raises an actionable error if Django itself is missing.
-
-## Typing
-
-Development uses `django-stubs` and the mypy Django plugin so strict typing can
-understand field descriptors and reverse relations. This typing dependency is
-not a runtime requirement of `pycrmkit[django]`.
+Typing uses `django-stubs` only as a development dependency. Runtime admin
+classes do not require `django-stubs-ext` monkeypatching.
 
 ## Compatibility target
-
-For this alpha:
 
 ```text
 Django >=5.2,<6
 Python 3.11–3.13
 ```
 
-Django 5.2 LTS is used so the adapter can preserve PyCRMKit's existing Python
-3.11–3.13 matrix.
+## Deferred scope
+
+Still intentionally deferred:
+
+```text
+0.8.0b2   optional DRF helpers
+0.8.0rc1  reference Django application + E2E
+0.8.0     stable Django integration
+```
 
 ## Next milestone
 
-The next delivery is **`0.8.0b1 — Django Migrations & Admin`**.
+The next delivery is **`0.8.0b2 — Optional DRF`**.
