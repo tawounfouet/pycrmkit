@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0a1 External Identities."""
+"""Installed-package smoke test for PyCRMKit 0.9.0a2 Import Framework."""
 
 from __future__ import annotations
 
@@ -21,6 +21,14 @@ from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
 from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
+from pycrmkit.importers import (
+    ImportPipeline,
+    ImportRow,
+    IterableReader,
+    PersistAction,
+    PersistResult,
+    RequiredFieldsValidator,
+)
 from pycrmkit.leads import LeadStatus
 from pycrmkit.opportunities import OpportunityStatus
 from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
@@ -45,8 +53,30 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.9.0a1":
-        raise SystemExit(f"Expected PyCRMKit 0.9.0a1, got {version!r}")
+    if version != "0.9.0a2":
+        raise SystemExit(f"Expected PyCRMKit 0.9.0a2, got {version!r}")
+
+    class SmokeImportPersister:
+        def persist(self, row: ImportRow) -> PersistResult:
+            return PersistResult(
+                PersistAction.CREATED,
+                entity_id=f"contact-{row.number}",
+            )
+
+    import_report = ImportPipeline(
+        reader=IterableReader(({"email": "smoke@example.com"},)),
+        validator=RequiredFieldsValidator(("email",)),
+        persister=SmokeImportPersister(),
+    ).run()
+    if import_report.as_dict() != {
+        "rows_read": 1,
+        "rows_created": 1,
+        "rows_updated": 0,
+        "rows_skipped": 0,
+        "duplicates": 0,
+        "validation_errors": 0,
+    }:
+        raise SystemExit("Import framework smoke failed")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -332,7 +362,7 @@ def main() -> None:
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: External Identities alpha + stable regression smoke OK")
+    print(f"PyCRMKit {version}: Import Framework alpha + stable regression smoke OK")
 
 
 if __name__ == "__main__":
