@@ -152,6 +152,32 @@ class OrganizationAddressModel(models.Model):
         ordering = ("position", "id")
 
 
+
+class ExternalIdentityModel(_TimestampedModel):
+    id = models.CharField(max_length=36, primary_key=True)
+    system = models.CharField(max_length=128)
+    external_id = models.CharField(max_length=512)
+    entity_type = models.CharField(max_length=64)
+    entity_id = models.CharField(max_length=36)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_external_identities"
+        ordering = ("system", "external_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("system", "external_id"),
+                name="uq_dj_external_identity_system_id",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=("entity_type", "entity_id"),
+                name="ix_dj_external_identity_entity",
+            )
+        ]
+
+
 class RelationshipModel(_TimestampedModel):
     id = models.CharField(max_length=36, primary_key=True)
     source_kind = models.CharField(max_length=32)
@@ -186,6 +212,7 @@ __all__ = [
     "ContactEmailModel",
     "ContactModel",
     "ContactPhoneModel",
+    "ExternalIdentityModel",
     "OrganizationAddressModel",
     "OrganizationDomainModel",
     "OrganizationModel",

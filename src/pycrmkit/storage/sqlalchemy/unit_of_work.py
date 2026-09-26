@@ -20,6 +20,7 @@ from pycrmkit.storage.sqlalchemy.repositories import (
     SQLAlchemyCommunicationRepository,
     SQLAlchemyContactRepository,
     SQLAlchemyCustomFieldRepository,
+    SQLAlchemyExternalIdentityRepository,
     SQLAlchemyLeadRepository,
     SQLAlchemyOpportunityRepository,
     SQLAlchemyOrganizationRepository,
@@ -70,6 +71,7 @@ class SQLAlchemyUnitOfWork:
         self._timeline: SQLAlchemyTimelineRepository | None = None
         self._tags: SQLAlchemyTagRepository | None = None
         self._custom_fields: SQLAlchemyCustomFieldRepository | None = None
+        self._external_identities: SQLAlchemyExternalIdentityRepository | None = None
         self._audit: SQLAlchemyAuditRepository | None = None
         self._webhooks: SQLAlchemyWebhookSubscriptionRepository | None = None
         self._webhook_deliveries: SQLAlchemyWebhookDeliveryRepository | None = None
@@ -145,6 +147,12 @@ class SQLAlchemyUnitOfWork:
         self._ensure_active()
         assert self._custom_fields is not None
         return self._custom_fields
+
+    @property
+    def external_identities(self) -> SQLAlchemyExternalIdentityRepository:
+        self._ensure_active()
+        assert self._external_identities is not None
+        return self._external_identities
 
     @property
     def audit(self) -> SQLAlchemyAuditRepository:
@@ -269,6 +277,7 @@ class SQLAlchemyUnitOfWork:
         self._timeline = SQLAlchemyTimelineRepository(session)
         self._tags = SQLAlchemyTagRepository(session)
         self._custom_fields = SQLAlchemyCustomFieldRepository(session)
+        self._external_identities = SQLAlchemyExternalIdentityRepository(session)
         self._audit = SQLAlchemyAuditRepository(session)
         self._webhooks = SQLAlchemyWebhookSubscriptionRepository(session)
         self._webhook_deliveries = SQLAlchemyWebhookDeliveryRepository(session)
@@ -286,6 +295,7 @@ class SQLAlchemyUnitOfWork:
         self._timeline = None
         self._tags = None
         self._custom_fields = None
+        self._external_identities = None
         self._audit = None
         self._webhooks = None
         self._webhook_deliveries = None

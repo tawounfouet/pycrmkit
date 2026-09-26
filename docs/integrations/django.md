@@ -335,9 +335,21 @@ The Django persistence adapter remains intentionally bounded to Contacts,
 Organizations and Relationships. Stable status freezes that documented scope;
 it does not imply a complete cross-domain Django UnitOfWork.
 
+## V0.9 prerelease extension — External Identities
+
+`0.9.0a1` adds `ExternalIdentityModel` and `DjangoExternalIdentityRepository` to the optional Django adapter. Django schemas advance explicitly through:
+
+```text
+0001_initial
+    ↓
+0002_external_identity
+```
+
+The new repository participates in `DjangoTransactionBridge` and is qualified against the same external-identity repository contract as Memory and SQLAlchemy. The stable `0.8.x` compatibility promise remains unchanged; this is prerelease `0.9.x` scope.
+
 ## Next milestone
 
-The project roadmap now advances to **`0.9.0a1 — External Identities`**.
+The project roadmap now advances to **`0.9.0a2 — Import Framework`**.
 
 ## Next milestone
 

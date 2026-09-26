@@ -15,6 +15,7 @@ from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.communication import MemoryCommunicationRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
+from pycrmkit.storage.memory.external_identities import MemoryExternalIdentityRepository
 from pycrmkit.storage.memory.leads import MemoryLeadRepository
 from pycrmkit.storage.memory.opportunities import MemoryOpportunityRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
@@ -59,6 +60,7 @@ class MemoryUnitOfWork:
         self._timeline: MemoryTimelineRepository | None = None
         self._tags: MemoryTagRepository | None = None
         self._custom_fields: MemoryCustomFieldRepository | None = None
+        self._external_identities: MemoryExternalIdentityRepository | None = None
         self._audit: MemoryAuditRepository | None = None
         self._webhooks: MemoryWebhookSubscriptionRepository | None = None
         self._webhook_deliveries: MemoryWebhookDeliveryRepository | None = None
@@ -135,6 +137,12 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._custom_fields is not None
         return self._custom_fields
+
+    @property
+    def external_identities(self) -> MemoryExternalIdentityRepository:
+        self._ensure_active()
+        assert self._external_identities is not None
+        return self._external_identities
 
     @property
     def audit(self) -> MemoryAuditRepository:
@@ -244,6 +252,7 @@ class MemoryUnitOfWork:
         self._timeline = MemoryTimelineRepository(state)
         self._tags = MemoryTagRepository(state)
         self._custom_fields = MemoryCustomFieldRepository(state)
+        self._external_identities = MemoryExternalIdentityRepository(state)
         self._audit = MemoryAuditRepository(state)
         self._webhooks = MemoryWebhookSubscriptionRepository(state)
         self._webhook_deliveries = MemoryWebhookDeliveryRepository(state)

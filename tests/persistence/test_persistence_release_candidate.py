@@ -161,6 +161,12 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
         contact_ref,
         "gold",
     )
+    external_identity = crm.external_identities.attach(
+        contact,
+        system="hubspot",
+        external_id="contact-ada-001",
+        metadata={"portal": "eu"},
+    )
 
     # 0.2 — Activity, Task and Timeline
     activity = crm.activities.log(
@@ -272,6 +278,10 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
     assert reloaded.relationships.get(relationship.id) == relationship
     assert reloaded.tags.list_for_entity(contact_ref).items == (vip,)
     assert reloaded.custom_fields.get_value(tier.id, contact_ref) == tier_value
+    assert reloaded.external_identities.resolve(
+        "hubspot",
+        "contact-ada-001",
+    ) == external_identity
     with reloaded._runtime.uow_factory() as uow:
         assert uow.activities.get(activity.id) == activity
         assert uow.tasks.get(task.id) == task

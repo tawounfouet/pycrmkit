@@ -13,6 +13,7 @@ from pycrmkit.events.publisher import EventPublisher
 from pycrmkit.exceptions import InvalidStateError, RepositoryError
 from pycrmkit.integrations.django.repositories import (
     DjangoContactRepository,
+    DjangoExternalIdentityRepository,
     DjangoOrganizationRepository,
     DjangoRelationshipRepository,
 )
@@ -41,6 +42,7 @@ class DjangoTransactionBridge:
         self._atomic: transaction.Atomic | None = None
         self._pending_events: list[DomainEvent] = []
         self._contacts: DjangoContactRepository | None = None
+        self._external_identities: DjangoExternalIdentityRepository | None = None
         self._organizations: DjangoOrganizationRepository | None = None
         self._relationships: DjangoRelationshipRepository | None = None
 
@@ -49,6 +51,12 @@ class DjangoTransactionBridge:
         self._ensure_writable()
         assert self._contacts is not None
         return self._contacts
+
+    @property
+    def external_identities(self) -> DjangoExternalIdentityRepository:
+        self._ensure_writable()
+        assert self._external_identities is not None
+        return self._external_identities
 
     @property
     def organizations(self) -> DjangoOrganizationRepository:
@@ -190,11 +198,13 @@ class DjangoTransactionBridge:
 
     def _bind_repositories(self) -> None:
         self._contacts = DjangoContactRepository()
+        self._external_identities = DjangoExternalIdentityRepository()
         self._organizations = DjangoOrganizationRepository()
         self._relationships = DjangoRelationshipRepository()
 
     def _unbind_repositories(self) -> None:
         self._contacts = None
+        self._external_identities = None
         self._organizations = None
         self._relationships = None
 

@@ -15,6 +15,9 @@ from pycrmkit.storage.sqlalchemy.repositories.contacts import (
 from pycrmkit.storage.sqlalchemy.repositories.custom_fields import (
     SQLAlchemyCustomFieldRepository,
 )
+from pycrmkit.storage.sqlalchemy.repositories.external_identities import (
+    SQLAlchemyExternalIdentityRepository,
+)
 from pycrmkit.storage.sqlalchemy.repositories.leads import (
     SQLAlchemyLeadRepository,
 )
@@ -50,6 +53,7 @@ __all__ = [
     "SQLAlchemyCommunicationRepository",
     "SQLAlchemyContactRepository",
     "SQLAlchemyCustomFieldRepository",
+    "SQLAlchemyExternalIdentityRepository",
     "SQLAlchemyLeadRepository",
     "SQLAlchemyOpportunityRepository",
     "SQLAlchemyOrganizationRepository",

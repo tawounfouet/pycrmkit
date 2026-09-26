@@ -16,15 +16,21 @@ TABLES = {
     "pycrmkit_organization_domains",
     "pycrmkit_organization_addresses",
     "pycrmkit_relationships",
+    "pycrmkit_external_identities",
 }
 
 
 def test_initial_migration_is_discoverable_and_applied() -> None:
     loader = MigrationLoader(connection)
     assert ("pycrmkit_crm", "0001_initial") in loader.graph.nodes
+    assert ("pycrmkit_crm", "0002_external_identity") in loader.graph.nodes
     assert (
         "pycrmkit_crm",
         "0001_initial",
+    ) in MigrationRecorder(connection).applied_migrations()
+    assert (
+        "pycrmkit_crm",
+        "0002_external_identity",
     ) in MigrationRecorder(connection).applied_migrations()
 
 

@@ -26,6 +26,7 @@ from pycrmkit.storage.sqlalchemy.models.custom_field import (
     CustomFieldDefinitionModel,
     CustomFieldValueModel,
 )
+from pycrmkit.storage.sqlalchemy.models.external_identity import ExternalIdentityModel
 from pycrmkit.storage.sqlalchemy.models.lead import LeadModel
 from pycrmkit.storage.sqlalchemy.models.opportunity import OpportunityModel
 from pycrmkit.storage.sqlalchemy.models.organization import (
@@ -71,6 +72,7 @@ __all__ = [
     "CustomFieldValueModel",
     "DeliveryAttemptModel",
     "EmailDeliveryEventModel",
+    "ExternalIdentityModel",
     "LeadModel",
     "OpportunityModel",
     "OrganizationAddressModel",

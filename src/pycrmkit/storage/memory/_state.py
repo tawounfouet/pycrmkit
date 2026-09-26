@@ -26,6 +26,7 @@ from pycrmkit.custom_fields.entities import (
     CustomFieldValue,
 )
 from pycrmkit.exceptions import InvalidStateError
+from pycrmkit.external_identities import ExternalIdentity
 from pycrmkit.leads import Lead, LeadId
 from pycrmkit.opportunities import Opportunity, OpportunityId
 from pycrmkit.organizations.entities import Organization, OrganizationId
@@ -75,6 +76,9 @@ class _MemoryState:
     custom_field_values: dict[
         tuple[CustomFieldDefinitionId, EntityReference], CustomFieldValue
     ] = field(default_factory=dict)
+    external_identities: dict[tuple[str, str], ExternalIdentity] = field(
+        default_factory=dict
+    )
     audit_entries: dict[AuditEntryId, AuditEntry] = field(default_factory=dict)
     webhook_subscriptions: dict[WebhookSubscriptionId, WebhookSubscription] = field(
         default_factory=dict

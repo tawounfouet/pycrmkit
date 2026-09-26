@@ -183,7 +183,7 @@ alembic current
 alembic check
 ```
 
-The current head is revision `0002 — align repository reference semantics`.
+The current prerelease head is revision `0003 — external identities`.
 
 `Base.metadata.create_all(...)` remains useful for tests and local
 experimentation, but it is no longer the production schema lifecycle.

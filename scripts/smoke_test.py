@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.8.0 Django Application Bridge."""
+"""Installed-package smoke test for PyCRMKit 0.9.0a1 External Identities."""
 
 from __future__ import annotations
 
@@ -45,8 +45,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.8.0":
-        raise SystemExit(f"Expected PyCRMKit 0.8.0, got {version!r}")
+    if version != "0.9.0a1":
+        raise SystemExit(f"Expected PyCRMKit 0.9.0a1, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -78,6 +78,23 @@ def main() -> None:
         correlation_id="communication-stable-smoke",
     )
     contact = crm.contacts.create(first_name="Smoke", last_name="Test")
+    external_identity = crm.external_identities.attach(
+        contact,
+        system="hubspot",
+        external_id="installed-smoke-contact-001",
+        metadata={"source": "installed-package"},
+    )
+    if (
+        crm.external_identities.resolve(
+            "HUBSPOT",
+            "installed-smoke-contact-001",
+        )
+        != external_identity
+    ):
+        raise SystemExit("External identity resolve smoke failed")
+    if crm.external_identities.list_for_entity(contact).items != (external_identity,):
+        raise SystemExit("External identity entity-list smoke failed")
+
     organization = crm.organizations.create(legal_name="Smoke Org")
     contact_ref = EntityReference("contact", contact.id)
     organization_ref = EntityReference("organization", organization.id)
@@ -315,7 +332,7 @@ def main() -> None:
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: Eventing & Webhooks Stable + stable 0.1-0.4 smoke OK")
+    print(f"PyCRMKit {version}: External Identities alpha + stable regression smoke OK")
 
 
 if __name__ == "__main__":

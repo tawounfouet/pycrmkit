@@ -6,6 +6,39 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0a1] - 2026-09-26
+
+### Added
+- Provider-neutral `ExternalIdentity` entity with typed ID, normalized system key, case-preserving external ID, entity type/ID ownership and metadata.
+- `ExternalIdentityRepository` contract for resolve, save, list-for-entity and idempotent detach semantics.
+- `ExternalIdentityService` with idempotent same-owner attach and explicit `external_identity.owner.conflict` handling.
+- `crm.external_identities` facade namespace supporting Contact, Organization and generic `EntityReference` targets.
+- `external_identity.attached` and `external_identity.detached` post-commit domain events without duplicate attach events on idempotent retries.
+- `MemoryExternalIdentityRepository` integrated into `MemoryStore` and `MemoryUnitOfWork`.
+- `SQLAlchemyExternalIdentityRepository`, `ExternalIdentityModel` and Alembic revision `0003`.
+- `DjangoExternalIdentityRepository`, `ExternalIdentityModel` and Django migration `0002_external_identity`.
+- Shared repository contract replayed against Memory, SQLAlchemy and Django adapters.
+- External-identity persistence added to the PostgreSQL qualification scenario and Django/PostgreSQL cross-process reference smoke.
+
+### Semantics
+- `(system, external_id)` is the unique upstream-record key for V0.9.
+- A unique upstream record may belong to only one PyCRMKit entity.
+- Same-owner attachment retries are idempotent and preserve the original mapping/metadata.
+- External-system keys are normalized; external IDs retain provider-owned case semantics.
+- Detach is idempotent.
+
+### Persistence
+- SQLAlchemy/Alembic schema head advances from `0002` to `0003`.
+- Django adapter migrations advance from `0001_initial` to `0002_external_identity`.
+- Database uniqueness constraints reinforce the domain ownership invariant.
+
+### Scope boundary
+- This alpha does not implement row readers, mapping rules, import normalization, validation reports, deduplication or merge execution.
+- The next milestone is `0.9.0a2 — Import Framework`.
+
+### Changed
+- Package version advanced from `0.8.0` to `0.9.0a1`.
+
 ## [0.8.0] - 2026-09-26
 
 ### Stable

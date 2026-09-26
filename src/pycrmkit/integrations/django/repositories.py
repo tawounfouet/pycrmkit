@@ -21,13 +21,22 @@ from pycrmkit.contacts import (
 )
 from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
+from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import as_utc
-from pycrmkit.exceptions import NotFoundError
+from pycrmkit.exceptions import ConflictError, DuplicateError, NotFoundError
+from pycrmkit.external_identities import (
+    ExternalIdentity,
+    ExternalIdentityId,
+    normalize_external_id,
+    normalize_external_system,
+    same_entity,
+)
 from pycrmkit.integrations.django.models import (
     ContactAddressModel,
     ContactEmailModel,
     ContactModel,
     ContactPhoneModel,
+    ExternalIdentityModel,
     OrganizationAddressModel,
     OrganizationDomainModel,
     OrganizationModel,
@@ -392,6 +401,88 @@ class DjangoOrganizationRepository:
         )
 
 
+
+class DjangoExternalIdentityRepository:
+    """Django ORM adapter for the ExternalIdentityRepository contract."""
+
+    def find(self, system: str, external_id: str) -> ExternalIdentity | None:
+        normalized_system = normalize_external_system(system)
+        normalized_external_id = normalize_external_id(external_id)
+        model = ExternalIdentityModel.objects.filter(
+            system=normalized_system,
+            external_id=normalized_external_id,
+        ).first()
+        return None if model is None else self._hydrate(model)
+
+    def save(self, identity: ExternalIdentity) -> None:
+        existing = self.find(identity.system, identity.external_id)
+        if existing is not None and existing.id != identity.id:
+            if not same_entity(existing, identity.entity):
+                raise ConflictError(
+                    "External identity is already attached to another entity",
+                    code="external_identity.owner.conflict",
+                    context={
+                        "system": identity.system,
+                        "external_id": identity.external_id,
+                        "owner_type": existing.entity_type,
+                        "owner_id": str(existing.entity_id),
+                    },
+                )
+            raise DuplicateError(
+                "External identity mapping already exists",
+                code="external_identity.duplicate",
+                context={
+                    "system": identity.system,
+                    "external_id": identity.external_id,
+                },
+            )
+        ExternalIdentityModel.objects.update_or_create(
+            pk=str(identity.id),
+            defaults={
+                "system": identity.system,
+                "external_id": identity.external_id,
+                "entity_type": identity.entity_type,
+                "entity_id": str(identity.entity_id),
+                "metadata_json": dict(identity.metadata),
+                "created_at": identity.created_at,
+                "updated_at": identity.updated_at,
+            },
+        )
+
+    def list_for_entity(
+        self,
+        entity: EntityReference,
+        page: OffsetPageRequest,
+    ) -> Page[ExternalIdentity]:
+        queryset = ExternalIdentityModel.objects.filter(
+            entity_type=entity.kind,
+            entity_id=str(entity.id),
+        ).order_by("system", "external_id", "id")
+        return _page(queryset, page, self._hydrate)
+
+    def remove(self, system: str, external_id: str) -> bool:
+        normalized_system = normalize_external_system(system)
+        normalized_external_id = normalize_external_id(external_id)
+        deleted, _ = ExternalIdentityModel.objects.filter(
+            system=normalized_system,
+            external_id=normalized_external_id,
+        ).delete()
+        return deleted > 0
+
+    @staticmethod
+    def _hydrate(model: ExternalIdentityModel) -> ExternalIdentity:
+        return ExternalIdentity(
+            id=ExternalIdentityId.parse(model.id),
+            created_at=as_utc(model.created_at),
+            updated_at=as_utc(model.updated_at),
+            system=model.system,
+            external_id=model.external_id,
+            entity_type=model.entity_type,
+            entity_id=EntityId.parse(model.entity_id),
+            metadata=dict(model.metadata_json or {}),
+        )
+
+
 class DjangoRelationshipRepository:
     """Django ORM adapter for the backend-neutral RelationshipRepository contract."""
 
@@ -497,6 +588,7 @@ class DjangoRelationshipRepository:
 
 __all__ = [
     "DjangoContactRepository",
+    "DjangoExternalIdentityRepository",
     "DjangoOrganizationRepository",
     "DjangoRelationshipRepository",
 ]

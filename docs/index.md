@@ -2,7 +2,8 @@
 
 PyCRMKit is a modular, headless Python CRM domain framework.
 
-The current stable version is **`0.8.0 — Django Integration Stable`**.
+The current stable version is **`0.8.0 — Django Integration Stable`**.  
+The latest data-operations prerelease is **`0.9.0a1 — External Identities`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -91,4 +92,6 @@ qualification now form one compatibility-governed integration line.
 
 `0.8.0` promotes the fully qualified release candidate to stable without adding new Django feature scope. The Django app bootstrap, persistence representations, Contact/Organization/Relationship repositories, migration `0001_initial`, transaction bridge, admin helpers, optional DRF transport, PostgreSQL 17 reference application and clean-wheel E2E now form one compatibility-governed integration line.
 
-The next roadmap milestone is **`0.9.0a1 — External Identities`**.
+`0.9.0a1` introduces provider-neutral external identities. A normalized `(system, external_id)` pair maps to one PyCRMKit entity, same-owner attach is idempotent, conflicting ownership is explicit, and the repository contract is qualified across Memory, SQLAlchemy/PostgreSQL and Django. SQLAlchemy advances to Alembic `0003`; Django advances to `0002_external_identity`.
+
+The next roadmap milestone is **`0.9.0a2 — Import Framework`**.

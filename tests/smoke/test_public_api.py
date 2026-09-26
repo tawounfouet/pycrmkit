@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.8.0"
+    assert __version__ == "0.9.0a1"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -81,6 +81,12 @@ def test_0_5_causal_context_surface_is_additive() -> None:
     crm = CRM.memory()
     assert hasattr(crm, "with_event")
     assert hasattr(CRMContext, "from_event")
+
+
+def test_0_9_external_identity_facade_surface() -> None:
+    crm = CRM.memory()
+    for name in ("attach", "resolve", "list_for_entity", "detach"):
+        assert hasattr(crm.external_identities, name)
 
 
 def test_0_5_webhook_delivery_surface() -> None:
