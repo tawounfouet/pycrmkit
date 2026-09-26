@@ -9,7 +9,6 @@ from alembic import command
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 
-from examples.fastapi_postgres.app import create_app
 from pycrmkit.storage.sqlalchemy.migrations.cli import migration_config
 
 DATABASE_ENV = "PYCRMKIT_TEST_POSTGRES_URL"
@@ -29,6 +28,8 @@ def test_reference_fastapi_application_persists_http_journey_across_restart() ->
     database_url = os.environ.get(DATABASE_ENV)
     if not database_url:
         pytest.skip(f"{DATABASE_ENV} is required for FastAPI PostgreSQL E2E")
+
+    from examples.fastapi_postgres.app import create_app
 
     _reset_and_migrate(database_url)
 
