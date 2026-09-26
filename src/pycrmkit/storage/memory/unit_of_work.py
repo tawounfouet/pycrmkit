@@ -23,6 +23,7 @@ from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
 from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
 from pycrmkit.storage.memory.timeline import MemoryTimelineRepository
+from pycrmkit.storage.memory.webhook_deliveries import MemoryWebhookDeliveryRepository
 from pycrmkit.storage.memory.webhooks import MemoryWebhookSubscriptionRepository
 
 
@@ -59,6 +60,7 @@ class MemoryUnitOfWork:
         self._custom_fields: MemoryCustomFieldRepository | None = None
         self._audit: MemoryAuditRepository | None = None
         self._webhooks: MemoryWebhookSubscriptionRepository | None = None
+        self._webhook_deliveries: MemoryWebhookDeliveryRepository | None = None
         self._pending_events: list[DomainEvent] = []
 
     @property
@@ -145,6 +147,12 @@ class MemoryUnitOfWork:
         assert self._webhooks is not None
         return self._webhooks
 
+    @property
+    def webhook_deliveries(self) -> MemoryWebhookDeliveryRepository:
+        self._ensure_active()
+        assert self._webhook_deliveries is not None
+        return self._webhook_deliveries
+
     def add_event(self, event: DomainEvent) -> None:
         """Stage one immutable event for dispatch after the next successful commit."""
 
@@ -222,6 +230,7 @@ class MemoryUnitOfWork:
         self._custom_fields = MemoryCustomFieldRepository(state)
         self._audit = MemoryAuditRepository(state)
         self._webhooks = MemoryWebhookSubscriptionRepository(state)
+        self._webhook_deliveries = MemoryWebhookDeliveryRepository(state)
 
     def _ensure_active(self) -> None:
         if not self._active:
