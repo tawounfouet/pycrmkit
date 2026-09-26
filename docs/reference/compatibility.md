@@ -49,7 +49,7 @@ combination.
 
 ## Django prerelease qualification
 
-The `0.8.0b2` Django/DRF integration remains a prerelease line, not part of the
+The `0.8.0rc1` Django/DRF integration remains a prerelease line, not part of the
 stable `0.7.x` compatibility promise.
 
 It is currently qualified with:
@@ -61,23 +61,28 @@ Python 3.12
 Python 3.13
 Django REST Framework 3.18.x
 SQLite in-memory repository, migration, admin, transaction and DRF qualification
+PostgreSQL 17 reference application E2E
+clean installed-wheel Django/PostgreSQL/DRF E2E
 ```
 
-The beta qualifies application loading, Contact/Organization/Relationship
-repository semantics, packaged migration `0001_initial`, migration/model drift
-checking, admin registration, explicit transaction semantics, and the optional
-facade-backed DRF transport for those three aggregate families.
+The release candidate qualifies application loading,
+Contact/Organization/Relationship repository semantics, packaged migration
+`0001_initial`, migration/model drift checking, admin registration, explicit
+transaction semantics, the optional facade-backed DRF transport and a real
+PostgreSQL-backed reference application.
 
-The `django` extra is also explicitly qualified without DRF installed.
+The `django` extra is also explicitly qualified without DRF installed. The
+reference E2E is executed twice: from the source checkout and from a clean wheel
+after resetting the PostgreSQL schema.
 
-It does **not** yet claim the reference Django application, Django/PostgreSQL
-E2E, or full cross-domain Django UnitOfWork/DRF coverage; those remain release
-candidate scope.
+It does **not** claim full cross-domain Django UnitOfWork/DRF coverage; the
+Django persistence adapter remains bounded to Contacts, Organizations and
+Relationships in the `0.8.x` line.
 
 ## PostgreSQL
 
-The production-reference persistence and FastAPI E2E paths are qualified
-against:
+The production-reference persistence, FastAPI E2E and Django release-candidate
+reference paths are qualified against:
 
 ```text
 PostgreSQL 17

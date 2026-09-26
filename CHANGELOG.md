@@ -6,6 +6,45 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.8.0rc1] - 2026-09-26
+
+### Added
+- Django + PostgreSQL reference application under `examples/django/`.
+- Native Django project settings, management entry point, admin route, health route, WSGI/ASGI entry points and facade-backed DRF router.
+- PostgreSQL 17 Docker Compose service and reference environment configuration.
+- Application-owned CRM factory wiring the current Django persistence surface through `DjangoTransactionBridge`.
+- Two-process E2E smoke that creates Contact → Organization → Relationship over DRF, then reloads and mutates the records in a fresh Django process.
+- Admin registration/login smoke and applied `pycrmkit_crm.0001_initial` migration verification.
+- Dedicated `Django PostgreSQL E2E` GitHub Actions gate.
+- Clean installed-wheel Django/PostgreSQL/DRF E2E after full PostgreSQL schema reset.
+
+### Deployment semantics
+- `PYCRMKIT_DATABASE_URL` explicitly configures the reference PostgreSQL database.
+- `python manage.py migrate` remains an explicit deployment step.
+- Importing PyCRMKit or starting the reference application never runs Django migrations automatically.
+- The reference application preserves DRF → CRM facade → transaction bridge → repository → PostgreSQL dependency direction.
+
+### Qualification
+- Django `check` passes for the reference project.
+- Django migrations apply to a fresh PostgreSQL 17 database.
+- `makemigrations pycrmkit_crm --check --dry-run` reports no model/migration drift.
+- Source-checkout E2E persists and reloads the CRM graph across two Python/Django processes.
+- Clean-wheel E2E repeats the migration and API journey after resetting PostgreSQL.
+- Django admin registration and login page smoke pass.
+- Existing Django repository, transaction, DRF, FastAPI, persistence and PostgreSQL regression gates remain required.
+
+### Architecture boundary
+- The reference application persists the aggregate families currently implemented by the Django adapter: Contacts, Organizations and Relationships.
+- `DjangoTransactionBridge` remains explicitly bounded and is not promoted to the complete cross-domain `UnitOfWork` protocol.
+- Audit persistence is disabled in the reference CRM wiring because the Django audit repository does not yet exist; domain events remain enabled.
+
+### Changed
+- Package version advanced from `0.8.0b2` to `0.8.0rc1`.
+- Development roadmap advances to `0.8.0 — Django Integration Stable`.
+
+### Next
+- `0.8.0` should promote the fully qualified release candidate without adding new Django feature scope.
+
 ## [0.8.0b2] - 2026-09-26
 
 ### Added

@@ -203,18 +203,21 @@ REST_FRAMEWORK = {
 
 ## Current boundary
 
-`0.8.0b2` is not yet the Django release candidate. It deliberately does not
-claim:
+`0.8.0rc1` now qualifies this DRF surface inside the Django + PostgreSQL
+reference application and repeats the API journey from a clean installed wheel.
+
+The current router still deliberately covers only the Django-persisted aggregate
+families:
 
 ```text
-reference Django application
-Django + PostgreSQL application E2E
-full cross-domain DRF surface
-stable 0.8.x compatibility
+Contacts
+Organizations
+Relationships
 ```
 
-Those are qualified in the subsequent release-candidate/stable milestones.
+Full cross-domain DRF persistence remains outside the current Django adapter
+scope, and stable `0.8.x` compatibility is promoted only at `0.8.0`.
 
 ## Next
 
-**`0.8.0rc1 — Django Example + E2E`**.
+**`0.8.0 — Django Integration Stable`**.

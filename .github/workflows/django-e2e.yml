@@ -1,0 +1,111 @@
+name: Django PostgreSQL E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  django-postgresql-e2e:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_django
+          POSTGRES_USER: pycrmkit
+          POSTGRES_PASSWORD: pycrmkit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_django"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      PYCRMKIT_DATABASE_URL: postgresql://pycrmkit:pycrmkit@localhost:5432/pycrmkit_django
+      DJANGO_SECRET_KEY: pycrmkit-ci-reference-app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install source checkout with Django integration extras
+        run: python -m pip install -e ".[django,drf,postgresql,dev]"
+
+      - name: Django reference application system check
+        run: python examples/django/manage.py check
+
+      - name: Apply Django migrations to PostgreSQL
+        run: python examples/django/manage.py migrate --noinput
+
+      - name: Verify migration/model state
+        run: python examples/django/manage.py makemigrations pycrmkit_crm --check --dry-run
+
+      - name: Source checkout Django/PostgreSQL E2E
+        run: |
+          state="$(mktemp)"
+          python examples/django/smoke.py seed --state "$state"
+          python examples/django/smoke.py verify --state "$state"
+
+      - name: Build release artifacts
+        run: python -m build
+
+      - name: Core-only wheel remains Django-free
+        shell: bash
+        run: |
+          python -m venv .venv-core-boundary
+          .venv-core-boundary/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-core-boundary/bin/python -m pip install "${wheel}"
+          PYTHONPATH="" .venv-core-boundary/bin/python - <<'PY'
+          import importlib.util
+
+          import pycrmkit
+
+          assert pycrmkit.__version__ == "0.8.0rc1"
+          assert importlib.util.find_spec("django") is None
+          assert importlib.util.find_spec("rest_framework") is None
+          print("PyCRMKit core-only installed wheel remains Django/DRF-free: OK")
+          PY
+
+      - name: Reset PostgreSQL before installed-wheel qualification
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg
+
+          with psycopg.connect(os.environ["PYCRMKIT_DATABASE_URL"], autocommit=True) as connection:
+              connection.execute("DROP SCHEMA public CASCADE")
+              connection.execute("CREATE SCHEMA public")
+          PY
+
+      - name: Install wheel with Django/PostgreSQL/DRF extras
+        shell: bash
+        run: |
+          python -m venv .venv-django-e2e-wheel
+          .venv-django-e2e-wheel/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-django-e2e-wheel/bin/python -m pip install "${wheel}[django,drf,postgresql]"
+
+      - name: Installed-wheel Django migrations
+        shell: bash
+        run: |
+          PYTHONPATH="" .venv-django-e2e-wheel/bin/python examples/django/manage.py check
+          PYTHONPATH="" .venv-django-e2e-wheel/bin/python examples/django/manage.py migrate --noinput
+
+      - name: Installed-wheel Django/PostgreSQL E2E
+        shell: bash
+        run: |
+          state="$(mktemp)"
+          PYTHONPATH="" .venv-django-e2e-wheel/bin/python examples/django/smoke.py seed --state "$state"
+          PYTHONPATH="" .venv-django-e2e-wheel/bin/python examples/django/smoke.py verify --state "$state"
