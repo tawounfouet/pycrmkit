@@ -322,7 +322,19 @@ class SQLAlchemyCustomFieldRepository:
         definition_id: CustomFieldDefinitionId,
         entity: EntityReference,
     ) -> bool:
-        result = self.session.execute(
+        existing = self.session.scalar(
+            select(CustomFieldValueModel.id).where(
+                CustomFieldValueModel.definition_id
+                == str(definition_id),
+                CustomFieldValueModel.entity_kind
+                == entity.kind,
+                CustomFieldValueModel.entity_id
+                == str(entity.id),
+            )
+        )
+        if existing is None:
+            return False
+        self.session.execute(
             delete(CustomFieldValueModel).where(
                 CustomFieldValueModel.definition_id
                 == str(definition_id),
@@ -332,7 +344,7 @@ class SQLAlchemyCustomFieldRepository:
                 == str(entity.id),
             )
         )
-        return bool(result.rowcount)
+        return True
 
     def list_values(
         self,
