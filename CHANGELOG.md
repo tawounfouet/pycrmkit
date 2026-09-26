@@ -6,6 +6,39 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.7.0b2] - 2026-09-26
+
+### Added
+- Stable PyCRMKit domain-error → HTTP status mapping for the optional FastAPI integration.
+- `install_error_handlers(...)` for application-level PyCRMKit and request-validation handlers.
+- Normalized FastAPI request-validation failures using the existing `ErrorResponse` model.
+- Reusable create/list/read/mutation OpenAPI error-response metadata.
+- Status-specific OpenAPI error examples.
+- Selective OpenAPI contract tests for public paths, request models, success models, error models and examples.
+
+### Changed
+- Package version advanced from `0.7.0b1` to `0.7.0b2`.
+- Routers now document typed error responses alongside their success schemas.
+- FastAPI router E2E tests run with the public error-handler installation path.
+- Development roadmap advances to `0.7.0rc1 — FastAPI Example + E2E`.
+
+### HTTP mapping
+- `ValidationError` → 422.
+- `NotFoundError` → 404.
+- `ConflictError`, `DuplicateError` and `InvalidStateError` → 409.
+- `RepositoryError` → 500.
+- `IntegrationError` → 502.
+- Other `PyCRMKitError` instances → 500.
+- FastAPI request validation → 422 with code `request.validation_error`.
+
+### Security / payload semantics
+- Request-validation context includes type/location/message only.
+- Submitted input values are not echoed into the normalized validation payload.
+
+### Deferred
+- The reference FastAPI + PostgreSQL application remains scheduled for `0.7.0rc1`.
+- PostgreSQL-backed API E2E remains scheduled for `0.7.0rc1`.
+
 ## [0.7.0b1] - 2026-09-26
 
 ### Added
