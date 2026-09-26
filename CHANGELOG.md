@@ -6,6 +6,27 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.5.0b1] - 2026-09-26
+
+### Added
+- First-class `WebhookSubscription` with typed ID, validated HTTP(S) endpoint, registered event-type set, active/disabled lifecycle, and exact matching.
+- Backend-neutral `WebhookSubscriptionRepository` plus official copy-isolated Memory adapter and reusable repository contract tests.
+- `WebhookSubscriptionService` with register, disable, list and active-event matching operations.
+- Transactional `crm.webhooks.register(...)`, `crm.webhooks.disable(...)` and `crm.webhooks.list(...)` facade APIs.
+- Optional `EventRegistry` injection into `CRM` / `CRM.memory()` so custom registered public events can participate in webhook registrations.
+- Privacy-conscious audit entries for registration and first disable, without introducing webhook-management domain events.
+- Installed-package smoke coverage for registration, event filtering and disable behavior.
+
+### Changed
+- Package version advanced from `0.5.0a2` to `0.5.0b1`.
+- Memory Unit of Work now includes webhook subscription persistence.
+- Event-driven context views preserve the configured event registry.
+
+### Deferred
+- No outbound HTTP request is performed in this milestone.
+- HMAC signing, transport, retries, backoff, delivery logs, idempotent external delivery and dead-letter handling remain scheduled for `0.5.0b2`.
+
+
 ## [0.5.0a2] - 2026-09-26
 
 ### Added

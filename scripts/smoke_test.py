@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.5.0a2 event tracing."""
+"""Installed-package smoke test for PyCRMKit 0.5.0b1 webhooks."""
 
 from __future__ import annotations
 
@@ -40,8 +40,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.5.0a2":
-        raise SystemExit(f"Expected PyCRMKit 0.5.0a2, got {version!r}")
+    if version != "0.5.0b1":
+        raise SystemExit(f"Expected PyCRMKit 0.5.0b1, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -264,7 +264,22 @@ def main() -> None:
     if child_events[0].causation_id != root_events[0].id:
         raise SystemExit("Causation propagation smoke failed")
 
-    print(f"PyCRMKit {version}: Event tracing + stable 0.1-0.4 smoke OK")
+    webhook_crm = pycrmkit.CRM.memory(clock=clock)
+    subscription = webhook_crm.webhooks.register(
+        url="https://hooks.example.com/pycrmkit",
+        events=("contact.created", "opportunity.won"),
+    )
+    if webhook_crm.webhooks.list(event_type="contact.created").items != (
+        subscription,
+    ):
+        raise SystemExit("Webhook subscription filtering smoke failed")
+    disabled = webhook_crm.webhooks.disable(subscription.id)
+    if disabled.enabled:
+        raise SystemExit("Webhook disable smoke failed")
+    if webhook_crm.webhooks.list(enabled=True).total != 0:
+        raise SystemExit("Disabled webhook remained active")
+
+    print(f"PyCRMKit {version}: Webhook registrations + stable 0.1-0.4 smoke OK")
 
 
 if __name__ == "__main__":
