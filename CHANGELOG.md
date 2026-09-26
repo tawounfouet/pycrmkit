@@ -6,6 +6,39 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.6.0b1] - 2026-09-26
+
+### Added
+- SQLAlchemy Unit of Work owning one shared Session across all persistence repositories.
+- Explicit commit, rollback, rollback-on-exit and rollback-on-exception semantics.
+- Post-commit domain-event staging compatible with the established Memory adapter behavior.
+- Transaction qualification for Lead conversion, Contact merge foundations, Pipeline transitions and bulk-write foundations.
+- SQLAlchemy Sales facade E2E coverage for Lead conversion and terminal pipeline movement.
+- SQLAlchemy persistence/UoW documentation and release notes.
+
+### Changed
+- Package version advanced from `0.6.0a2` to `0.6.0b1`.
+- SQLAlchemy transaction ownership now lives at the Unit-of-Work boundary; repository adapters continue to avoid internal commits.
+- `SQLAlchemyUnitOfWork` and `SessionFactory` are exported from `pycrmkit.storage.sqlalchemy`.
+
+### Transaction semantics
+- All repositories in one UoW share the same SQLAlchemy Session.
+- Uncommitted context exit and exceptions roll back pending changes.
+- Explicit rollback discards pending writes while keeping the UoW usable.
+- Domain events publish only after a successful database commit.
+- Subscriber failure after commit cannot roll back committed state.
+- Repeated commit on the same transaction is rejected.
+
+### Qualification
+- Ruff, strict mypy, docs, package build and aggregate CI pass.
+- Tests pass on Python 3.11, 3.12 and 3.13.
+- Stable Memory adapter and 0.1–0.5 compatibility tests remain green.
+
+### Deferred
+- PostgreSQL production-reference integration, constraints/index validation and concurrency tests remain scheduled for `0.6.0b2`.
+- Alembic migrations remain scheduled for `0.6.0b3`.
+- Full persistence qualification remains scheduled for `0.6.0rc1`.
+
 ## [0.6.0a2] - 2026-09-26
 
 ### Added
