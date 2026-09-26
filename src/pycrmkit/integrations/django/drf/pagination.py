@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from rest_framework import serializers
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 
 
-class PaginationQuerySerializer(serializers.Serializer[Any]):
+if TYPE_CHECKING:
+    class _SerializerBase(serializers.Serializer[Any]):
+        pass
+else:
+    _SerializerBase = serializers.Serializer
+
+
+class PaginationQuerySerializer(_SerializerBase):
     """Validate query parameters without changing core pagination semantics."""
 
     limit = serializers.IntegerField(
