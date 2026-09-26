@@ -6,6 +6,40 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.8.0a1] - 2026-09-26
+
+### Added
+- Optional `django` dependency extra targeting Django 5.2 LTS.
+- `PyCRMKitDjangoConfig` application bootstrap with a dedicated `pycrmkit_crm` app label.
+- Django ORM persistence representations for Contacts, Organizations, Relationships and their embedded contact/organization value-object rows.
+- `DjangoContactRepository`, `DjangoOrganizationRepository` and `DjangoRelationshipRepository`.
+- Shared repository-contract replay against the Django adapter.
+- Dedicated Django CI gate that installs `pycrmkit[django]`, runs the adapter tests, builds the distribution, and loads the app from a clean installed wheel.
+- `django-stubs` development typing integration with strict mypy support.
+
+### Architecture
+- Django models remain persistence representations and never become PyCRMKit domain entities.
+- Django repositories implement the existing backend-neutral protocols rather than redefining their semantics.
+- The core package still imports and runs without Django.
+- The alpha reuses the established `pycrmkit_*` physical table names for its initial models, but adapter interchangeability remains a behavioral contract rather than a promise of zero-migration backend switching.
+
+### Qualification
+- ContactRepository contract passes on the Django adapter.
+- OrganizationRepository contract passes on the Django adapter.
+- RelationshipRepository contract passes on the Django adapter.
+- Django app loading is verified.
+- Python 3.11/3.12/3.13 regression tests remain in the main matrix.
+- Ruff and strict mypy include the Django bridge.
+
+### Deferred
+- Django migration files, transaction/UoW bridge and admin helpers remain scheduled for `0.8.0b1`.
+- DRF remains scheduled for `0.8.0b2`.
+- Full Django example and E2E remain scheduled for `0.8.0rc1`.
+
+### Changed
+- Package version advanced from `0.7.0` to `0.8.0a1`.
+- Development roadmap advances to `0.8.0b1 — Django Migrations & Admin`.
+
 ## [0.7.0] - 2026-09-26
 
 ### Stable
