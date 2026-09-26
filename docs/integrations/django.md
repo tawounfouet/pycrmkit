@@ -9,10 +9,12 @@ Install it with:
 pip install "pycrmkit[django]"
 ```
 
-## Current prerelease scope
+## Stable 0.8.x scope
 
-`0.8.0rc1 — Django Example + E2E` qualifies the Django application, persistence,
-migration, admin, transaction and optional DRF layers together against PostgreSQL 17.
+`0.8.0 — Django Integration Stable` promotes the fully qualified release
+candidate without adding new Django feature scope. The Django application,
+persistence, migration, admin, transaction and optional DRF layers are
+qualified together against PostgreSQL 17.
 
 ```text
 src/pycrmkit/integrations/django/
@@ -163,8 +165,8 @@ exception → rollback
 explicit rollback → discard work + fresh transaction
 ```
 
-The bridge currently exposes the Django repositories implemented in this
-prerelease line:
+The bridge exposes the Django repositories implemented in the stable `0.8.x`
+line:
 
 ```text
 contacts
@@ -172,9 +174,9 @@ organizations
 relationships
 ```
 
-It should therefore not be described as the complete PyCRMKit
-`UnitOfWork` protocol yet. Full cross-domain Django persistence conformance
-belongs to later qualification.
+It must therefore not be described as the complete PyCRMKit `UnitOfWork`
+protocol. Full cross-domain Django persistence is outside the stable `0.8.0`
+scope and requires a future qualified milestone.
 
 ### Ambient Django transactions
 
@@ -284,7 +286,7 @@ See the dedicated [DRF Integration](drf.md) guide.
 
 ## Reference application
 
-The release-candidate application lives under `examples/django/` and assembles:
+The stable reference application lives under `examples/django/` and assembles:
 
 ```text
 Django 5.2
@@ -312,7 +314,7 @@ python manage.py check
 start Django
 ```
 
-The release gate performs a two-process E2E: one process creates a Contact,
+The stable release gate performs a two-process E2E: one process creates a Contact,
 Organization and Relationship through DRF, then a fresh Python/Django process
 reloads the records from PostgreSQL, mutates them, verifies admin registration
 and checks the applied `pycrmkit_crm.0001_initial` migration. The complete path
@@ -327,17 +329,15 @@ PostgreSQL 17 reference E2E
 Python 3.11–3.13
 ```
 
-## Deferred scope
+## Stable boundary
 
-Still intentionally deferred:
+The Django persistence adapter remains intentionally bounded to Contacts,
+Organizations and Relationships. Stable status freezes that documented scope;
+it does not imply a complete cross-domain Django UnitOfWork.
 
-```text
-0.8.0     stable Django integration promotion
-```
+## Next milestone
 
-The current Django persistence adapter remains intentionally bounded to
-Contacts, Organizations and Relationships; the RC does not claim a complete
-cross-domain Django UnitOfWork.
+The project roadmap now advances to **`0.9.0a1 — External Identities`**.
 
 ## Next milestone
 
