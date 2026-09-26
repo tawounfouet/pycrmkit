@@ -1,8 +1,8 @@
 """Optional SQLAlchemy persistence adapter foundation."""
 
 from pycrmkit.storage.sqlalchemy.base import (
-    Base,
     NAMING_CONVENTION,
+    Base,
     TimestampedModelMixin,
     metadata,
 )
