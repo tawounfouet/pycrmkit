@@ -18,6 +18,7 @@ from pycrmkit.facade.contacts import ContactsAPI
 from pycrmkit.facade.custom_fields import CustomFieldsAPI
 from pycrmkit.facade.email import EmailAPI
 from pycrmkit.facade.events import EventsAPI
+from pycrmkit.facade.external_identities import ExternalIdentitiesAPI
 from pycrmkit.facade.leads import LeadsAPI
 from pycrmkit.facade.opportunities import OpportunitiesAPI
 from pycrmkit.facade.organizations import OrganizationsAPI
@@ -99,6 +100,7 @@ class CRM:
         self.timeline = TimelineAPI(runtime)
         self.tags = TagsAPI(runtime)
         self.custom_fields = CustomFieldsAPI(runtime)
+        self.external_identities = ExternalIdentitiesAPI(runtime)
         self.events = EventsAPI(event_bus)
         self.audit = AuditAPI(runtime)
         self.webhooks = WebhooksAPI(
