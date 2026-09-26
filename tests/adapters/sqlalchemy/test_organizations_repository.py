@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
+from sqlalchemy.orm import Session
 
 from pycrmkit.organizations import (
     Organization,
@@ -13,8 +14,6 @@ from pycrmkit.organizations import (
     OrganizationId,
     OrganizationRepository,
 )
-from sqlalchemy.orm import Session
-
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyOrganizationRepository
 
 from ...contracts.organizations_repository import OrganizationRepositoryContract
