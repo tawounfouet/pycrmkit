@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
+from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
 from pycrmkit.exceptions import ValidationError
@@ -24,7 +25,7 @@ class ImportRow:
                 code="import.row.number.invalid",
                 context={"number": self.number},
             )
-        object.__setattr__(self, "values", dict(self.values))
+        object.__setattr__(self, "values", MappingProxyType(dict(self.values)))
 
     def replace(self, values: Mapping[str, object]) -> ImportRow:
         """Return the same logical row with transformed values."""
