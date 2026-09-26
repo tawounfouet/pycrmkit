@@ -1,4 +1,4 @@
-.PHONY: test test-unit lint format typecheck coverage build smoke clean
+.PHONY: test test-unit lint format typecheck coverage build smoke migration-check migration-upgrade migration-downgrade clean
 
 test:
 	pytest
@@ -23,6 +23,15 @@ build:
 
 smoke:
 	python -c "import pycrmkit; print(pycrmkit.__version__)"
+
+migration-check:
+	alembic check
+
+migration-upgrade:
+	alembic upgrade head
+
+migration-downgrade:
+	alembic downgrade base
 
 clean:
 	rm -rf build dist site .pytest_cache .mypy_cache .ruff_cache htmlcov coverage.xml

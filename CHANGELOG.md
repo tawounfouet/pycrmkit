@@ -6,6 +6,36 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.6.0b3] - 2026-09-26
+
+### Added
+- Alembic migration environment, configuration and immutable `0001` persistence baseline.
+- Optional `migrations` dependency group for Alembic + PostgreSQL migration tooling.
+- Dedicated PostgreSQL migration CI covering empty-database upgrade, downgrade/re-upgrade and schema drift.
+- Verified adoption path for existing `0.6.0b2` schemas via parity check followed by `alembic stamp 0001`.
+- Explicit destructive baseline downgrade policy and migration immutability rules.
+
+### Changed
+- Package version advanced from `0.6.0b2` to `0.6.0b3`.
+- Production schema evolution now uses versioned Alembic revisions instead of relying on `Base.metadata.create_all(...)`.
+- Immutable files under `migrations/versions/` are excluded from Ruff formatting and are instead compiled and executed in migration CI.
+
+### Migration semantics
+- Fresh databases upgrade from `base` to `head` at revision `0001`.
+- Revision `0001` matches current SQLAlchemy metadata with no detected drift.
+- Baseline downgrade to `base` is supported but destructive.
+- Existing `0.6.0b2` databases with verified schema parity can be stamped at `0001` without data loss.
+- Released migration revisions are immutable; future schema changes require new revisions.
+
+### Qualification
+- Migration lifecycle passes against live PostgreSQL 17.
+- Direct `alembic check` reports no new upgrade operations.
+- PostgreSQL persistence, Ruff, strict mypy, docs, build and aggregate CI remain green.
+- General tests pass on Python 3.11, 3.12 and 3.13.
+
+### Deferred
+- Full persistence release-candidate qualification, including installed-wheel + PostgreSQL smoke, remains scheduled for `0.6.0rc1`.
+
 ## [0.6.0b2] - 2026-09-26
 
 ### Added
