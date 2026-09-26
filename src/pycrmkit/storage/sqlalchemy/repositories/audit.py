@@ -91,7 +91,7 @@ class SQLAlchemyAuditRepository:
 
     def _page(
         self,
-        statement: Select[tuple[AuditEntryModel]],
+        statement: Select[AuditEntryModel],
         page: OffsetPageRequest,
     ) -> Page[AuditEntry]:
         ordered = statement.order_by(
