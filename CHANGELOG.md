@@ -6,6 +6,39 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.7.0a1] - 2026-09-26
+
+### Added
+- Optional `fastapi` dependency extra with FastAPI and Pydantic 2.
+- Request-scoped `CRMDependency` bridge preserving the application's existing CRM wiring.
+- Pydantic request/response schemas for Contacts, Organizations, Relationships, Activities, Tasks, Leads, Opportunities and Timeline.
+- Explicit transport-schema conversion into existing PyCRMKit DTOs, Value Objects and typed IDs.
+- FastAPI pagination bridge over `OffsetPageRequest` and `Page`.
+- Typed `ErrorResponse` preserving public PyCRMKit error code/message/context.
+- FastAPI integration tests covering dependency injection, request metadata, pagination, response serialization and facade execution.
+
+### Changed
+- Package version advanced from `0.6.0` to `0.7.0a1`.
+- FastAPI becomes an opt-in integration extra while the core package remains framework-agnostic.
+- Development roadmap advances within the FastAPI line to `0.7.0b1 — Routers`.
+
+### Integration semantics
+- `X-Actor-ID` and `X-Correlation-ID` are applied through `CRM.with_context(...)`.
+- Missing HTTP context headers preserve the CRM factory's existing context.
+- PATCH-like schemas preserve omitted-vs-explicit-clear semantics through domain `UNSET` sentinels.
+- Pydantic schemas remain transport objects and are never used as domain Entities.
+- No FastAPI router or ORM-direct access path is introduced in this alpha.
+
+### Qualification
+- Core `import pycrmkit` is verified not to import FastAPI transitively.
+- Schema conversions are exercised against the stable CRM facade.
+- Python 3.11/3.12/3.13, Ruff, strict mypy, Docs, Build, PostgreSQL, Migrations, Persistence Qualification and aggregate CI remain green.
+
+### Deferred
+- Routers remain scheduled for `0.7.0b1`.
+- HTTP status/error mapping and OpenAPI qualification remain scheduled for `0.7.0b2`.
+- Example application and PostgreSQL-backed API E2E remain scheduled for `0.7.0rc1`.
+
 ## [0.6.0] - 2026-09-26
 
 ### Stable
