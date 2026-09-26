@@ -22,10 +22,9 @@ from pycrmkit.custom_fields import (
     CustomFieldValueId,
 )
 from pycrmkit.exceptions import DuplicateError, RepositoryError
-from pycrmkit.leads import Lead, LeadId
 from pycrmkit.opportunities import Opportunity, OpportunityId
 from pycrmkit.storage.sqlalchemy import Base, SQLAlchemyUnitOfWork
-from pycrmkit.tags import Tag, TagId, TagName
+from pycrmkit.tags import Tag, TagAssignment, TagAssignmentId, TagId, TagName
 
 pytestmark = pytest.mark.postgresql
 
@@ -62,19 +61,25 @@ def test_postgresql_metadata_creates_expected_constraints_and_indexes(
 def test_postgresql_foreign_key_violation_is_backend_neutral(
     postgres_session_factory: sessionmaker[Session],
 ) -> None:
-    missing_contact = ContactId(
+    missing_tag_id = TagId(
         UUID("00000000-0000-4000-8000-000000009901")
     )
-    lead = Lead(
-        id=LeadId(UUID("00000000-0000-4000-8000-000000009902")),
+    assignment = TagAssignment(
+        id=TagAssignmentId(
+            UUID("00000000-0000-4000-8000-000000009902")
+        ),
         created_at=NOW,
         updated_at=NOW,
-        contact_id=missing_contact,
+        tag_id=missing_tag_id,
+        entity=EntityReference(
+            "contact",
+            ContactId(UUID("00000000-0000-4000-8000-000000009903")),
+        ),
     )
 
     with pytest.raises(RepositoryError) as error:
         with SQLAlchemyUnitOfWork(postgres_session_factory) as uow:
-            uow.leads.save(lead)
+            uow.tags.assign(assignment)
             uow.commit()
 
     assert error.value.code == "repository.foreign_key_violation"

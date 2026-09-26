@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.5.0 — Eventing & Webhooks Stable`**.
-The latest persistence prerelease is **`0.6.0b3 — Alembic / Migrations`**.
+The latest persistence prerelease is **`0.6.0rc1 — Persistence Qualification`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -49,11 +49,12 @@ path now covers registry/versioned serialization, actor/correlation/causation,
 persistent subscriptions, HMAC signing, retry/backoff, idempotent delivery,
 dead-letter history, and automatic post-commit EventBus bridging.
 
-`0.6.0b3` now adds Alembic-managed schema history on top of the qualified
-PostgreSQL backend. Fresh databases upgrade from `base` to revision `0001`,
-existing `0.6.0b2` schemas can be verified and stamped without data loss, and
-the lifecycle is checked for drift, downgrade and re-upgrade.
+`0.6.0rc1` now qualifies the complete persistence foundation as one system:
+the stable `0.1`–`0.5` facade runs on PostgreSQL, repository contracts are
+replayed on the production-reference backend, migrations advance to revision
+`0002`, transaction rollback is qualified, and the installed wheel applies its
+packaged migrations before a PostgreSQL smoke test.
 
-The next roadmap milestone is **`0.6.0rc1 — Persistence Qualification`**.
+The next roadmap milestone is **`0.6.0 — Persistence Foundation Stable`**.
 FastAPI, Django, data operations, AI and agent integrations remain later
 roadmap lines.

@@ -32,9 +32,7 @@ class WebhookDeliveryModel(TimestampedModelMixin, Base):
     __tablename__ = "pycrmkit_webhook_deliveries"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    subscription_id: Mapped[str] = mapped_column(
-        ForeignKey("pycrmkit_webhook_subscriptions.id", ondelete="CASCADE"), nullable=False, index=True
-    )
+    subscription_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     event_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     event_type: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     payload_json: Mapped[str] = mapped_column(Text, nullable=False)

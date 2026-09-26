@@ -6,6 +6,44 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.6.0rc1] - 2026-09-26
+
+### Added
+- Dedicated Persistence Qualification CI gate over live PostgreSQL 17.
+- End-to-end qualification of the stable 0.1–0.5 CRM facade on an Alembic-migrated PostgreSQL database.
+- PostgreSQL execution of the reusable SQLAlchemy repository conformance suite.
+- Explicit multi-repository rollback qualification against PostgreSQL.
+- Installed-wheel smoke in a clean virtual environment using packaged migrations and PostgreSQL.
+- Alembic revision `0002 — align repository reference semantics`.
+
+### Changed
+- Package version advanced from `0.6.0b3` to `0.6.0rc1`.
+- Migration head advanced from `0001` to `0002`.
+- Lead and Opportunity contact/organization references remain indexed IDs but no longer impose cross-aggregate database foreign-key preconditions.
+- Webhook Delivery subscription references remain indexed IDs but no longer impose a repository-level subscription existence precondition.
+- Package development classifier advanced from Alpha to Beta for the persistence release-candidate line.
+
+### Persistence semantics
+- Repository protocols remain the source of truth for adapter behavior.
+- Database foreign keys remain for persistence ownership relationships, including Tag Assignment → Tag and nested Communication/Webhook attempt rows.
+- Cross-aggregate identifiers are not strengthened into backend-only existence rules.
+- PostgreSQL ownership-FK violations remain translated into backend-neutral PyCRMKit errors.
+
+### Migration qualification
+- Fresh PostgreSQL databases upgrade from `base` to `0002`.
+- Existing `0.6.0b3` databases upgrade from `0001` to `0002` with data preserved.
+- Head matches SQLAlchemy metadata with no detected drift.
+- Downgrade-to-base / re-upgrade lifecycle remains qualified.
+
+### Release-candidate qualification
+- Stable CRM Core, Activity/Timeline, Sales, Communication and Eventing/Webhooks flows persist and reload through PostgreSQL.
+- SQLAlchemy repository conformance passes on PostgreSQL.
+- Installed wheel can run packaged `pycrmkit-migrate upgrade head`, `current` and `check` against PostgreSQL before executing a persistence smoke.
+- Ruff, strict mypy, documentation, build, aggregate CI, PostgreSQL, Migrations and Python 3.11/3.12/3.13 test gates pass together.
+
+### Deferred
+- `0.6.0` stable is the promotion milestone for the qualified persistence foundation and should not add new persistence feature scope.
+
 ## [0.6.0b3] - 2026-09-26
 
 ### Added
