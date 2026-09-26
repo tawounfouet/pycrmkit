@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.5.0a1 Event Registry."""
+"""Installed-package smoke test for PyCRMKit 0.5.0a2 event tracing."""
 
 from __future__ import annotations
 
@@ -40,8 +40,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.5.0a1":
-        raise SystemExit(f"Expected PyCRMKit 0.5.0a1, got {version!r}")
+    if version != "0.5.0a2":
+        raise SystemExit(f"Expected PyCRMKit 0.5.0a2, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -247,7 +247,24 @@ def main() -> None:
     if restored.to_dict() != captured_events[0].to_dict():
         raise SystemExit("Event registry/serialization installed smoke failed")
 
-    print(f"PyCRMKit {version}: Event Registry + stable 0.1-0.4 smoke OK")
+    root_events: list[DomainEvent] = []
+    child_events: list[DomainEvent] = []
+    trace_crm = pycrmkit.CRM.memory(clock=clock)
+    trace_crm.events.subscribe("contact.created", root_events.append)
+    trace_crm.events.subscribe("task.created", child_events.append)
+    trace_crm.with_context(
+        actor_id="trace-smoke",
+        correlation_id="trace-root",
+    ).contacts.create(display_name="Trace Smoke")
+    trace_crm.with_event(root_events[0]).tasks.create(title="Trace child")
+    if child_events[0].actor_id != "trace-smoke":
+        raise SystemExit("Actor propagation smoke failed")
+    if child_events[0].correlation_id != "trace-root":
+        raise SystemExit("Correlation propagation smoke failed")
+    if child_events[0].causation_id != root_events[0].id:
+        raise SystemExit("Causation propagation smoke failed")
+
+    print(f"PyCRMKit {version}: Event tracing + stable 0.1-0.4 smoke OK")
 
 
 if __name__ == "__main__":

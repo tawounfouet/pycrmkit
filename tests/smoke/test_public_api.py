@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.5.0a1"
+    assert __version__ == "0.5.0a2"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -74,3 +74,9 @@ def test_stable_0_4_email_facade_surface() -> None:
         "delivery_history",
     ):
         assert hasattr(crm.email, name)
+
+
+def test_0_5_causal_context_surface_is_additive() -> None:
+    crm = CRM.memory()
+    assert hasattr(crm, "with_event")
+    assert hasattr(CRMContext, "from_event")

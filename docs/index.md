@@ -2,7 +2,7 @@
 
 PyCRMKit is a modular, headless Python CRM domain framework.
 
-The current development version is **`0.5.0a1 — Event Registry & Serialization`**.
+The current development version is **`0.5.0a2 — Correlation & Causation`**.
 The stable `0.1`–`0.4` CRM Core, Activity/Timeline, Sales and Communication
 contracts remain compatibility-frozen:
 
@@ -23,7 +23,7 @@ Timeline Projectors / Repository contracts
 Memory adapter / Email providers
 ```
 
-The stable Communication path is:
+The stable Communication path remains:
 
 ```text
 CommunicationIntent
@@ -41,16 +41,13 @@ Communication Timeline
 
 The `0.4.x` line compatibility-governs the documented `crm.email` facade,
 provider-neutral email contracts, normalized lifecycle events, Memory
-Communication persistence, and Communication Timeline projection. SMTP is
-implemented with the Python standard library; Jinja2 and Resend remain optional
-extras.
+Communication persistence, and Communication Timeline projection.
 
-Communication records are projected directly into Timeline as
-`TimelineEntryKind.COMMUNICATION`. PyCRMKit does not create duplicate
-`Activity(type="email")` rows for the same communication.
+`0.5.0a1` established the version-aware public event registry and deterministic
+serialization. `0.5.0a2` now defines causal propagation: child work inherits
+actor identity, preserves a correlation root and points `causation_id` to the
+direct parent event.
 
-`0.5.0a1` adds a version-aware registry for public DomainEvent contracts and
-deterministic JSON serialization suitable for later signing and delivery.
-Correlation/causation integration and webhooks remain subsequent `0.5.x`
-milestones. SQLAlchemy/PostgreSQL, FastAPI, Django, AI and agent integrations
-remain later roadmap lines.
+Webhook registration and delivery remain subsequent `0.5.x` milestones.
+SQLAlchemy/PostgreSQL, FastAPI, Django, AI and agent integrations remain later
+roadmap lines.

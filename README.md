@@ -4,9 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current version: **0.5.0a1 — Event Registry & Serialization**.
+Current version: **0.5.0a2 — Correlation & Causation**.
 
-The stable `0.1`–`0.4` CRM, Activity/Timeline, Sales and Communication contracts remain compatibility-frozen. `0.5.0a1` begins the Eventing & Webhooks line with a version-aware event registry and deterministic public JSON serialization.
+The stable `0.1`–`0.4` CRM, Activity/Timeline, Sales and Communication contracts remain compatibility-frozen. `0.5.0a2` extends the Eventing & Webhooks line with explicit actor, correlation and causation propagation across event-triggered CRM mutations.
 
 The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2 and Resend remain optional extras. Django, FastAPI, SQLAlchemy, PostgreSQL, durable webhooks, AI, and agent integrations are introduced through later milestones.
 
@@ -55,7 +55,7 @@ for entry in history.items:
     print(entry.occurred_at, entry.event_type, entry.title)
 ```
 
-Use `crm.with_context(actor_id=..., correlation_id=...)` for mutation context, `crm.events` for in-process subscriptions, `crm.audit` for append-only system mutation history, and `crm.timeline` for customer/relationship history.
+Use `crm.with_context(actor_id=..., correlation_id=...)` for explicit mutation context. For event-driven work, use `crm.with_event(parent_event)` so actor/correlation context is propagated and `causation_id` points to the direct parent event.
 
 ## Install for development
 
@@ -98,7 +98,8 @@ pytest
 0.4.0b2 Resend Adapter                               ✓
 0.4.0rc1 Delivery Events & History                   ✓
 0.4.0  Communication Stable                          ✓
-0.5.0a1 Event Registry & Serialization                →
+0.5.0a1 Event Registry & Serialization                ✓
+0.5.0a2 Correlation & Causation                       →
 0.5.0  Eventing & Webhooks
 0.6.0  Persistence Foundation
 0.7.0  FastAPI Integration

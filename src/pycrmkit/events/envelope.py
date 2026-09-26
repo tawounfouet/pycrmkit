@@ -71,6 +71,11 @@ class DomainEvent:
             "correlation_id",
             _optional_text(self.correlation_id, field_name="correlation_id"),
         )
+        if self.causation_id is not None and not isinstance(self.causation_id, EventId):
+            raise ValidationError(
+                "event causation_id must be an EventId",
+                code="event.causation_id.invalid",
+            )
         object.__setattr__(self, "payload", freeze_json_mapping(self.payload))
         object.__setattr__(self, "metadata", freeze_json_mapping(self.metadata))
 

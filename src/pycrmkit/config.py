@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from pycrmkit.core.events import EventId
 from pycrmkit.exceptions import ValidationError
+
+if TYPE_CHECKING:
+    from pycrmkit.events.envelope import DomainEvent
 
 
 def _optional_text(value: str | None, *, field_name: str) -> str | None:
@@ -60,4 +64,19 @@ class CRMContext:
             self,
             "correlation_id",
             _optional_text(self.correlation_id, field_name="correlation_id"),
+        )
+        if self.causation_id is not None and not isinstance(self.causation_id, EventId):
+            raise ValidationError(
+                "causation_id must be an EventId",
+                code="crm.causation_id.invalid",
+            )
+
+    @classmethod
+    def from_event(cls, event: DomainEvent) -> CRMContext:
+        """Create child-operation context from a parent domain event."""
+
+        return cls(
+            actor_id=event.actor_id,
+            correlation_id=event.correlation_id or str(event.id),
+            causation_id=event.id,
         )

@@ -6,6 +6,25 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.5.0a2] - 2026-09-26
+
+### Added
+- `CRMContext.from_event(...)` for deterministic child-operation trace context.
+- `CRM.with_event(...)` for event-triggered facade mutations sharing the same backend and event bus.
+- Actor inheritance, stable correlation-root propagation, and direct `causation_id` assignment across multi-hop event chains.
+- Correlation fallback to the parent event ID when an upstream correlation ID is absent.
+- Validation that CRM/event causation identifiers are typed `EventId` values.
+- Unit and installed-package smoke coverage for root → child → grandchild causal propagation.
+
+### Changed
+- Package version advanced from `0.5.0a1` to `0.5.0a2`.
+- Event documentation now defines the causal propagation semantics required by later webhook delivery.
+
+### Deferred
+- Webhook registrations remain scheduled for `0.5.0b1`.
+- HMAC signing, retries, backoff, delivery logging and dead-letter handling remain scheduled for `0.5.0b2`.
+
+
 ## [0.5.0a1] - 2026-09-25
 
 ### Added

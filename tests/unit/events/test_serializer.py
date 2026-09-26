@@ -87,3 +87,27 @@ def test_canonical_contact_created_v1_fixture_is_stable() -> None:
             )
         )
     ) == fixture.read_text(encoding="utf-8")
+
+
+def test_serializer_preserves_actor_correlation_and_causation() -> None:
+    registry = EventRegistry()
+    registry.register("contact.created", 1)
+    serializer = EventSerializer(registry)
+    parent_id = EventId(UUID("00000000-0000-0000-0000-000000000777"))
+    event = DomainEvent(
+        id=EventId(UUID("00000000-0000-0000-0000-000000000778")),
+        type="contact.created",  # type: ignore[arg-type]
+        schema_version=1,
+        aggregate_type="contact",
+        aggregate_id="contact-777",
+        occurred_at=datetime(2026, 9, 26, 7, 30, tzinfo=UTC),
+        actor_id="actor-777",
+        correlation_id="corr-777",
+        causation_id=parent_id,
+    )
+
+    restored = serializer.loads(serializer.dumps(event))
+
+    assert restored.actor_id == "actor-777"
+    assert restored.correlation_id == "corr-777"
+    assert restored.causation_id == parent_id
