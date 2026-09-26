@@ -58,7 +58,7 @@ def test_upgrade_empty_database_to_head_matches_metadata(
 ) -> None:
     command.upgrade(_config(), "head")
 
-    assert _current_revision(migration_engine) == "0001"
+    assert _current_revision(migration_engine) == "0002"
     assert _application_tables(migration_engine) == set(Base.metadata.tables)
     assert _schema_diffs(migration_engine) == []
 
@@ -74,36 +74,77 @@ def test_baseline_downgrade_to_base_is_destructive_and_reversible(
     assert _current_revision(migration_engine) is None
 
     command.upgrade(config, "head")
-    assert _current_revision(migration_engine) == "0001"
+    assert _current_revision(migration_engine) == "0002"
     assert _schema_diffs(migration_engine) == []
 
 
-def test_existing_060b2_schema_can_be_verified_and_stamped_without_data_loss(
+def test_previous_060b3_schema_upgrades_to_head_without_data_loss(
     migration_engine: Engine,
 ) -> None:
-    Base.metadata.create_all(migration_engine)
+    config = _config()
+    command.upgrade(config, "0001")
+    assert _current_revision(migration_engine) == "0001"
+
     factory = sessionmaker(bind=migration_engine, expire_on_commit=False)
     contact = Contact(
         id=ContactId(UUID("00000000-0000-4000-8000-000000009931")),
         created_at=NOW,
         updated_at=NOW,
         display_name="Migration Fixture",
-        metadata={"source": "0.6.0b2"},
+        metadata={"source": "0.6.0b3"},
     )
 
     with SQLAlchemyUnitOfWork(factory) as uow:
         uow.contacts.save(contact)
         uow.commit()
 
+    command.upgrade(config, "head")
+    assert _current_revision(migration_engine) == "0002"
     assert _schema_diffs(migration_engine) == []
-
-    command.stamp(_config(), "0001")
-    assert _current_revision(migration_engine) == "0001"
-
-    command.upgrade(_config(), "head")
 
     with SQLAlchemyUnitOfWork(factory) as uow:
         assert uow.contacts.get(contact.id) == contact
+
+
+def test_head_removes_non_contractual_cross_aggregate_foreign_keys(
+    migration_engine: Engine,
+) -> None:
+    config = _config()
+    command.upgrade(config, "0001")
+
+    expected = {
+        "fk_pycrmkit_leads_contact_id_pycrmkit_contacts",
+        "fk_pycrmkit_leads_organization_id_pycrmkit_organizations",
+        "fk_pycrmkit_opportunities_contact_id_pycrmkit_contacts",
+        "fk_pycrmkit_opportunities_organization_id_pycrmkit_organizations",
+        "fk_pycrmkit_webhook_deliveries_subscription_id_pycrmkit_8b27",
+    }
+
+    before = {
+        item["name"]
+        for table in (
+            "pycrmkit_leads",
+            "pycrmkit_opportunities",
+            "pycrmkit_webhook_deliveries",
+        )
+        for item in inspect(migration_engine).get_foreign_keys(table)
+        if item["name"] is not None
+    }
+    assert expected <= before
+
+    command.upgrade(config, "head")
+
+    after = {
+        item["name"]
+        for table in (
+            "pycrmkit_leads",
+            "pycrmkit_opportunities",
+            "pycrmkit_webhook_deliveries",
+        )
+        for item in inspect(migration_engine).get_foreign_keys(table)
+        if item["name"] is not None
+    }
+    assert expected.isdisjoint(after)
 
 
 def test_alembic_head_has_no_model_drift(
@@ -123,4 +164,4 @@ def test_migration_version_table_tracks_head(
             text("SELECT version_num FROM alembic_version")
         ).scalars().all()
 
-    assert rows == ["0001"]
+    assert rows == ["0002"]
