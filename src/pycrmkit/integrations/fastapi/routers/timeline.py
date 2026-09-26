@@ -39,7 +39,6 @@ def create_timeline_router(dependency: CRMDependency) -> APIRouter:
         "/contacts/{contact_id}",
         response_model=PageResponse[TimelineEntryResponse],
         responses=LIST_ERROR_RESPONSES,
-        responses=LIST_ERROR_RESPONSES,
     )
     def contact_timeline(
         contact_id: UUID,
@@ -55,6 +54,7 @@ def create_timeline_router(dependency: CRMDependency) -> APIRouter:
     @router.get(
         "/organizations/{organization_id}",
         response_model=PageResponse[TimelineEntryResponse],
+        responses=LIST_ERROR_RESPONSES,
     )
     def organization_timeline(
         organization_id: UUID,
