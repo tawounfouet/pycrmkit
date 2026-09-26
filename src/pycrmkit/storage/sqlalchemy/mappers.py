@@ -148,10 +148,36 @@ def aware(value: datetime | None) -> datetime | None:
     return value.astimezone(UTC)
 
 
-def entity_reference(kind: str, identifier: str) -> EntityReference:
-    """Restore the strongest known domain ID for a persisted entity reference."""
+def entity_reference(
+    kind: str,
+    identifier: str,
+    id_type_name: str | None = None,
+) -> EntityReference:
+    """Restore a persisted entity reference without erasing its typed ID class."""
 
-    id_types: dict[str, type[UUIDId]] = {
+    known_types: tuple[type[UUIDId], ...] = (
+        UUIDId,
+        EntityId,
+        ActivityId,
+        CommunicationIntentId,
+        CommunicationRecordId,
+        ContactId,
+        CustomFieldDefinitionId,
+        CustomFieldValueId,
+        DeliveryAttemptId,
+        LeadId,
+        OpportunityId,
+        OrganizationId,
+        RelationshipId,
+        TagId,
+        TagAssignmentId,
+        TaskId,
+        TimelineEntryId,
+        WebhookDeliveryId,
+        WebhookSubscriptionId,
+    )
+    by_name = {id_type.__name__: id_type for id_type in known_types}
+    by_kind: dict[str, type[UUIDId]] = {
         "activity": ActivityId,
         "communication_intent": CommunicationIntentId,
         "communication_record": CommunicationRecordId,
@@ -170,7 +196,8 @@ def entity_reference(kind: str, identifier: str) -> EntityReference:
         "webhook_delivery": WebhookDeliveryId,
         "webhook_subscription": WebhookSubscriptionId,
     }
-    id_type = id_types.get(kind, UUIDId)
+    id_type = by_name.get(id_type_name) if id_type_name is not None else None
+    id_type = id_type or by_kind.get(kind, UUIDId)
     return EntityReference(kind=kind, id=id_type.parse(identifier))
 
 
@@ -393,7 +420,11 @@ def tag_assignment_from_model(model: TagAssignmentModel) -> TagAssignment:
         created_at=aware(model.created_at),
         updated_at=aware(model.updated_at),
         tag_id=TagId.parse(model.tag_id),
-        entity=entity_reference(model.entity_kind, model.entity_id),
+        entity=entity_reference(
+            model.entity_kind,
+            model.entity_id,
+            model.entity_id_type,
+        ),
     )
 
 
@@ -583,7 +614,11 @@ def activity_from_model(
             for row in sorted(participants, key=lambda item: item.position)
         ),
         references=tuple(
-            entity_reference(row.entity_kind, row.entity_id)
+            entity_reference(
+                row.entity_kind,
+                row.entity_id,
+                row.entity_id_type,
+            )
             for row in sorted(references, key=lambda item: item.position)
         ),
         source=model.source,
@@ -1161,6 +1196,7 @@ def timeline_to_model(entry: TimelineEntry) -> TimelineEntryModel:
         source_event_id=str(entry.source_event_id),
         entity_kind=entry.entity.kind,
         entity_id=str(entry.entity.id),
+        entity_id_type=type(entry.entity.id).__name__,
         occurred_at=entry.occurred_at,
         title=entry.title,
         summary=entry.summary,
