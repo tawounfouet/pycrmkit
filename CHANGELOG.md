@@ -6,6 +6,35 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-26
+
+### Stable
+- Promoted the fully qualified `0.7.0rc1` FastAPI integration to stable without adding new FastAPI feature scope.
+- Froze the documented transport schemas, router paths, pagination semantics, domain-error mapping and OpenAPI contracts for the `0.7.x` line.
+- Promoted the PostgreSQL-backed reference application and migration-first deployment sequence to the stable integration example.
+- Preserved core import independence from FastAPI/Pydantic.
+
+### Compatibility
+- Stable FastAPI routes remain facade-backed and never expose SQLAlchemy Sessions, ORM models or repositories directly.
+- `X-Actor-ID` and `X-Correlation-ID` request context behavior is compatibility-governed.
+- `ErrorResponse` code/message/context shape and documented 404/409/422/500/502 mappings are compatibility-governed.
+- List and Timeline endpoints retain the framework-neutral offset pagination contract.
+- OpenAPI version metadata now derives from the package's single `__version__` source.
+
+### Qualification
+- Python 3.11/3.12/3.13 test matrix passes.
+- Ruff and strict mypy pass.
+- FastAPI request validation, response serialization, pagination, errors and OpenAPI tests pass.
+- Real FastAPI API E2E passes against Alembic-migrated PostgreSQL 17.
+- Application restart re-reads persisted CRM state from PostgreSQL.
+- Built wheel installs with `fastapi`, `postgresql` and `migrations` extras in a clean environment.
+- Packaged migrations and installed-wheel FastAPI/PostgreSQL smoke pass.
+- Core import remains valid without FastAPI installed.
+
+### Changed
+- Package version advanced from `0.7.0rc1` to `0.7.0`.
+- Development roadmap advances to `0.8.0a1 — Django Application Bridge`.
+
 ## [0.7.0rc1] - 2026-09-26
 
 ### Added
