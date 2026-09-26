@@ -166,8 +166,55 @@ SQL text and bound parameter values are not exposed.
 
 ## Schema lifecycle
 
-`Base.metadata.create_all(...)` remains appropriate for tests and local
-experimentation at this stage. Production schema evolution is not frozen yet.
+`0.6.0b3` introduces Alembic as the production schema-evolution mechanism.
 
-The next milestone, **`0.6.0b3 — Alembic / Migrations`**, introduces
-versioned migrations and upgrade-path qualification.
+Install migration tooling with:
+
+```bash
+pip install "pycrmkit[migrations]"
+```
+
+For a fresh PostgreSQL database:
+
+```bash
+export PYCRMKIT_DATABASE_URL='postgresql+psycopg://crm:secret@localhost:5432/crm'
+alembic upgrade head
+alembic current
+alembic check
+```
+
+The current head is revision `0001 — persistence baseline`.
+
+`Base.metadata.create_all(...)` remains useful for tests and local
+experimentation, but it is no longer the production schema lifecycle.
+
+### Existing 0.6.0b2 databases
+
+A database created under `0.6.0b2` already has the same schema but no Alembic
+history.
+
+The migration qualification suite verifies that this schema has no drift from
+revision `0001`. After parity is confirmed, adopt the migration history with:
+
+```bash
+alembic stamp 0001
+alembic current
+alembic check
+```
+
+Stamping does not recreate tables or remove CRM data.
+
+### Downgrade policy
+
+`alembic downgrade base` is implemented and tested for the baseline, but it is
+destructive because it drops the persistence tables.
+
+Use that downgrade only for disposable environments or explicit destructive
+rollback. Production recovery should normally use application rollback plus a
+forward corrective migration unless a future revision documents a data-safe
+downgrade.
+
+Released migration revisions are immutable. Persistence-model changes require a
+new reviewed Alembic revision.
+
+The next milestone is **`0.6.0rc1 — Persistence Qualification`**.
