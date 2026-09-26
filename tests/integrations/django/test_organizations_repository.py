@@ -14,7 +14,6 @@ from pycrmkit.organizations import (
     OrganizationId,
     OrganizationRepository,
 )
-
 from tests.contracts.organizations_repository import OrganizationRepositoryContract
 
 
