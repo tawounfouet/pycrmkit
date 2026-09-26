@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import django
+import pytest
 from django.conf import settings
+from django.test import override_settings
 
 if not settings.configured:
     settings.configure(
@@ -17,6 +21,16 @@ if not settings.configured:
         },
         USE_TZ=True,
         TIME_ZONE="UTC",
+    )
+
+django.setup()
+
+
+@pytest.fixture(autouse=True)
+def drf_test_settings() -> Iterator[None]:
+    """Keep DRF URL/error settings isolated even in the full test process."""
+
+    with override_settings(
         ROOT_URLCONF="tests.integrations.drf.urls",
         REST_FRAMEWORK={
             "UNAUTHENTICATED_USER": None,
@@ -25,6 +39,5 @@ if not settings.configured:
                 "pycrmkit_exception_handler"
             ),
         },
-    )
-
-django.setup()
+    ):
+        yield
