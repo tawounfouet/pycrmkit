@@ -6,7 +6,8 @@ from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 
 from rest_framework import serializers, status
-from rest_framework.exceptions import ErrorDetail, ValidationError as DRFValidationError
+from rest_framework.exceptions import ErrorDetail
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
@@ -18,7 +19,6 @@ from pycrmkit.exceptions import (
     RepositoryError,
     ValidationError,
 )
-
 
 if TYPE_CHECKING:
     class _SerializerBase(serializers.Serializer[Any]):
