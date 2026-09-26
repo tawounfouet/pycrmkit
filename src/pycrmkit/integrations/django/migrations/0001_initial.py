@@ -1,6 +1,6 @@
 # Generated for PyCRMKit 0.8.0b1 / Django 5.2.
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
