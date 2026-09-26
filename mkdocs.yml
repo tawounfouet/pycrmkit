@@ -66,6 +66,7 @@ nav:
   - Integrations:
       - FastAPI Integration: integrations/fastapi.md
       - Django Integration: integrations/django.md
+      - DRF Integration: integrations/drf.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
@@ -110,6 +111,7 @@ nav:
       - 0.7.0 FastAPI Integration Stable: releases/0.7.0.md
       - 0.8.0a1 Django Application Bridge: releases/0.8.0a1.md
       - 0.8.0b1 Django Migrations & Admin: releases/0.8.0b1.md
+      - 0.8.0b2 Optional DRF: releases/0.8.0b2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
