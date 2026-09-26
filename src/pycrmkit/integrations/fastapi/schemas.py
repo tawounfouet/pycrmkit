@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any, Self
+from typing import Any, Self, TypedDict
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -60,6 +60,101 @@ class APIModel(BaseModel):
     """Strict base class for FastAPI request/response schemas."""
 
     model_config = ConfigDict(extra="forbid")
+
+
+class _ContactCreateKwargs(TypedDict):
+    first_name: str | None
+    last_name: str | None
+    display_name: str | None
+    status: ContactStatus
+    owner_id: EntityId | None
+    source: str | None
+    emails: tuple[ContactEmail, ...]
+    phones: tuple[ContactPhone, ...]
+    addresses: tuple[Address, ...]
+    metadata: dict[str, Any]
+
+
+class _OrganizationCreateKwargs(TypedDict):
+    legal_name: str
+    trading_name: str | None
+    display_name: str | None
+    registration_number: str | None
+    tax_id: str | None
+    status: OrganizationStatus
+    owner_id: EntityId | None
+    source: str | None
+    domains: tuple[OrganizationDomain, ...]
+    addresses: tuple[OrganizationAddress, ...]
+    metadata: dict[str, Any]
+
+
+class _RelationshipCreateKwargs(TypedDict):
+    source: RelationshipEndpoint
+    target: RelationshipEndpoint
+    relationship_type: RelationshipType
+    role: str | None
+    title: str | None
+    is_primary: bool
+    valid_from: datetime | None
+    valid_until: datetime | None
+    metadata: dict[str, Any]
+
+
+class _ActivityCreateKwargs(TypedDict):
+    type: ActivityType
+    occurred_at: datetime | None
+    subject: str | None
+    description: str | None
+    direction: ActivityDirection | None
+    duration_seconds: int | None
+    participants: tuple[ActivityParticipant, ...]
+    references: tuple[EntityReference, ...]
+    source: str | None
+    external_id: str | None
+    metadata: dict[str, Any]
+
+
+class _TaskCreateKwargs(TypedDict):
+    title: str
+    description: str | None
+    priority: TaskPriority
+    due_at: datetime | None
+    owner_id: str | None
+    assignee_id: str | None
+    references: tuple[EntityReference, ...]
+    source: str | None
+    external_id: str | None
+    metadata: dict[str, Any]
+
+
+class _LeadCreateKwargs(TypedDict):
+    contact_id: ContactId
+    organization_id: OrganizationId | None
+    source: str | None
+
+
+class _LeadConversionKwargs(TypedDict):
+    name: str | None
+    estimated_value: Decimal | None
+    currency: str | None
+    pipeline_id: str | None
+    expected_close_date: date | None
+    owner_id: str | None
+    idempotency_key: str | None
+
+
+class _OpportunityCreateKwargs(TypedDict):
+    name: str
+    contact_id: ContactId
+    organization_id: OrganizationId | None
+    pipeline_id: str | None
+    stage_id: str | None
+    estimated_value: Decimal | None
+    currency: str | None
+    probability: Decimal | None
+    expected_close_date: date | None
+    owner_id: str | None
 
 
 class EntityReferenceSchema(APIModel):
@@ -165,7 +260,7 @@ class ContactCreateRequest(APIModel):
     addresses: list[AddressSchema] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _ContactCreateKwargs:
         return {
             "first_name": self.first_name,
             "last_name": self.last_name,
@@ -322,7 +417,7 @@ class OrganizationCreateRequest(APIModel):
     addresses: list[OrganizationAddressSchema] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _OrganizationCreateKwargs:
         return {
             "legal_name": self.legal_name,
             "trading_name": self.trading_name,
@@ -466,7 +561,7 @@ class RelationshipCreateRequest(APIModel):
     valid_until: datetime | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _RelationshipCreateKwargs:
         return {
             "source": self.source.to_domain(),
             "target": self.target.to_domain(),
@@ -605,7 +700,7 @@ class ActivityCreateRequest(APIModel):
     external_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _ActivityCreateKwargs:
         return {
             "type": self.type,
             "occurred_at": self.occurred_at,
@@ -753,7 +848,7 @@ class TaskCreateRequest(APIModel):
     external_id: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _TaskCreateKwargs:
         return {
             "title": self.title,
             "description": self.description,
@@ -872,7 +967,7 @@ class LeadCreateRequest(APIModel):
     organization_id: UUID | None = None
     source: str | None = None
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _LeadCreateKwargs:
         return {
             "contact_id": ContactId(self.contact_id),
             "organization_id": (
@@ -893,8 +988,16 @@ class LeadConversionRequest(APIModel):
     owner_id: str | None = None
     idempotency_key: str | None = None
 
-    def to_domain_kwargs(self) -> dict[str, object]:
-        return self.model_dump()
+    def to_domain_kwargs(self) -> _LeadConversionKwargs:
+        return {
+            "name": self.name,
+            "estimated_value": self.estimated_value,
+            "currency": self.currency,
+            "pipeline_id": self.pipeline_id,
+            "expected_close_date": self.expected_close_date,
+            "owner_id": self.owner_id,
+            "idempotency_key": self.idempotency_key,
+        }
 
 
 class LeadResponse(APIModel):
@@ -941,7 +1044,7 @@ class OpportunityCreateRequest(APIModel):
     expected_close_date: date | None = None
     owner_id: str | None = None
 
-    def to_domain_kwargs(self) -> dict[str, object]:
+    def to_domain_kwargs(self) -> _OpportunityCreateKwargs:
         return {
             "name": self.name,
             "contact_id": ContactId(self.contact_id),
