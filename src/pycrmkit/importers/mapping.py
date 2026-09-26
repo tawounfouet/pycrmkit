@@ -53,11 +53,11 @@ class RecordMapper:
     preserve_unmapped: bool = False
 
     def __post_init__(self) -> None:
-        destinations = [
-            mapping.destination
-            for mapping in self.mappings
-            if mapping.destination is not None
-        ]
+        destinations: list[str] = []
+        for mapping in self.mappings:
+            destination = mapping.destination
+            if destination is not None:
+                destinations.append(destination)
         if len(destinations) != len(set(destinations)):
             raise ValidationError(
                 "multiple import field mappings target the same field",
