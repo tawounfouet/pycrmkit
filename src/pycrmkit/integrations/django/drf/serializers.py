@@ -447,7 +447,7 @@ class RelationshipResponseSerializer(_SerializerBase):
     id = serializers.UUIDField()
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
-    source = RelationshipEndpointSerializer()
+    source = RelationshipEndpointSerializer()  # type: ignore[assignment]
     target = RelationshipEndpointSerializer()
     relationship_type = serializers.CharField()
     valid_from = serializers.DateTimeField()
