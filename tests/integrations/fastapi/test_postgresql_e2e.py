@@ -9,6 +9,7 @@ from alembic import command
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 
+from pycrmkit import __version__
 from pycrmkit.storage.sqlalchemy.migrations.cli import migration_config
 
 DATABASE_ENV = "PYCRMKIT_TEST_POSTGRES_URL"
@@ -41,6 +42,7 @@ def test_reference_fastapi_application_persists_http_journey_across_restart() ->
 
         openapi = client.get("/openapi.json")
         assert openapi.status_code == 200
+        assert openapi.json()["info"]["version"] == __version__
         assert "/crm/contacts" in openapi.json()["paths"]
 
         contact_response = client.post(
