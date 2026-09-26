@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from uuid import UUID
 
 import pytest
 from sqlalchemy.orm import Session, sessionmaker
@@ -20,13 +21,14 @@ from pycrmkit.communication import (
     EmailMessage,
     EmailProviderResult,
 )
-from pycrmkit.contacts import ContactEmail
+from pycrmkit.contacts import Contact, ContactEmail, ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.custom_fields import CustomFieldType
 from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.opportunities import OpportunityStatus
+from pycrmkit.organizations import Organization, OrganizationId
 from pycrmkit.pipelines import Stage, StageTransition
 from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 from pycrmkit.storage.sqlalchemy import SQLAlchemyUnitOfWork
@@ -298,17 +300,25 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
 def test_failed_postgresql_uow_rolls_back_all_participants(
     persistence_session_factory: sessionmaker[Session],
 ) -> None:
-    clock = FixedClock(NOW)
-    crm = _crm(
-        persistence_session_factory,
-        clock=clock,
-        webhook_auto_delivery=False,
+    contact = Contact(
+        id=ContactId(UUID("00000000-0000-4000-8000-00000000c001")),
+        created_at=NOW,
+        updated_at=NOW,
+        display_name="Rollback Contact",
+    )
+    organization = Organization(
+        id=OrganizationId(UUID("00000000-0000-4000-8000-00000000c002")),
+        created_at=NOW,
+        updated_at=NOW,
+        legal_name="Rollback Organization",
     )
 
     with pytest.raises(RuntimeError, match="force rollback"):
-        with crm._runtime.uow_factory() as uow:
-            contact = crm.contacts._runtime.id_factory.new_contact_id()
-            del contact
-            transient = crm.contacts.create(display_name="Outside transaction")
-            del transient
+        with SQLAlchemyUnitOfWork(persistence_session_factory) as uow:
+            uow.contacts.save(contact)
+            uow.organizations.save(organization)
             raise RuntimeError("force rollback")
+
+    with SQLAlchemyUnitOfWork(persistence_session_factory) as uow:
+        assert uow.contacts.find(contact.id) is None
+        assert uow.organizations.find(organization.id) is None
