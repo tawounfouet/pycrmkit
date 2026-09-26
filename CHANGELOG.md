@@ -6,6 +6,35 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0a2] - 2026-09-27
+
+### Added
+- Provider-neutral import contracts for Read, Map, Normalize, Validate, Deduplicate and Persist stages.
+- `ImportRow` row envelope plus `IterableReader` for format-neutral mapping-shaped sources.
+- `FieldMapping` and `RecordMapper` with rename, default, ignore and optional unmapped-field preservation semantics.
+- `RecordNormalizer` with composable field rules and built-in text normalization helpers.
+- Structured validation issues with required-field, predicate and composite validators.
+- Provisional duplicate-detection hook reserved for the dedicated `0.9.0b2` engine.
+- Explicit create/update/skip persistence outcomes.
+- `ImportPipeline` orchestration and `ImportReport` with required semantic counters and row-level evidence.
+- Unit coverage for mapping, normalization, validation and integrated pipeline reporting.
+- Import Framework documentation and release notes.
+
+### Semantics
+- Pipeline order is Read → Map → Normalize → Validate → Deduplicate → Persist → Report.
+- Mapping/normalization/validation data failures are reported per row and skip only that row.
+- Duplicate-detector and persistence failures propagate to the caller instead of being hidden.
+- `validation_errors` counts structured row issues; `rows_skipped` counts rows that do not create/update a record.
+
+### Scope boundary
+- No CSV, JSON or JSONL reader/writer is introduced in this alpha.
+- No production dedup scoring/candidate engine is introduced in this alpha.
+- No merge execution is introduced in this alpha.
+- These remain scheduled for `0.9.0b1`, `0.9.0b2` and `0.9.0b3` respectively.
+
+### Changed
+- Package version advanced from `0.9.0a1` to `0.9.0a2`.
+- Development roadmap advances to `0.9.0b1 — CSV / JSON / JSONL`.
 ## [0.9.0a1] - 2026-09-26
 
 ### Added
