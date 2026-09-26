@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
+from sqlalchemy.orm import Session
 
 from pycrmkit.contacts import ContactId
 from pycrmkit.organizations import OrganizationId
@@ -16,8 +17,6 @@ from pycrmkit.relationships import (
     RelationshipRepository,
     RelationshipType,
 )
-from sqlalchemy.orm import Session
-
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyRelationshipRepository
 
 from ...contracts.relationships_repository import RelationshipRepositoryContract
