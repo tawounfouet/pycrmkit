@@ -2,7 +2,7 @@
 
 PyCRMKit is a modular, headless Python CRM domain framework.
 
-The current development version is **`0.5.0b1 — Webhook Registrations`**.
+The current development version is **`0.5.0b2 — Webhook Delivery Engine`**.
 The stable `0.1`–`0.4` CRM Core, Activity/Timeline, Sales and Communication
 contracts remain compatibility-frozen:
 
@@ -43,12 +43,12 @@ The `0.4.x` line compatibility-governs the documented `crm.email` facade,
 provider-neutral email contracts, normalized lifecycle events, Memory
 Communication persistence, and Communication Timeline projection.
 
-`0.5.0a1` established the version-aware public event registry and deterministic
-serialization. `0.5.0a2` defined causal propagation. `0.5.0b1` now adds
-persistent webhook registrations and exact event-type filtering through
-`crm.webhooks`.
+`0.5.0a1` established the public event registry and deterministic serialization.
+`0.5.0a2` defined causal propagation and `0.5.0b1` added persistent webhook
+registrations. `0.5.0b2` now provides explicit signed delivery, retry/backoff,
+idempotent delivery state, attempt history and dead-letter outcomes.
 
-Outbound HTTP delivery, signing, retry/backoff and dead-letter handling remain
-scheduled for `0.5.0b2`.
+Automatic event-bus-to-webhook wiring and complete end-to-end qualification
+remain scheduled for `0.5.0rc1`.
 SQLAlchemy/PostgreSQL, FastAPI, Django, AI and agent integrations remain later
 roadmap lines.
