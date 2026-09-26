@@ -40,6 +40,7 @@ SQLAlchemy     >=2.0,<3
 psycopg        >=3.2,<4
 Alembic        >=1.16,<2
 Django         >=5.2,<6   (0.8.x prerelease line)
+DRF            >=3.18,<4  (0.8.x prerelease line)
 ```
 
 These ranges describe install compatibility. CI qualification uses
@@ -48,7 +49,7 @@ combination.
 
 ## Django prerelease qualification
 
-The `0.8.0b1` Django integration remains a prerelease line, not part of the
+The `0.8.0b2` Django/DRF integration remains a prerelease line, not part of the
 stable `0.7.x` compatibility promise.
 
 It is currently qualified with:
@@ -58,17 +59,20 @@ Django 5.2 LTS
 Python 3.11
 Python 3.12
 Python 3.13
-SQLite in-memory repository, migration, admin and transaction qualification
+Django REST Framework 3.18.x
+SQLite in-memory repository, migration, admin, transaction and DRF qualification
 ```
 
 The beta qualifies application loading, Contact/Organization/Relationship
 repository semantics, packaged migration `0001_initial`, migration/model drift
-checking, admin registration and explicit transaction semantics. The transaction
-bridge is currently bounded to those implemented Django repositories.
+checking, admin registration, explicit transaction semantics, and the optional
+facade-backed DRF transport for those three aggregate families.
 
-It does **not** yet claim DRF, a reference Django application, Django/PostgreSQL
-E2E, or full cross-domain Django UnitOfWork conformance; those remain later
-`0.8.x` milestones.
+The `django` extra is also explicitly qualified without DRF installed.
+
+It does **not** yet claim the reference Django application, Django/PostgreSQL
+E2E, or full cross-domain Django UnitOfWork/DRF coverage; those remain release
+candidate scope.
 
 ## PostgreSQL
 
