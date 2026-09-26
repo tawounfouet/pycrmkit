@@ -93,7 +93,7 @@ jobs:
 
           call_command("migrate", "pycrmkit_crm", verbosity=0, interactive=False)
 
-          assert __version__ == "0.8.0"
+          assert __version__ == "0.9.0a1"
           assert apps.get_app_config("pycrmkit_crm").name == "pycrmkit.integrations.django"
           assert ContactModel._meta.db_table == "pycrmkit_contacts"
           assert ("pycrmkit_crm", "0001_initial") in MigrationRecorder(connection).applied_migrations()
