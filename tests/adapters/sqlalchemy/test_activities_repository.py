@@ -7,6 +7,7 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.orm import Session
+
 from pycrmkit.activities import (
     Activity,
     ActivityId,
