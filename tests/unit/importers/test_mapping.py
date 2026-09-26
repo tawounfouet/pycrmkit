@@ -46,6 +46,14 @@ def test_record_mapper_without_preservation_outputs_only_declared_targets() -> N
     assert mapper.map(row).values == {"email": "ada@example.com"}
 
 
+
+def test_import_row_values_are_runtime_immutable() -> None:
+    row = ImportRow(1, {"email": "ada@example.com"})
+
+    with pytest.raises(TypeError):
+        row.values["email"] = "changed@example.com"  # type: ignore[index]
+
+
 def test_record_mapper_rejects_duplicate_target_configuration() -> None:
     with pytest.raises(ValidationError) as error:
         RecordMapper(
