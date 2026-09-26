@@ -19,6 +19,7 @@ from pycrmkit.relationships.repository import RelationshipRepository
 from pycrmkit.tags.repository import TagRepository
 from pycrmkit.tasks.repository import TaskRepository
 from pycrmkit.timeline.repository import TimelineRepository
+from pycrmkit.webhooks.repository import WebhookSubscriptionRepository
 
 
 class UnitOfWork(Protocol):
@@ -75,6 +76,10 @@ class UnitOfWork(Protocol):
     @property
     def audit(self) -> AuditRepository:
         """Audit entries participating atomically in the current transaction."""
+
+    @property
+    def webhooks(self) -> WebhookSubscriptionRepository:
+        """Webhook subscriptions participating in the current transaction."""
 
     def add_event(self, event: DomainEvent) -> None:
         """Stage a domain event for post-commit dispatch."""

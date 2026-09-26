@@ -10,7 +10,7 @@ from pycrmkit.core.events import EventId
 from pycrmkit.core.ids import IDFactory, UUID4Factory
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.core.unit_of_work import UnitOfWork
-from pycrmkit.events import DomainEvent, InProcessEventBus
+from pycrmkit.events import DomainEvent, EventRegistry, InProcessEventBus, default_event_registry
 from pycrmkit.facade._runtime import CRMRuntime
 from pycrmkit.facade.activities import ActivitiesAPI
 from pycrmkit.facade.audit import AuditAPI
@@ -26,6 +26,7 @@ from pycrmkit.facade.relationships import RelationshipsAPI
 from pycrmkit.facade.tags import TagsAPI
 from pycrmkit.facade.tasks import TasksAPI
 from pycrmkit.facade.timeline import TimelineAPI
+from pycrmkit.facade.webhooks import WebhooksAPI
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 
 
@@ -51,6 +52,7 @@ class CRM:
         email_provider: EmailProvider | None = None,
         email_sender: CommunicationAddress | None = None,
         template_renderer: TemplateRenderer | None = None,
+        event_registry: EventRegistry | None = None,
     ) -> None:
         effective_config = config or CRMConfig()
         effective_context = context or CRMContext(
@@ -69,6 +71,7 @@ class CRM:
         self._email_provider = email_provider
         self._email_sender = email_sender
         self._template_renderer = template_renderer
+        self._event_registry = event_registry or default_event_registry()
         self.activities = ActivitiesAPI(runtime)
         self.email = EmailAPI(runtime, provider=email_provider, sender=email_sender, renderer=template_renderer)
         self.contacts = ContactsAPI(runtime)
@@ -83,6 +86,7 @@ class CRM:
         self.custom_fields = CustomFieldsAPI(runtime)
         self.events = EventsAPI(event_bus)
         self.audit = AuditAPI(runtime)
+        self.webhooks = WebhooksAPI(runtime, registry=self._event_registry)
 
     @classmethod
     def memory(
@@ -96,6 +100,7 @@ class CRM:
         email_provider: EmailProvider | None = None,
         email_sender: CommunicationAddress | None = None,
         template_renderer: TemplateRenderer | None = None,
+        event_registry: EventRegistry | None = None,
     ) -> CRM:
         """Create an isolated, fully wired in-memory CRM instance."""
         store = MemoryStore()
@@ -114,6 +119,7 @@ class CRM:
             email_provider=email_provider,
             email_sender=email_sender,
             template_renderer=template_renderer,
+            event_registry=event_registry,
         )
 
     @property
@@ -138,6 +144,7 @@ class CRM:
             email_provider=self._email_provider,
             email_sender=self._email_sender,
             template_renderer=self._template_renderer,
+            event_registry=self._event_registry,
         )
 
     def with_context(
@@ -172,4 +179,5 @@ class CRM:
             email_provider=self._email_provider,
             email_sender=self._email_sender,
             template_renderer=self._template_renderer,
+            event_registry=self._event_registry,
         )
