@@ -6,12 +6,11 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import pytest
+from sqlalchemy.orm import Session
 
 from pycrmkit.contacts import ContactId
 from pycrmkit.leads import Lead, LeadId, LeadRepository
 from pycrmkit.organizations import OrganizationId
-from sqlalchemy.orm import Session
-
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyLeadRepository
 
 from ...contracts.leads_repository import LeadRepositoryContract
