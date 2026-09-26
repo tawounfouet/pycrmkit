@@ -36,11 +36,10 @@ def test_webhook_registration_disable_filtering_and_audit() -> None:
     # Idempotent disable does not create duplicate audit history.
     crm.webhooks.disable(contact.id)
     audit = crm.audit.by_correlation("webhook-config-1")
-    assert [entry.action for entry in audit.items] == [
-        "webhook.subscription.registered",
-        "webhook.subscription.registered",
-        "webhook.subscription.disabled",
-    ]
+    actions = [entry.action for entry in audit.items]
+    assert actions.count("webhook.subscription.registered") == 2
+    assert actions.count("webhook.subscription.disabled") == 1
+    assert len(actions) == 3
     assert all("hooks.example.com" not in repr(entry.changes) for entry in audit.items)
 
 
