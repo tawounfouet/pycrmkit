@@ -8,6 +8,12 @@ from fastapi import APIRouter, Depends, status
 from pycrmkit import CRM
 from pycrmkit.activities import ActivityId
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    LIST_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -29,6 +35,7 @@ def create_activities_router(dependency: CRMDependency) -> APIRouter:
         "",
         response_model=ActivityResponse,
         status_code=status.HTTP_201_CREATED,
+        responses=CREATE_ERROR_RESPONSES,
     )
     def create_activity(
         request: ActivityCreateRequest,
@@ -37,7 +44,7 @@ def create_activities_router(dependency: CRMDependency) -> APIRouter:
         activity = crm.activities.log(**request.to_domain_kwargs())
         return ActivityResponse.from_domain(activity)
 
-    @router.get("", response_model=PageResponse[ActivityResponse])
+    @router.get("", response_model=PageResponse[ActivityResponse], responses=LIST_ERROR_RESPONSES)
     def list_activities(
         crm: Annotated[CRM, Depends(dependency)],
         page: Annotated[PaginationParams, Depends(pagination_params)],
@@ -48,7 +55,7 @@ def create_activities_router(dependency: CRMDependency) -> APIRouter:
             ActivityResponse.from_domain,
         )
 
-    @router.get("/{activity_id}", response_model=ActivityResponse)
+    @router.get("/{activity_id}", response_model=ActivityResponse, responses=READ_ERROR_RESPONSES)
     def get_activity(
         activity_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
@@ -56,7 +63,7 @@ def create_activities_router(dependency: CRMDependency) -> APIRouter:
         activity = crm.activities.get(ActivityId(activity_id))
         return ActivityResponse.from_domain(activity)
 
-    @router.patch("/{activity_id}", response_model=ActivityResponse)
+    @router.patch("/{activity_id}", response_model=ActivityResponse, responses=MUTATION_ERROR_RESPONSES)
     def update_activity(
         activity_id: UUID,
         request: ActivityUpdateRequest,
