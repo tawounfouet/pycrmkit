@@ -11,8 +11,8 @@ pip install "pycrmkit[django]"
 
 ## Current prerelease scope
 
-`0.8.0b2 — Optional DRF` builds on the Django application, persistence,
-migration, admin, and transaction bridge delivered by the preceding milestones.
+`0.8.0rc1 — Django Example + E2E` qualifies the Django application, persistence,
+migration, admin, transaction and optional DRF layers together against PostgreSQL 17.
 
 ```text
 src/pycrmkit/integrations/django/
@@ -282,10 +282,48 @@ without echoing submitted input values.
 
 See the dedicated [DRF Integration](drf.md) guide.
 
+## Reference application
+
+The release-candidate application lives under `examples/django/` and assembles:
+
+```text
+Django 5.2
+  ↓
+Django admin + DRF
+  ↓
+PyCRMKit CRM facade
+  ↓
+DjangoTransactionBridge
+  ↓
+Django repositories
+  ↓
+PostgreSQL 17
+```
+
+Its deployment path is intentionally migration-first:
+
+```text
+configure PYCRMKIT_DATABASE_URL
+    ↓
+python manage.py migrate
+    ↓
+python manage.py check
+    ↓
+start Django
+```
+
+The release gate performs a two-process E2E: one process creates a Contact,
+Organization and Relationship through DRF, then a fresh Python/Django process
+reloads the records from PostgreSQL, mutates them, verifies admin registration
+and checks the applied `pycrmkit_crm.0001_initial` migration. The complete path
+is repeated from a clean installed wheel after resetting the PostgreSQL schema.
+
 ## Compatibility target
 
 ```text
 Django >=5.2,<6
+DRF >=3.18,<4
+PostgreSQL 17 reference E2E
 Python 3.11–3.13
 ```
 
@@ -294,10 +332,13 @@ Python 3.11–3.13
 Still intentionally deferred:
 
 ```text
-0.8.0rc1  reference Django application + E2E
-0.8.0     stable Django integration
+0.8.0     stable Django integration promotion
 ```
+
+The current Django persistence adapter remains intentionally bounded to
+Contacts, Organizations and Relationships; the RC does not claim a complete
+cross-domain Django UnitOfWork.
 
 ## Next milestone
 
-The next delivery is **`0.8.0rc1 — Django Example + E2E`**.
+The next delivery is **`0.8.0 — Django Integration Stable`**.
