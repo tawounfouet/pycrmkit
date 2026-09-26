@@ -6,6 +6,37 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.6.0b2] - 2026-09-26
+
+### Added
+- Optional `postgresql` dependency group backed by psycopg 3.
+- Dedicated live PostgreSQL 17 GitHub Actions qualification workflow.
+- PostgreSQL schema, constraint and index introspection tests.
+- Production-reference round trips for Unicode, timezone-aware datetimes, Decimal, JSON and Custom Fields.
+- Concurrent normalized-Tag uniqueness qualification using independent SQLAlchemy Sessions.
+- Backend-neutral SQLAlchemy/PostgreSQL commit error translation.
+
+### Changed
+- Package version advanced from `0.6.0b1` to `0.6.0b2`.
+- Tag persistence now stores the normalized domain name explicitly and protects it with a named database uniqueness constraint.
+- Tag assignments now enforce `(tag_id, entity_kind, entity_id)` uniqueness at the database layer.
+- SQLAlchemy Unit-of-Work commit failures now translate SQLSTATE-backed database failures into PyCRMKit persistence exceptions.
+
+### PostgreSQL semantics
+- SQLSTATE 23505 maps to `DuplicateError`.
+- Foreign-key, not-null and check violations map to typed `RepositoryError` codes.
+- Serialization failures and deadlocks receive stable repository error codes.
+- SQL text and bound parameter values are excluded from public error context.
+
+### Qualification
+- Live PostgreSQL 17 job passes.
+- Ruff, strict mypy, docs, package build and aggregate CI pass.
+- General tests remain green on Python 3.11, 3.12 and 3.13.
+
+### Deferred
+- Versioned schema evolution and upgrade/downgrade qualification remain scheduled for `0.6.0b3 — Alembic / Migrations`.
+- Full persistence release-candidate qualification remains scheduled for `0.6.0rc1`.
+
 ## [0.6.0b1] - 2026-09-26
 
 ### Added
