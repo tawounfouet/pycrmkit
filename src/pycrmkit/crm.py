@@ -28,6 +28,11 @@ from pycrmkit.facade.tasks import TasksAPI
 from pycrmkit.facade.timeline import TimelineAPI
 from pycrmkit.facade.webhooks import WebhooksAPI
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
+from pycrmkit.webhooks import (
+    StdlibWebhookTransport,
+    WebhookRetryPolicy,
+    WebhookTransport,
+)
 
 
 class _Unset:
@@ -53,6 +58,9 @@ class CRM:
         email_sender: CommunicationAddress | None = None,
         template_renderer: TemplateRenderer | None = None,
         event_registry: EventRegistry | None = None,
+        webhook_transport: WebhookTransport | None = None,
+        webhook_retry_policy: WebhookRetryPolicy | None = None,
+        webhook_timeout_seconds: float = 10.0,
     ) -> None:
         effective_config = config or CRMConfig()
         effective_context = context or CRMContext(
@@ -72,6 +80,9 @@ class CRM:
         self._email_sender = email_sender
         self._template_renderer = template_renderer
         self._event_registry = event_registry or default_event_registry()
+        self._webhook_transport = webhook_transport or StdlibWebhookTransport()
+        self._webhook_retry_policy = webhook_retry_policy or WebhookRetryPolicy()
+        self._webhook_timeout_seconds = webhook_timeout_seconds
         self.activities = ActivitiesAPI(runtime)
         self.email = EmailAPI(runtime, provider=email_provider, sender=email_sender, renderer=template_renderer)
         self.contacts = ContactsAPI(runtime)
@@ -86,7 +97,13 @@ class CRM:
         self.custom_fields = CustomFieldsAPI(runtime)
         self.events = EventsAPI(event_bus)
         self.audit = AuditAPI(runtime)
-        self.webhooks = WebhooksAPI(runtime, registry=self._event_registry)
+        self.webhooks = WebhooksAPI(
+            runtime,
+            registry=self._event_registry,
+            transport=self._webhook_transport,
+            retry_policy=self._webhook_retry_policy,
+            timeout_seconds=self._webhook_timeout_seconds,
+        )
 
     @classmethod
     def memory(
@@ -101,6 +118,9 @@ class CRM:
         email_sender: CommunicationAddress | None = None,
         template_renderer: TemplateRenderer | None = None,
         event_registry: EventRegistry | None = None,
+        webhook_transport: WebhookTransport | None = None,
+        webhook_retry_policy: WebhookRetryPolicy | None = None,
+        webhook_timeout_seconds: float = 10.0,
     ) -> CRM:
         """Create an isolated, fully wired in-memory CRM instance."""
         store = MemoryStore()
@@ -120,6 +140,9 @@ class CRM:
             email_sender=email_sender,
             template_renderer=template_renderer,
             event_registry=event_registry,
+            webhook_transport=webhook_transport,
+            webhook_retry_policy=webhook_retry_policy,
+            webhook_timeout_seconds=webhook_timeout_seconds,
         )
 
     @property
@@ -145,6 +168,9 @@ class CRM:
             email_sender=self._email_sender,
             template_renderer=self._template_renderer,
             event_registry=self._event_registry,
+            webhook_transport=self._webhook_transport,
+            webhook_retry_policy=self._webhook_retry_policy,
+            webhook_timeout_seconds=self._webhook_timeout_seconds,
         )
 
     def with_context(
@@ -180,4 +206,7 @@ class CRM:
             email_sender=self._email_sender,
             template_renderer=self._template_renderer,
             event_registry=self._event_registry,
+            webhook_transport=self._webhook_transport,
+            webhook_retry_policy=self._webhook_retry_policy,
+            webhook_timeout_seconds=self._webhook_timeout_seconds,
         )
