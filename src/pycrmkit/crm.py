@@ -10,7 +10,7 @@ from pycrmkit.core.events import EventId
 from pycrmkit.core.ids import IDFactory, UUID4Factory
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.core.unit_of_work import UnitOfWork
-from pycrmkit.events import InProcessEventBus
+from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.facade._runtime import CRMRuntime
 from pycrmkit.facade.activities import ActivitiesAPI
 from pycrmkit.facade.audit import AuditAPI
@@ -123,6 +123,22 @@ class CRM:
     @property
     def context(self) -> CRMContext:
         return self._runtime.context
+
+    def with_event(self, event: DomainEvent) -> CRM:
+        """Return a facade view for work causally triggered by a parent event."""
+
+        context = CRMContext.from_event(event)
+        return CRM(
+            uow_factory=self._runtime.uow_factory,
+            event_bus=self._runtime.event_bus,
+            config=self.config,
+            context=context,
+            id_factory=self._runtime.id_factory,
+            clock=self._runtime.clock,
+            email_provider=self._email_provider,
+            email_sender=self._email_sender,
+            template_renderer=self._template_renderer,
+        )
 
     def with_context(
         self,
