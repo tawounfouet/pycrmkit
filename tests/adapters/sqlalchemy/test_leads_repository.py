@@ -7,7 +7,6 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.orm import Session
-
 from pycrmkit.contacts import ContactId
 from pycrmkit.leads import Lead, LeadId, LeadRepository
 from pycrmkit.organizations import OrganizationId
