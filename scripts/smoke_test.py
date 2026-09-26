@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.6.0b2 Eventing & Webhooks Stable."""
+"""Installed-package smoke test for PyCRMKit 0.6.0b3 Eventing & Webhooks Stable."""
 
 from __future__ import annotations
 
@@ -45,8 +45,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.6.0b2":
-        raise SystemExit(f"Expected PyCRMKit 0.6.0b2, got {version!r}")
+    if version != "0.6.0b3":
+        raise SystemExit(f"Expected PyCRMKit 0.6.0b3, got {version!r}")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
