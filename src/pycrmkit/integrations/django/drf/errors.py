@@ -32,7 +32,7 @@ class ErrorResponseSerializer(_SerializerBase):
 
     code = serializers.CharField()
     message = serializers.CharField()
-    context = serializers.DictField(required=False, default=dict)
+    context = serializers.DictField(required=False, default=dict)  # type: ignore[assignment]
 
 
 _ERROR_STATUS_RULES: tuple[tuple[type[PyCRMKitError], int], ...] = (
