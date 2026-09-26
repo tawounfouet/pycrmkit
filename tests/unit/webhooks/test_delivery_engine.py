@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from pycrmkit.core.events import EventId
+from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.time import FixedClock
 from pycrmkit.events import DomainEvent, EventRegistry, EventSerializer
 from pycrmkit.storage.memory import (
@@ -15,6 +16,7 @@ from pycrmkit.storage.memory import (
 from pycrmkit.webhooks import (
     WebhookDeliveryEngine,
     WebhookDeliveryState,
+    WebhookRequest,
     WebhookResponse,
     WebhookRetryPolicy,
     WebhookSubscriptionService,
@@ -29,9 +31,9 @@ SECRET = "0123456789abcdef0123456789abcdef"
 class SequenceTransport:
     def __init__(self, outcomes: list[WebhookResponse | Exception]) -> None:
         self.outcomes = outcomes
-        self.requests = []
+        self.requests: list[WebhookRequest] = []
 
-    def send(self, request):  # type: ignore[no-untyped-def]
+    def send(self, request: WebhookRequest) -> WebhookResponse:
         self.requests.append(request)
         outcome = self.outcomes.pop(0)
         if isinstance(outcome, Exception):
@@ -115,7 +117,7 @@ def test_delivery_retries_5xx_then_succeeds_with_same_idempotency_key() -> None:
 
     attempts = deliveries.list_attempts(
         retried[0].id,
-        __import__("pycrmkit").core.OffsetPageRequest(),
+        OffsetPageRequest(),
     )
     assert [item.outcome.value for item in attempts.items] == [
         "retry_scheduled",
