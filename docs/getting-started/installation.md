@@ -65,7 +65,7 @@ Install the optional Django bridge with:
 pip install "pycrmkit[django]"
 ```
 
-The `0.8.0rc1` prerelease targets Django 5.2 LTS while preserving PyCRMKit's
+The stable `0.8.0` Django integration targets Django 5.2 LTS while preserving PyCRMKit's
 Python 3.11–3.13 compatibility matrix.
 
 Add the PyCRMKit application explicitly:
