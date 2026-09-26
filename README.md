@@ -5,11 +5,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **0.5.0 — Eventing & Webhooks Stable**.  
-Latest persistence prerelease: **0.6.0b1 — Unit of Work & Transactions**.
+Latest persistence prerelease: **0.6.0b2 — PostgreSQL**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2 and Resend remain optional extras. Django, FastAPI, SQLAlchemy, PostgreSQL, durable webhooks, AI, and agent integrations are introduced through later milestones.
+The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2 and Resend remain optional extras. SQLAlchemy/PostgreSQL are available through the current persistence prerelease line; Django, FastAPI, durable webhooks, AI, and agent integrations remain later milestones.
 
 ## Architecture
 
@@ -108,8 +108,8 @@ pytest
 0.6.0a1 SQLAlchemy Foundation                                ✓
 0.6.0a2 Repository Adapters                                   ✓
 0.6.0b1 Unit of Work & Transactions                           ✓
-0.6.0b2 PostgreSQL                                             →
-0.6.0b3 Alembic / Migrations
+0.6.0b2 PostgreSQL                                             ✓
+0.6.0b3 Alembic / Migrations                                   →
 0.6.0rc1 Persistence Qualification
 0.6.0  Persistence Foundation
 0.7.0  FastAPI Integration
