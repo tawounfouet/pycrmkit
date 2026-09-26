@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from pycrmkit.audit import AuditEntry, AuditEntryId
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.core.events import EventId, EventType
+from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.exceptions import InvalidStateError, NotFoundError
@@ -347,5 +348,5 @@ def test_contact_merge_foundation_coordinates_related_state_atomically(
     with SQLAlchemyUnitOfWork(session_factory) as uow:
         archived = uow.contacts.get(duplicate.id)
         assert archived.archived_at == NOW
-        assert uow.tags.list_for_entity(duplicate_ref).total == 0
-        assert uow.tags.list_for_entity(survivor_ref).items == (tag,)
+        assert uow.tags.list_for_entity(duplicate_ref, OffsetPageRequest()).total == 0
+        assert uow.tags.list_for_entity(survivor_ref, OffsetPageRequest()).items == (tag,)
