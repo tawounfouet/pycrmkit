@@ -79,6 +79,25 @@ It does **not** claim full cross-domain Django UnitOfWork/DRF coverage; the
 Django persistence adapter remains bounded to Contacts, Organizations and
 Relationships in the `0.8.x` line.
 
+## V0.9 prerelease qualification
+
+`0.9.0a1` extends the data/persistence surface with External Identities while the current stable line remains `0.8.0`.
+
+Qualified alpha behavior:
+
+```text
+ExternalIdentity domain/service/repository contract
+Memory repository conformance
+SQLAlchemy repository conformance
+Django repository conformance
+PostgreSQL persistence round trip
+Django/PostgreSQL cross-process round trip
+Alembic head 0003
+Django migration 0002_external_identity
+```
+
+The alpha defines `(system, external_id)` as the unique upstream-record key. It does not yet claim import-pipeline, deduplication or merge compatibility.
+
 ## PostgreSQL
 
 The production-reference persistence, FastAPI E2E and stable Django reference
