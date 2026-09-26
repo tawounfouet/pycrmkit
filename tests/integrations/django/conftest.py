@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import django
 import pytest
 from django.conf import settings
-from django.db import connection
+from django.core.management import call_command
 
 if not settings.configured:
     settings.configure(
@@ -27,44 +29,35 @@ if not settings.configured:
 django.setup()
 
 from pycrmkit.integrations.django.models import (  # noqa: E402
-    ContactAddressModel,
-    ContactEmailModel,
     ContactModel,
-    ContactPhoneModel,
-    OrganizationAddressModel,
-    OrganizationDomainModel,
     OrganizationModel,
-    RelationshipModel,
-)
-
-DJANGO_MODELS = (
-    ContactModel,
-    ContactEmailModel,
-    ContactPhoneModel,
-    ContactAddressModel,
-    OrganizationModel,
-    OrganizationDomainModel,
-    OrganizationAddressModel,
     RelationshipModel,
 )
 
 
 @pytest.fixture(scope="session", autouse=True)
-def django_schema() -> None:
-    """Create the alpha schema without introducing Django migrations before 0.8.0b1."""
+def django_schema() -> Iterator[None]:
+    """Create the adapter schema through its packaged Django migrations."""
 
-    with connection.schema_editor() as schema_editor:
-        for model in DJANGO_MODELS:
-            schema_editor.create_model(model)
+    call_command(
+        "migrate",
+        "pycrmkit_crm",
+        verbosity=0,
+        interactive=False,
+    )
     yield
-    with connection.schema_editor() as schema_editor:
-        for model in reversed(DJANGO_MODELS):
-            schema_editor.delete_model(model)
+    call_command(
+        "migrate",
+        "pycrmkit_crm",
+        "zero",
+        verbosity=0,
+        interactive=False,
+    )
 
 
 @pytest.fixture(autouse=True)
 def clean_django_rows(django_schema: None) -> None:
-    """Keep reusable contract cases isolated."""
+    """Keep reusable contract and transaction cases isolated."""
 
     RelationshipModel.objects.all().delete()
     ContactModel.objects.all().delete()
