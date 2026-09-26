@@ -8,6 +8,12 @@ from fastapi import APIRouter, Depends, status
 from pycrmkit import CRM
 from pycrmkit.contacts import ContactId
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    LIST_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+    READ_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -25,7 +31,7 @@ def create_contacts_router(dependency: CRMDependency) -> APIRouter:
 
     router = APIRouter(prefix="/contacts", tags=["contacts"])
 
-    @router.post("", response_model=ContactResponse, status_code=status.HTTP_201_CREATED)
+    @router.post("", response_model=ContactResponse, status_code=status.HTTP_201_CREATED, responses=CREATE_ERROR_RESPONSES)
     def create_contact(
         request: ContactCreateRequest,
         crm: Annotated[CRM, Depends(dependency)],
@@ -33,7 +39,7 @@ def create_contacts_router(dependency: CRMDependency) -> APIRouter:
         contact = crm.contacts.create(**request.to_domain_kwargs())
         return ContactResponse.from_domain(contact)
 
-    @router.get("", response_model=PageResponse[ContactResponse])
+    @router.get("", response_model=PageResponse[ContactResponse], responses=LIST_ERROR_RESPONSES)
     def list_contacts(
         crm: Annotated[CRM, Depends(dependency)],
         page: Annotated[PaginationParams, Depends(pagination_params)],
@@ -41,7 +47,7 @@ def create_contacts_router(dependency: CRMDependency) -> APIRouter:
         result = crm.contacts.search(page=page.to_domain())
         return PageResponse[ContactResponse].from_page(result, ContactResponse.from_domain)
 
-    @router.get("/{contact_id}", response_model=ContactResponse)
+    @router.get("/{contact_id}", response_model=ContactResponse, responses=READ_ERROR_RESPONSES)
     def get_contact(
         contact_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
@@ -49,7 +55,7 @@ def create_contacts_router(dependency: CRMDependency) -> APIRouter:
         contact = crm.contacts.get(ContactId(contact_id))
         return ContactResponse.from_domain(contact)
 
-    @router.patch("/{contact_id}", response_model=ContactResponse)
+    @router.patch("/{contact_id}", response_model=ContactResponse, responses=MUTATION_ERROR_RESPONSES)
     def update_contact(
         contact_id: UUID,
         request: ContactUpdateRequest,
@@ -58,7 +64,7 @@ def create_contacts_router(dependency: CRMDependency) -> APIRouter:
         contact = crm.contacts.update(ContactId(contact_id), request.to_domain())
         return ContactResponse.from_domain(contact)
 
-    @router.post("/{contact_id}/archive", response_model=ContactResponse)
+    @router.post("/{contact_id}/archive", response_model=ContactResponse, responses=MUTATION_ERROR_RESPONSES)
     def archive_contact(
         contact_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
