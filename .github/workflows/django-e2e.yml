@@ -71,7 +71,7 @@ jobs:
 
           import pycrmkit
 
-          assert pycrmkit.__version__ == "0.8.0rc1"
+          assert pycrmkit.__version__ == "0.8.0"
           assert importlib.util.find_spec("django") is None
           assert importlib.util.find_spec("rest_framework") is None
           print("PyCRMKit core-only installed wheel remains Django/DRF-free: OK")
