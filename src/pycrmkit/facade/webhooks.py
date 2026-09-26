@@ -57,24 +57,26 @@ class WebhooksAPI:
         subscription_id: WebhookSubscriptionId,
     ) -> WebhookSubscription:
         with self._runtime.uow_factory() as uow:
+            was_enabled = uow.webhooks.get(subscription_id).enabled
             subscription = WebhookSubscriptionService(
                 uow.webhooks,
                 registry=self._registry,
                 id_factory=self._runtime.id_factory,
                 clock=self._runtime.clock,
             ).disable(subscription_id)
-            AuditService(
-                uow.audit,
-                id_factory=self._runtime.id_factory,
-                clock=self._runtime.clock,
-            ).record(
-                action="webhook.subscription.disabled",
-                entity_type="webhook_subscription",
-                entity_id=subscription.id,
-                actor_id=self._runtime.context.actor_id,
-                correlation_id=self._runtime.context.correlation_id,
-                changes={"fields": ["disabled_at"]},
-            )
+            if was_enabled:
+                AuditService(
+                    uow.audit,
+                    id_factory=self._runtime.id_factory,
+                    clock=self._runtime.clock,
+                ).record(
+                    action="webhook.subscription.disabled",
+                    entity_type="webhook_subscription",
+                    entity_id=subscription.id,
+                    actor_id=self._runtime.context.actor_id,
+                    correlation_id=self._runtime.context.correlation_id,
+                    changes={"fields": ["disabled_at"]},
+                )
             uow.commit()
             return subscription
 
