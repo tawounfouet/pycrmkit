@@ -6,6 +6,30 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.5.0rc1] - 2026-09-26
+
+### Added
+- Automatic EventBus-to-webhook bridge for registered public event types.
+- Default automatic delivery of committed CRM domain events to matching active webhook subscriptions.
+- `webhook_auto_delivery=False` opt-out while preserving explicit `crm.webhooks.deliver(...)`.
+- Release-candidate E2E scenario covering Contact creation → `contact.created` → subscription matching → canonical serialization → HMAC signing → 503 retry scheduling → 204 retry success → delivery/attempt history.
+- Installed-wheel smoke of the automatic webhook E2E path.
+
+### Changed
+- Package version advanced from `0.5.0b2` to `0.5.0rc1`.
+- Memory Unit of Work now releases the store transaction after committed state is published but before synchronous post-commit subscribers run, allowing subscriber-owned follow-up UoWs against committed state.
+- Repeated commit on the same Memory Unit of Work is rejected explicitly.
+- The `0.5.x` Eventing & Webhooks facade/configuration surface enters compatibility freeze pending stable promotion.
+
+### Compatibility
+- Stable `0.1`–`0.4` root/facade contracts remain unchanged.
+- Explicit webhook delivery/retry/history APIs from `0.5.0b2` remain available alongside automatic bridging.
+
+### Deferred
+- `0.5.0` stable is a qualification/promotion milestone with no planned new Eventing/Webhooks feature scope.
+- SQLAlchemy/PostgreSQL production persistence, durable cross-process outbox/claiming and distributed delivery coordination remain later milestones.
+
+
 ## [0.5.0b2] - 2026-09-26
 
 ### Added
