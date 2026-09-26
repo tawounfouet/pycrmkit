@@ -18,7 +18,7 @@ from pycrmkit.relationships import (
     RelationshipType,
 )
 
-from ...contracts.relationships_repository import RelationshipRepositoryContract
+from tests.contracts.relationships_repository import RelationshipRepositoryContract
 
 
 def _contact_endpoint(value: str) -> RelationshipEndpoint:
