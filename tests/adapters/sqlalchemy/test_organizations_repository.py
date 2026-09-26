@@ -7,7 +7,6 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.orm import Session
-
 from pycrmkit.organizations import (
     Organization,
     OrganizationDomain,
