@@ -5,19 +5,22 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any
+from typing import Any, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pycrmkit.activities import (
+    UNSET as ACTIVITY_UNSET,
     Activity,
     ActivityDirection,
+    ActivityId,
     ActivityParticipant,
     ActivityType,
     ActivityUpdate,
 )
 from pycrmkit.contacts import (
+    UNSET as CONTACT_UNSET,
     Address,
     Contact,
     ContactEmail,
@@ -28,10 +31,11 @@ from pycrmkit.contacts import (
     VerificationState,
 )
 from pycrmkit.core.ids import EntityId, UUIDId
-from pycrmkit.core.references import EntityReference
-from pycrmkit.leads import Lead, LeadStatus
-from pycrmkit.opportunities import Opportunity, OpportunityStatus
+from pycrmkit.core.references import EntityReference, normalize_entity_kind
+from pycrmkit.leads import Lead, LeadId, LeadStatus
+from pycrmkit.opportunities import Opportunity, OpportunityId, OpportunityStatus
 from pycrmkit.organizations import (
+    UNSET as ORGANIZATION_UNSET,
     Organization,
     OrganizationAddress,
     OrganizationDomain,
@@ -40,14 +44,16 @@ from pycrmkit.organizations import (
     OrganizationUpdate,
 )
 from pycrmkit.relationships import (
+    UNSET as RELATIONSHIP_UNSET,
     Relationship,
     RelationshipEndpoint,
     RelationshipEntityKind,
     RelationshipType,
     RelationshipUpdate,
 )
-from pycrmkit.tasks import Task, TaskPriority, TaskStatus, TaskUpdate
-from pycrmkit.timeline import TimelineEntry
+from pycrmkit.tasks import UNSET as TASK_UNSET
+from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskStatus, TaskUpdate
+from pycrmkit.timeline import TimelineEntry, TimelineEntryId
 
 
 class APIModel(BaseModel):
@@ -63,7 +69,17 @@ class EntityReferenceSchema(APIModel):
     id: UUID
 
     def to_domain(self) -> EntityReference:
-        return EntityReference(kind=self.kind, id=UUIDId(self.id))
+        kind = normalize_entity_kind(self.kind)
+        id_type: type[UUIDId] = {
+            "contact": ContactId,
+            "organization": OrganizationId,
+            "activity": ActivityId,
+            "task": TaskId,
+            "lead": LeadId,
+            "opportunity": OpportunityId,
+            "timeline_entry": TimelineEntryId,
+        }.get(kind, UUIDId)
+        return EntityReference(kind=kind, id=id_type(self.id))
 
     @classmethod
     def from_domain(cls, value: EntityReference) -> EntityReferenceSchema:
@@ -176,38 +192,48 @@ class ContactUpdateRequest(APIModel):
     addresses: list[AddressSchema] | None = None
     metadata: dict[str, Any] | None = None
 
+    @model_validator(mode="after")
+    def _validate_non_nullable_fields(self) -> Self:
+        if "status" in self.model_fields_set and self.status is None:
+            raise ValueError("status cannot be null")
+        return self
+
     def to_domain(self) -> ContactUpdate:
-        values: dict[str, object] = {}
         fields = self.model_fields_set
-        if "first_name" in fields:
-            values["first_name"] = self.first_name
-        if "last_name" in fields:
-            values["last_name"] = self.last_name
-        if "display_name" in fields:
-            values["display_name"] = self.display_name
-        if "status" in fields:
-            values["status"] = self.status
-        if "owner_id" in fields:
-            values["owner_id"] = (
+        return ContactUpdate(
+            first_name=self.first_name if "first_name" in fields else CONTACT_UNSET,
+            last_name=self.last_name if "last_name" in fields else CONTACT_UNSET,
+            display_name=(
+                self.display_name if "display_name" in fields else CONTACT_UNSET
+            ),
+            status=self.status if self.status is not None else CONTACT_UNSET,
+            owner_id=(
                 EntityId(self.owner_id) if self.owner_id is not None else None
             )
-        if "source" in fields:
-            values["source"] = self.source
-        if "emails" in fields:
-            values["emails"] = tuple(
-                item.to_domain() for item in (self.emails or [])
-            )
-        if "phones" in fields:
-            values["phones"] = tuple(
-                item.to_domain() for item in (self.phones or [])
-            )
-        if "addresses" in fields:
-            values["addresses"] = tuple(
-                item.to_domain() for item in (self.addresses or [])
-            )
-        if "metadata" in fields:
-            values["metadata"] = dict(self.metadata or {})
-        return ContactUpdate(**values)
+            if "owner_id" in fields
+            else CONTACT_UNSET,
+            source=self.source if "source" in fields else CONTACT_UNSET,
+            emails=(
+                tuple(item.to_domain() for item in (self.emails or []))
+                if "emails" in fields
+                else CONTACT_UNSET
+            ),
+            phones=(
+                tuple(item.to_domain() for item in (self.phones or []))
+                if "phones" in fields
+                else CONTACT_UNSET
+            ),
+            addresses=(
+                tuple(item.to_domain() for item in (self.addresses or []))
+                if "addresses" in fields
+                else CONTACT_UNSET
+            ),
+            metadata=(
+                dict(self.metadata or {})
+                if "metadata" in fields
+                else CONTACT_UNSET
+            ),
+        )
 
 
 class ContactResponse(APIModel):
@@ -325,35 +351,54 @@ class OrganizationUpdateRequest(APIModel):
     addresses: list[OrganizationAddressSchema] | None = None
     metadata: dict[str, Any] | None = None
 
+    @model_validator(mode="after")
+    def _validate_non_nullable_fields(self) -> Self:
+        for name in ("legal_name", "status"):
+            if name in self.model_fields_set and getattr(self, name) is None:
+                raise ValueError(f"{name} cannot be null")
+        return self
+
     def to_domain(self) -> OrganizationUpdate:
-        values: dict[str, object] = {}
         fields = self.model_fields_set
-        for name in (
-            "legal_name",
-            "trading_name",
-            "display_name",
-            "registration_number",
-            "tax_id",
-            "status",
-            "source",
-        ):
-            if name in fields:
-                values[name] = getattr(self, name)
-        if "owner_id" in fields:
-            values["owner_id"] = (
+        return OrganizationUpdate(
+            legal_name=(
+                self.legal_name if self.legal_name is not None else ORGANIZATION_UNSET
+            ),
+            trading_name=(
+                self.trading_name if "trading_name" in fields else ORGANIZATION_UNSET
+            ),
+            display_name=(
+                self.display_name if "display_name" in fields else ORGANIZATION_UNSET
+            ),
+            registration_number=(
+                self.registration_number
+                if "registration_number" in fields
+                else ORGANIZATION_UNSET
+            ),
+            tax_id=self.tax_id if "tax_id" in fields else ORGANIZATION_UNSET,
+            status=self.status if self.status is not None else ORGANIZATION_UNSET,
+            owner_id=(
                 EntityId(self.owner_id) if self.owner_id is not None else None
             )
-        if "domains" in fields:
-            values["domains"] = tuple(
-                item.to_domain() for item in (self.domains or [])
-            )
-        if "addresses" in fields:
-            values["addresses"] = tuple(
-                item.to_domain() for item in (self.addresses or [])
-            )
-        if "metadata" in fields:
-            values["metadata"] = dict(self.metadata or {})
-        return OrganizationUpdate(**values)
+            if "owner_id" in fields
+            else ORGANIZATION_UNSET,
+            source=self.source if "source" in fields else ORGANIZATION_UNSET,
+            domains=(
+                tuple(item.to_domain() for item in (self.domains or []))
+                if "domains" in fields
+                else ORGANIZATION_UNSET
+            ),
+            addresses=(
+                tuple(item.to_domain() for item in (self.addresses or []))
+                if "addresses" in fields
+                else ORGANIZATION_UNSET
+            ),
+            metadata=(
+                dict(self.metadata or {})
+                if "metadata" in fields
+                else ORGANIZATION_UNSET
+            ),
+        )
 
 
 class OrganizationResponse(APIModel):
@@ -445,25 +490,51 @@ class RelationshipUpdateRequest(APIModel):
     valid_from: datetime | None = None
     metadata: dict[str, Any] | None = None
 
+    @model_validator(mode="after")
+    def _validate_non_nullable_fields(self) -> Self:
+        for name in (
+            "source",
+            "target",
+            "relationship_type",
+            "is_primary",
+            "valid_from",
+        ):
+            if name in self.model_fields_set and getattr(self, name) is None:
+                raise ValueError(f"{name} cannot be null")
+        return self
+
     def to_domain(self) -> RelationshipUpdate:
-        values: dict[str, object] = {}
         fields = self.model_fields_set
-        if "source" in fields:
-            values["source"] = self.source.to_domain() if self.source is not None else None
-        if "target" in fields:
-            values["target"] = self.target.to_domain() if self.target is not None else None
-        if "relationship_type" in fields:
-            values["relationship_type"] = (
+        return RelationshipUpdate(
+            source=(
+                self.source.to_domain()
+                if self.source is not None
+                else RELATIONSHIP_UNSET
+            ),
+            target=(
+                self.target.to_domain()
+                if self.target is not None
+                else RELATIONSHIP_UNSET
+            ),
+            relationship_type=(
                 RelationshipType(self.relationship_type)
                 if self.relationship_type is not None
-                else None
-            )
-        for name in ("role", "title", "is_primary", "valid_from"):
-            if name in fields:
-                values[name] = getattr(self, name)
-        if "metadata" in fields:
-            values["metadata"] = dict(self.metadata or {})
-        return RelationshipUpdate(**values)
+                else RELATIONSHIP_UNSET
+            ),
+            role=self.role if "role" in fields else RELATIONSHIP_UNSET,
+            title=self.title if "title" in fields else RELATIONSHIP_UNSET,
+            is_primary=(
+                self.is_primary if self.is_primary is not None else RELATIONSHIP_UNSET
+            ),
+            valid_from=(
+                self.valid_from if self.valid_from is not None else RELATIONSHIP_UNSET
+            ),
+            metadata=(
+                dict(self.metadata or {})
+                if "metadata" in fields
+                else RELATIONSHIP_UNSET
+            ),
+        )
 
 
 class RelationshipResponse(APIModel):
@@ -563,32 +634,52 @@ class ActivityUpdateRequest(APIModel):
     external_id: str | None = None
     metadata: dict[str, Any] | None = None
 
+    @model_validator(mode="after")
+    def _validate_non_nullable_fields(self) -> Self:
+        for name in ("type", "occurred_at"):
+            if name in self.model_fields_set and getattr(self, name) is None:
+                raise ValueError(f"{name} cannot be null")
+        return self
+
     def to_domain(self) -> ActivityUpdate:
-        values: dict[str, object] = {}
         fields = self.model_fields_set
-        for name in (
-            "type",
-            "occurred_at",
-            "subject",
-            "description",
-            "direction",
-            "duration_seconds",
-            "source",
-            "external_id",
-        ):
-            if name in fields:
-                values[name] = getattr(self, name)
-        if "participants" in fields:
-            values["participants"] = tuple(
-                item.to_domain() for item in (self.participants or [])
-            )
-        if "references" in fields:
-            values["references"] = tuple(
-                item.to_domain() for item in (self.references or [])
-            )
-        if "metadata" in fields:
-            values["metadata"] = dict(self.metadata or {})
-        return ActivityUpdate(**values)
+        return ActivityUpdate(
+            type=self.type if self.type is not None else ACTIVITY_UNSET,
+            occurred_at=(
+                self.occurred_at if self.occurred_at is not None else ACTIVITY_UNSET
+            ),
+            subject=self.subject if "subject" in fields else ACTIVITY_UNSET,
+            description=(
+                self.description if "description" in fields else ACTIVITY_UNSET
+            ),
+            direction=(
+                self.direction if "direction" in fields else ACTIVITY_UNSET
+            ),
+            duration_seconds=(
+                self.duration_seconds
+                if "duration_seconds" in fields
+                else ACTIVITY_UNSET
+            ),
+            participants=(
+                tuple(item.to_domain() for item in (self.participants or []))
+                if "participants" in fields
+                else ACTIVITY_UNSET
+            ),
+            references=(
+                tuple(item.to_domain() for item in (self.references or []))
+                if "references" in fields
+                else ACTIVITY_UNSET
+            ),
+            source=self.source if "source" in fields else ACTIVITY_UNSET,
+            external_id=(
+                self.external_id if "external_id" in fields else ACTIVITY_UNSET
+            ),
+            metadata=(
+                dict(self.metadata or {})
+                if "metadata" in fields
+                else ACTIVITY_UNSET
+            ),
+        )
 
 
 class ActivityResponse(APIModel):
@@ -689,31 +780,45 @@ class TaskUpdateRequest(APIModel):
     external_id: str | None = None
     metadata: dict[str, Any] | None = None
 
+    @model_validator(mode="after")
+    def _validate_non_nullable_fields(self) -> Self:
+        for name in ("title", "priority"):
+            if name in self.model_fields_set and getattr(self, name) is None:
+                raise ValueError(f"{name} cannot be null")
+        return self
+
     def to_domain(self) -> TaskUpdate:
-        values: dict[str, object] = {}
         fields = self.model_fields_set
-        for name in (
-            "title",
-            "description",
-            "due_at",
-            "owner_id",
-            "assignee_id",
-            "source",
-            "external_id",
-        ):
-            if name in fields:
-                values[name] = getattr(self, name)
-        if "priority" in fields:
-            values["priority"] = (
-                self.priority.to_domain() if self.priority is not None else None
-            )
-        if "references" in fields:
-            values["references"] = tuple(
-                item.to_domain() for item in (self.references or [])
-            )
-        if "metadata" in fields:
-            values["metadata"] = dict(self.metadata or {})
-        return TaskUpdate(**values)
+        return TaskUpdate(
+            title=self.title if self.title is not None else TASK_UNSET,
+            description=(
+                self.description if "description" in fields else TASK_UNSET
+            ),
+            priority=(
+                self.priority.to_domain()
+                if self.priority is not None
+                else TASK_UNSET
+            ),
+            due_at=self.due_at if "due_at" in fields else TASK_UNSET,
+            owner_id=self.owner_id if "owner_id" in fields else TASK_UNSET,
+            assignee_id=(
+                self.assignee_id if "assignee_id" in fields else TASK_UNSET
+            ),
+            references=(
+                tuple(item.to_domain() for item in (self.references or []))
+                if "references" in fields
+                else TASK_UNSET
+            ),
+            source=self.source if "source" in fields else TASK_UNSET,
+            external_id=(
+                self.external_id if "external_id" in fields else TASK_UNSET
+            ),
+            metadata=(
+                dict(self.metadata or {})
+                if "metadata" in fields
+                else TASK_UNSET
+            ),
+        )
 
 
 class TaskResponse(APIModel):
