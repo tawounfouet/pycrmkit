@@ -15,7 +15,8 @@ _EVENT_BUS = InProcessEventBus()
 
 def _uow_factory() -> UnitOfWork:
     # The 0.8.x Django bridge intentionally implements only the repositories
-    # currently exposed by the reference DRF surface. The cast is confined to
+    # currently exposed by the reference DRF surface plus external identities.
+    # The cast is confined to
     # application wiring; PyCRMKit's domain UnitOfWork protocol is unchanged.
     return cast(
         UnitOfWork,
