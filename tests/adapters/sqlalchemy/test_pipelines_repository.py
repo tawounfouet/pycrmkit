@@ -2,7 +2,6 @@ from decimal import Decimal
 
 import pytest
 from sqlalchemy.orm import Session
-
 from pycrmkit.pipelines import Pipeline, PipelineRepository, Stage, StageTransition
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyPipelineRepository
 
