@@ -5,11 +5,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **0.6.0 — Persistence Foundation Stable**.  
-Latest integration prerelease: **0.7.0a1 — Schemas & Dependency Bridge**.
+Latest integration prerelease: **0.7.0b1 — Routers**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2, Resend, SQLAlchemy/PostgreSQL, and FastAPI remain opt-in integrations. The `0.7.0a1` FastAPI foundation adds transport schemas and dependency bridging without making the core depend on FastAPI or Pydantic. Django, data operations, AI, and agent integrations remain later milestones.
+The project is intentionally framework-agnostic at its core. SMTP is standard-library based; Jinja2, Resend, SQLAlchemy/PostgreSQL, and FastAPI remain opt-in integrations. `0.7.0b1` adds reusable FastAPI routers on top of the `0.7.0a1` transport/dependency bridge while keeping every HTTP route behind the CRM facade. Django, data operations, AI, and agent integrations remain later milestones.
 
 ## Architecture
 
@@ -113,8 +113,8 @@ pytest
 0.6.0rc1 Persistence Qualification                              ✓
 0.6.0  Persistence Foundation                                    ✓
 0.7.0a1 Schemas & Dependency Bridge                              ✓
-0.7.0b1 Routers                                                   →
-0.7.0b2 OpenAPI & Error Mapping
+0.7.0b1 Routers                                                   ✓
+0.7.0b2 OpenAPI & Error Mapping                                  →
 0.7.0rc1 Example + E2E
 0.7.0  FastAPI Integration
 0.8.0  Django Integration
