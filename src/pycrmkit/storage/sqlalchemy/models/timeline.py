@@ -19,6 +19,7 @@ class TimelineEntryModel(Base):
     source_event_id: Mapped[str] = mapped_column(String(36), nullable=False, unique=True)
     entity_kind: Mapped[str] = mapped_column(String(64), nullable=False)
     entity_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    entity_id_type: Mapped[str] = mapped_column(String(128), nullable=False)
     occurred_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
     )
@@ -47,6 +48,7 @@ class TimelineReferenceModel(Base):
     position: Mapped[int] = mapped_column(nullable=False, default=0)
     entity_kind: Mapped[str] = mapped_column(String(64), nullable=False)
     entity_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    entity_id_type: Mapped[str] = mapped_column(String(128), nullable=False)
 
     __table_args__ = (
         Index("ix_pycrmkit_timeline_reference_entity", "entity_kind", "entity_id"),
