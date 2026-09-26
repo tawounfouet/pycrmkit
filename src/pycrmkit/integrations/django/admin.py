@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.contrib import admin
 
 from pycrmkit.integrations.django.models import (
@@ -16,23 +18,58 @@ from pycrmkit.integrations.django.models import (
 )
 
 
-class ContactEmailInline(admin.TabularInline[ContactEmailModel]):
+if TYPE_CHECKING:
+    class _ContactEmailInlineBase(admin.TabularInline[ContactEmailModel]):
+        pass
+
+    class _ContactPhoneInlineBase(admin.TabularInline[ContactPhoneModel]):
+        pass
+
+    class _ContactAddressInlineBase(admin.StackedInline[ContactAddressModel]):
+        pass
+
+    class _ContactModelAdminBase(admin.ModelAdmin[ContactModel]):
+        pass
+
+    class _OrganizationDomainInlineBase(admin.TabularInline[OrganizationDomainModel]):
+        pass
+
+    class _OrganizationAddressInlineBase(admin.StackedInline[OrganizationAddressModel]):
+        pass
+
+    class _OrganizationModelAdminBase(admin.ModelAdmin[OrganizationModel]):
+        pass
+
+    class _RelationshipModelAdminBase(admin.ModelAdmin[RelationshipModel]):
+        pass
+else:
+    _ContactEmailInlineBase = admin.TabularInline
+    _ContactPhoneInlineBase = admin.TabularInline
+    _ContactAddressInlineBase = admin.StackedInline
+    _ContactModelAdminBase = admin.ModelAdmin
+    _OrganizationDomainInlineBase = admin.TabularInline
+    _OrganizationAddressInlineBase = admin.StackedInline
+    _OrganizationModelAdminBase = admin.ModelAdmin
+    _RelationshipModelAdminBase = admin.ModelAdmin
+
+
+class ContactEmailInline(_ContactEmailInlineBase):
     model = ContactEmailModel
     extra = 0
 
 
-class ContactPhoneInline(admin.TabularInline[ContactPhoneModel]):
+class ContactPhoneInline(_ContactPhoneInlineBase):
     model = ContactPhoneModel
     extra = 0
 
 
-class ContactAddressInline(admin.StackedInline[ContactAddressModel]):
+class ContactAddressInline(_ContactAddressInlineBase):
     model = ContactAddressModel
     extra = 0
 
 
 @admin.register(ContactModel)
-class ContactModelAdmin(admin.ModelAdmin[ContactModel]):
+class ContactModelAdmin(_ContactModelAdminBase):
     """Operational view over Contact persistence state."""
 
     list_display = ("id", "display_name", "status", "owner_id", "created_at", "archived_at")
@@ -49,18 +86,18 @@ class ContactModelAdmin(admin.ModelAdmin[ContactModel]):
     inlines = (ContactEmailInline, ContactPhoneInline, ContactAddressInline)
 
 
-class OrganizationDomainInline(admin.TabularInline[OrganizationDomainModel]):
+class OrganizationDomainInline(_OrganizationDomainInlineBase):
     model = OrganizationDomainModel
     extra = 0
 
 
-class OrganizationAddressInline(admin.StackedInline[OrganizationAddressModel]):
+class OrganizationAddressInline(_OrganizationAddressInlineBase):
     model = OrganizationAddressModel
     extra = 0
 
 
 @admin.register(OrganizationModel)
-class OrganizationModelAdmin(admin.ModelAdmin[OrganizationModel]):
+class OrganizationModelAdmin(_OrganizationModelAdminBase):
     """Operational view over Organization persistence state."""
 
     list_display = (
@@ -86,7 +123,7 @@ class OrganizationModelAdmin(admin.ModelAdmin[OrganizationModel]):
 
 
 @admin.register(RelationshipModel)
-class RelationshipModelAdmin(admin.ModelAdmin[RelationshipModel]):
+class RelationshipModelAdmin(_RelationshipModelAdminBase):
     """Operational view over directional CRM relationship persistence."""
 
     list_display = (
