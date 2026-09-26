@@ -17,7 +17,6 @@ from pycrmkit.relationships import (
     RelationshipRepository,
     RelationshipType,
 )
-
 from tests.contracts.relationships_repository import RelationshipRepositoryContract
 
 
