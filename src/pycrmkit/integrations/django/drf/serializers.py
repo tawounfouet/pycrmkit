@@ -176,7 +176,7 @@ class ContactCreateSerializer(_SerializerBase):
         default=ContactStatus.ACTIVE.value,
     )
     owner_id = serializers.UUIDField(required=False, allow_null=True)
-    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)  # type: ignore[assignment]
     emails = ContactEmailSerializer(many=True, required=False, default=list)
     phones = ContactPhoneSerializer(many=True, required=False, default=list)
     addresses = AddressSerializer(many=True, required=False, default=list)
@@ -218,7 +218,7 @@ class ContactUpdateSerializer(_SerializerBase):
         allow_null=False,
     )
     owner_id = serializers.UUIDField(required=False, allow_null=True)
-    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)  # type: ignore[assignment]
     emails = ContactEmailSerializer(many=True, required=False, allow_null=False)
     phones = ContactPhoneSerializer(many=True, required=False, allow_null=False)
     addresses = AddressSerializer(many=True, required=False, allow_null=False)
@@ -259,7 +259,7 @@ class ContactResponseSerializer(_SerializerBase):
     display_name = serializers.CharField(allow_null=True)
     status = serializers.ChoiceField(choices=[item.value for item in ContactStatus])
     owner_id = serializers.UUIDField(allow_null=True)
-    source = serializers.CharField(allow_null=True)
+    source = serializers.CharField(allow_null=True)  # type: ignore[assignment]
     emails = ContactEmailSerializer(many=True)
     phones = ContactPhoneSerializer(many=True)
     addresses = AddressSerializer(many=True)
@@ -294,7 +294,7 @@ class OrganizationCreateSerializer(_SerializerBase):
         default=OrganizationStatus.ACTIVE.value,
     )
     owner_id = serializers.UUIDField(required=False, allow_null=True)
-    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)  # type: ignore[assignment]
     domains = OrganizationDomainSerializer(many=True, required=False, default=list)
     addresses = OrganizationAddressSerializer(many=True, required=False, default=list)
     metadata = serializers.JSONField(required=False, default=dict)
@@ -338,7 +338,7 @@ class OrganizationUpdateSerializer(_SerializerBase):
         allow_null=False,
     )
     owner_id = serializers.UUIDField(required=False, allow_null=True)
-    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
+    source = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)  # type: ignore[assignment]
     domains = OrganizationDomainSerializer(many=True, required=False, allow_null=False)
     addresses = OrganizationAddressSerializer(many=True, required=False, allow_null=False)
     metadata = serializers.JSONField(required=False, allow_null=False)
@@ -381,7 +381,7 @@ class OrganizationResponseSerializer(_SerializerBase):
     tax_id = serializers.CharField(allow_null=True)
     status = serializers.ChoiceField(choices=[item.value for item in OrganizationStatus])
     owner_id = serializers.UUIDField(allow_null=True)
-    source = serializers.CharField(allow_null=True)
+    source = serializers.CharField(allow_null=True)  # type: ignore[assignment]
     domains = OrganizationDomainSerializer(many=True)
     addresses = OrganizationAddressSerializer(many=True)
     metadata = serializers.JSONField()
@@ -394,7 +394,7 @@ class RelationshipEndpointSerializer(_SerializerBase):
 
 
 class RelationshipCreateSerializer(_SerializerBase):
-    source = RelationshipEndpointSerializer()
+    source = RelationshipEndpointSerializer()  # type: ignore[assignment]
     target = RelationshipEndpointSerializer()
     relationship_type = serializers.CharField(max_length=80)
     role = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
@@ -420,7 +420,7 @@ class RelationshipCreateSerializer(_SerializerBase):
 
 
 class RelationshipUpdateSerializer(_SerializerBase):
-    source = RelationshipEndpointSerializer(required=False, allow_null=False)
+    source = RelationshipEndpointSerializer(required=False, allow_null=False)  # type: ignore[assignment]
     target = RelationshipEndpointSerializer(required=False, allow_null=False)
     relationship_type = serializers.CharField(max_length=80, required=False, allow_null=False)
     role = serializers.CharField(max_length=255, required=False, allow_null=True, allow_blank=True)
