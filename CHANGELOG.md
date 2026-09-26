@@ -6,6 +6,43 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-26
+
+### Stable
+- Promoted the fully qualified `0.8.0rc1` Django integration to stable without adding new functional scope.
+- Froze the documented Django app bootstrap, persistence representations, repository adapters, migration lifecycle, transaction semantics, admin helpers and optional DRF transport for the `0.8.x` line.
+- Promoted the Django + PostgreSQL 17 reference application and clean installed-wheel E2E path to the stable integration example.
+- Preserved the framework-agnostic core and all optional dependency boundaries.
+
+### Compatibility
+- Stable Django support targets `Django>=5.2,<6` on Python 3.11, 3.12 and 3.13.
+- Stable DRF support targets `djangorestframework>=3.18,<4`.
+- `PyCRMKitDjangoConfig` and app label `pycrmkit_crm` are compatibility-governed.
+- Contact, Organization and Relationship Django repository behavior is compatibility-governed.
+- Packaged Django migration history beginning with `0001_initial` is part of the supported deployment path.
+- `DjangoTransactionBridge` explicit commit/rollback and post-commit event semantics are compatibility-governed within its documented repository scope.
+- The documented DRF router, serializer/update, pagination, request-context and error contracts are compatibility-governed.
+
+### Qualification
+- Python 3.11/3.12/3.13 test matrix passes.
+- Ruff, strict mypy and strict documentation build pass.
+- Django repository, migration, admin and transaction tests pass.
+- DRF serializer/router/error/pagination qualification passes.
+- PostgreSQL 17 Django reference application E2E passes across two Python/Django processes.
+- Clean core wheel remains Django/DRF-free.
+- Clean wheel with `[django,drf,postgresql]` applies packaged Django migrations and repeats the PostgreSQL API E2E.
+- Stable SQLAlchemy persistence, Alembic migration and FastAPI/PostgreSQL regression gates remain green.
+
+### Scope boundary
+- Stable Django persistence remains intentionally limited to Contacts, Organizations and Relationships.
+- `DjangoTransactionBridge` is not claimed as the complete cross-domain PyCRMKit `UnitOfWork`.
+- No new Django feature scope was introduced between the final release candidate and stable.
+
+### Changed
+- Package version advanced from `0.8.0rc1` to `0.8.0`.
+- `0.8.0` becomes the current stable PyCRMKit line.
+- Development roadmap advances to `0.9.0a1 — External Identities`.
+
 ## [0.8.0rc1] - 2026-09-26
 
 ### Added
