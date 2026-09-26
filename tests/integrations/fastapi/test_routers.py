@@ -20,7 +20,7 @@ def test_composite_router_exposes_all_v0_7_b1_surfaces() -> None:
     app = FastAPI()
     app.include_router(create_crm_router(lambda: crm), prefix="/crm")
 
-    paths = {route.path for route in app.routes}
+    paths = {route.path for route in app.routes if hasattr(route, "path")}
 
     assert {
         "/crm/contacts",
