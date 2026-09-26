@@ -1,4 +1,4 @@
-"""Reusable FastAPI router qualification for PyCRMKit 0.7.0b1."""
+"""Reusable FastAPI router qualification for PyCRMKit 0.7.0b2."""
 
 from __future__ import annotations
 
@@ -6,11 +6,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from pycrmkit import CRM
-from pycrmkit.integrations.fastapi import create_crm_router
+from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
 
 
 def _client(crm: CRM) -> TestClient:
     app = FastAPI()
+    install_error_handlers(app)
     app.include_router(create_crm_router(lambda: crm), prefix="/crm")
     return TestClient(app)
 
