@@ -15,7 +15,7 @@ from pycrmkit.organizations import (
     OrganizationRepository,
 )
 
-from ...contracts.organizations_repository import OrganizationRepositoryContract
+from tests.contracts.organizations_repository import OrganizationRepositoryContract
 
 
 @pytest.fixture
