@@ -113,38 +113,41 @@ def test_head_removes_non_contractual_cross_aggregate_foreign_keys(
     command.upgrade(config, "0001")
 
     expected = {
-        "fk_pycrmkit_leads_contact_id_pycrmkit_contacts",
-        "fk_pycrmkit_leads_organization_id_pycrmkit_organizations",
-        "fk_pycrmkit_opportunities_contact_id_pycrmkit_contacts",
-        "fk_pycrmkit_opportunities_organization_id_pycrmkit_organizations",
-        "fk_pycrmkit_webhook_deliveries_subscription_id_pycrmkit_8b27",
+        ("pycrmkit_leads", ("contact_id",), "pycrmkit_contacts"),
+        ("pycrmkit_leads", ("organization_id",), "pycrmkit_organizations"),
+        ("pycrmkit_opportunities", ("contact_id",), "pycrmkit_contacts"),
+        (
+            "pycrmkit_opportunities",
+            ("organization_id",),
+            "pycrmkit_organizations",
+        ),
+        (
+            "pycrmkit_webhook_deliveries",
+            ("subscription_id",),
+            "pycrmkit_webhook_subscriptions",
+        ),
     }
 
-    before = {
-        item["name"]
-        for table in (
-            "pycrmkit_leads",
-            "pycrmkit_opportunities",
-            "pycrmkit_webhook_deliveries",
-        )
-        for item in inspect(migration_engine).get_foreign_keys(table)
-        if item["name"] is not None
-    }
-    assert expected <= before
+    def cross_aggregate_foreign_keys() -> set[tuple[str, tuple[str, ...], str]]:
+        return {
+            (
+                table,
+                tuple(item["constrained_columns"]),
+                str(item["referred_table"]),
+            )
+            for table in (
+                "pycrmkit_leads",
+                "pycrmkit_opportunities",
+                "pycrmkit_webhook_deliveries",
+            )
+            for item in inspect(migration_engine).get_foreign_keys(table)
+        }
+
+    assert expected <= cross_aggregate_foreign_keys()
 
     command.upgrade(config, "head")
 
-    after = {
-        item["name"]
-        for table in (
-            "pycrmkit_leads",
-            "pycrmkit_opportunities",
-            "pycrmkit_webhook_deliveries",
-        )
-        for item in inspect(migration_engine).get_foreign_keys(table)
-        if item["name"] is not None
-    }
-    assert expected.isdisjoint(after)
+    assert expected.isdisjoint(cross_aggregate_foreign_keys())
 
 
 def test_alembic_head_has_no_model_drift(
