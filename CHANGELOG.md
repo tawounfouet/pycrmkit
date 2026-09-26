@@ -4,6 +4,19 @@ All notable changes to PyCRMKit will be documented in this file.
 
 The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
+## [0.6.0a1] - 2026-09-26
+
+### Added
+- Optional SQLAlchemy 2.x adapter foundation with deterministic declarative metadata.
+- Explicit domain/ORM mapping protocol and functional mapper helper.
+- SQLAlchemy persistence models covering CRM Core, Activity/Timeline persistence primitives, Sales, Communication/Audit, and Eventing/Webhook delivery state.
+- Normalized persistence structures for contact points, organization domains/addresses, pipeline stages/transitions, communication recipients/references, and webhook attempts.
+- SQLAlchemy foundation tests and release notes.
+
+### Compatibility
+- SQLAlchemy remains optional; importing the PyCRMKit core does not require the ORM.
+- Repository adapters, SQLAlchemy Unit of Work, PostgreSQL qualification, and Alembic migrations remain deferred to later 0.6.x prereleases.
+
 ## [Unreleased]
 
 ## [0.5.0] - 2026-09-26
