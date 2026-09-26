@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.5.0b1"
+    assert __version__ == "0.5.0b2"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -83,8 +83,15 @@ def test_0_5_causal_context_surface_is_additive() -> None:
     assert hasattr(CRMContext, "from_event")
 
 
-def test_0_5_webhook_registration_surface() -> None:
+def test_0_5_webhook_delivery_surface() -> None:
     crm = CRM.memory()
-    assert hasattr(crm.webhooks, "register")
-    assert hasattr(crm.webhooks, "disable")
-    assert hasattr(crm.webhooks, "list")
+    for name in (
+        "register",
+        "disable",
+        "list",
+        "deliver",
+        "retry_due",
+        "deliveries",
+        "attempts",
+    ):
+        assert hasattr(crm.webhooks, name)

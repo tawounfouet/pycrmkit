@@ -6,6 +6,34 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.5.0b2] - 2026-09-26
+
+### Added
+- Provider-neutral `WebhookTransport`, request/response DTOs, and a standard-library HTTP transport.
+- Default transport policy blocking non-public destinations and redirects unless private-network delivery is explicitly enabled.
+- Versioned HMAC-SHA256 webhook signing plus constant-time verification helper.
+- Deterministic exponential `WebhookRetryPolicy` with explicit retryable HTTP status policy.
+- Persistent `WebhookDelivery` state keyed idempotently by subscription + event and append-only `WebhookDeliveryAttempt` history.
+- Delivery states for pending, scheduled retry, success, and dead-letter outcomes.
+- `crm.webhooks.deliver(...)`, `retry_due()`, `deliveries(...)`, and `attempts(...)`.
+- Memory delivery repository and Unit-of-Work participation.
+- Unit, contract, Memory, facade E2E, local HTTP-boundary, and installed-wheel smoke qualification.
+
+### Changed
+- Package version advanced from `0.5.0b1` to `0.5.0b2`.
+- Webhook subscriptions now carry a secret-safe signing secret, generated when omitted.
+- Canonical serialized event payloads are retained in delivery state so scheduled retries do not depend on the original in-process event object.
+
+### Retry policy
+- Timeouts/network errors, HTTP 408, 425, 429, and 5xx are retryable.
+- Other 3xx/4xx responses are terminal.
+- Exhausted retryable failures enter dead-letter state.
+
+### Deferred
+- Automatic CRM EventBus → webhook delivery wiring remains scheduled for `0.5.0rc1`.
+- Production-grade database claiming/concurrency semantics remain part of the later persistence milestones.
+
+
 ## [0.5.0b1] - 2026-09-26
 
 ### Added

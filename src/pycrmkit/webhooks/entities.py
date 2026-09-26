@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from urllib.parse import urlsplit, urlunsplit
 
@@ -11,6 +11,10 @@ from pycrmkit.core.events import EventType
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import ValidationError
+from pycrmkit.webhooks.signing import (
+    generate_webhook_secret,
+    normalize_webhook_secret,
+)
 
 
 class WebhookSubscriptionId(UUIDId):
@@ -72,6 +76,7 @@ class WebhookSubscription(TimestampedEntity[WebhookSubscriptionId]):
 
     url: str
     event_types: tuple[EventType, ...]
+    signing_secret: str = field(default_factory=generate_webhook_secret, repr=False)
     disabled_at: datetime | None = None
 
     def __post_init__(self) -> None:
@@ -89,6 +94,7 @@ class WebhookSubscription(TimestampedEntity[WebhookSubscriptionId]):
                 code="webhook.events.required",
             )
         self.event_types = normalized
+        self.signing_secret = normalize_webhook_secret(self.signing_secret)
         if self.disabled_at is not None:
             self.disabled_at = as_utc(self.disabled_at)
             if self.disabled_at < self.created_at:

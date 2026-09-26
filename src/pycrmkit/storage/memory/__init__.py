@@ -15,6 +15,7 @@ from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
 from pycrmkit.storage.memory.timeline import MemoryTimelineRepository
 from pycrmkit.storage.memory.unit_of_work import MemoryUnitOfWork
+from pycrmkit.storage.memory.webhook_deliveries import MemoryWebhookDeliveryRepository
 from pycrmkit.storage.memory.webhooks import MemoryWebhookSubscriptionRepository
 
 __all__ = [
@@ -33,5 +34,6 @@ __all__ = [
     "MemoryTimelineRepository",
     "MemoryTagRepository",
     "MemoryUnitOfWork",
+    "MemoryWebhookDeliveryRepository",
     "MemoryWebhookSubscriptionRepository",
 ]

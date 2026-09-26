@@ -34,6 +34,11 @@ from pycrmkit.relationships.entities import Relationship, RelationshipId
 from pycrmkit.tags.entities import Tag, TagAssignment, TagId
 from pycrmkit.tasks.entities import Task, TaskId
 from pycrmkit.timeline.entries import TimelineEntry, TimelineEntryId
+from pycrmkit.webhooks.delivery import (
+    WebhookDelivery,
+    WebhookDeliveryAttempt,
+    WebhookDeliveryId,
+)
 from pycrmkit.webhooks.entities import WebhookSubscription, WebhookSubscriptionId
 
 
@@ -74,6 +79,12 @@ class _MemoryState:
     webhook_subscriptions: dict[WebhookSubscriptionId, WebhookSubscription] = field(
         default_factory=dict
     )
+    webhook_deliveries: dict[WebhookDeliveryId, WebhookDelivery] = field(
+        default_factory=dict
+    )
+    webhook_delivery_attempts: dict[
+        tuple[WebhookDeliveryId, int], WebhookDeliveryAttempt
+    ] = field(default_factory=dict)
 
     def clone(self) -> _MemoryState:
         """Return a transaction-safe deep copy of all persisted state."""
