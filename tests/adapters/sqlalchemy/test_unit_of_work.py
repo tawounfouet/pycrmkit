@@ -14,10 +14,12 @@ from sqlalchemy.orm import Session, sessionmaker
 from pycrmkit.audit import AuditEntry, AuditEntryId
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.core.events import EventId, EventType
+from pycrmkit.core.references import EntityReference
 from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.exceptions import InvalidStateError, NotFoundError
 from pycrmkit.organizations import Organization, OrganizationId
 from pycrmkit.storage.sqlalchemy import Base, SQLAlchemyUnitOfWork
+from pycrmkit.tags import Tag, TagAssignment, TagAssignmentId, TagId, TagName
 
 NOW = datetime(2026, 9, 26, 12, 30, tzinfo=UTC)
 
@@ -294,3 +296,56 @@ def test_second_commit_on_same_uow_is_rejected(
             uow.commit()
 
     assert error.value.code == "sqlalchemy.uow.already_committed"
+
+
+def test_contact_merge_foundation_coordinates_related_state_atomically(
+    session_factory: sessionmaker[Session],
+) -> None:
+    """Qualify merge-like contact coordination without introducing a merge API."""
+
+    survivor = _contact(1201)
+    duplicate = _contact(1202)
+    tag = Tag(
+        id=TagId(UUID(int=1203)),
+        created_at=NOW,
+        updated_at=NOW,
+        name=TagName("VIP"),
+    )
+    duplicate_ref = EntityReference("contact", duplicate.id)
+    survivor_ref = EntityReference("contact", survivor.id)
+    original_assignment = TagAssignment(
+        id=TagAssignmentId(UUID(int=1204)),
+        created_at=NOW,
+        updated_at=NOW,
+        tag_id=tag.id,
+        entity=duplicate_ref,
+    )
+
+    with SQLAlchemyUnitOfWork(session_factory) as uow:
+        uow.contacts.save(survivor)
+        uow.contacts.save(duplicate)
+        uow.tags.save(tag)
+        uow.tags.assign(original_assignment)
+        uow.commit()
+
+    with SQLAlchemyUnitOfWork(session_factory) as uow:
+        duplicate_loaded = uow.contacts.get(duplicate.id)
+        duplicate_loaded.archive(NOW)
+        uow.contacts.save(duplicate_loaded)
+        assert uow.tags.remove(tag.id, duplicate_ref, NOW) is True
+        uow.tags.assign(
+            TagAssignment(
+                id=TagAssignmentId(UUID(int=1205)),
+                created_at=NOW,
+                updated_at=NOW,
+                tag_id=tag.id,
+                entity=survivor_ref,
+            )
+        )
+        uow.commit()
+
+    with SQLAlchemyUnitOfWork(session_factory) as uow:
+        archived = uow.contacts.get(duplicate.id)
+        assert archived.archived_at == NOW
+        assert uow.tags.list_for_entity(duplicate_ref).total == 0
+        assert uow.tags.list_for_entity(survivor_ref).items == (tag,)
