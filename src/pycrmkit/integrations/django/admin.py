@@ -16,23 +16,23 @@ from pycrmkit.integrations.django.models import (
 )
 
 
-class ContactEmailInline(admin.TabularInline):
+class ContactEmailInline(admin.TabularInline[ContactEmailModel]):
     model = ContactEmailModel
     extra = 0
 
 
-class ContactPhoneInline(admin.TabularInline):
+class ContactPhoneInline(admin.TabularInline[ContactPhoneModel]):
     model = ContactPhoneModel
     extra = 0
 
 
-class ContactAddressInline(admin.StackedInline):
+class ContactAddressInline(admin.StackedInline[ContactAddressModel]):
     model = ContactAddressModel
     extra = 0
 
 
 @admin.register(ContactModel)
-class ContactModelAdmin(admin.ModelAdmin):
+class ContactModelAdmin(admin.ModelAdmin[ContactModel]):
     """Operational view over Contact persistence state."""
 
     list_display = ("id", "display_name", "status", "owner_id", "created_at", "archived_at")
@@ -49,18 +49,18 @@ class ContactModelAdmin(admin.ModelAdmin):
     inlines = (ContactEmailInline, ContactPhoneInline, ContactAddressInline)
 
 
-class OrganizationDomainInline(admin.TabularInline):
+class OrganizationDomainInline(admin.TabularInline[OrganizationDomainModel]):
     model = OrganizationDomainModel
     extra = 0
 
 
-class OrganizationAddressInline(admin.StackedInline):
+class OrganizationAddressInline(admin.StackedInline[OrganizationAddressModel]):
     model = OrganizationAddressModel
     extra = 0
 
 
 @admin.register(OrganizationModel)
-class OrganizationModelAdmin(admin.ModelAdmin):
+class OrganizationModelAdmin(admin.ModelAdmin[OrganizationModel]):
     """Operational view over Organization persistence state."""
 
     list_display = (
@@ -86,7 +86,7 @@ class OrganizationModelAdmin(admin.ModelAdmin):
 
 
 @admin.register(RelationshipModel)
-class RelationshipModelAdmin(admin.ModelAdmin):
+class RelationshipModelAdmin(admin.ModelAdmin[RelationshipModel]):
     """Operational view over directional CRM relationship persistence."""
 
     list_display = (
