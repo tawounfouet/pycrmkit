@@ -114,14 +114,23 @@ class SQLAlchemyTagRepository:
         removed_at: datetime,
     ) -> bool:
         del removed_at
-        result = self.session.execute(
+        existing = self.session.scalar(
+            select(TagAssignmentModel.id).where(
+                TagAssignmentModel.tag_id == str(tag_id),
+                TagAssignmentModel.entity_kind == entity.kind,
+                TagAssignmentModel.entity_id == str(entity.id),
+            )
+        )
+        if existing is None:
+            return False
+        self.session.execute(
             delete(TagAssignmentModel).where(
                 TagAssignmentModel.tag_id == str(tag_id),
                 TagAssignmentModel.entity_kind == entity.kind,
                 TagAssignmentModel.entity_id == str(entity.id),
             )
         )
-        return bool(result.rowcount)
+        return True
 
     def list_for_entity(
         self,
