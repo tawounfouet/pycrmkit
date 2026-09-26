@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: pycrmkit
+      POSTGRES_USER: pycrmkit
+      POSTGRES_PASSWORD: pycrmkit
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pycrmkit -d pycrmkit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
