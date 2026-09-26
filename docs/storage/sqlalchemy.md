@@ -183,26 +183,48 @@ alembic current
 alembic check
 ```
 
-The current head is revision `0001 — persistence baseline`.
+The current head is revision `0002 — align repository reference semantics`.
 
 `Base.metadata.create_all(...)` remains useful for tests and local
 experimentation, but it is no longer the production schema lifecycle.
 
 ### Existing 0.6.0b2 databases
 
-A database created under `0.6.0b2` already has the same schema but no Alembic
-history.
+A database created under `0.6.0b2` has the pre-Alembic schema represented by
+revision `0001`, but no Alembic version table.
 
-The migration qualification suite verifies that this schema has no drift from
-revision `0001`. After parity is confirmed, adopt the migration history with:
+After verifying that the database still matches the `0.6.0b2`/`0001`
+schema, adopt the migration history and then apply the RC migration:
 
 ```bash
 alembic stamp 0001
+alembic upgrade head
 alembic current
 alembic check
 ```
 
-Stamping does not recreate tables or remove CRM data.
+Stamping itself does not recreate tables or remove CRM data. The subsequent
+`0001 → 0002` upgrade removes only non-contractual cross-aggregate foreign
+key constraints.
+
+### Existing 0.6.0b3 databases
+
+A `0.6.0b3` database is already tracked at revision `0001`. Upgrade it with:
+
+```bash
+alembic upgrade head
+alembic current
+alembic check
+```
+
+Revision `0002` preserves the reference columns and indexes while removing
+database-only existence requirements for:
+
+- Lead → Contact / Organization references;
+- Opportunity → Contact / Organization references;
+- Webhook Delivery → Subscription references.
+
+Ownership foreign keys remain enforced.
 
 ### Downgrade policy
 
@@ -217,4 +239,8 @@ downgrade.
 Released migration revisions are immutable. Persistence-model changes require a
 new reviewed Alembic revision.
 
-The next milestone is **`0.6.0rc1 — Persistence Qualification`**.
+The `0.6.0rc1` qualification additionally executes the reusable repository
+contract suite against PostgreSQL and verifies the packaged migration chain from
+an installed wheel.
+
+The next milestone is **`0.6.0 — Persistence Foundation Stable`**.
