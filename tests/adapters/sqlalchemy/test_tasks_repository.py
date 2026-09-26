@@ -7,7 +7,6 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.orm import Session
-
 from pycrmkit.contacts import ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyTaskRepository
