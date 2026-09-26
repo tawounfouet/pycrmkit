@@ -7,6 +7,10 @@ from fastapi import APIRouter, Depends, status
 
 from pycrmkit import CRM
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
+from pycrmkit.integrations.fastapi.errors import (
+    CREATE_ERROR_RESPONSES,
+    MUTATION_ERROR_RESPONSES,
+)
 from pycrmkit.integrations.fastapi.schemas import (
     LeadConversionRequest,
     LeadCreateRequest,
@@ -21,7 +25,7 @@ def create_leads_router(dependency: CRMDependency) -> APIRouter:
 
     router = APIRouter(prefix="/leads", tags=["leads"])
 
-    @router.post("", response_model=LeadResponse, status_code=status.HTTP_201_CREATED)
+    @router.post("", response_model=LeadResponse, status_code=status.HTTP_201_CREATED, responses=CREATE_ERROR_RESPONSES)
     def create_lead(
         request: LeadCreateRequest,
         crm: Annotated[CRM, Depends(dependency)],
@@ -29,21 +33,21 @@ def create_leads_router(dependency: CRMDependency) -> APIRouter:
         lead = crm.leads.create(**request.to_domain_kwargs())
         return LeadResponse.from_domain(lead)
 
-    @router.post("/{lead_id}/qualify", response_model=LeadResponse)
+    @router.post("/{lead_id}/qualify", response_model=LeadResponse, responses=MUTATION_ERROR_RESPONSES)
     def qualify_lead(
         lead_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
     ) -> LeadResponse:
         return LeadResponse.from_domain(crm.leads.qualify(LeadId(lead_id)))
 
-    @router.post("/{lead_id}/disqualify", response_model=LeadResponse)
+    @router.post("/{lead_id}/disqualify", response_model=LeadResponse, responses=MUTATION_ERROR_RESPONSES)
     def disqualify_lead(
         lead_id: UUID,
         crm: Annotated[CRM, Depends(dependency)],
     ) -> LeadResponse:
         return LeadResponse.from_domain(crm.leads.disqualify(LeadId(lead_id)))
 
-    @router.post("/{lead_id}/convert", response_model=OpportunityResponse)
+    @router.post("/{lead_id}/convert", response_model=OpportunityResponse, responses=MUTATION_ERROR_RESPONSES)
     def convert_lead(
         lead_id: UUID,
         request: LeadConversionRequest,
