@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.9.0a1"
+    assert __version__ == "0.9.0a2"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -87,6 +87,14 @@ def test_0_9_external_identity_facade_surface() -> None:
     crm = CRM.memory()
     for name in ("attach", "resolve", "list_for_entity", "detach"):
         assert hasattr(crm.external_identities, name)
+
+
+def test_0_9_import_framework_surface() -> None:
+    from pycrmkit.importers import ImportPipeline, ImportReport, IterableReader
+
+    assert ImportPipeline.__name__ == "ImportPipeline"
+    assert ImportReport.__name__ == "ImportReport"
+    assert IterableReader.__name__ == "IterableReader"
 
 
 def test_0_5_webhook_delivery_surface() -> None:
