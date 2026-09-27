@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 from dataclasses import dataclass, field
 from datetime import datetime
 from urllib.parse import urlsplit, urlunsplit
