@@ -314,6 +314,36 @@ Existing detailed reporting remains the default.
 The benchmark guardrails are regression ceilings, not V1 latency or throughput
 SLAs.
 
+## V1 qualified compatibility matrix
+
+`1.0.0b3` converts dependency compatibility from an installation envelope into
+an executable support contract.
+
+Qualified families:
+
+```text
+Python      3.11 / 3.12 / 3.13
+PostgreSQL  16 / 17
+SQLAlchemy  2.0.x / 2.1.x
+psycopg     3.2.x / 3.3.x
+FastAPI     0.141.x
+Pydantic    2.13.x
+Django      5.2.x
+DRF         3.18.x
+Jinja2      3.1.x
+Resend      >=2.47,<3
+```
+
+The machine-readable source of truth is
+`tests/compatibility/compatibility_matrix_v1.json`.
+
+Package metadata is intentionally bounded to qualified families so future
+untested releases are not treated as implicitly supported.
+
+The dedicated Compatibility Matrix workflow exercises Python support,
+PostgreSQL × SQLAlchemy cross-compatibility, FastAPI/Pydantic and Django/DRF on
+the supported Python edges, plus the documented optional-extra combinations.
+
 ## Pre-1.0 policy
 
 PyCRMKit remains pre-`1.0.0`. Each stable milestone establishes compatibility
