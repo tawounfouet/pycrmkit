@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "project": "pycrmkit",
+  "version": "1.0.0rc1",
+  "release_kind": "release-candidate",
+  "qualified_code_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
+  "artifact_build": "pep517-setuptools",
+  "artifacts": [
+    {
+      "filename": "pycrmkit-1.0.0rc1-py3-none-any.whl",
+      "type": "wheel",
+      "sha256": null
+    },
+    {
+      "filename": "pycrmkit-1.0.0rc1.tar.gz",
+      "type": "sdist",
+      "sha256": null
+    }
+  ],
+  "checksum_algorithm": "sha256",
+  "checksum_status": "pending-ci-build",
+  "supported_python": [
+    "3.11",
+    "3.12",
+    "3.13"
+  ],
+  "migration_head": "0003",
+  "publication": {
+    "tag": "v1.0.0rc1",
+    "github_prerelease": true,
+    "pypi_publish": false
+  }
+}
