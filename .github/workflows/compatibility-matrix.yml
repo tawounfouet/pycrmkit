@@ -30,7 +30,7 @@ jobs:
           -q
 
   persistence:
-    name: PostgreSQL ${{ matrix.postgresql }} / SQLAlchemy ${{ matrix.sqlalchemy }}
+    name: PostgreSQL ${{ matrix.postgresql }} / SQLAlchemy ${{ matrix.sqlalchemy }} / psycopg ${{ matrix.psycopg }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -39,15 +39,43 @@ jobs:
           - postgresql: "16"
             sqlalchemy: "2.0"
             sqlalchemy-spec: "SQLAlchemy>=2.0,<2.1"
+            psycopg: "3.2"
+            psycopg-spec: "psycopg[binary]>=3.2,<3.3"
+          - postgresql: "16"
+            sqlalchemy: "2.0"
+            sqlalchemy-spec: "SQLAlchemy>=2.0,<2.1"
+            psycopg: "3.3"
+            psycopg-spec: "psycopg[binary]>=3.3,<3.4"
           - postgresql: "16"
             sqlalchemy: "2.1"
             sqlalchemy-spec: "SQLAlchemy>=2.1,<2.2"
+            psycopg: "3.2"
+            psycopg-spec: "psycopg[binary]>=3.2,<3.3"
+          - postgresql: "16"
+            sqlalchemy: "2.1"
+            sqlalchemy-spec: "SQLAlchemy>=2.1,<2.2"
+            psycopg: "3.3"
+            psycopg-spec: "psycopg[binary]>=3.3,<3.4"
           - postgresql: "17"
             sqlalchemy: "2.0"
             sqlalchemy-spec: "SQLAlchemy>=2.0,<2.1"
+            psycopg: "3.2"
+            psycopg-spec: "psycopg[binary]>=3.2,<3.3"
+          - postgresql: "17"
+            sqlalchemy: "2.0"
+            sqlalchemy-spec: "SQLAlchemy>=2.0,<2.1"
+            psycopg: "3.3"
+            psycopg-spec: "psycopg[binary]>=3.3,<3.4"
           - postgresql: "17"
             sqlalchemy: "2.1"
             sqlalchemy-spec: "SQLAlchemy>=2.1,<2.2"
+            psycopg: "3.2"
+            psycopg-spec: "psycopg[binary]>=3.2,<3.3"
+          - postgresql: "17"
+            sqlalchemy: "2.1"
+            sqlalchemy-spec: "SQLAlchemy>=2.1,<2.2"
+            psycopg: "3.3"
+            psycopg-spec: "psycopg[binary]>=3.3,<3.4"
     services:
       postgres:
         image: postgres:${{ matrix.postgresql }}
@@ -79,6 +107,7 @@ jobs:
           -e ".[postgresql,migrations]"
           "pytest>=8"
           "${{ matrix.sqlalchemy-spec }}"
+          "${{ matrix.psycopg-spec }}"
       - name: Report resolved persistence versions
         run: |
           python - <<'PY'
