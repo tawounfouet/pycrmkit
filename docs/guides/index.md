@@ -57,6 +57,7 @@ example application.
 22. [Exporting Data](21_exporting_data.md) — project authorized CRM state into deterministic CSV, JSON and JSONL records with explicit format, pagination and privacy boundaries.
 23. [Memory Adapter](22_memory_adapter.md) — understand the official in-process adapter, transaction snapshots, explicit commit/rollback, copy isolation, deterministic repository semantics and post-commit events.
 24. [SQLAlchemy](23_sqlalchemy.md) — map repository contracts onto relational persistence with explicit domain/ORM mappers, session-scoped repositories, shared transaction ownership and backend-safe errors.
+25. [PostgreSQL](24_postgresql.md) — qualify production-reference persistence with database constraints, concurrency-safe uniqueness, ownership foreign keys, exact numeric round trips and backend-neutral SQLSTATE translation.
 
 ## LEVEL 1 complete
 
@@ -80,7 +81,7 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 
 ## LEVEL 6 in progress
 
-Memory Adapter establishes the reference persistence semantics beneath the domain layer; SQLAlchemy now carries those contracts into relational persistence through explicit mappers, session-scoped repositories and a shared transactional Unit of Work. PostgreSQL is next.
+Memory Adapter establishes the reference semantics, SQLAlchemy carries them into relational persistence, and PostgreSQL now provides the production-reference durability, constraints and concurrency guarantees. Migrations are next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -113,7 +114,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 5 | 21 | Exporting Data | Published |
 | 6 | 22 | Memory Adapter | Published |
 | 6 | 23 | SQLAlchemy | Published |
-| 6 | 24 | PostgreSQL | Planned |
+| 6 | 24 | PostgreSQL | Published |
 | 6 | 25 | Migrations | Planned |
 | 6 | 26 | FastAPI | Planned |
 | 6 | 27 | Django | Planned |
