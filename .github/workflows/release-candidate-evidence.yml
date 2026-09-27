@@ -1,0 +1,95 @@
+name: Release Candidate Evidence
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rc1-evidence:
+    name: 1.0.0rc1 artifacts + SHA256 evidence
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_DATE_EPOCH: "1790518963"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install release toolchain
+        run: python -m pip install --upgrade pip "build>=1.2" "twine>=6"
+      - name: Assert promoted candidate version
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import pycrmkit
+          assert pycrmkit.__version__ == "1.0.0rc1"
+          print(pycrmkit.__version__)
+          PY
+      - name: Build candidate artifacts
+        run: |
+          rm -rf dist build
+          python -m build
+          python -m twine check dist/*
+          test -f dist/pycrmkit-1.0.0rc1-py3-none-any.whl
+          test -f dist/pycrmkit-1.0.0rc1.tar.gz
+      - name: Normalize sdist archive metadata
+        run: |
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.0.0rc1.tar.gz
+          python -m twine check dist/*
+      - name: Generate SHA256 evidence
+        run: |
+          sha256sum             dist/pycrmkit-1.0.0rc1-py3-none-any.whl             dist/pycrmkit-1.0.0rc1.tar.gz             | sed 's#  dist/#  #'             | tee /tmp/SHA256SUMS-v1.0.0rc1.txt
+          echo "----- RC1 SHA256 BEGIN -----"
+          cat /tmp/SHA256SUMS-v1.0.0rc1.txt
+          echo "----- RC1 SHA256 END -----"
+      - name: Verify deterministic rebuild is byte-for-byte reproducible
+        run: |
+          cp /tmp/SHA256SUMS-v1.0.0rc1.txt /tmp/SHA256SUMS-v1.0.0rc1-first.txt
+          rm -rf dist build
+          python -m build
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.0.0rc1.tar.gz
+          python -m twine check dist/*
+          sha256sum             dist/pycrmkit-1.0.0rc1-py3-none-any.whl             dist/pycrmkit-1.0.0rc1.tar.gz             | sed 's#  dist/#  #'             | tee /tmp/SHA256SUMS-v1.0.0rc1-second.txt
+          diff -u             /tmp/SHA256SUMS-v1.0.0rc1-first.txt             /tmp/SHA256SUMS-v1.0.0rc1-second.txt
+          cp /tmp/SHA256SUMS-v1.0.0rc1-second.txt /tmp/SHA256SUMS-v1.0.0rc1.txt
+      - name: Verify frozen release checksums
+        run: |
+          diff -u release/SHA256SUMS-v1.0.0rc1.txt /tmp/SHA256SUMS-v1.0.0rc1.txt
+          (
+            cd dist
+            sha256sum -c ../release/SHA256SUMS-v1.0.0rc1.txt
+          )
+      - name: Candidate gate contract
+        run: |
+          python -m pip install -e ".[dev]"
+          python scripts/v1_production_gate.py
+          python -m pytest tests/qualification -m "not postgresql" -q
+      - name: Isolated installed-wheel smoke
+        run: |
+          cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
+          python -m venv /tmp/pycrmkit-rc1-wheel
+          /tmp/pycrmkit-rc1-wheel/bin/python -m pip install --upgrade pip
+          /tmp/pycrmkit-rc1-wheel/bin/python -m pip install --no-deps "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0rc1-py3-none-any.whl"
+          cd /tmp
+          PYTHONPATH=""           PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE"           PYCRMKIT_EXPECTED_VERSION="1.0.0rc1"           PYCRMKIT_EXPECT_CORE_ONLY=1           /tmp/pycrmkit-rc1-wheel/bin/python /tmp/v1_production_wheel_smoke.py
+      - name: Isolated sdist smoke
+        run: |
+          python -m venv /tmp/pycrmkit-rc1-sdist
+          /tmp/pycrmkit-rc1-sdist/bin/python -m pip install --upgrade pip
+          /tmp/pycrmkit-rc1-sdist/bin/python -m pip install "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0rc1.tar.gz"
+          cd /tmp
+          PYTHONPATH=""           PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE"           PYCRMKIT_EXPECTED_VERSION="1.0.0rc1"           PYCRMKIT_EXPECT_CORE_ONLY=1           /tmp/pycrmkit-rc1-sdist/bin/python /tmp/v1_production_wheel_smoke.py
+      - name: Stage evidence bundle
+        run: |
+          mkdir -p /tmp/pycrmkit-rc1-evidence
+          cp dist/* /tmp/pycrmkit-rc1-evidence/
+          cp /tmp/SHA256SUMS-v1.0.0rc1.txt /tmp/pycrmkit-rc1-evidence/
+          cp release/qualification-report-v1.0.0rc1.json /tmp/pycrmkit-rc1-evidence/
+          cp release/release-manifest-v1.0.0rc1.json /tmp/pycrmkit-rc1-evidence/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pycrmkit-v1.0.0rc1-evidence
+          path: /tmp/pycrmkit-rc1-evidence/*
+          if-no-files-found: error

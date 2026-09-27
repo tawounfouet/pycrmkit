@@ -1,10 +1,10 @@
 # Installation
 
-PyCRMKit `0.9.0` is the current stable line; `1.0.0b3` is the latest V1 compatibility candidate.
+PyCRMKit `0.9.0` is the current stable line; `1.0.0rc1` is the latest V1 release candidate.
 
 ## V1 qualified compatibility
 
-PyCRMKit `1.0.0b3` qualifies:
+PyCRMKit `1.0.0rc1` qualifies:
 
 ```text
 Python      3.11 / 3.12 / 3.13

@@ -6,6 +6,25 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.0.0rc1] - 2026-09-27
+
+### Full production qualification
+- Converged the V1 public API freeze, security/privacy hardening, performance baseline and compatibility matrix behind one production release gate.
+- Qualified the cross-layer customer journey across Contacts, Organizations, Relationships, Activities, Tasks, Timeline, Sales, Email/Webhooks and Data Operations.
+- Qualified SQLAlchemy/PostgreSQL transaction atomicity, rollback, repository conformance and migration paths, including Contact merge rollback and installed-wheel migrations.
+- Qualified FastAPI and Django/DRF integration boundaries against PostgreSQL, preserving facade-first architecture and typed External Identity owners.
+- Qualified isolated wheel and sdist installation outside the repository checkout, including core-only dependency boundaries, full supported extras, packaged migrations and console scripts.
+- Added the zero-blocker RC-06 production qualification workflow.
+
+### Release evidence
+- Promoted package metadata from `1.0.0b3` to `1.0.0rc1`.
+- Added release-candidate manifest, qualification report and SHA-256 artifact evidence generation.
+- No new CRM feature, public API expansion, persistence schema or migration is introduced by the RC promotion.
+
+### Changed
+- Latest V1 prerelease is now `1.0.0rc1 — Full Production Qualification`.
+- Next roadmap milestone after candidate qualification is `1.0.0 — Production Stable`.
+
 ## [1.0.0b3] - 2026-09-27
 
 ### Compatibility matrix

@@ -158,14 +158,14 @@ jobs:
         run: |
           python -m venv /tmp/rc06-core-wheel
           /tmp/rc06-core-wheel/bin/python -m pip install --upgrade pip
-          /tmp/rc06-core-wheel/bin/python -m pip install --no-deps "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0b3-py3-none-any.whl"
+          /tmp/rc06-core-wheel/bin/python -m pip install --no-deps "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0rc1-py3-none-any.whl"
           cd /tmp
           PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" PYCRMKIT_EXPECT_CORE_ONLY=1 /tmp/rc06-core-wheel/bin/python /tmp/v1_production_wheel_smoke.py
       - name: Full-extra wheel
         run: |
           python -m venv /tmp/rc06-full-wheel
           /tmp/rc06-full-wheel/bin/python -m pip install --upgrade pip
-          /tmp/rc06-full-wheel/bin/python -m pip install "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0b3-py3-none-any.whl[sqlalchemy,postgresql,migrations,fastapi,django,drf,email,resend]"
+          /tmp/rc06-full-wheel/bin/python -m pip install "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0rc1-py3-none-any.whl[sqlalchemy,postgresql,migrations,fastapi,django,drf,email,resend]"
           cd /tmp
           PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" PYCRMKIT_REQUIRE_OPTIONALS=1 /tmp/rc06-full-wheel/bin/python /tmp/v1_production_wheel_smoke.py
           PYTHONPATH="" /tmp/rc06-full-wheel/bin/pycrmkit-migrate --help
@@ -174,7 +174,7 @@ jobs:
         run: |
           python -m venv /tmp/rc06-sdist
           /tmp/rc06-sdist/bin/python -m pip install --upgrade pip
-          /tmp/rc06-sdist/bin/python -m pip install "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0b3.tar.gz"
+          /tmp/rc06-sdist/bin/python -m pip install "$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0rc1.tar.gz"
           cd /tmp
           PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" PYCRMKIT_EXPECT_CORE_ONLY=1 /tmp/rc06-sdist/bin/python /tmp/v1_production_wheel_smoke.py
       - uses: actions/upload-artifact@v4

@@ -35,7 +35,7 @@ from pycrmkit.importers import (
 from pycrmkit.pipelines import Stage, StageTransition
 from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 
-EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.0.0b3")
+EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.0.0rc1")
 EXPECTED_EXTRAS = {
     "sqlalchemy",
     "postgresql",

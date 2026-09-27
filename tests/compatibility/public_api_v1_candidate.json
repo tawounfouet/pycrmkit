@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0b3",
+  "version": "1.0.0rc1",
   "classification": "public-api-freeze-candidate",
   "root_exports": [
     "CRM",

@@ -34,7 +34,7 @@ EXPECTED_RC_GATES = {
     "RC-07",
 }
 
-IMPLEMENTED_RC_GATES = {"RC-01", "RC-02", "RC-03", "RC-04", "RC-05", "RC-06"}
+IMPLEMENTED_RC_GATES = {"RC-01", "RC-02", "RC-03", "RC-04", "RC-05", "RC-06", "RC-07"}
 
 
 def test_gate_and_scenario_contract_target_the_same_candidate() -> None:
@@ -42,9 +42,9 @@ def test_gate_and_scenario_contract_target_the_same_candidate() -> None:
     assert GATE["baseline_release"] == SCENARIOS["baseline_release"] == "1.0.0b3"
 
 
-def test_package_remains_on_last_qualified_beta_during_rc_work() -> None:
-    assert pycrmkit.__version__ == GATE["baseline_release"] == "1.0.0b3"
-    assert pycrmkit.__version__ != GATE["target_release"]
+def test_package_is_promoted_to_target_during_rc07_evidence_work() -> None:
+    assert GATE["baseline_release"] == "1.0.0b3"
+    assert pycrmkit.__version__ == GATE["target_release"] == "1.0.0rc1"
 
 
 def test_prerequisite_v1_milestones_are_explicit_and_backed_by_workflows() -> None:
@@ -68,17 +68,14 @@ def test_existing_release_qualification_workflows_are_frozen() -> None:
     assert missing == []
 
 
-def test_rc01_to_rc06_are_implemented_without_claiming_full_rc_qualification() -> None:
+def test_rc01_to_rc07_are_implemented_and_full_rc_is_qualified() -> None:
     gates = {item["id"]: item for item in GATE["rc_gates"]}
 
     assert set(gates) == EXPECTED_RC_GATES
     assert all(gates[gate]["status"] == "implemented" for gate in IMPLEMENTED_RC_GATES)
-    assert all(
-        gates[gate]["status"] == "pending"
-        for gate in EXPECTED_RC_GATES - IMPLEMENTED_RC_GATES
-    )
-    assert GATE["status"] == "qualification-in-progress"
-    assert GATE["promotion_ready"] is False
+    assert EXPECTED_RC_GATES - IMPLEMENTED_RC_GATES == set()
+    assert GATE["status"] == "qualified"
+    assert GATE["promotion_ready"] is True
 
 
 def test_all_implemented_rc_gate_evidence_is_present() -> None:

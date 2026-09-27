@@ -19,8 +19,9 @@ EXPECTED_IMPLEMENTED_GATES = {
     "RC-04",
     "RC-05",
     "RC-06",
+    "RC-07",
 }
-EXPECTED_PENDING_GATES = {"RC-07"}
+EXPECTED_PENDING_GATES: set[str] = set()
 EXPECTED_WORKFLOW = ".github/workflows/production-qualification.yml"
 
 REQUIRED_CONVERGENCE_LAYERS = {
@@ -53,9 +54,9 @@ def assert_production_gate_contract() -> dict[str, object]:
         raise SystemExit("RC-06 baseline must remain 1.0.0b3")
     if scenarios["target_release"] != gate["target_release"]:
         raise SystemExit("Scenario and gate target releases diverge")
-    if pycrmkit.__version__ != gate["baseline_release"]:
+    if pycrmkit.__version__ != gate["target_release"]:
         raise SystemExit(
-            "RC-06 must execute against the last qualified beta before RC-07 promotion"
+            "RC-07 promotion must execute the qualified target candidate version"
         )
 
     gates = {item["id"]: item for item in gate["rc_gates"]}
@@ -91,10 +92,10 @@ def assert_production_gate_contract() -> dict[str, object]:
     if not (ROOT / rc06["workflow"]).is_file():
         raise SystemExit("RC-06 production workflow is missing")
 
-    if gate["promotion_ready"] is not False:
-        raise SystemExit("RC-06 cannot set promotion_ready before RC-07")
-    if gate["status"] != "qualification-in-progress":
-        raise SystemExit("RC-06 cannot close the full release before RC-07")
+    if gate["promotion_ready"] is not True:
+        raise SystemExit("RC-07 must set promotion_ready after evidence is frozen")
+    if gate["status"] != "qualified":
+        raise SystemExit("RC-07 must close the full release gate as qualified")
 
     promotion = gate["promotion_rule"]
     if promotion["required_gate_status"] != "qualified":
@@ -114,7 +115,7 @@ def assert_production_gate_contract() -> dict[str, object]:
         "pending_gates": sorted(pending),
         "blocking_failures_allowed": rc06["blocking_failures_allowed"],
         "promotion_ready": gate["promotion_ready"],
-        "next_step": "RC-07 release evidence and candidate promotion",
+        "next_step": "1.0.0 production-stable acceptance",
     }
 
 

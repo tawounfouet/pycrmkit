@@ -33,7 +33,7 @@ def _public_callables(value: object) -> list[str]:
 
 
 def test_candidate_version_and_root_exports_are_frozen() -> None:
-    assert pycrmkit.__version__ == "1.0.0b3"
+    assert pycrmkit.__version__ == "1.0.0rc1"
     assert pycrmkit.__all__ == MANIFEST["root_exports"]
 
 
