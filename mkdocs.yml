@@ -37,6 +37,7 @@ nav:
       - 23 SQLAlchemy: guides/23_sqlalchemy.md
       - 24 PostgreSQL: guides/24_postgresql.md
       - 25 Migrations: guides/25_migrations.md
+      - 26 FastAPI: guides/26_fastapi.md
   - Facade:
       - CRM: facade/index.md
   - Core:

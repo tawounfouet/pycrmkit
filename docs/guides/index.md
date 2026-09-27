@@ -59,6 +59,7 @@ example application.
 24. [SQLAlchemy](23_sqlalchemy.md) — map repository contracts onto relational persistence with explicit domain/ORM mappers, session-scoped repositories, shared transaction ownership and backend-safe errors.
 25. [PostgreSQL](24_postgresql.md) — qualify production-reference persistence with database constraints, concurrency-safe uniqueness, ownership foreign keys, exact numeric round trips and backend-neutral SQLSTATE translation.
 26. [Migrations](25_migrations.md) — evolve PostgreSQL safely through immutable Alembic revisions, drift checks, historical upgrades, controlled downgrade policy and installed-wheel migration qualification.
+27. [FastAPI](26_fastapi.md) — expose the CRM facade through Pydantic transport schemas, request-scoped context, command-oriented routers, stable HTTP errors, OpenAPI contracts and PostgreSQL-backed API qualification.
 
 ## LEVEL 1 complete
 
@@ -82,7 +83,7 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 
 ## LEVEL 6 in progress
 
-Memory Adapter establishes the reference semantics, SQLAlchemy carries them into relational persistence, PostgreSQL provides production-reference durability and concurrency, and Alembic now governs versioned schema evolution through head 0003. FastAPI is next.
+Memory Adapter establishes reference semantics, SQLAlchemy and PostgreSQL provide durable relational persistence, Alembic governs versioned schema evolution, and FastAPI now exposes the stable CRM facade through a framework-isolated HTTP adapter. Django is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -117,7 +118,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 23 | SQLAlchemy | Published |
 | 6 | 24 | PostgreSQL | Published |
 | 6 | 25 | Migrations | Published |
-| 6 | 26 | FastAPI | Planned |
+| 6 | 26 | FastAPI | Published |
 | 6 | 27 | Django | Planned |
 | 6 | 28 | Django REST Framework | Planned |
 | 6 | 29 | Transactions & Unit of Work | Planned |
