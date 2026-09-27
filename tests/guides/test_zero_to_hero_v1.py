@@ -1,5 +1,6 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -9,17 +10,20 @@ from pycrmkit.activities import (
     ActivityDirection,
     ActivityParticipant,
     ActivityQuery,
+    ActivityService,
     ActivityType,
     ActivityUpdate,
 )
 from pycrmkit.contacts import (
     Address,
+    ContactId,
     ContactEmail,
     ContactPhone,
     ContactQuery,
     ContactStatus,
     ContactUpdate,
 )
+from pycrmkit.core.ids import UUID4Factory
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
@@ -29,6 +33,7 @@ from pycrmkit.custom_fields import (
     CustomFieldOption,
     CustomFieldType,
 )
+from pycrmkit.events import DomainEvent
 from pycrmkit.exceptions import (
     ConflictError,
     DuplicateError,
@@ -49,6 +54,7 @@ from pycrmkit.relationships import (
     RelationshipType,
     RelationshipUpdate,
 )
+from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 from pycrmkit.tags import TagName, TagQuery
 from pycrmkit.tasks import (
     TaskPriority,
@@ -56,6 +62,7 @@ from pycrmkit.tasks import (
     TaskStatus,
     TaskUpdate,
 )
+from pycrmkit.timeline import TimelineEntryKind, TimelineProjector
 
 
 def test_zero_to_hero_getting_started_example() -> None:
@@ -1172,3 +1179,257 @@ def test_zero_to_hero_tasks_invariant_examples() -> None:
     with pytest.raises(ValidationError) as transition_before_creation:
         crm.tasks.start(before_creation.id)
     assert transition_before_creation.value.code == "task.transition.before_creation"
+
+
+
+def test_zero_to_hero_timeline_mastery_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 10, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="guide-user",
+        correlation_id="timeline-guide-001",
+    )
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+    contact_ref = EntityReference(kind="contact", id=contact.id)
+    organization_ref = EntityReference(
+        kind="organization",
+        id=organization.id,
+    )
+
+    historical = crm.activities.log(
+        type="meeting",
+        occurred_at=datetime(2024, 1, 15, 9, 0, tzinfo=UTC),
+        subject="Imported discovery meeting",
+        participants=(
+            ActivityParticipant(
+                reference=contact_ref,
+                is_primary=True,
+            ),
+        ),
+        references=(organization_ref,),
+        source="legacy-crm",
+    )
+
+    clock.advance(timedelta(hours=1))
+    task = crm.tasks.create(
+        title="Prepare renewal",
+        priority="high",
+        references=(contact_ref, organization_ref),
+    )
+    clock.advance(timedelta(hours=1))
+    crm.tasks.start(task.id)
+    started_at = clock.now()
+    clock.advance(timedelta(hours=1))
+    crm.tasks.complete(task.id)
+    completed_at = clock.now()
+
+    contact_history = crm.timeline.for_contact(contact.id)
+    organization_history = crm.timeline.for_organization(organization.id)
+
+    assert organization_history.items == contact_history.items
+    assert [
+        str(entry.event_type)
+        for entry in contact_history.items
+    ] == [
+        "task.completed",
+        "task.started",
+        "task.created",
+        "activity.created",
+    ]
+    assert contact_history.items[-1].occurred_at == historical.occurred_at
+    assert contact_history.items[-1].actor_id == "guide-user"
+    assert contact_history.items[-1].correlation_id == "timeline-guide-001"
+
+    task_only = crm.timeline.for_contact(
+        contact.id,
+        kind=TimelineEntryKind.TASK,
+    )
+    assert task_only.total == 3
+
+    completed_only = crm.timeline.for_contact(
+        contact.id,
+        kind=TimelineEntryKind.TASK,
+        event_type="task.completed",
+    )
+    assert [str(entry.event_type) for entry in completed_only.items] == [
+        "task.completed"
+    ]
+
+    middle = crm.timeline.for_contact(
+        contact.id,
+        occurred_from=started_at,
+        occurred_until=completed_at,
+    )
+    assert [str(entry.event_type) for entry in middle.items] == [
+        "task.started"
+    ]
+
+    first = crm.timeline.for_contact(
+        contact.id,
+        OffsetPageRequest(limit=1, offset=0),
+        kind=TimelineEntryKind.TASK,
+    )
+    second = crm.timeline.for_contact(
+        contact.id,
+        OffsetPageRequest(limit=1, offset=1),
+        kind=TimelineEntryKind.TASK,
+    )
+    assert first.total == 3
+    assert first.has_next is True
+    assert second.has_previous is True
+
+    fetched = crm.timeline.get(contact_history.items[0].id)
+    assert fetched == contact_history.items[0]
+
+
+def test_zero_to_hero_timeline_ignores_generic_update_noise() -> None:
+    crm = CRM.memory()
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    ref = EntityReference(kind="contact", id=contact.id)
+
+    activity = crm.activities.log(
+        type="note",
+        subject="Initial note",
+        references=(ref,),
+    )
+    task = crm.tasks.create(
+        title="Prepare proposal",
+        references=(ref,),
+    )
+
+    before = crm.timeline.for_contact(contact.id)
+    assert {str(entry.event_type) for entry in before.items} == {
+        "activity.created",
+        "task.created",
+    }
+
+    crm.activities.update(
+        activity.id,
+        ActivityUpdate(subject="Corrected note"),
+    )
+    crm.tasks.update(
+        task.id,
+        TaskUpdate(priority="urgent"),
+    )
+
+    after = crm.timeline.for_contact(contact.id)
+    assert after.items == before.items
+
+
+def test_zero_to_hero_timeline_replay_is_idempotent_and_conflicts_fail() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 27, 12, 0, tzinfo=UTC))
+    ids = UUID4Factory()
+    reference = EntityReference(
+        kind="contact",
+        id=ids.new(ContactId),
+    )
+
+    with MemoryUnitOfWork(store) as uow:
+        activity = ActivityService(
+            uow.activities,
+            id_factory=ids,
+            clock=clock,
+        ).log(
+            type="note",
+            subject="Replay-safe history",
+            references=(reference,),
+        )
+        event = DomainEvent.create(
+            id_factory=ids,
+            clock=clock,
+            type="activity.created",
+            aggregate_type="activity",
+            aggregate_id=activity.id,
+        )
+        projector = TimelineProjector(
+            uow.timeline,
+            activities=uow.activities,
+            tasks=uow.tasks,
+        )
+
+        first = projector.project(event)
+        second = projector.project(event)
+
+        assert first is not None
+        assert second == first
+        page = uow.timeline.list_for_reference(
+            reference,
+            OffsetPageRequest(),
+        )
+        assert page.items == (first,)
+        assert page.total == 1
+
+        conflicting = replace(
+            first,
+            title="Conflicting replay content",
+        )
+        with pytest.raises(DuplicateError) as conflict:
+            uow.timeline.append(conflicting)
+        assert conflict.value.code == "timeline.projection.conflict"
+
+
+def test_zero_to_hero_timeline_projection_rolls_back_atomically() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 27, 13, 0, tzinfo=UTC))
+    ids = UUID4Factory()
+    reference = EntityReference(
+        kind="contact",
+        id=ids.new(ContactId),
+    )
+
+    with MemoryUnitOfWork(store) as uow:
+        activity = ActivityService(
+            uow.activities,
+            id_factory=ids,
+            clock=clock,
+        ).log(
+            type="note",
+            subject="Will roll back",
+            references=(reference,),
+        )
+        event = DomainEvent.create(
+            id_factory=ids,
+            clock=clock,
+            type="activity.created",
+            aggregate_type="activity",
+            aggregate_id=activity.id,
+        )
+        projected = TimelineProjector(
+            uow.timeline,
+            activities=uow.activities,
+            tasks=uow.tasks,
+        ).project(event)
+        assert projected is not None
+        assert uow.timeline.list_for_reference(
+            reference,
+            OffsetPageRequest(),
+        ).total == 1
+        uow.rollback()
+
+    with MemoryUnitOfWork(store) as uow:
+        assert uow.activities.list(
+            ActivityQuery(),
+            OffsetPageRequest(),
+        ).total == 0
+        assert uow.timeline.list_for_reference(
+            reference,
+            OffsetPageRequest(),
+        ).total == 0
+
+
+def test_zero_to_hero_timeline_invalid_window_example() -> None:
+    crm = CRM.memory()
+    contact = crm.contacts.create(display_name="Grace Hopper")
+
+    with pytest.raises(ValidationError) as invalid_window:
+        crm.timeline.for_contact(
+            contact.id,
+            occurred_from=datetime(2026, 10, 1, tzinfo=UTC),
+            occurred_until=datetime(2026, 10, 1, tzinfo=UTC),
+        )
+    assert invalid_window.value.code == "timeline.query.invalid_interval"
