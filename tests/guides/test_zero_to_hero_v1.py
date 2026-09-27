@@ -7,6 +7,8 @@ from decimal import Decimal
 from io import StringIO
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from pycrmkit import CRM, CRMContext, __version__
 from pycrmkit.activities import (
@@ -29,6 +31,7 @@ from pycrmkit.communication import (
 )
 from pycrmkit.contacts import (
     Address,
+    Contact,
     ContactEmail,
     ContactId,
     ContactPhone,
@@ -148,6 +151,11 @@ from pycrmkit.storage.memory import (
     MemoryPipelineRepository,
     MemoryStore,
     MemoryUnitOfWork,
+)
+from pycrmkit.storage.sqlalchemy import (
+    Base,
+    ContactModel,
+    SQLAlchemyUnitOfWork,
 )
 from pycrmkit.tags import TagName, TagQuery
 from pycrmkit.tasks import (
@@ -4315,3 +4323,159 @@ def test_zero_to_hero_memory_second_commit_is_rejected_example() -> None:
             uow.commit()
 
     assert second.value.code == "memory.uow.already_committed"
+
+
+def test_zero_to_hero_sqlalchemy_domain_model_boundary_example() -> None:
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+    )
+    clock = FixedClock(datetime(2026, 9, 28, 18, tzinfo=UTC))
+
+    try:
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            contact = ContactService(
+                uow.contacts,
+                clock=clock,
+            ).create(
+                first_name="Ada",
+                last_name="Lovelace",
+                emails=(
+                    ContactEmail(
+                        "ada@example.com",
+                        is_primary=True,
+                    ),
+                ),
+            )
+            uow.commit()
+
+        with session_factory() as session:
+            model = session.get(ContactModel, str(contact.id))
+            assert model is not None
+            assert isinstance(model, ContactModel)
+            assert not isinstance(model, Contact)
+
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            loaded = uow.contacts.get(contact.id)
+
+        assert isinstance(loaded, Contact)
+        assert loaded == contact
+        assert loaded.id == contact.id
+        assert loaded.emails == contact.emails
+    finally:
+        engine.dispose()
+
+
+def test_zero_to_hero_sqlalchemy_one_shared_session_and_atomic_commit() -> None:
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+    )
+    clock = FixedClock(datetime(2026, 9, 28, 19, tzinfo=UTC))
+
+    try:
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            assert id(uow.contacts.session) == id(uow.organizations.session)
+            assert id(uow.contacts.session) == id(uow.audit.session)
+
+            contact = ContactService(
+                uow.contacts,
+                clock=clock,
+            ).create(
+                first_name="Grace",
+                last_name="Hopper",
+            )
+            organization = OrganizationService(
+                uow.organizations,
+                clock=clock,
+            ).create(
+                legal_name="Compiler Systems Inc",
+            )
+            uow.commit()
+
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            assert uow.contacts.get(contact.id) == contact
+            assert uow.organizations.get(organization.id) == organization
+    finally:
+        engine.dispose()
+
+
+def test_zero_to_hero_sqlalchemy_rollback_and_continue_example() -> None:
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+    )
+    clock = FixedClock(datetime(2026, 9, 28, 20, tzinfo=UTC))
+
+    try:
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            discarded = ContactService(
+                uow.contacts,
+                clock=clock,
+            ).create(
+                display_name="Discarded",
+            )
+            uow.rollback()
+
+            assert uow.contacts.find(discarded.id) is None
+
+            committed = ContactService(
+                uow.contacts,
+                clock=clock,
+            ).create(
+                display_name="Committed After Rollback",
+            )
+            uow.commit()
+
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            assert uow.contacts.find(discarded.id) is None
+            assert uow.contacts.get(committed.id) == committed
+    finally:
+        engine.dispose()
+
+
+def test_zero_to_hero_sqlalchemy_deterministic_pagination_example() -> None:
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(
+        bind=engine,
+        expire_on_commit=False,
+    )
+    clock = FixedClock(datetime(2026, 9, 28, 21, tzinfo=UTC))
+
+    try:
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            service = ContactService(
+                uow.contacts,
+                clock=clock,
+            )
+            first = service.create(display_name="First")
+            clock.advance(timedelta(seconds=1))
+            second = service.create(display_name="Second")
+            clock.advance(timedelta(seconds=1))
+            third = service.create(display_name="Third")
+            uow.commit()
+
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            page_one = uow.contacts.search(
+                ContactQuery(),
+                OffsetPageRequest(limit=2, offset=0),
+            )
+            page_two = uow.contacts.search(
+                ContactQuery(),
+                OffsetPageRequest(limit=2, offset=2),
+            )
+
+        assert page_one.items == (first, second)
+        assert page_two.items == (third,)
+        assert page_one.total == 3
+        assert page_one.has_next is True
+        assert page_two.has_previous is True
+    finally:
+        engine.dispose()
