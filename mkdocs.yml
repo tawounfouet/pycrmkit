@@ -80,6 +80,8 @@ nav:
       - E2E Qualification: data_operations/e2e.md
   - Security:
       - Security & Privacy Hardening: security/privacy-hardening.md
+  - Performance:
+      - V1 Performance Baseline: performance/baseline.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
@@ -137,6 +139,7 @@ nav:
       - 0.9.0 Data Operations Stable: releases/0.9.0.md
       - 1.0.0a1 Public API Freeze Candidate: releases/1.0.0a1.md
       - 1.0.0b1 Security & Privacy Hardening: releases/1.0.0b1.md
+      - 1.0.0b2 Performance Baseline: releases/1.0.0b2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
