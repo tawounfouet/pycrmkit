@@ -13,7 +13,6 @@ from pycrmkit.external_identities.entities import (
     normalize_external_id,
     normalize_external_system,
 )
-from pycrmkit.exceptions import ValidationError
 
 _WHITESPACE = re.compile(r"\s+")
 
