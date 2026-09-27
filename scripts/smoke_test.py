@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0 Data Operations E2E."""
+"""Installed-package smoke test for PyCRMKit 0.9.0 Data Operations Stable."""
 
 from __future__ import annotations
 
