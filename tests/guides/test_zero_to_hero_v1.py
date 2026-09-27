@@ -42,23 +42,33 @@ from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
 from pycrmkit.custom_fields import (
+    CustomFieldDefinition,
+    CustomFieldDefinitionId,
     CustomFieldDefinitionQuery,
     CustomFieldDefinitionRevision,
     CustomFieldOption,
     CustomFieldType,
+    CustomFieldValue,
+    CustomFieldValueId,
 )
 from pycrmkit.dedup import (
     CandidateRecord,
     ConflictSeverity,
+    DedupConflict,
     DedupDecision,
     DeduplicationEngine,
     DedupProfile,
+    DedupProvenance,
     DedupScorePolicy,
     DedupSignal,
     InMemoryCandidateSource,
+    MergePolicy,
+    MergeResolution,
+    MergeService,
     SignalMatch,
     StandardConflictDetector,
     StandardSignalMatcher,
+    merge_contact_profile,
 )
 from pycrmkit.events import (
     DomainEvent,
@@ -3609,3 +3619,394 @@ def test_zero_to_hero_dedup_import_pipeline_unique_duplicate_example() -> None:
     assert [row.values["email"] for row in persister.rows] == [
         "grace@example.com",
     ]
+
+
+
+def _zero_to_hero_merge_provenance(
+    duplicate_id: ContactId,
+    *,
+    decision: DedupDecision = DedupDecision.DUPLICATE,
+) -> DedupProvenance:
+    return DedupProvenance(
+        candidate_entity_id=str(duplicate_id),
+        score=100 if decision is DedupDecision.DUPLICATE else 70,
+        decision=decision,
+        matches=(
+            SignalMatch(
+                DedupSignal.EMAIL,
+                "ada@example.com",
+            ),
+        ),
+    )
+
+
+def test_zero_to_hero_contact_merge_profile_policy_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 8, tzinfo=UTC))
+
+    with MemoryUnitOfWork(store) as uow:
+        service = ContactService(
+            uow.contacts,
+            clock=clock,
+        )
+        primary = service.create(
+            display_name="Ada Primary",
+            emails=(
+                ContactEmail(
+                    "ada@example.com",
+                    is_primary=True,
+                ),
+            ),
+        )
+        duplicate = service.create(
+            display_name="Ada Duplicate",
+            emails=(
+                ContactEmail(
+                    "ada.alt@example.com",
+                    is_primary=True,
+                ),
+            ),
+        )
+
+    with pytest.raises(ConflictError) as conflict:
+        merge_contact_profile(
+            primary,
+            duplicate,
+            at=clock.now(),
+            policy=MergePolicy(),
+        )
+    assert conflict.value.code == "merge.contact.email_primary.conflict"
+
+    merged = merge_contact_profile(
+        primary,
+        duplicate,
+        at=clock.now(),
+        policy=MergePolicy(
+            primary_email_conflict=MergeResolution.KEEP_DUPLICATE,
+        ),
+    )
+
+    assert {email.normalized for email in merged.emails} == {
+        "ada@example.com",
+        "ada.alt@example.com",
+    }
+    assert [
+        email.normalized
+        for email in merged.emails
+        if email.is_primary
+    ] == ["ada.alt@example.com"]
+
+
+def test_zero_to_hero_contact_merge_provenance_safeguards_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 9, tzinfo=UTC))
+    service = MergeService(
+        lambda: MemoryUnitOfWork(store),
+        clock=clock,
+    )
+    id_factory = UUID4Factory()
+    primary_id = id_factory.new(ContactId)
+    duplicate_id = id_factory.new(ContactId)
+
+    with pytest.raises(ValidationError) as missing:
+        service.merge_contacts(
+            primary_id=primary_id,
+            duplicate_id=duplicate_id,
+        )
+    assert missing.value.code == "merge.provenance.required"
+
+    blocking = DedupProvenance(
+        candidate_entity_id=str(duplicate_id),
+        score=100,
+        decision=DedupDecision.DUPLICATE,
+        matches=(),
+        conflicts=(
+            DedupConflict(
+                signal=DedupSignal.CUSTOM_IDENTIFIER,
+                severity=ConflictSeverity.BLOCKING,
+                key="customer_number",
+                incoming_values=("C-001",),
+                candidate_values=("C-999",),
+            ),
+        ),
+    )
+
+    with pytest.raises(ConflictError) as blocked:
+        service.merge_contacts(
+            primary_id=primary_id,
+            duplicate_id=duplicate_id,
+            provenance=blocking,
+        )
+    assert blocked.value.code == "merge.provenance.blocking_conflict"
+    assert blocked.value.context == {
+        "signals": ("custom_identifier",),
+    }
+
+
+def test_zero_to_hero_contact_merge_manual_policy_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 10, tzinfo=UTC))
+
+    with MemoryUnitOfWork(store) as uow:
+        contacts = ContactService(
+            uow.contacts,
+            clock=clock,
+        )
+        primary = contacts.create(
+            display_name="Manual Primary",
+            emails=(
+                ContactEmail(
+                    "manual@example.com",
+                    is_primary=True,
+                ),
+            ),
+        )
+        duplicate = contacts.create(
+            display_name="Manual Duplicate",
+            emails=(
+                ContactEmail(
+                    "MANUAL@example.com",
+                    is_primary=True,
+                ),
+            ),
+        )
+        uow.commit()
+
+    clock.advance(timedelta(minutes=5))
+    result = MergeService(
+        lambda: MemoryUnitOfWork(store),
+        clock=clock,
+        policy=MergePolicy(
+            require_duplicate_provenance=False,
+        ),
+    ).merge_contacts(
+        primary_id=primary.id,
+        duplicate_id=duplicate.id,
+        actor_id="manual-reviewer",
+    )
+
+    assert result.primary.id == primary.id
+    assert result.duplicate.status is ContactStatus.ARCHIVED
+    assert result.provenance is None
+    assert "provenance" not in result.audit_entry.changes
+
+
+def test_zero_to_hero_contact_merge_external_identity_and_audit_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 11, tzinfo=UTC))
+
+    with MemoryUnitOfWork(store) as uow:
+        contacts = ContactService(
+            uow.contacts,
+            clock=clock,
+        )
+        primary = contacts.create(
+            last_name="Lovelace",
+            emails=(
+                ContactEmail(
+                    "ada@example.com",
+                    is_primary=True,
+                ),
+            ),
+            metadata={"owner_note": "primary"},
+        )
+        duplicate = contacts.create(
+            first_name="Ada",
+            emails=(
+                ContactEmail(
+                    "ADA@EXAMPLE.COM",
+                    is_primary=True,
+                ),
+            ),
+            phones=(
+                ContactPhone(
+                    "+33 6 12 34 56 78",
+                    is_primary=True,
+                ),
+            ),
+            metadata={"import_batch": "guide-20"},
+        )
+        ExternalIdentityService(
+            uow.external_identities,
+            clock=clock,
+        ).attach(
+            EntityReference(
+                "contact",
+                duplicate.id,
+            ),
+            system="hubspot",
+            external_id="Contact-42",
+            metadata={"source": "guide"},
+        )
+        uow.commit()
+
+    clock.advance(timedelta(minutes=10))
+    provenance = _zero_to_hero_merge_provenance(
+        duplicate.id,
+    )
+    result = MergeService(
+        lambda: MemoryUnitOfWork(store),
+        clock=clock,
+    ).merge_contacts(
+        primary_id=primary.id,
+        duplicate_id=duplicate.id,
+        provenance=provenance,
+        actor_id="guide-operator",
+        correlation_id="guide-merge-001",
+    )
+
+    assert result.primary.first_name == "Ada"
+    assert result.primary.last_name == "Lovelace"
+    assert result.primary.display_name == "Ada Lovelace"
+    assert result.primary.phones[0].normalized == "+33612345678"
+    assert result.primary.metadata == {
+        "import_batch": "guide-20",
+        "owner_note": "primary",
+    }
+    assert result.duplicate.status is ContactStatus.ARCHIVED
+    assert result.statistics.external_identities_moved == 1
+    assert result.audit_entry.action == "contact.merged"
+    assert result.audit_entry.actor_id == "guide-operator"
+    assert result.audit_entry.correlation_id == "guide-merge-001"
+    assert result.audit_entry.changes["duplicate_id"] == str(duplicate.id)
+    assert "ada@example.com" not in repr(result.audit_entry.changes)
+    assert result.provenance is provenance
+    assert result.provenance.matches[0].value == "ada@example.com"
+
+    with MemoryUnitOfWork(store) as uow:
+        identity = uow.external_identities.find(
+            "hubspot",
+            "Contact-42",
+        )
+        audit = uow.audit.list_for_entity(
+            "contact",
+            str(primary.id),
+            OffsetPageRequest(),
+        )
+
+    assert identity is not None
+    assert identity.entity_id == primary.id
+    assert audit.total == 1
+
+
+def test_zero_to_hero_contact_merge_rollback_on_custom_field_conflict() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 12, tzinfo=UTC))
+    id_factory = UUID4Factory()
+
+    with MemoryUnitOfWork(store) as uow:
+        contacts = ContactService(
+            uow.contacts,
+            clock=clock,
+        )
+        primary = contacts.create(
+            display_name="Rollback Primary",
+            emails=(
+                ContactEmail(
+                    "rollback@example.com",
+                    is_primary=True,
+                ),
+            ),
+        )
+        duplicate = contacts.create(
+            display_name="Rollback Duplicate",
+            emails=(
+                ContactEmail(
+                    "ROLLBACK@example.com",
+                    is_primary=True,
+                ),
+            ),
+            phones=(
+                ContactPhone(
+                    "+33 6 99 99 99 99",
+                    is_primary=True,
+                ),
+            ),
+        )
+        primary_ref = EntityReference(
+            "contact",
+            primary.id,
+        )
+        duplicate_ref = EntityReference(
+            "contact",
+            duplicate.id,
+        )
+        definition_id = id_factory.new(
+            CustomFieldDefinitionId
+        )
+        uow.custom_fields.save_definition(
+            CustomFieldDefinition(
+                id=definition_id,
+                created_at=clock.now(),
+                updated_at=clock.now(),
+                key="tier",
+                label="Tier",
+                field_type=CustomFieldType.STRING,
+                schema_version=1,
+                applies_to=("contact",),
+            )
+        )
+        uow.custom_fields.save_value(
+            CustomFieldValue(
+                id=id_factory.new(
+                    CustomFieldValueId
+                ),
+                created_at=clock.now(),
+                updated_at=clock.now(),
+                definition_id=definition_id,
+                entity=primary_ref,
+                schema_version=1,
+                value="gold",
+            )
+        )
+        uow.custom_fields.save_value(
+            CustomFieldValue(
+                id=id_factory.new(
+                    CustomFieldValueId
+                ),
+                created_at=clock.now(),
+                updated_at=clock.now(),
+                definition_id=definition_id,
+                entity=duplicate_ref,
+                schema_version=1,
+                value="silver",
+            )
+        )
+        uow.commit()
+
+    clock.advance(timedelta(minutes=10))
+    with pytest.raises(ConflictError) as conflict:
+        MergeService(
+            lambda: MemoryUnitOfWork(store),
+            clock=clock,
+        ).merge_contacts(
+            primary_id=primary.id,
+            duplicate_id=duplicate.id,
+            provenance=_zero_to_hero_merge_provenance(
+                duplicate.id
+            ),
+        )
+    assert conflict.value.code == "merge.custom_field.conflict"
+
+    with MemoryUnitOfWork(store) as uow:
+        stored_primary = uow.contacts.get(primary.id)
+        stored_duplicate = uow.contacts.get(duplicate.id)
+        primary_value = uow.custom_fields.get_value(
+            definition_id,
+            primary_ref,
+        )
+        duplicate_value = uow.custom_fields.get_value(
+            definition_id,
+            duplicate_ref,
+        )
+        audit = uow.audit.list_for_entity(
+            "contact",
+            str(primary.id),
+            OffsetPageRequest(),
+        )
+
+    assert stored_primary.phones == ()
+    assert stored_duplicate.status is ContactStatus.ACTIVE
+    assert primary_value.value == "gold"
+    assert duplicate_value.value == "silver"
+    assert audit.total == 0
