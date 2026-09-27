@@ -30,6 +30,7 @@ nav:
       - 16 Webhooks: guides/16_webhooks.md
       - 17 External Identities: guides/17_external_identities.md
       - 18 Importing Data: guides/18_importing_data.md
+      - 19 Deduplication: guides/19_deduplication.md
   - Facade:
       - CRM: facade/index.md
   - Core:
