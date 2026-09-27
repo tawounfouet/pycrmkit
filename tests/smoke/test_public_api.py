@@ -112,8 +112,8 @@ def test_0_9_format_adapter_surface() -> None:
 def test_0_9_deduplication_surface() -> None:
     from pycrmkit.dedup import (
         CandidateRecord,
-        DedupScorePolicy,
         DeduplicationEngine,
+        DedupScorePolicy,
         InMemoryCandidateSource,
     )
 
