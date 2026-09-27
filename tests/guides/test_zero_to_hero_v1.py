@@ -5,7 +5,13 @@ from datetime import UTC, datetime
 import pytest
 
 from pycrmkit import CRM, __version__
-from pycrmkit.activities import ActivityParticipant
+from pycrmkit.activities import (
+    ActivityDirection,
+    ActivityParticipant,
+    ActivityQuery,
+    ActivityType,
+    ActivityUpdate,
+)
 from pycrmkit.contacts import (
     Address,
     ContactEmail,
@@ -16,6 +22,7 @@ from pycrmkit.contacts import (
 )
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
+from pycrmkit.core.time import FixedClock
 from pycrmkit.custom_fields import (
     CustomFieldDefinitionQuery,
     CustomFieldDefinitionRevision,
@@ -756,3 +763,200 @@ def test_zero_to_hero_custom_fields_invariant_examples() -> None:
             applies_to=("contact",),
         )
     assert enum_without_options.value.code == "custom_field.option.required"
+
+
+
+def test_zero_to_hero_activities_mastery_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 16, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="guide-user",
+        correlation_id="activities-guide-001",
+    )
+
+    contact = crm.contacts.create(
+        display_name="Ada Lovelace",
+    )
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+    contact_ref = EntityReference(
+        kind="contact",
+        id=contact.id,
+    )
+    organization_ref = EntityReference(
+        kind="organization",
+        id=organization.id,
+    )
+
+    occurred_at = datetime(2024, 1, 15, 9, 0, tzinfo=UTC)
+    activity = crm.activities.log(
+        type=ActivityType.MEETING,
+        occurred_at=occurred_at,
+        subject="  Imported   discovery meeting ",
+        description="Historical customer discovery.",
+        direction=ActivityDirection.OUTBOUND,
+        duration_seconds=3600,
+        participants=(
+            ActivityParticipant(
+                reference=contact_ref,
+                role="  customer  ",
+                is_primary=True,
+            ),
+        ),
+        references=(organization_ref,),
+        source="legacy-crm",
+        external_id="meeting-2024-001",
+        metadata={"channel": "video"},
+    )
+
+    assert activity.type is ActivityType.MEETING
+    assert activity.occurred_at == occurred_at
+    assert activity.created_at == clock.now()
+    assert activity.occurred_at != activity.created_at
+    assert activity.subject == "Imported discovery meeting"
+    assert activity.participants[0].role == "customer"
+    assert activity.direction is ActivityDirection.OUTBOUND
+
+    updated = crm.activities.update(
+        activity.id,
+        ActivityUpdate(
+            subject="Corrected discovery meeting",
+            source="crm-ui",
+        ),
+    )
+    assert updated.id == activity.id
+    assert updated.created_at == activity.created_at
+    assert updated.subject == "Corrected discovery meeting"
+    assert updated.source == "crm-ui"
+
+    page = crm.activities.list(
+        ActivityQuery(
+            type=ActivityType.MEETING,
+            participant=contact_ref,
+            reference=organization_ref,
+            direction=ActivityDirection.OUTBOUND,
+            source="CRM-UI",
+            external_id="meeting-2024-001",
+            occurred_from=datetime(2024, 1, 1, tzinfo=UTC),
+            occurred_until=datetime(2024, 2, 1, tzinfo=UTC),
+        ),
+        OffsetPageRequest(limit=10),
+    )
+    assert page.items == (updated,)
+    assert page.total == 1
+
+
+def test_zero_to_hero_activities_ordering_and_window_examples() -> None:
+    crm = CRM.memory()
+
+    older = crm.activities.log(
+        type="note",
+        occurred_at=datetime(2024, 1, 1, tzinfo=UTC),
+        subject="Historical interaction",
+    )
+    newer = crm.activities.log(
+        type="note",
+        occurred_at=datetime(2026, 1, 1, tzinfo=UTC),
+        subject="Recent interaction",
+    )
+
+    page = crm.activities.list()
+    assert page.items[:2] == (newer, older)
+
+    january_2024 = crm.activities.list(
+        ActivityQuery(
+            occurred_from=datetime(2024, 1, 1, tzinfo=UTC),
+            occurred_until=datetime(2026, 1, 1, tzinfo=UTC),
+        )
+    )
+    assert january_2024.items == (older,)
+
+
+def test_zero_to_hero_activities_invariant_examples() -> None:
+    crm = CRM.memory()
+    contact = crm.contacts.create(
+        display_name="Ada Lovelace",
+    )
+    contact_ref = EntityReference(
+        kind="contact",
+        id=contact.id,
+    )
+
+    with pytest.raises(ValidationError) as empty_activity:
+        crm.activities.log(type="note")
+    assert empty_activity.value.code == "activity.context.required"
+
+    with pytest.raises(ValidationError) as negative_duration:
+        crm.activities.log(
+            type="call",
+            subject="Invalid duration",
+            duration_seconds=-1,
+        )
+    assert negative_duration.value.code == "activity.duration.invalid"
+
+    duplicate_participant = ActivityParticipant(
+        reference=contact_ref,
+        role="customer",
+    )
+    with pytest.raises(ValidationError) as duplicate:
+        crm.activities.log(
+            type="meeting",
+            subject="Duplicate participant",
+            participants=(
+                duplicate_participant,
+                ActivityParticipant(
+                    reference=contact_ref,
+                    role="attendee",
+                ),
+            ),
+        )
+    assert duplicate.value.code == "activity.participant.duplicate"
+
+    other_contact = crm.contacts.create(
+        display_name="Charles Babbage",
+    )
+    other_ref = EntityReference(
+        kind="contact",
+        id=other_contact.id,
+    )
+    with pytest.raises(ValidationError) as multiple_primary:
+        crm.activities.log(
+            type="meeting",
+            subject="Multiple primary participants",
+            participants=(
+                ActivityParticipant(
+                    reference=contact_ref,
+                    is_primary=True,
+                ),
+                ActivityParticipant(
+                    reference=other_ref,
+                    is_primary=True,
+                ),
+            ),
+        )
+    assert multiple_primary.value.code == "activity.participant.multiple_primary"
+
+    with pytest.raises(ValidationError) as duplicate_reference:
+        crm.activities.log(
+            type="note",
+            subject="Duplicate references",
+            references=(
+                contact_ref,
+                contact_ref,
+            ),
+        )
+    assert duplicate_reference.value.code == "activity.reference.duplicate"
+
+    with pytest.raises(ValidationError) as invalid_window:
+        ActivityQuery(
+            occurred_from=datetime(2026, 2, 1, tzinfo=UTC),
+            occurred_until=datetime(2026, 1, 1, tzinfo=UTC),
+        )
+    assert invalid_window.value.code == "activity.query.invalid_interval"
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        crm.activities.log(
+            type="note",
+            occurred_at=datetime(2026, 1, 1),
+            subject="Naive timestamp",
+        )
