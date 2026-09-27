@@ -5,11 +5,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **0.8.0 — Django Integration Stable**.  
-Latest data-operations prerelease: **0.9.0b1 — CSV / JSON / JSONL**.
+Latest data-operations prerelease: **0.9.0b2 — Deduplication**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` added the format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework. `0.9.0b1` adds standard-library CSV, JSON and JSONL readers/exporters while keeping deduplication deferred to `0.9.0b2`.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` added the format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework. `0.9.0b1` added standard-library CSV, JSON and JSONL readers/exporters. `0.9.0b2` adds explainable candidate detection, deterministic signal scoring, conflicts and provenance while keeping merge execution deferred to `0.9.0b3`.
 
 ## Architecture
 
@@ -125,8 +125,8 @@ pytest
 0.9.0a1 External Identities                                               ✓
 0.9.0a2 Import Framework                                                   ✓
 0.9.0b1 CSV / JSON / JSONL                                                  ✓
-0.9.0b2 Deduplication                                                       →
-0.9.0b3 Merge
+0.9.0b2 Deduplication                                                       ✓
+0.9.0b3 Merge                                                               →
 0.9.0rc1 Data Operations E2E
 0.9.0  Data Operations
 1.0.0  Production Stable

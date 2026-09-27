@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.9.0b1"
+    assert __version__ == "0.9.0b2"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -107,6 +107,20 @@ def test_0_9_format_adapter_surface() -> None:
     assert CSVExporter.__name__ == "CSVExporter"
     assert JSONExporter.__name__ == "JSONExporter"
     assert JSONLExporter.__name__ == "JSONLExporter"
+
+
+def test_0_9_deduplication_surface() -> None:
+    from pycrmkit.dedup import (
+        CandidateRecord,
+        DeduplicationEngine,
+        DedupScorePolicy,
+        InMemoryCandidateSource,
+    )
+
+    assert CandidateRecord.__name__ == "CandidateRecord"
+    assert DedupScorePolicy.__name__ == "DedupScorePolicy"
+    assert DeduplicationEngine.__name__ == "DeduplicationEngine"
+    assert InMemoryCandidateSource.__name__ == "InMemoryCandidateSource"
 
 
 def test_0_5_webhook_delivery_surface() -> None:

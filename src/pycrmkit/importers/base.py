@@ -118,7 +118,7 @@ class ImportValidator(Protocol):
 
 @runtime_checkable
 class ImportDeduplicator(Protocol):
-    """Provisional hook implemented by the dedicated 0.9.0b2 dedup engine later."""
+    """Detect whether one normalized import row matches an existing entity."""
 
     def detect(self, row: ImportRow) -> DuplicateResult:
         """Return whether the row is already represented."""
