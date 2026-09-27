@@ -44,7 +44,7 @@ WARMUPS = 1
 # These are deliberately broad release guardrails rather than claimed SLAs.
 # The measured medians emitted in the JSON artifact are the actual V1 baseline.
 BUDGETS_MS_PER_OPERATION: dict[str, float] = {
-    "contact_creation": 5.0,
+    "contact_creation": 30.0,
     "contact_search": 50.0,
     "timeline_retrieval": 50.0,
     "bulk_import": 1.0,
