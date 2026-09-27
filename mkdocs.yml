@@ -76,6 +76,8 @@ nav:
   - Deduplication:
       - Overview: dedup/index.md
       - Merge: dedup/merge.md
+  - Data Operations:
+      - E2E Qualification: data_operations/e2e.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
@@ -128,6 +130,7 @@ nav:
       - 0.9.0b1 CSV / JSON / JSONL: releases/0.9.0b1.md
       - 0.9.0b2 Deduplication: releases/0.9.0b2.md
       - 0.9.0b3 Merge: releases/0.9.0b3.md
+      - 0.9.0rc1 Data Operations E2E: releases/0.9.0rc1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
