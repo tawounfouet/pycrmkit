@@ -254,3 +254,28 @@ def test_rc06_production_release_gate_requires_zero_blockers() -> None:
         path for path in rc06["evidence"] if not (ROOT / path).is_file()
     )
     assert missing == []
+
+
+def test_rc07_release_evidence_is_frozen_and_reproducible() -> None:
+    rc07 = MANIFEST["rc07_release_evidence"]
+
+    assert rc07["status"] == "implemented"
+    assert rc07["candidate_version"] == "1.0.0rc1"
+    assert rc07["baseline_release"] == "1.0.0b3"
+    assert rc07["qualified_code_commit"] == (
+        "216fd4161f113036fab4f6eb472a530dee65d9a5"
+    )
+    assert rc07["artifacts"]["wheel"] == {
+        "filename": "pycrmkit-1.0.0rc1-py3-none-any.whl",
+        "sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41",
+    }
+    assert rc07["artifacts"]["sdist"] == {
+        "filename": "pycrmkit-1.0.0rc1.tar.gz",
+        "sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff",
+    }
+    assert "rebuild-must-match-frozen-sha256" in rc07["guarantees"]
+
+    missing = sorted(
+        path for path in rc07["evidence"] if not (ROOT / path).is_file()
+    )
+    assert missing == []
