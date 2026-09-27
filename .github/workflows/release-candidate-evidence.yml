@@ -17,6 +17,8 @@ jobs:
       - name: Install release toolchain
         run: python -m pip install --upgrade pip "build>=1.2" "twine>=6"
       - name: Assert promoted candidate version
+        env:
+          PYTHONPATH: src
         run: |
           python - <<'PY'
           import pycrmkit
