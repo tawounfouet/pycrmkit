@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0b3",
+  "version": "1.0.0rc1",
   "support_policy": "qualified-only",
   "python": [
     "3.11",
