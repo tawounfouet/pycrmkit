@@ -120,9 +120,9 @@ from pycrmkit.opportunities import (
 )
 from pycrmkit.organizations import (
     OrganizationAddress,
-    OrganizationService,
     OrganizationDomain,
     OrganizationQuery,
+    OrganizationService,
     OrganizationStatus,
     OrganizationUpdate,
 )
