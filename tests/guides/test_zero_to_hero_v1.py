@@ -4863,3 +4863,130 @@ assert set(applied) >= {"0001_initial", "0002_external_identity"}
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_zero_to_hero_drf_transport_boundary_example() -> None:
+    script = r"""
+from django.conf import settings
+
+settings.configure(
+    SECRET_KEY="zero-to-hero-drf",
+    INSTALLED_APPS=[],
+    ROOT_URLCONF=__name__,
+    USE_TZ=True,
+    TIME_ZONE="UTC",
+    REST_FRAMEWORK={
+        "UNAUTHENTICATED_USER": None,
+        "EXCEPTION_HANDLER": (
+            "pycrmkit.integrations.django.drf.errors."
+            "pycrmkit_exception_handler"
+        ),
+    },
+)
+
+import django
+
+django.setup()
+
+from django.test import override_settings
+from django.urls import include, path
+from rest_framework.test import APIClient
+
+from pycrmkit import CRM
+from pycrmkit.integrations.django.drf import (
+    ContactUpdateSerializer,
+    create_drf_router,
+)
+
+router = create_drf_router()
+urlpatterns = [path("crm/", include(router.urls))]
+
+assert {prefix for prefix, _, _ in router.registry} == {
+    "contacts",
+    "organizations",
+    "relationships",
+}
+
+patch = ContactUpdateSerializer(
+    data={"first_name": None, "metadata": {}},
+    partial=True,
+)
+assert patch.is_valid(), patch.errors
+update = patch.to_domain()
+
+assert update.first_name is None
+assert repr(update.last_name) == "UNSET"
+assert update.metadata == {}
+
+crm = CRM.memory()
+events = []
+crm.events.subscribe("contact.created", events.append)
+client = APIClient()
+
+with override_settings(PYCRMKIT_CRM_FACTORY=lambda: crm):
+    created = client.post(
+        "/crm/contacts/",
+        {
+            "first_name": "Ada",
+            "last_name": "Lovelace",
+            "emails": [
+                {
+                    "value": "ADA@Example.COM",
+                    "is_primary": True,
+                }
+            ],
+        },
+        format="json",
+        HTTP_X_ACTOR_ID="guide-user",
+        HTTP_X_CORRELATION_ID="guide-drf-001",
+    )
+    assert created.status_code == 201, created.data
+    contact_id = created.data["id"]
+    assert created.data["emails"][0]["value"] == "ADA@Example.COM"
+    assert events[0].actor_id == "guide-user"
+    assert events[0].correlation_id == "guide-drf-001"
+
+    listed = client.get("/crm/contacts/?limit=1&offset=0")
+    assert listed.status_code == 200
+    assert listed.data["total"] == 1
+    assert listed.data["limit"] == 1
+    assert listed.data["items"][0]["id"] == contact_id
+
+    invalid_request = client.post(
+        "/crm/contacts/",
+        {
+            "display_name": "Do not echo me",
+            "status": "not-a-status",
+        },
+        format="json",
+    )
+    assert invalid_request.status_code == 400
+    assert invalid_request.data["code"] == "request.validation_error"
+    assert "Do not echo me" not in str(invalid_request.data)
+
+    invalid_domain = client.post(
+        "/crm/contacts/",
+        {
+            "display_name": "Domain validation",
+            "emails": [{"value": "not-an-email"}],
+        },
+        format="json",
+    )
+    assert invalid_domain.status_code == 422
+    assert invalid_domain.data["code"] == "contact.email.invalid"
+
+    put = client.put(
+        f"/crm/contacts/{contact_id}/",
+        {"first_name": "Not supported"},
+        format="json",
+    )
+    assert put.status_code == 405
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
