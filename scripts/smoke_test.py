@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0b2 CSV / JSON / JSONL."""
+"""Installed-package smoke test for PyCRMKit 0.9.0b2 Deduplication."""
 
 from __future__ import annotations
 
@@ -21,13 +21,13 @@ from pycrmkit.communication import (
 from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
-from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
 from pycrmkit.dedup import (
     CandidateRecord,
     DedupDecision,
     DeduplicationEngine,
     InMemoryCandidateSource,
 )
+from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
 from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
 from pycrmkit.importers import (
     CSVReader,
