@@ -54,9 +54,9 @@ def assert_production_gate_contract() -> dict[str, object]:
         raise SystemExit("RC-06 baseline must remain 1.0.0b3")
     if scenarios["target_release"] != gate["target_release"]:
         raise SystemExit("Scenario and gate target releases diverge")
-    if pycrmkit.__version__ != gate["target_release"]:
+    if pycrmkit.__version__ not in {gate["target_release"], "1.0.0"}:
         raise SystemExit(
-            "RC-07 promotion must execute the qualified target candidate version"
+            "V1 runtime must be the qualified RC or its no-feature stable promotion"
         )
 
     gates = {item["id"]: item for item in gate["rc_gates"]}
@@ -115,7 +115,11 @@ def assert_production_gate_contract() -> dict[str, object]:
         "pending_gates": sorted(pending),
         "blocking_failures_allowed": rc06["blocking_failures_allowed"],
         "promotion_ready": gate["promotion_ready"],
-        "next_step": "1.0.0 production-stable acceptance",
+        "next_step": (
+            "1.0.0 production-stable acceptance"
+            if pycrmkit.__version__ == gate["target_release"]
+            else "post-1.0 roadmap"
+        ),
     }
 
 
