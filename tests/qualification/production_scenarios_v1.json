@@ -343,5 +343,38 @@
       "scripts/v1_production_gate.py",
       "tests/qualification/test_v1_production_release_gate.py"
     ]
+  },
+  "rc07_release_evidence": {
+    "status": "implemented",
+    "candidate_version": "1.0.0rc1",
+    "baseline_release": "1.0.0b3",
+    "qualified_code_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
+    "first_evidence_workflow_run": 36327901778,
+    "artifacts": {
+      "wheel": {
+        "filename": "pycrmkit-1.0.0rc1-py3-none-any.whl",
+        "sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41"
+      },
+      "sdist": {
+        "filename": "pycrmkit-1.0.0rc1.tar.gz",
+        "sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff"
+      }
+    },
+    "guarantees": [
+      "candidate-version-promoted",
+      "wheel-and-sdist-rebuilt-after-promotion",
+      "twine-validation",
+      "isolated-wheel-smoke",
+      "isolated-sdist-smoke",
+      "sha256-evidence-frozen",
+      "rebuild-must-match-frozen-sha256",
+      "zero-blocker-promotion"
+    ],
+    "evidence": [
+      "release/qualification-report-v1.0.0rc1.json",
+      "release/release-manifest-v1.0.0rc1.json",
+      "release/SHA256SUMS-v1.0.0rc1.txt",
+      ".github/workflows/release-candidate-evidence.yml"
+    ]
   }
 }
