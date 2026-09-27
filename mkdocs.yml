@@ -78,6 +78,8 @@ nav:
       - Merge: dedup/merge.md
   - Data Operations:
       - E2E Qualification: data_operations/e2e.md
+  - Security:
+      - Security & Privacy Hardening: security/privacy-hardening.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
@@ -134,6 +136,7 @@ nav:
       - 0.9.0rc1 Data Operations E2E: releases/0.9.0rc1.md
       - 0.9.0 Data Operations Stable: releases/0.9.0.md
       - 1.0.0a1 Public API Freeze Candidate: releases/1.0.0a1.md
+      - 1.0.0b1 Security & Privacy Hardening: releases/1.0.0b1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
