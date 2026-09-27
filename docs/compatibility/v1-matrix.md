@@ -1,6 +1,6 @@
 # V1 Compatibility Matrix
 
-PyCRMKit `1.0.0b3` publishes the compatibility matrix intended for the V1
+PyCRMKit `1.0.0` publishes the compatibility matrix for the stable V1
 production contract.
 
 A version is **qualified** only when:
@@ -22,7 +22,7 @@ Installability alone is not treated as a support promise.
 | 3.11 | Qualified |
 | 3.12 | Qualified |
 | 3.13 | Qualified |
-| 3.14+ | Not qualified by 1.0.0b3 |
+| 3.14+ | Not qualified by 1.0.0 |
 
 Package metadata therefore uses:
 
@@ -41,7 +41,7 @@ The production-reference server matrix is:
 | --- | --- |
 | 16 | Qualified |
 | 17 | Qualified |
-| earlier | Not qualified by 1.0.0b3 |
+| earlier | Not qualified by 1.0.0 |
 | later | Not yet qualified |
 
 Each PostgreSQL version is crossed with both qualified SQLAlchemy families.
@@ -215,8 +215,5 @@ unlisted optional-extra combinations
 Those combinations may work, but they are outside the V1 qualified contract
 until explicitly added to the matrix.
 
-The next milestone is:
-
-```text
-1.0.0rc1 — Full Production Qualification
-```
+The matrix is frozen for the `1.0.0` stable line. Future support expansion
+requires an explicit post-1.0 qualification change.
