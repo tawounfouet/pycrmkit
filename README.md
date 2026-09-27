@@ -5,11 +5,11 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **0.8.0 — Django Integration Stable**.  
-Latest data-operations prerelease: **0.9.0a2 — Import Framework**.
+Latest data-operations prerelease: **0.9.0b1 — CSV / JSON / JSONL**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` adds a format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework; CSV/JSON/JSONL remain deferred to `0.9.0b1`.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` added the format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework. `0.9.0b1` adds standard-library CSV, JSON and JSONL readers/exporters while keeping deduplication deferred to `0.9.0b2`.
 
 ## Architecture
 
