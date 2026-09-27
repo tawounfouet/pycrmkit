@@ -123,9 +123,9 @@ pytest
 0.8.0rc1 Django Example + E2E                                          ✓
 0.8.0  Django Integration                                              ✓
 0.9.0a1 External Identities                                               ✓
-0.9.0a2 Import Framework                                                   →
-0.9.0b1 CSV / JSON / JSONL
-0.9.0b2 Deduplication
+0.9.0a2 Import Framework                                                   ✓
+0.9.0b1 CSV / JSON / JSONL                                                  ✓
+0.9.0b2 Deduplication                                                       →
 0.9.0b3 Merge
 0.9.0rc1 Data Operations E2E
 0.9.0  Data Operations
