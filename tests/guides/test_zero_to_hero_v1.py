@@ -49,13 +49,13 @@ from pycrmkit.relationships import (
     RelationshipType,
     RelationshipUpdate,
 )
+from pycrmkit.tags import TagName, TagQuery
 from pycrmkit.tasks import (
     TaskPriority,
     TaskQuery,
     TaskStatus,
     TaskUpdate,
 )
-from pycrmkit.tags import TagName, TagQuery
 
 
 def test_zero_to_hero_getting_started_example() -> None:
