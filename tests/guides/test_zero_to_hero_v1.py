@@ -41,7 +41,7 @@ from pycrmkit.exceptions import (
     InvalidStateError,
     ValidationError,
 )
-from pycrmkit.leads import LeadQuery, LeadService, LeadStatus
+from pycrmkit.leads import LeadConversionService, LeadQuery, LeadService, LeadStatus
 from pycrmkit.opportunities import (
     OpportunityQuery,
     OpportunityService,
@@ -72,6 +72,7 @@ from pycrmkit.relationships import (
 from pycrmkit.storage.memory import (
     MemoryLeadRepository,
     MemoryOpportunityRepository,
+    MemoryPipelineRepository,
     MemoryStore,
     MemoryUnitOfWork,
 )
@@ -1848,3 +1849,222 @@ def test_zero_to_hero_pipelines_duplicate_definition_example() -> None:
             stages=stages,
         )
     assert duplicate.value.code == "pipeline.duplicate"
+
+
+
+def test_zero_to_hero_lead_conversion_facade_atomic_idempotent_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 21, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="seller-42",
+        correlation_id="conversion-guide-001",
+    )
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+    pipeline = crm.pipelines.define(
+        id="sales",
+        name="Sales",
+        stages=(
+            Stage("new", "New", 0, Decimal("0.10")),
+            Stage("qualified", "Qualified", 10, Decimal("0.35")),
+        ),
+        transitions=(
+            StageTransition("new", "qualified"),
+        ),
+    )
+    lead = crm.leads.create(
+        contact_id=contact.id,
+        organization_id=organization.id,
+        source="website",
+    )
+    lead = crm.leads.qualify(lead.id)
+
+    created_events: list[DomainEvent] = []
+    converted_events: list[DomainEvent] = []
+    crm.events.subscribe("opportunity.created", created_events.append)
+    crm.events.subscribe("lead.converted", converted_events.append)
+
+    first = crm.leads.convert(
+        lead.id,
+        name="  Enterprise   rollout ",
+        estimated_value=Decimal("25000.00"),
+        currency=" eur ",
+        pipeline_id=pipeline.id,
+        expected_close_date=date(2027, 1, 31),
+        owner_id=" seller-42 ",
+        idempotency_key="convert-001",
+    )
+    retry = crm.leads.convert(
+        lead.id,
+        name="Enterprise rollout",
+        estimated_value=Decimal("25000.0"),
+        currency="EUR",
+        pipeline_id=" SALES ",
+        expected_close_date=date(2027, 1, 31),
+        owner_id="seller-42",
+        idempotency_key="convert-001",
+    )
+
+    assert retry.id == first.id
+    assert first.contact_id == contact.id
+    assert first.organization_id == organization.id
+    assert first.pipeline_id == "sales"
+    assert first.stage_id == "new"
+    assert first.probability == Decimal("0.10")
+    assert first.currency == "EUR"
+    assert len(created_events) == 1
+    assert len(converted_events) == 1
+
+    with crm._runtime.uow_factory() as uow:
+        persisted_lead = uow.leads.get(lead.id)
+        opportunities = uow.opportunities.list(
+            OpportunityQuery(contact_id=contact.id),
+            OffsetPageRequest(),
+        )
+
+    assert persisted_lead.status is LeadStatus.CONVERTED
+    assert persisted_lead.converted_opportunity_id == first.id
+    assert opportunities.total == 1
+
+    actions = [
+        entry.action
+        for entry in crm.audit.by_correlation("conversion-guide-001").items
+    ]
+    assert actions.count("opportunity.created") == 1
+    assert actions.count("lead.converted") == 1
+
+
+def test_zero_to_hero_lead_conversion_service_replay_semantics_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 22, 0, tzinfo=UTC))
+    ids = UUID4Factory()
+    leads = MemoryLeadRepository()
+    opportunities = MemoryOpportunityRepository()
+    pipelines = MemoryPipelineRepository()
+
+    lead_service = LeadService(
+        leads,
+        id_factory=ids,
+        clock=clock,
+    )
+    lead = lead_service.create(
+        contact_id=ids.new(ContactId),
+    )
+    lead = lead_service.qualify(lead.id)
+
+    conversion = LeadConversionService(
+        leads=leads,
+        opportunities=opportunities,
+        pipelines=pipelines,
+        id_factory=ids,
+        clock=clock,
+    )
+
+    first = conversion.convert(
+        lead.id,
+        estimated_value=Decimal("25000.00"),
+        currency="eur",
+        idempotency_key="retry-key",
+    )
+    retry = conversion.convert(
+        lead.id,
+        estimated_value=Decimal("25000.0"),
+        currency="EUR",
+        idempotency_key="retry-key",
+    )
+
+    assert first.created is True
+    assert retry.created is False
+    assert retry.opportunity.id == first.opportunity.id
+
+    with pytest.raises(ConflictError) as conflict:
+        conversion.convert(
+            lead.id,
+            estimated_value=Decimal("30000"),
+            currency="EUR",
+            idempotency_key="retry-key",
+        )
+    assert conflict.value.code == "lead.conversion.idempotency_conflict"
+
+    with pytest.raises(InvalidStateError) as different_key:
+        conversion.convert(
+            lead.id,
+            estimated_value=Decimal("25000"),
+            currency="EUR",
+            idempotency_key="another-key",
+        )
+    assert different_key.value.code == "lead.conversion.already_converted"
+
+
+def test_zero_to_hero_lead_conversion_invalid_request_rolls_back_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 27, 23, 0, tzinfo=UTC))
+    )
+    contact = crm.contacts.create(display_name="Katherine Johnson")
+    lead = crm.leads.create(contact_id=contact.id)
+    lead = crm.leads.qualify(lead.id)
+
+    with pytest.raises(ValidationError) as invalid_currency:
+        crm.leads.convert(
+            lead.id,
+            estimated_value=Decimal("10000"),
+            currency="EU",
+            idempotency_key="bad-currency",
+        )
+    assert invalid_currency.value.code == "money.currency.invalid"
+
+    with crm._runtime.uow_factory() as uow:
+        persisted_lead = uow.leads.get(lead.id)
+        opportunities = uow.opportunities.list(
+            OpportunityQuery(contact_id=contact.id),
+            OffsetPageRequest(),
+        )
+
+    assert persisted_lead.status is LeadStatus.QUALIFIED
+    assert persisted_lead.converted_opportunity_id is None
+    assert opportunities.total == 0
+
+
+def test_zero_to_hero_lead_conversion_post_commit_retry_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 0, 0, tzinfo=UTC))
+    )
+    contact = crm.contacts.create(display_name="Grace Hopper")
+    lead = crm.leads.create(contact_id=contact.id)
+    lead = crm.leads.qualify(lead.id)
+
+    def fail_after_commit(event: DomainEvent) -> None:
+        del event
+        raise RuntimeError("simulated transport failure")
+
+    crm.events.subscribe("opportunity.created", fail_after_commit)
+
+    with pytest.raises(RuntimeError, match="simulated transport failure"):
+        crm.leads.convert(
+            lead.id,
+            estimated_value=Decimal("15000.00"),
+            currency="eur",
+            idempotency_key="transport-retry",
+        )
+
+    crm.events.unsubscribe("opportunity.created", fail_after_commit)
+
+    opportunity = crm.leads.convert(
+        lead.id,
+        estimated_value=Decimal("15000.0"),
+        currency="EUR",
+        idempotency_key="transport-retry",
+    )
+
+    with crm._runtime.uow_factory() as uow:
+        persisted_lead = uow.leads.get(lead.id)
+        opportunities = uow.opportunities.list(
+            OpportunityQuery(contact_id=contact.id),
+            OffsetPageRequest(),
+        )
+
+    assert persisted_lead.status is LeadStatus.CONVERTED
+    assert persisted_lead.converted_opportunity_id == opportunity.id
+    assert opportunities.total == 1
+    assert opportunities.items[0].id == opportunity.id
