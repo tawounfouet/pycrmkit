@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.9.0 — Data Operations Stable`**.  
-The latest V1 prerelease is **`1.0.0rc1 — Full Production Qualification`**.
+The current stable V1 release is **`1.0.0 — Production Stable`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -112,4 +112,4 @@ qualification now form one compatibility-governed integration line.
 
 `1.0.0b2` establishes reproducible source/wheel baselines for Contact creation/search, Timeline retrieval, bulk import, repository pagination and event publication. It also adds an opt-in summary import mode that preserves exact counters without retaining one result object per row, and locks bounded SQL pagination as a performance contract.
 
-`1.0.0b3` publishes and executes the V1 compatibility contract: Python 3.11/3.12/3.13; PostgreSQL 16/17 crossed with SQLAlchemy 2.0/2.1; FastAPI 0.141 with Pydantic 2.13; Django 5.2 with DRF 3.18; and the supported optional dependency combinations. Package install bounds are tightened to those qualified families so future untested versions are not presented as implicitly supported.\n\n`1.0.0rc1` completes full production qualification: RC contracts, cross-layer E2E, PostgreSQL transaction/migration qualification, FastAPI and Django/DRF integration boundaries, isolated wheel/sdist execution, security/privacy, performance and compatibility all converge behind a zero-blocker release gate.
+`1.0.0b3` publishes and executes the V1 compatibility contract: Python 3.11/3.12/3.13; PostgreSQL 16/17 crossed with SQLAlchemy 2.0/2.1; FastAPI 0.141 with Pydantic 2.13; Django 5.2 with DRF 3.18; and the supported optional dependency combinations. Package install bounds are tightened to those qualified families so future untested versions are not presented as implicitly supported.\n\n`1.0.0rc1` completes full production qualification: RC contracts, cross-layer E2E, PostgreSQL transaction/migration qualification, FastAPI and Django/DRF integration boundaries, isolated wheel/sdist execution, security/privacy, performance and compatibility all converge behind a zero-blocker release gate. `1.0.0` promotes that same qualified behavior to the stable V1 line without functional delta.

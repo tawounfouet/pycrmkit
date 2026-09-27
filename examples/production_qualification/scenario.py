@@ -289,12 +289,12 @@ def run_scenario() -> dict[str, object]:
     headless = run_headless_customer_journey()
     data_operations = run_data_operations()
 
-    assert pycrmkit.__version__ == "1.0.0rc1"
+    assert pycrmkit.__version__ == "1.0.0"
     assert data_operations["version"] == pycrmkit.__version__
 
     return {
         "version": pycrmkit.__version__,
-        "qualification": "1.0.0rc1-rc02-cross-layer-e2e",
+        "qualification": "1.0.0-rc02-cross-layer-e2e",
         "headless_customer_journey": headless,
         "data_operations": {
             "import": data_operations["import"],

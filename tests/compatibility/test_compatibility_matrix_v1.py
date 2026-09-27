@@ -23,7 +23,7 @@ def _optional(extra: str) -> list[str]:
 
 
 def test_release_version_matches_compatibility_manifest() -> None:
-    assert pycrmkit.__version__ == MANIFEST["version"] == "1.0.0rc1"
+    assert pycrmkit.__version__ == MANIFEST["version"] == "1.0.0"
 
 
 def test_runtime_python_is_one_of_the_qualified_minor_versions() -> None:

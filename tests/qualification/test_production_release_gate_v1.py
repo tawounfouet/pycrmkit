@@ -42,9 +42,10 @@ def test_gate_and_scenario_contract_target_the_same_candidate() -> None:
     assert GATE["baseline_release"] == SCENARIOS["baseline_release"] == "1.0.0b3"
 
 
-def test_package_is_promoted_to_target_during_rc07_evidence_work() -> None:
+def test_package_is_stable_promotion_of_the_qualified_rc() -> None:
     assert GATE["baseline_release"] == "1.0.0b3"
-    assert pycrmkit.__version__ == GATE["target_release"] == "1.0.0rc1"
+    assert GATE["target_release"] == "1.0.0rc1"
+    assert pycrmkit.__version__ == "1.0.0"
 
 
 def test_prerequisite_v1_milestones_are_explicit_and_backed_by_workflows() -> None:
