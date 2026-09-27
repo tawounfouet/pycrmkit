@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0a1",
+  "version": "1.0.0b1",
   "classification": "public-api-freeze-candidate",
   "root_exports": [
     "CRM",
@@ -464,7 +464,8 @@
         "disable",
         "list",
         "register",
-        "retry_due"
+        "retry_due",
+        "rotate_secret"
       ]
     }
   },
