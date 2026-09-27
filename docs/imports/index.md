@@ -116,9 +116,23 @@ validation_errors
 `validation_errors` counts structured validation/transformation issues, while
 `rows_skipped` counts rows that did not produce a create/update result.
 
-The report also retains row-level results so applications can inspect the
+By default, the report also retains row-level results so applications can inspect the
 source row number, duplicate disposition, validation stage, machine-readable
 error code and persisted entity identifier.
+
+For high-volume imports, PyCRMKit `1.0.0b2` adds summary mode:
+
+```python
+pipeline = ImportPipeline(
+    reader=reader,
+    persister=persister,
+    retain_row_results=False,
+)
+```
+
+All six counters remain exact, while `report.row_results` stays empty. This
+avoids report memory growing linearly with the number of accepted/skipped rows.
+The default remains `True` for backward compatibility.
 
 ## Failure semantics
 

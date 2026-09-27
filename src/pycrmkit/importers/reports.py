@@ -58,6 +58,7 @@ class ImportReport:
     duplicates: int = 0
     validation_errors: int = 0
     row_results: list[ImportRowResult] = field(default_factory=list)
+    retain_row_results: bool = True
 
     @property
     def errors(self) -> tuple[ImportRowError, ...]:
@@ -88,13 +89,14 @@ class ImportReport:
         )
         self.validation_errors += len(errors)
         self.rows_skipped += 1
-        self.row_results.append(
-            ImportRowResult(
-                row_number=row_number,
-                status=ImportRowStatus.SKIPPED,
-                errors=errors,
+        if self.retain_row_results:
+            self.row_results.append(
+                ImportRowResult(
+                    row_number=row_number,
+                    status=ImportRowStatus.SKIPPED,
+                    errors=errors,
+                )
             )
-        )
 
     def record_duplicate(
         self,
@@ -104,14 +106,15 @@ class ImportReport:
     ) -> None:
         self.duplicates += 1
         self.rows_skipped += 1
-        self.row_results.append(
-            ImportRowResult(
-                row_number=row_number,
-                status=ImportRowStatus.SKIPPED,
-                duplicate=True,
-                duplicate_entity_id=existing_entity_id,
+        if self.retain_row_results:
+            self.row_results.append(
+                ImportRowResult(
+                    row_number=row_number,
+                    status=ImportRowStatus.SKIPPED,
+                    duplicate=True,
+                    duplicate_entity_id=existing_entity_id,
+                )
             )
-        )
 
     def record_persisted(self, *, row_number: int, result: PersistResult) -> None:
         if result.action is PersistAction.CREATED:
@@ -124,13 +127,14 @@ class ImportReport:
             self.rows_skipped += 1
             status = ImportRowStatus.SKIPPED
 
-        self.row_results.append(
-            ImportRowResult(
-                row_number=row_number,
-                status=status,
-                entity_id=result.entity_id,
+        if self.retain_row_results:
+            self.row_results.append(
+                ImportRowResult(
+                    row_number=row_number,
+                    status=status,
+                    entity_id=result.entity_id,
+                )
             )
-        )
 
     def as_dict(self) -> dict[str, object]:
         """Return the stable report counters for machine-readable integrations."""

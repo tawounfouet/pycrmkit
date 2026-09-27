@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.9.0 — Data Operations Stable`**.  
-The latest V1 prerelease is **`1.0.0b1 — Security & Privacy Hardening`**.
+The latest V1 prerelease is **`1.0.0b2 — Performance Baseline`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -110,4 +110,6 @@ qualification now form one compatibility-governed integration line.
 
 `1.0.0b1` hardens the V1 candidate without expanding the CRM domain: public error serialization redacts sensitive values, External Identity event payloads no longer copy external IDs, webhook secrets can be rotated with audit-safe evidence, signature verification can enforce an anti-replay age window, and merge execution rejects provenance containing blocking conflicts. A dedicated source/clean-wheel security gate protects these guarantees.
 
-The next roadmap milestone is **`1.0.0b2 — Performance Baseline`**.
+`1.0.0b2` establishes reproducible source/wheel baselines for Contact creation/search, Timeline retrieval, bulk import, repository pagination and event publication. It also adds an opt-in summary import mode that preserves exact counters without retaining one result object per row, and locks bounded SQL pagination as a performance contract.
+
+The next roadmap milestone is **`1.0.0b3 — Compatibility Matrix`**.

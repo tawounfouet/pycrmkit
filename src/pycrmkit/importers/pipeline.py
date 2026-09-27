@@ -41,9 +41,10 @@ class ImportPipeline:
     normalizer: ImportNormalizer = field(default_factory=IdentityNormalizer)
     validator: ImportValidator = field(default_factory=AcceptAllValidator)
     deduplicator: ImportDeduplicator = field(default_factory=NoDuplicateDetector)
+    retain_row_results: bool = True
 
     def run(self) -> ImportReport:
-        report = ImportReport()
+        report = ImportReport(retain_row_results=self.retain_row_results)
 
         for row_number, raw_values in enumerate(self.reader.read(), start=1):
             report.rows_read += 1
