@@ -43,6 +43,7 @@ example application.
 8. [Activities](07_activities.md) — model customer interaction history, participants, references and temporal queries.
 9. [Tasks](08_tasks.md) — master actionable CRM work, priorities, due dates, lifecycle transitions and overdue queries.
 10. [Timeline](09_timeline.md) — understand immutable customer-history projections, replay safety, filters and transactional consistency.
+11. [Leads](10_leads.md) — model commercial qualification, explicit lifecycle transitions and portable Lead queries.
 
 ## LEVEL 1 complete
 
@@ -50,7 +51,11 @@ Contacts, Organizations, Relationships, Tags and Custom Fields now form the comp
 
 ## LEVEL 2 complete
 
-Activities, Tasks and Timeline now form the complete Customer Activity layer: interactions, actionable work and ordered relationship history. The next learning level is Sales: Leads, Opportunities, Pipelines and Lead Conversion.
+Activities, Tasks and Timeline now form the complete Customer Activity layer: interactions, actionable work and ordered relationship history. LEVEL 3 now begins with Sales: Leads, Opportunities, Pipelines and Lead Conversion.
+
+## LEVEL 3 in progress
+
+Leads now establish the commercial qualification lifecycle. The next chapter is Opportunities, followed by Pipelines and atomic Lead Conversion.
 
 ## Full Zero-to-Hero roadmap
 
@@ -69,7 +74,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 2 | 07 | Activities | Published |
 | 2 | 08 | Tasks | Published |
 | 2 | 09 | Timeline | Published |
-| 3 | 10 | Leads | Planned |
+| 3 | 10 | Leads | Published |
 | 3 | 11 | Opportunities | Planned |
 | 3 | 12 | Pipelines | Planned |
 | 3 | 13 | Lead Conversion | Planned |
