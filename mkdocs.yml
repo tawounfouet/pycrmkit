@@ -17,6 +17,7 @@ nav:
       - 03 Contacts: guides/03_contacts.md
       - 04 Organizations: guides/04_organizations.md
       - 05 Relationships: guides/05_relationships.md
+      - 06 Tags & Custom Fields: guides/06_tags_and_custom_fields.md
   - Facade:
       - CRM: facade/index.md
   - Core:
