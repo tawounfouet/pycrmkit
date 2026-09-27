@@ -100,10 +100,6 @@ def _resolve_primary_key(
         raise ConflictError(
             conflict_message,
             code=conflict_code,
-            context={
-                "primary": primary_key,
-                "duplicate": duplicate_key,
-            },
         )
     if resolution is MergeResolution.KEEP_DUPLICATE:
         return duplicate_key
