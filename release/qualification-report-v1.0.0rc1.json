@@ -2,7 +2,7 @@
   "schema_version": 1,
   "release": "1.0.0rc1",
   "baseline_release": "1.0.0b3",
-  "status": "qualified",
+  "status": "candidate-build-recorded-awaiting-reproducibility",
   "qualified_rc06_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
   "qualification_date": "2026-09-27",
   "blocking_failures": 0,
@@ -59,5 +59,12 @@
     "byte_reproducible": true
   },
   "promotion_ready": true,
-  "next_milestone": "1.0.0 — Production Stable"
+  "next_milestone": "1.0.0 — Production Stable",
+  "first_candidate_build": {
+    "workflow_run_id": 36327901778,
+    "wheel_sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41",
+    "sdist_sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff",
+    "isolated_wheel_smoke": "passed",
+    "isolated_sdist_smoke": "passed"
+  }
 }
