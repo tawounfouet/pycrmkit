@@ -20,6 +20,7 @@ nav:
       - 06 Tags & Custom Fields: guides/06_tags_and_custom_fields.md
       - 07 Activities: guides/07_activities.md
       - 08 Tasks: guides/08_tasks.md
+      - 09 Timeline: guides/09_timeline.md
   - Facade:
       - CRM: facade/index.md
   - Core:
