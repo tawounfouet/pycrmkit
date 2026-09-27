@@ -127,7 +127,10 @@ jobs:
           print("FastAPI", fastapi.__version__)
           print("Pydantic", pydantic.__version__)
           PY
-      - run: python -m pytest tests/integrations/fastapi -m "not postgresql" -q
+      - run: >-
+          python -m pytest tests/integrations/fastapi
+          --ignore=tests/integrations/fastapi/test_postgresql_e2e.py
+          -q
 
   django:
     name: Django 5.2 / DRF 3.18 / Python ${{ matrix.python-version }}
