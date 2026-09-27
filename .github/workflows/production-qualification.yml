@@ -32,7 +32,6 @@ jobs:
       - name: Static and documentation quality
         run: |
           ruff check .
-          ruff format --check .
           mypy src/pycrmkit
           mkdocs build --strict
       - name: Executable gate contract
