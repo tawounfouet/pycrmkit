@@ -5,7 +5,6 @@ from __future__ import annotations
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import ConflictError, DuplicateError
@@ -16,7 +15,7 @@ from pycrmkit.external_identities import (
     normalize_external_system,
     same_entity,
 )
-from pycrmkit.storage.sqlalchemy.mappers import aware
+from pycrmkit.storage.sqlalchemy.mappers import aware, entity_reference
 from pycrmkit.storage.sqlalchemy.models.external_identity import ExternalIdentityModel
 from pycrmkit.storage.sqlalchemy.repositories._helpers import page_models
 
@@ -29,7 +28,7 @@ def _from_model(model: ExternalIdentityModel) -> ExternalIdentity:
         system=model.system,
         external_id=model.external_id,
         entity_type=model.entity_type,
-        entity_id=EntityId.parse(model.entity_id),
+        entity_id=entity_reference(model.entity_type, model.entity_id).id,
         metadata=dict(model.metadata_json or {}),
     )
 
