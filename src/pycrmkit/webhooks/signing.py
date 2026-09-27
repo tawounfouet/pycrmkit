@@ -57,12 +57,28 @@ def verify_webhook_signature(
     timestamp: int,
     payload: bytes,
     signature: str,
+    *,
+    current_timestamp: int | None = None,
+    tolerance_seconds: int = 300,
 ) -> bool:
-    """Verify a versioned webhook signature using constant-time comparison."""
+    """Verify HMAC integrity and optionally reject stale/replayed timestamps."""
 
     if not isinstance(signature, str) or not signature.startswith(SIGNATURE_PREFIX):
         return False
     expected = sign_webhook_payload(secret, timestamp, payload)
+    if current_timestamp is not None:
+        if type(current_timestamp) is not int or current_timestamp < 0:
+            raise ValidationError(
+                "webhook current timestamp must be a non-negative integer",
+                code="webhook.signing.current_timestamp.invalid",
+            )
+        if type(tolerance_seconds) is not int or tolerance_seconds < 0:
+            raise ValidationError(
+                "webhook signature tolerance must be a non-negative integer",
+                code="webhook.signing.tolerance.invalid",
+            )
+        if abs(current_timestamp - timestamp) > tolerance_seconds:
+            return False
     return hmac.compare_digest(expected, signature)
 
 
