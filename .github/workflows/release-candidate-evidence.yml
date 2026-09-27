@@ -36,49 +36,8 @@ jobs:
           test -f dist/pycrmkit-1.0.0rc1.tar.gz
       - name: Normalize sdist archive metadata
         run: |
-          python - <<'PY'
-          import gzip
-          import os
-          import tarfile
-          import tempfile
-          from pathlib import Path
-
-          epoch = int(os.environ["SOURCE_DATE_EPOCH"])
-          source = Path("dist/pycrmkit-1.0.0rc1.tar.gz")
-
-          with tempfile.TemporaryDirectory() as tmp:
-              root = Path(tmp) / "root"
-              root.mkdir()
-              with tarfile.open(source, "r:gz") as archive:
-                  archive.extractall(root)
-
-              raw_tar = Path(tmp) / "normalized.tar"
-              with tarfile.open(raw_tar, "w", format=tarfile.PAX_FORMAT) as archive:
-                  for path in sorted(root.rglob("*")):
-                      arcname = path.relative_to(root).as_posix()
-                      info = archive.gettarinfo(str(path), arcname=arcname)
-                      info.uid = 0
-                      info.gid = 0
-                      info.uname = ""
-                      info.gname = ""
-                      info.mtime = epoch
-                      info.pax_headers = {}
-                      if path.is_file():
-                          with path.open("rb") as stream:
-                              archive.addfile(info, stream)
-                      else:
-                          archive.addfile(info)
-
-              with raw_tar.open("rb") as raw, source.open("wb") as target:
-                  with gzip.GzipFile(
-                      filename="",
-                      mode="wb",
-                      fileobj=target,
-                      compresslevel=9,
-                      mtime=epoch,
-                  ) as compressed:
-                      compressed.write(raw.read())
-          PY
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.0.0rc1.tar.gz
+          python -m twine check dist/*
       - name: Generate SHA256 evidence
         run: |
           sha256sum             dist/pycrmkit-1.0.0rc1-py3-none-any.whl             dist/pycrmkit-1.0.0rc1.tar.gz             | sed 's#  dist/#  #'             | tee /tmp/SHA256SUMS-v1.0.0rc1.txt
@@ -90,6 +49,7 @@ jobs:
           cp /tmp/SHA256SUMS-v1.0.0rc1.txt /tmp/SHA256SUMS-v1.0.0rc1-first.txt
           rm -rf dist build
           python -m build
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.0.0rc1.tar.gz
           python -m twine check dist/*
           sha256sum             dist/pycrmkit-1.0.0rc1-py3-none-any.whl             dist/pycrmkit-1.0.0rc1.tar.gz             | sed 's#  dist/#  #'             | tee /tmp/SHA256SUMS-v1.0.0rc1-second.txt
           diff -u             /tmp/SHA256SUMS-v1.0.0rc1-first.txt             /tmp/SHA256SUMS-v1.0.0rc1-second.txt
