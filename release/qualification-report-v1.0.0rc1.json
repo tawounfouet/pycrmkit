@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "release": "1.0.0rc1",
+  "baseline_release": "1.0.0b3",
+  "status": "candidate-build-pending-hashes",
+  "qualified_rc06_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
+  "qualification_date": "2026-09-27",
+  "blocking_failures": 0,
+  "gates": [
+    {
+      "id": "RC-01",
+      "name": "Production qualification contract",
+      "status": "qualified"
+    },
+    {
+      "id": "RC-02",
+      "name": "Cross-layer E2E qualification",
+      "status": "qualified"
+    },
+    {
+      "id": "RC-03",
+      "name": "Persistence and migration qualification",
+      "status": "qualified"
+    },
+    {
+      "id": "RC-04",
+      "name": "Integration qualification",
+      "status": "qualified"
+    },
+    {
+      "id": "RC-05",
+      "name": "Installed artifact qualification",
+      "status": "qualified"
+    },
+    {
+      "id": "RC-06",
+      "name": "Production release gate",
+      "status": "qualified"
+    },
+    {
+      "id": "RC-07",
+      "name": "Release evidence and artifacts",
+      "status": "evidence-generation"
+    }
+  ],
+  "promotion_scope": "release-metadata-and-evidence-only",
+  "code_delta_from_rc06": "no-new-domain-capability-or-persistence-schema",
+  "required_final_evidence": [
+    "release/qualification-report-v1.0.0rc1.json",
+    "release/release-manifest-v1.0.0rc1.json",
+    "release/SHA256SUMS-v1.0.0rc1.txt"
+  ]
+}
