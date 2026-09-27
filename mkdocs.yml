@@ -31,6 +31,7 @@ nav:
       - 17 External Identities: guides/17_external_identities.md
       - 18 Importing Data: guides/18_importing_data.md
       - 19 Deduplication: guides/19_deduplication.md
+      - 20 Contact Merge: guides/20_contact_merge.md
   - Facade:
       - CRM: facade/index.md
   - Core:

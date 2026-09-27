@@ -53,6 +53,7 @@ example application.
 18. [External Identities](17_external_identities.md) — map provider-owned record IDs to CRM entities with deterministic ownership, idempotent attach and privacy-aware events.
 19. [Importing Data](18_importing_data.md) — build provider-neutral Read → Map → Normalize → Validate → Deduplicate → Persist pipelines with structured and bounded reporting.
 20. [Deduplication](19_deduplication.md) — evaluate explainable candidate evidence with exact normalized signals, configurable scoring, conflicts and conservative auto-selection.
+21. [Contact Merge](20_contact_merge.md) — reconcile reviewed duplicate Contacts transactionally with explicit primary selection, conflict policy, linked-state reassignment, archival and minimized audit.
 
 ## LEVEL 1 complete
 
@@ -72,7 +73,7 @@ Email & Communications, Domain Events and Webhooks now form the complete Communi
 
 ## LEVEL 5 in progress
 
-External Identities establishes deterministic provider-record ownership; Importing Data adds provider-neutral ingestion; Deduplication now adds exact normalized evidence, explainable scoring and conservative candidate selection. Contact Merge is next.
+External Identities establishes provider-record ownership; Importing Data adds provider-neutral ingestion; Deduplication adds explainable candidate evidence; Contact Merge now reconciles reviewed duplicates transactionally. Exporting Data is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -101,7 +102,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 5 | 17 | External Identities | Published |
 | 5 | 18 | Importing Data | Published |
 | 5 | 19 | Deduplication | Published |
-| 5 | 20 | Contact Merge | Planned |
+| 5 | 20 | Contact Merge | Published |
 | 5 | 21 | Exporting Data | Planned |
 | 6 | 22 | Memory Adapter | Planned |
 | 6 | 23 | SQLAlchemy | Planned |
