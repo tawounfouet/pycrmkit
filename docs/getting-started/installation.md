@@ -1,6 +1,6 @@
 # Installation
 
-PyCRMKit `0.7.0` is the current stable FastAPI Integration release.
+PyCRMKit `0.9.0` is the current stable line; `1.0.0b3` is the latest V1 compatibility candidate.
 
 ## V1 qualified compatibility
 
