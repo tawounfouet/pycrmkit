@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
+from types import MappingProxyType
 
 from pycrmkit.dedup.conflicts import ConflictSeverity, DedupConflict
 from pycrmkit.dedup.matchers import DedupSignal, SignalMatch
@@ -51,6 +52,11 @@ class DedupScorePolicy:
     duplicate_threshold: int = 100
 
     def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "weights",
+            MappingProxyType(dict(self.weights)),
+        )
         if not 0 <= self.review_threshold <= self.duplicate_threshold <= 100:
             raise ValidationError(
                 "dedup thresholds must satisfy 0 <= review <= duplicate <= 100",
