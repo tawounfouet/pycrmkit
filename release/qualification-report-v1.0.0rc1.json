@@ -2,7 +2,7 @@
   "schema_version": 1,
   "release": "1.0.0rc1",
   "baseline_release": "1.0.0b3",
-  "status": "candidate-build-pending-hashes",
+  "status": "qualified",
   "qualified_rc06_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
   "qualification_date": "2026-09-27",
   "blocking_failures": 0,
@@ -40,7 +40,7 @@
     {
       "id": "RC-07",
       "name": "Release evidence and artifacts",
-      "status": "evidence-generation"
+      "status": "qualified"
     }
   ],
   "promotion_scope": "release-metadata-and-evidence-only",
@@ -49,5 +49,13 @@
     "release/qualification-report-v1.0.0rc1.json",
     "release/release-manifest-v1.0.0rc1.json",
     "release/SHA256SUMS-v1.0.0rc1.txt"
-  ]
+  ],
+  "artifact_evidence": {
+    "first_evidence_workflow_run": 36327901778,
+    "wheel_sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41",
+    "sdist_sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff",
+    "reproducibility_required_before_merge": true
+  },
+  "promotion_ready": true,
+  "next_milestone": "1.0.0 — Production Stable"
 }
