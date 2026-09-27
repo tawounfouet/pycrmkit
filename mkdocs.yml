@@ -9,6 +9,11 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
+  - Zero to Hero Guides:
+      - Learning Path: guides/index.md
+      - 00 Getting Started: guides/00_getting_started.md
+      - 01 Core Concepts: guides/01_core_concepts.md
+      - 02 Your First CRM: guides/02_first_crm.md
   - Facade:
       - CRM: facade/index.md
   - Core:
