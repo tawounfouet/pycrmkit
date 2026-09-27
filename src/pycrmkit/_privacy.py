@@ -49,7 +49,9 @@ def redact_sensitive_value(value: object) -> object:
     """Recursively redact values carried by sensitive mapping keys."""
 
     if isinstance(value, Mapping):
-        return redact_sensitive_mapping(value)
+        return redact_sensitive_mapping(
+            {str(key): item for key, item in value.items()}
+        )
     if isinstance(value, tuple):
         return tuple(redact_sensitive_value(item) for item in value)
     if isinstance(value, list):
@@ -57,7 +59,7 @@ def redact_sensitive_value(value: object) -> object:
     return value
 
 
-def redact_sensitive_mapping(values: Mapping[object, object]) -> dict[str, object]:
+def redact_sensitive_mapping(values: Mapping[str, object]) -> dict[str, object]:
     """Return a copy suitable for public errors and privacy-safe diagnostics."""
 
     result: dict[str, object] = {}
