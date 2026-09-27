@@ -8,6 +8,8 @@ from io import StringIO
 
 import pytest
 from alembic.script import ScriptDirectory
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
@@ -41,6 +43,7 @@ from pycrmkit.contacts import (
     ContactService,
     ContactStatus,
     ContactUpdate,
+    UNSET as CONTACT_UNSET,
 )
 from pycrmkit.core.ids import UUID4Factory
 from pycrmkit.core.pagination import OffsetPageRequest
@@ -116,6 +119,15 @@ from pycrmkit.importers import (
     casefold_text,
     compose_normalizers,
     strip_text,
+)
+from pycrmkit.integrations.fastapi import (
+    ContactCreateRequest,
+    ContactEmailSchema,
+    ContactUpdateRequest,
+    CRMDependency,
+    create_crm_router,
+    install_error_handlers,
+    status_code_for_error,
 )
 from pycrmkit.leads import LeadConversionService, LeadQuery, LeadService, LeadStatus
 from pycrmkit.opportunities import (
@@ -4613,3 +4625,136 @@ def test_zero_to_hero_migrations_missing_database_url_example(
         migration_config()
 
     assert DATABASE_ENV in str(error.value)
+
+
+def test_zero_to_hero_fastapi_transport_boundary_example() -> None:
+    request = ContactCreateRequest(
+        first_name="Ada",
+        last_name="Lovelace",
+        emails=[
+            ContactEmailSchema(
+                value="Ada@Example.COM",
+                is_primary=True,
+            ),
+        ],
+        metadata={"segment": "enterprise"},
+    )
+
+    kwargs = request.to_domain_kwargs()
+
+    assert kwargs["first_name"] == "Ada"
+    assert kwargs["last_name"] == "Lovelace"
+    assert isinstance(kwargs["emails"], tuple)
+    assert kwargs["emails"][0].value == "Ada@Example.COM"
+    assert kwargs["emails"][0].normalized == "ada@example.com"
+
+    patch = ContactUpdateRequest(
+        display_name=None,
+        metadata={},
+    )
+    update = patch.to_domain()
+
+    assert update.first_name is CONTACT_UNSET
+    assert update.display_name is None
+    assert update.metadata == {}
+
+
+def test_zero_to_hero_fastapi_request_context_bridge_example() -> None:
+    base = CRM.memory().with_context(
+        actor_id="system",
+        correlation_id="base-correlation",
+    )
+    dependency = CRMDependency(lambda: base)
+
+    unchanged = dependency()
+    actor_only = dependency(actor_id="api-user")
+    correlation_only = dependency(correlation_id="request-123")
+    both = dependency(
+        actor_id="api-user",
+        correlation_id="request-456",
+    )
+
+    assert unchanged.context.actor_id == "system"
+    assert unchanged.context.correlation_id == "base-correlation"
+    assert actor_only.context.actor_id == "api-user"
+    assert actor_only.context.correlation_id == "base-correlation"
+    assert correlation_only.context.actor_id == "system"
+    assert correlation_only.context.correlation_id == "request-123"
+    assert both.context.actor_id == "api-user"
+    assert both.context.correlation_id == "request-456"
+
+
+def test_zero_to_hero_fastapi_http_error_and_openapi_example() -> None:
+    crm = CRM.memory()
+    app = FastAPI(title="PyCRMKit Zero-to-Hero")
+    install_error_handlers(app)
+    app.include_router(
+        create_crm_router(lambda: crm),
+        prefix="/crm",
+    )
+    client = TestClient(app)
+
+    created = client.post(
+        "/crm/contacts",
+        json={
+            "first_name": "Ada",
+            "last_name": "Lovelace",
+            "source": "guide",
+        },
+        headers={
+            "X-Actor-ID": "guide-user",
+            "X-Correlation-ID": "guide-fastapi-001",
+        },
+    )
+    assert created.status_code == 201
+    contact = created.json()
+
+    listed = client.get("/crm/contacts?limit=10&offset=0")
+    assert listed.status_code == 200
+    assert listed.json()["total"] == 1
+    assert listed.json()["items"][0]["id"] == contact["id"]
+
+    missing_id = "00000000-0000-4000-8000-000000000001"
+    missing = client.get(f"/crm/contacts/{missing_id}")
+
+    assert missing.status_code == 404
+    assert missing.json()["code"] == "contact.not_found"
+    assert status_code_for_error(NotFoundError("missing")) == 404
+
+    invalid = client.post("/crm/leads", json={})
+    assert invalid.status_code == 422
+    payload = invalid.json()
+    assert payload["code"] == "request.validation_error"
+    assert "input" not in str(payload["context"])
+
+    schema = app.openapi()
+    contact_get = schema["paths"]["/crm/contacts/{contact_id}"]["get"]
+    responses = contact_get["responses"]
+
+    assert {"200", "404", "422", "500"}.issubset(responses)
+    assert responses["200"]["content"]["application/json"]["schema"]["$ref"].endswith(
+        "/ContactResponse"
+    )
+    assert responses["404"]["content"]["application/json"]["schema"]["$ref"].endswith(
+        "/ErrorResponse"
+    )
+
+
+def test_zero_to_hero_fastapi_command_oriented_surface_example() -> None:
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(
+        create_crm_router(lambda: CRM.memory()),
+        prefix="/crm",
+    )
+
+    paths = app.openapi()["paths"]
+
+    assert "/crm/leads/{lead_id}/qualify" in paths
+    assert "/crm/leads/{lead_id}/disqualify" in paths
+    assert "/crm/leads/{lead_id}/convert" in paths
+    assert "/crm/opportunities/{opportunity_id}/move" in paths
+    assert "/crm/tasks/{task_id}/complete" in paths
+
+    assert "/crm/leads/{lead_id}" not in paths
+    assert "/crm/opportunities/{opportunity_id}" not in paths
