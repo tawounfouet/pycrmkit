@@ -68,8 +68,8 @@ from pycrmkit.external_identities import (
     normalize_external_system,
 )
 from pycrmkit.importers import (
-    CSVReader,
     CompositeValidator,
+    CSVReader,
     DuplicateResult,
     FieldMapping,
     ImportPipeline,
