@@ -53,13 +53,13 @@ Each PostgreSQL version is crossed with both qualified SQLAlchemy families.
 | SQLAlchemy | 2.0.x, 2.1.x | `>=2.0,<2.2` |
 | psycopg | 3.2.x, 3.3.x | `>=3.2,<3.4` |
 
-The persistence compatibility gate executes:
+The persistence compatibility gate executes the full cross-product:
 
 ```text
-PostgreSQL 16 × SQLAlchemy 2.0
-PostgreSQL 16 × SQLAlchemy 2.1
-PostgreSQL 17 × SQLAlchemy 2.0
-PostgreSQL 17 × SQLAlchemy 2.1
+PostgreSQL 16 / 17
+    × SQLAlchemy 2.0 / 2.1
+    × psycopg 3.2 / 3.3
+    = 8 qualified persistence cells
 ```
 
 For each cell it runs PostgreSQL adapter tests, migration qualification and
