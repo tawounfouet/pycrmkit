@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0b2 Deduplication."""
+"""Installed-package smoke test for PyCRMKit 0.9.0b3 Deduplication."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from io import StringIO
 
 import pycrmkit
 from pycrmkit.activities import ActivityParticipant
+from pycrmkit.contacts import ContactEmail, ContactPhone, ContactService
 from pycrmkit.communication import (
     CommunicationAddress,
     CommunicationChannel,
@@ -25,7 +26,11 @@ from pycrmkit.dedup import (
     CandidateRecord,
     DedupDecision,
     DeduplicationEngine,
+    DedupProvenance,
+    DedupSignal,
     InMemoryCandidateSource,
+    MergeService,
+    SignalMatch,
 )
 from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
 from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
@@ -44,6 +49,7 @@ from pycrmkit.leads import LeadStatus
 from pycrmkit.opportunities import OpportunityStatus
 from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
 from pycrmkit.providers.email import SMTPConfig
+from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 from pycrmkit.webhooks import (
     WebhookDeliveryState,
     WebhookRequest,
@@ -64,8 +70,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.9.0b2":
-        raise SystemExit(f"Expected PyCRMKit 0.9.0b2, got {version!r}")
+    if version != "0.9.0b3":
+        raise SystemExit(f"Expected PyCRMKit 0.9.0b3, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
@@ -151,6 +157,53 @@ def main() -> None:
         raise SystemExit("ImportDeduplicator integration smoke failed")
     if dedup_result.existing_entity_id != "contact-existing":
         raise SystemExit("Dedup candidate resolution smoke failed")
+
+    merge_store = MemoryStore()
+    seed_clock = FixedClock(datetime(2026, 9, 27, 8, tzinfo=UTC))
+    with MemoryUnitOfWork(merge_store) as merge_uow:
+        contact_service = ContactService(
+            merge_uow.contacts,
+            clock=seed_clock,
+        )
+        merge_primary = contact_service.create(
+            first_name="Ada",
+            last_name="Lovelace",
+            emails=(ContactEmail("ada@example.com", is_primary=True),),
+        )
+        merge_duplicate = contact_service.create(
+            first_name="Ada",
+            last_name="Lovelace",
+            emails=(ContactEmail("ADA@EXAMPLE.COM", is_primary=True),),
+            phones=(ContactPhone("+33612345678", is_primary=True),),
+        )
+        merge_uow.commit()
+
+    merge_provenance = DedupProvenance(
+        candidate_entity_id=str(merge_duplicate.id),
+        score=100,
+        decision=DedupDecision.DUPLICATE,
+        matches=(
+            SignalMatch(DedupSignal.EMAIL, "ada@example.com"),
+        ),
+    )
+    merge_result = MergeService(
+        lambda: MemoryUnitOfWork(merge_store),
+        clock=FixedClock(datetime(2026, 9, 27, 9, tzinfo=UTC)),
+    ).merge_contacts(
+        primary_id=merge_primary.id,
+        duplicate_id=merge_duplicate.id,
+        provenance=merge_provenance,
+        actor_id="installed-smoke",
+        correlation_id="merge-installed-smoke",
+    )
+    if merge_result.duplicate.status.value != "archived":
+        raise SystemExit("Merge duplicate archival smoke failed")
+    if not merge_result.primary.phones:
+        raise SystemExit("Merge contact-point consolidation smoke failed")
+    if merge_result.audit_entry.action != "contact.merged":
+        raise SystemExit("Merge audit smoke failed")
+    if merge_result.provenance is not merge_provenance:
+        raise SystemExit("Merge provenance preservation smoke failed")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -436,7 +489,7 @@ def main() -> None:
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: Deduplication beta + stable regression smoke OK")
+    print(f"PyCRMKit {version}: Merge beta + stable regression smoke OK")
 
 
 if __name__ == "__main__":
