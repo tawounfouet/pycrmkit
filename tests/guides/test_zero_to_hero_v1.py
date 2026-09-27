@@ -15,6 +15,13 @@ from pycrmkit.contacts import (
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import ConflictError, InvalidStateError, ValidationError
+from pycrmkit.organizations import (
+    OrganizationAddress,
+    OrganizationDomain,
+    OrganizationQuery,
+    OrganizationStatus,
+    OrganizationUpdate,
+)
 from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 
 
@@ -223,3 +230,132 @@ def test_zero_to_hero_contacts_invariant_examples() -> None:
             ContactUpdate(status=ContactStatus.ARCHIVED),
         )
     assert direct_archive.value.code == "contact.update.archive_requires_archive_operation"
+
+
+
+def test_zero_to_hero_organizations_mastery_example() -> None:
+    crm = CRM.memory().with_context(
+        actor_id="guide-user",
+        correlation_id="organizations-guide-001",
+    )
+
+    organization = crm.organizations.create(
+        legal_name="Example Holdings SAS",
+        trading_name="Example CRM",
+        registration_number="123 456 789",
+        tax_id="FR00123456789",
+        domains=(
+            OrganizationDomain(
+                "Example.COM.",
+                is_primary=True,
+            ),
+        ),
+        addresses=(
+            OrganizationAddress(
+                line1="10 avenue des Entreprises",
+                city="Paris",
+                postal_code="75008",
+                country_code="fr",
+                is_primary=True,
+            ),
+        ),
+        source="zero-to-hero",
+        metadata={"segment": "enterprise"},
+    )
+
+    assert organization.display_name == "Example CRM"
+    assert organization.domains[0].normalized == "example.com"
+    assert organization.addresses[0].country_code == "FR"
+
+    updated = crm.organizations.update(
+        organization.id,
+        OrganizationUpdate(
+            trading_name="Example Cloud",
+            source=None,
+        ),
+    )
+    assert updated.display_name == "Example Cloud"
+    assert updated.source is None
+
+    domain_page = crm.organizations.search(
+        OrganizationQuery(domain="EXAMPLE.COM."),
+        OffsetPageRequest(limit=10),
+    )
+    assert domain_page.items == (updated,)
+    assert domain_page.total == 1
+
+    name_page = crm.organizations.search(OrganizationQuery(name="cloud"))
+    assert name_page.items == (updated,)
+
+    registration_page = crm.organizations.search(
+        OrganizationQuery(registration_number="123 456 789")
+    )
+    assert registration_page.items == (updated,)
+
+    archived = crm.organizations.archive(organization.id)
+    assert archived.status is OrganizationStatus.ARCHIVED
+    assert crm.organizations.search().total == 0
+
+    archived_page = crm.organizations.search(
+        OrganizationQuery(
+            status=OrganizationStatus.ARCHIVED,
+            include_archived=True,
+        )
+    )
+    assert archived_page.items == (archived,)
+
+    with pytest.raises(
+        InvalidStateError,
+        match="archived organizations cannot be updated",
+    ):
+        crm.organizations.update(
+            organization.id,
+            OrganizationUpdate(trading_name="Changed"),
+        )
+
+
+def test_zero_to_hero_organizations_invariant_examples() -> None:
+    crm = CRM.memory()
+
+    with pytest.raises(ValidationError) as blank_legal_name:
+        crm.organizations.create(legal_name="   ")
+    assert blank_legal_name.value.code == "organization.legal_name.required"
+
+    with pytest.raises(ValidationError) as invalid_domain:
+        OrganizationDomain("https://example.com")
+    assert invalid_domain.value.code == "organization.domain.invalid"
+
+    with pytest.raises(ValidationError) as multiple_primary:
+        crm.organizations.create(
+            legal_name="Example Holdings SAS",
+            domains=(
+                OrganizationDomain("example.com", is_primary=True),
+                OrganizationDomain("example.org", is_primary=True),
+            ),
+        )
+    assert multiple_primary.value.code == "organization.domain.multiple_primary"
+
+    with pytest.raises(ConflictError) as duplicate_domain:
+        crm.organizations.create(
+            legal_name="Example Holdings SAS",
+            domains=(
+                OrganizationDomain("Example.COM"),
+                OrganizationDomain("example.com."),
+            ),
+        )
+    assert duplicate_domain.value.code == "organization.domain.duplicate"
+
+    inactive = crm.organizations.create(
+        legal_name="Dormant Holdings Ltd",
+        status=OrganizationStatus.INACTIVE,
+    )
+    assert inactive.status is OrganizationStatus.INACTIVE
+
+    with pytest.raises(InvalidStateError) as direct_archive:
+        crm.organizations.update(
+            inactive.id,
+            OrganizationUpdate(status=OrganizationStatus.ARCHIVED),
+        )
+    assert direct_archive.value.code == (
+        "organization.update.archive_requires_archive_operation"
+    )

@@ -37,6 +37,7 @@ example application.
 2. [Core Concepts](01_core_concepts.md) — understand Entity, Value Object, typed ID, Repository, Unit of Work, Facade, Events and Adapters.
 3. [Your First CRM](02_first_crm.md) — build a small in-memory CRM with Contact, Organization, Relationship, Activity, Task and Timeline.
 4. [Contacts](03_contacts.md) — master the Contact aggregate, value objects, lifecycle, search and pagination.
+5. [Organizations](04_organizations.md) — master company/account identity, domains, addresses, lifecycle and search.
 
 ## Full Zero-to-Hero roadmap
 
@@ -49,7 +50,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 0 | 01 | Core Concepts | Published |
 | 0 | 02 | Your First CRM | Published |
 | 1 | 03 | Contacts | Published |
-| 1 | 04 | Organizations | Planned |
+| 1 | 04 | Organizations | Published |
 | 1 | 05 | Relationships | Planned |
 | 1 | 06 | Tags & Custom Fields | Planned |
 | 2 | 07 | Activities | Planned |
