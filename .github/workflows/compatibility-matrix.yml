@@ -7,7 +7,7 @@ on:
 
 jobs:
   python:
-    name: Python \${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: \${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
@@ -30,7 +30,7 @@ jobs:
           -q
 
   persistence:
-    name: PostgreSQL \${{ matrix.postgresql }} / SQLAlchemy \${{ matrix.sqlalchemy }}
+    name: PostgreSQL ${{ matrix.postgresql }} / SQLAlchemy ${{ matrix.sqlalchemy }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -50,7 +50,7 @@ jobs:
             sqlalchemy-spec: "SQLAlchemy>=2.1,<2.2"
     services:
       postgres:
-        image: postgres:\${{ matrix.postgresql }}
+        image: postgres:${{ matrix.postgresql }}
         env:
           POSTGRES_DB: pycrmkit_compat
           POSTGRES_USER: pycrmkit
@@ -78,7 +78,7 @@ jobs:
           python -m pip install
           -e ".[postgresql,migrations]"
           "pytest>=8"
-          "\${{ matrix.sqlalchemy-spec }}"
+          "${{ matrix.sqlalchemy-spec }}"
       - name: Report resolved persistence versions
         run: |
           python - <<'PY'
@@ -98,7 +98,7 @@ jobs:
         run: python -m pytest tests/adapters/sqlalchemy -q
 
   fastapi:
-    name: FastAPI 0.141 / Pydantic 2.13 / Python \${{ matrix.python-version }}
+    name: FastAPI 0.141 / Pydantic 2.13 / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: \${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
           cache: pip
       - run: python -m pip install --upgrade pip
       - name: Install qualified FastAPI family
@@ -130,7 +130,7 @@ jobs:
       - run: python -m pytest tests/integrations/fastapi -m "not postgresql" -q
 
   django:
-    name: Django 5.2 / DRF 3.18 / Python \${{ matrix.python-version }}
+    name: Django 5.2 / DRF 3.18 / Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -140,7 +140,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: \${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}
           cache: pip
       - run: python -m pip install --upgrade pip
       - name: Install qualified Django/DRF family
@@ -162,7 +162,7 @@ jobs:
       - run: python -m pytest tests/integrations/drf -q
 
   extras:
-    name: Extras / \${{ matrix.name }}
+    name: Extras / ${{ matrix.name }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -210,16 +210,16 @@ jobs:
       - run: python -m pip install --upgrade pip
       - name: Install optional dependency combination
         env:
-          EXTRAS: \${{ matrix.extras }}
+          EXTRAS: ${{ matrix.extras }}
         run: |
           if [ -n "$EXTRAS" ]; then
-            python -m pip install -e ".[\${EXTRAS}]"
+            python -m pip install -e ".[${EXTRAS}]"
           else
             python -m pip install -e .
           fi
       - name: Import optional dependency combination
         env:
-          IMPORTS: \${{ matrix.imports }}
+          IMPORTS: ${{ matrix.imports }}
         run: |
           python - <<'PY'
           import importlib
