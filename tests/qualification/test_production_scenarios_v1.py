@@ -110,3 +110,29 @@ def test_all_baseline_evidence_paths_exist() -> None:
 
     missing = sorted(path for path in evidence if not (ROOT / path).is_file())
     assert missing == []
+
+
+def test_rc02_cross_layer_e2e_is_executable_from_source_and_wheel() -> None:
+    rc02 = MANIFEST["rc02_cross_layer_e2e"]
+
+    assert rc02["status"] == "implemented"
+    assert rc02["scope"] == "framework-agnostic-headless-system"
+    assert set(rc02["execution_targets"]) == {"source", "installed-wheel"}
+    assert set(rc02["covered_scenarios"]) == {
+        "core-relationship-lifecycle",
+        "activity-timeline-followup",
+        "sales-lifecycle",
+        "communication-email-history",
+        "event-webhook-delivery",
+        "data-operations-roundtrip",
+    }
+    assert set(rc02["deferred_to_later_rc_gates"]) == {
+        "sqlalchemy-postgresql",
+        "fastapi-postgresql",
+        "django-drf-postgresql",
+    }
+
+    missing = sorted(
+        path for path in rc02["evidence"] if not (ROOT / path).is_file()
+    )
+    assert missing == []

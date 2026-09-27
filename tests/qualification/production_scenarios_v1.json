@@ -187,5 +187,31 @@
         "installed-wheel"
       ]
     }
-  ]
+  ],
+  "rc02_cross_layer_e2e": {
+    "status": "implemented",
+    "scope": "framework-agnostic-headless-system",
+    "covered_scenarios": [
+      "core-relationship-lifecycle",
+      "activity-timeline-followup",
+      "sales-lifecycle",
+      "communication-email-history",
+      "event-webhook-delivery",
+      "data-operations-roundtrip"
+    ],
+    "execution_targets": [
+      "source",
+      "installed-wheel"
+    ],
+    "evidence": [
+      "examples/production_qualification/scenario.py",
+      "tests/e2e/test_v1_production_qualification.py",
+      ".github/workflows/production-cross-layer-e2e.yml"
+    ],
+    "deferred_to_later_rc_gates": [
+      "sqlalchemy-postgresql",
+      "fastapi-postgresql",
+      "django-drf-postgresql"
+    ]
+  }
 }

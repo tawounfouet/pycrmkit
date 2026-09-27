@@ -62,9 +62,11 @@
     {
       "id": "RC-02",
       "name": "Cross-layer E2E qualification",
-      "status": "pending",
-      "planned_evidence": [
-        "tests/e2e/test_v1_production_qualification.py"
+      "status": "implemented",
+      "evidence": [
+        "examples/production_qualification/scenario.py",
+        "tests/e2e/test_v1_production_qualification.py",
+        ".github/workflows/production-cross-layer-e2e.yml"
       ]
     },
     {

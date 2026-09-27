@@ -1,0 +1,42 @@
+name: Production Cross-Layer E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  cross-layer-e2e:
+    name: V1 source + installed-wheel system journey
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install source checkout
+        run: python -m pip install -e ".[dev]"
+
+      - name: Source cross-layer E2E
+        run: python -m pytest tests/e2e/test_v1_production_qualification.py -q
+
+      - name: Source executable scenario
+        run: python -m examples.production_qualification.scenario
+
+      - name: Build release artifacts
+        run: python -m build
+
+      - name: Installed-wheel cross-layer E2E
+        shell: bash
+        run: |
+          python -m venv .venv-production-cross-layer
+          .venv-production-cross-layer/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-production-cross-layer/bin/python -m pip install "${wheel}"
+          PYTHONPATH="" .venv-production-cross-layer/bin/python -m examples.production_qualification.scenario

@@ -34,6 +34,8 @@ EXPECTED_RC_GATES = {
     "RC-07",
 }
 
+IMPLEMENTED_RC_GATES = {"RC-01", "RC-02"}
+
 
 def test_gate_and_scenario_contract_target_the_same_candidate() -> None:
     assert GATE["target_release"] == SCENARIOS["target_release"] == "1.0.0rc1"
@@ -66,20 +68,33 @@ def test_existing_release_qualification_workflows_are_frozen() -> None:
     assert missing == []
 
 
-def test_rc01_is_implemented_without_claiming_full_rc_qualification() -> None:
+def test_rc01_and_rc02_are_implemented_without_claiming_full_rc_qualification() -> None:
     gates = {item["id"]: item for item in GATE["rc_gates"]}
 
     assert set(gates) == EXPECTED_RC_GATES
-    assert gates["RC-01"]["status"] == "implemented"
-    assert all(gates[gate]["status"] == "pending" for gate in EXPECTED_RC_GATES - {"RC-01"})
+    assert all(gates[gate]["status"] == "implemented" for gate in IMPLEMENTED_RC_GATES)
+    assert all(
+        gates[gate]["status"] == "pending"
+        for gate in EXPECTED_RC_GATES - IMPLEMENTED_RC_GATES
+    )
     assert GATE["status"] == "qualification-in-progress"
     assert GATE["promotion_ready"] is False
 
 
-def test_rc01_evidence_is_present() -> None:
-    rc01 = next(item for item in GATE["rc_gates"] if item["id"] == "RC-01")
+def test_all_implemented_rc_gate_evidence_is_present() -> None:
+    implemented = [
+        item
+        for item in GATE["rc_gates"]
+        if item["status"] == "implemented"
+    ]
 
-    missing = sorted(path for path in rc01["evidence"] if not (ROOT / path).is_file())
+    assert {item["id"] for item in implemented} == IMPLEMENTED_RC_GATES
+    missing = sorted(
+        path
+        for item in implemented
+        for path in item["evidence"]
+        if not (ROOT / path).is_file()
+    )
     assert missing == []
 
 
