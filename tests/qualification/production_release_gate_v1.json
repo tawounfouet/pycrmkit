@@ -2,8 +2,8 @@
   "schema_version": 1,
   "target_release": "1.0.0rc1",
   "baseline_release": "1.0.0b3",
-  "status": "qualification-in-progress",
-  "promotion_ready": false,
+  "status": "qualified",
+  "promotion_ready": true,
   "prerequisite_milestones": [
     {
       "version": "1.0.0a1",
@@ -116,11 +116,12 @@
     {
       "id": "RC-07",
       "name": "Release evidence and artifacts",
-      "status": "pending",
-      "planned_evidence": [
+      "status": "implemented",
+      "evidence": [
         "release/qualification-report-v1.0.0rc1.json",
         "release/release-manifest-v1.0.0rc1.json",
-        "release/SHA256SUMS-v1.0.0rc1.txt"
+        "release/SHA256SUMS-v1.0.0rc1.txt",
+        ".github/workflows/release-candidate-evidence.yml"
       ]
     }
   ],
