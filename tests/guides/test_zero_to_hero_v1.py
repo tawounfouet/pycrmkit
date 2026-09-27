@@ -47,6 +47,14 @@ from pycrmkit.opportunities import (
     OpportunityService,
     OpportunityStatus,
 )
+from pycrmkit.pipelines import (
+    InvalidStageTransition,
+    Pipeline,
+    PipelineTransitionPolicy,
+    Stage,
+    StageOutcome,
+    StageTransition,
+)
 from pycrmkit.organizations import (
     OrganizationAddress,
     OrganizationDomain,
@@ -1666,3 +1674,177 @@ def test_zero_to_hero_opportunities_validation_examples() -> None:
             stage_id="proposal",
         )
     assert stage_without_pipeline.value.code == "opportunity.stage_id.pipeline_required"
+
+
+
+def test_zero_to_hero_pipelines_facade_and_movement_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 20, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="sales-user-42",
+        correlation_id="pipeline-guide-001",
+    )
+
+    pipeline = crm.pipelines.define(
+        id=" SALES ",
+        name="Enterprise Sales",
+        stages=(
+            Stage("proposal", "Proposal", 20, Decimal("0.65")),
+            Stage("new", "New", 0, Decimal("0.10")),
+            Stage("qualified", "Qualified", 10, Decimal("0.35")),
+            Stage("won", "Won", 90, terminal=True, outcome="won"),
+        ),
+        transitions=(
+            StageTransition("new", "qualified"),
+            StageTransition("qualified", "proposal"),
+            StageTransition("proposal", "won"),
+        ),
+    )
+
+    assert pipeline.id == "sales"
+    assert tuple(stage.id for stage in pipeline.stages) == (
+        "new",
+        "qualified",
+        "proposal",
+        "won",
+    )
+    assert pipeline.initial_stage.id == "new"
+    assert pipeline.stage(" QUALIFIED ").default_probability == Decimal("0.35")
+    assert pipeline.allows("new", "qualified") is True
+    assert pipeline.allows("new", "won") is False
+    assert crm.pipelines.get(" SALES ") == pipeline
+
+    page = crm.pipelines.list(OffsetPageRequest(limit=10, offset=0))
+    assert page.items == (pipeline,)
+    assert page.total == 1
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    opportunity = crm.opportunities.create(
+        name="Enterprise renewal",
+        contact_id=contact.id,
+        pipeline_id=pipeline.id,
+        stage_id="new",
+    )
+
+    assert opportunity.stage_entered_at == opportunity.created_at
+    assert opportunity.probability is None
+
+    clock.advance(timedelta(hours=1))
+    opportunity = crm.opportunities.move(opportunity.id, to="qualified")
+    assert opportunity.stage_id == "qualified"
+    assert opportunity.probability == Decimal("0.35")
+    assert opportunity.stage_duration(clock.now()) == timedelta(0)
+
+    clock.advance(timedelta(hours=1))
+    assert opportunity.stage_duration(clock.now()) == timedelta(hours=1)
+    opportunity = crm.opportunities.move(opportunity.id, to="proposal")
+    assert opportunity.probability == Decimal("0.65")
+
+    clock.advance(timedelta(hours=1))
+    opportunity = crm.opportunities.move(opportunity.id, to="won")
+    assert opportunity.status is OpportunityStatus.WON
+    assert opportunity.probability == Decimal("1")
+    assert opportunity.is_terminal is True
+
+    with pytest.raises(InvalidStateError) as closed:
+        crm.opportunities.move(opportunity.id, to="proposal")
+    assert closed.value.code == "opportunity.stage.transition.closed"
+
+
+def test_zero_to_hero_pipelines_policy_and_unassigned_entry_example() -> None:
+    pipeline = Pipeline(
+        id="sales",
+        name="Sales",
+        stages=(
+            Stage("new", "New", 0, Decimal("0.10")),
+            Stage("qualified", "Qualified", 10, Decimal("0.35")),
+            Stage("won", "Won", 90, terminal=True, outcome=StageOutcome.WON),
+        ),
+        transitions=(
+            StageTransition("new", "qualified"),
+            StageTransition("qualified", "won"),
+        ),
+    )
+
+    initial = PipelineTransitionPolicy.resolve(
+        pipeline,
+        from_stage=None,
+        to_stage="new",
+    )
+    assert initial.id == "new"
+
+    target = PipelineTransitionPolicy.resolve(
+        pipeline,
+        from_stage="new",
+        to_stage="qualified",
+    )
+    assert target.id == "qualified"
+    assert target.default_probability == Decimal("0.35")
+
+    with pytest.raises(InvalidStageTransition) as skip_initial:
+        PipelineTransitionPolicy.resolve(
+            pipeline,
+            from_stage=None,
+            to_stage="qualified",
+        )
+    assert skip_initial.value.code == "pipeline.transition.invalid"
+
+    with pytest.raises(InvalidStageTransition) as undeclared:
+        PipelineTransitionPolicy.resolve(
+            pipeline,
+            from_stage="new",
+            to_stage="won",
+        )
+    assert undeclared.value.code == "pipeline.transition.invalid"
+
+
+def test_zero_to_hero_pipelines_validation_examples() -> None:
+    with pytest.raises(ValidationError) as probability_mismatch:
+        Stage(
+            "won",
+            "Won",
+            90,
+            Decimal("0.80"),
+            terminal=True,
+            outcome="won",
+        )
+    assert (
+        probability_mismatch.value.code
+        == "pipeline.stage.probability.terminal_mismatch"
+    )
+
+    with pytest.raises(InvalidStageTransition) as self_transition:
+        StageTransition("proposal", "proposal")
+    assert self_transition.value.code == "pipeline.transition.invalid"
+
+    with pytest.raises(ValidationError) as outgoing_terminal:
+        Pipeline(
+            id="sales",
+            name="Sales",
+            stages=(
+                Stage("won", "Won", 90, terminal=True, outcome="won"),
+                Stage("other", "Other", 100),
+            ),
+            transitions=(
+                StageTransition("won", "other"),
+            ),
+        )
+    assert outgoing_terminal.value.code == "pipeline.transition.from_terminal"
+
+
+def test_zero_to_hero_pipelines_duplicate_definition_example() -> None:
+    crm = CRM.memory()
+    stages = (Stage("new", "New", 0),)
+
+    crm.pipelines.define(
+        id="sales",
+        name="Sales",
+        stages=stages,
+    )
+
+    with pytest.raises(DuplicateError) as duplicate:
+        crm.pipelines.define(
+            id=" SALES ",
+            name="Another Sales",
+            stages=stages,
+        )
+    assert duplicate.value.code == "pipeline.duplicate"
