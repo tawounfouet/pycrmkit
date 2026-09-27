@@ -60,6 +60,10 @@ from pycrmkit.exceptions import (
     NotFoundError,
     ValidationError,
 )
+from pycrmkit.external_identities import (
+    normalize_external_id,
+    normalize_external_system,
+)
 from pycrmkit.leads import LeadConversionService, LeadQuery, LeadService, LeadStatus
 from pycrmkit.opportunities import (
     OpportunityQuery,
@@ -2814,3 +2818,174 @@ def test_zero_to_hero_webhooks_secret_rotation_and_freshness_example() -> None:
     audit_text = repr(tuple(entry.changes for entry in audit.items))
     assert old_secret not in audit_text
     assert new_secret not in audit_text
+
+
+
+def test_zero_to_hero_external_identity_normalization_replay_and_listing_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 20, 0, tzinfo=UTC)),
+        webhook_auto_delivery=False,
+    )
+    contact = crm.contacts.create(
+        first_name="Ada",
+        last_name="Lovelace",
+    )
+    attached_events: list[DomainEvent] = []
+    crm.events.subscribe(
+        "external_identity.attached",
+        attached_events.append,
+    )
+
+    first = crm.external_identities.attach(
+        contact,
+        system=" HubSpot CRM ",
+        external_id="  AbC-123  ",
+        metadata={"portal": "eu"},
+    )
+    replay = crm.external_identities.attach(
+        contact,
+        system="hubspot-crm",
+        external_id="AbC-123",
+        metadata={"portal": "us"},
+    )
+
+    assert normalize_external_system(" HubSpot CRM ") == "hubspot_crm"
+    assert normalize_external_id("  AbC-123  ") == "AbC-123"
+    assert first.system == "hubspot_crm"
+    assert first.external_id == "AbC-123"
+    assert first.entity == EntityReference("contact", contact.id)
+    assert replay.id == first.id
+    assert replay.metadata == {"portal": "eu"}
+    assert len(attached_events) == 1
+    assert dict(attached_events[0].payload) == {"system": "hubspot_crm"}
+
+    salesforce = crm.external_identities.attach(
+        contact,
+        system="salesforce",
+        external_id="003XYZ",
+    )
+    page = crm.external_identities.list_for_entity(
+        contact,
+        OffsetPageRequest(limit=10, offset=0),
+    )
+
+    assert page.total == 2
+    assert page.items == (first, salesforce)
+    assert crm.external_identities.resolve(
+        "HUBSPOT CRM",
+        "AbC-123",
+    ) == first
+
+
+def test_zero_to_hero_external_identity_global_ownership_and_case_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 21, 0, tzinfo=UTC)),
+        webhook_auto_delivery=False,
+    )
+    first_contact = crm.contacts.create(display_name="First Owner")
+    second_contact = crm.contacts.create(display_name="Second Owner")
+
+    identity = crm.external_identities.attach(
+        first_contact,
+        system="legacy_crm",
+        external_id="AbC-123",
+    )
+
+    with pytest.raises(NotFoundError) as different_case:
+        crm.external_identities.resolve(
+            "legacy_crm",
+            "abc-123",
+        )
+    assert different_case.value.code == "external_identity.not_found"
+    assert "abc-123" not in repr(different_case.value.context)
+
+    with pytest.raises(ConflictError) as conflict:
+        crm.external_identities.attach(
+            second_contact,
+            system="LEGACY CRM",
+            external_id="AbC-123",
+        )
+
+    assert conflict.value.code == "external_identity.owner.conflict"
+    assert conflict.value.context["system"] == "legacy_crm"
+    assert conflict.value.context["owner_type"] == "contact"
+    assert conflict.value.context["owner_id"] == str(first_contact.id)
+    assert identity.entity.id == first_contact.id
+
+
+def test_zero_to_hero_external_identity_detach_and_event_privacy_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 22, 0, tzinfo=UTC)),
+        webhook_auto_delivery=False,
+    )
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+    events: list[DomainEvent] = []
+    crm.events.subscribe(
+        "external_identity.attached",
+        events.append,
+    )
+    crm.events.subscribe(
+        "external_identity.detached",
+        events.append,
+    )
+
+    external_id = "customer-secret-000042"
+    crm.external_identities.attach(
+        organization,
+        system="Legacy CRM",
+        external_id=external_id,
+    )
+
+    assert crm.external_identities.detach(
+        "legacy-crm",
+        external_id,
+    ) is True
+    assert crm.external_identities.detach(
+        "legacy_crm",
+        external_id,
+    ) is False
+
+    assert [str(event.type) for event in events] == [
+        "external_identity.attached",
+        "external_identity.detached",
+    ]
+    for event in events:
+        assert event.aggregate_type == "organization"
+        assert event.aggregate_id == str(organization.id)
+        assert dict(event.payload) == {"system": "legacy_crm"}
+        assert external_id not in repr(event.payload)
+
+
+def test_zero_to_hero_external_identity_generic_reference_boundary_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 23, 0, tzinfo=UTC)),
+        webhook_auto_delivery=False,
+    )
+    contact = crm.contacts.create(display_name="UUID Source")
+    generic_reference = EntityReference(
+        "custom-entity",
+        contact.id,
+    )
+
+    identity = crm.external_identities.attach(
+        generic_reference,
+        system="external-platform",
+        external_id="custom-42",
+        metadata={"kind": "integration-only"},
+    )
+
+    assert identity.entity.kind == "custom_entity"
+    assert identity.entity.id == contact.id
+    assert crm.external_identities.resolve(
+        "external platform",
+        "custom-42",
+    ) == identity
+
+    with pytest.raises(TypeError):
+        crm.external_identities.attach(
+            object(),  # type: ignore[arg-type]
+            system="external_platform",
+            external_id="invalid-target",
+        )
