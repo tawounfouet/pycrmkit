@@ -36,6 +36,7 @@ example application.
 1. [Getting Started](00_getting_started.md) — install PyCRMKit and create the first Contact.
 2. [Core Concepts](01_core_concepts.md) — understand Entity, Value Object, typed ID, Repository, Unit of Work, Facade, Events and Adapters.
 3. [Your First CRM](02_first_crm.md) — build a small in-memory CRM with Contact, Organization, Relationship, Activity, Task and Timeline.
+4. [Contacts](03_contacts.md) — master the Contact aggregate, value objects, lifecycle, search and pagination.
 
 ## Full Zero-to-Hero roadmap
 
@@ -47,7 +48,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 0 | 00 | Getting Started | Published |
 | 0 | 01 | Core Concepts | Published |
 | 0 | 02 | Your First CRM | Published |
-| 1 | 03 | Contacts | Planned |
+| 1 | 03 | Contacts | Published |
 | 1 | 04 | Organizations | Planned |
 | 1 | 05 | Relationships | Planned |
 | 1 | 06 | Tags & Custom Fields | Planned |
