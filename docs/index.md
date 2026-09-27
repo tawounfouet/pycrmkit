@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.8.0 — Django Integration Stable`**.  
-The latest data-operations prerelease is **`0.9.0a2 — Import Framework`**.
+The latest data-operations prerelease is **`0.9.0b1 — CSV / JSON / JSONL`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
