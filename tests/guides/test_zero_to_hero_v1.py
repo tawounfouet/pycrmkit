@@ -3366,7 +3366,7 @@ def test_zero_to_hero_dedup_profile_and_all_signals_example() -> None:
                 },
             ),
             "custom_identifiers": {
-                "Customer Number": "C-001",
+                "CUSTOMER_NUMBER": "C-001",
             },
         }
     )
