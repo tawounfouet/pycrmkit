@@ -6,6 +6,33 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0rc1] - 2026-09-27
+
+### Qualified
+- Complete V0.9 Data Operations journey: CSV import → mapping → normalization → validation → Contact persistence → duplicate candidate review → provenance-backed merge → audit verification → normalized export.
+- Source-checkout execution through `examples/data_operations/scenario.py`.
+- Clean installed-wheel execution through the dedicated `Data Operations E2E` workflow with `PYTHONPATH` cleared.
+- CSV, JSON and JSONL export/read round-trip equality after merge.
+- Duplicate score/decision/provenance continuity from `DeduplicationEngine` into `MergeService`.
+- External-identity ownership transfer and append-only `contact.merged` audit verification.
+- Invalid-row import handling alongside successful Contact creation in the same batch.
+
+### Added
+- `examples/data_operations/scenario.py` as the V0.9 reference application wiring.
+- `tests/e2e/test_data_operations_rc.py` as the release-candidate cross-capability E2E.
+- `.github/workflows/data-operations-e2e.yml` for source and installed-wheel qualification.
+- Data Operations E2E documentation.
+
+### Release-candidate boundary
+- No new public orchestration API is introduced.
+- No new domain capability or persistence schema is introduced.
+- Existing conservative duplicate and merge policies remain unchanged.
+- The RC qualifies composition of the contracts delivered from `0.9.0a1` through `0.9.0b3`.
+
+### Changed
+- Package version advanced from `0.9.0b3` to `0.9.0rc1`.
+- Development roadmap advances to `0.9.0 — Data Operations Stable`.
+
 ## [0.9.0b3] - 2026-09-27
 
 ### Added
@@ -44,6 +71,7 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 ### Changed
 - Package version advanced from `0.9.0b2` to `0.9.0b3`.
 - Development roadmap advances to `0.9.0rc1 — Data Operations E2E`.
+
 ## [0.9.0b2] - 2026-09-27
 
 ### Added

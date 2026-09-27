@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.8.0 — Django Integration Stable`**.  
-The latest data-operations prerelease is **`0.9.0b3 — Merge`**.
+The latest data-operations prerelease is **`0.9.0rc1 — Data Operations E2E`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -102,4 +102,6 @@ qualification now form one compatibility-governed integration line.
 
 `0.9.0b3` adds transactional Contact merge execution with explicit primary selection, conservative conflict policies, activity and relationship reassignment, tag union, custom-field resolution, external-identity ownership transfer, duplicate archival, append-only audit and provenance preservation.
 
-The next roadmap milestone is **`0.9.0rc1 — Data Operations E2E`**.
+`0.9.0rc1` qualifies the complete V0.9 journey from CSV import through mapping, normalization, validation, persistence, duplicate candidate review, provenance-backed merge, audit verification and CSV/JSON/JSONL export round-trips. The same scenario is executed from the source checkout and from the built wheel in a clean environment.
+
+The next roadmap milestone is **`0.9.0 — Data Operations Stable`**.
