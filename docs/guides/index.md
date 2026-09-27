@@ -48,6 +48,7 @@ example application.
 13. [Pipelines](12_pipelines.md) — define ordered sales stages, transition policy, default probabilities and Opportunity movement.
 14. [Lead Conversion](13_lead_conversion.md) — convert qualified Leads atomically into exactly one Opportunity with idempotent retry semantics.
 15. [Email & Communications](14_email_and_communications.md) — send provider-neutral email, track delivery history, callbacks, idempotency and Timeline projection.
+16. [Domain Events](15_domain_events.md) — govern immutable versioned event envelopes, deterministic serialization, in-process subscriptions and causal tracing.
 
 ## LEVEL 1 complete
 
@@ -63,7 +64,7 @@ Leads, Opportunities, Pipelines and Lead Conversion now form the complete Sales 
 
 ## LEVEL 4 in progress
 
-Email & Communications now establishes provider-neutral outbound messaging, delivery lifecycle history and Communication Timeline projection. The next chapter opens the generic Domain Events infrastructure, followed by Webhooks.
+Email & Communications establishes provider-neutral messaging and delivery history; Domain Events now adds versioned envelopes, registry-governed serialization, synchronous subscriptions and correlation/causation tracing. Webhooks is the final LEVEL 4 chapter.
 
 ## Full Zero-to-Hero roadmap
 
@@ -87,7 +88,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 3 | 12 | Pipelines | Published |
 | 3 | 13 | Lead Conversion | Published |
 | 4 | 14 | Email & Communications | Published |
-| 4 | 15 | Domain Events | Planned |
+| 4 | 15 | Domain Events | Published |
 | 4 | 16 | Webhooks | Planned |
 | 5 | 17 | External Identities | Planned |
 | 5 | 18 | Importing Data | Planned |
