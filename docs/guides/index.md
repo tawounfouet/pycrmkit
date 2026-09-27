@@ -39,6 +39,11 @@ example application.
 4. [Contacts](03_contacts.md) — master the Contact aggregate, value objects, lifecycle, search and pagination.
 5. [Organizations](04_organizations.md) — master company/account identity, domains, addresses, lifecycle and search.
 6. [Relationships](05_relationships.md) — connect CRM entities with typed, directional and temporal relationships.
+7. [Tags & Custom Fields](06_tags_and_custom_fields.md) — extend CRM entities with reusable classification and versioned typed business data.
+
+## LEVEL 1 complete
+
+Contacts, Organizations, Relationships, Tags and Custom Fields now form the complete CRM-core foundation. The next learning level is Customer Activity: Activities, Tasks and Timeline.
 
 ## Full Zero-to-Hero roadmap
 
@@ -53,7 +58,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 1 | 03 | Contacts | Published |
 | 1 | 04 | Organizations | Published |
 | 1 | 05 | Relationships | Published |
-| 1 | 06 | Tags & Custom Fields | Planned |
+| 1 | 06 | Tags & Custom Fields | Published |
 | 2 | 07 | Activities | Planned |
 | 2 | 08 | Tasks | Planned |
 | 2 | 09 | Timeline | Planned |
