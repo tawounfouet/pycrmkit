@@ -10,6 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
+from pycrmkit._privacy import redact_sensitive_mapping
 from pycrmkit.exceptions import (
     ConflictError,
     IntegrationError,
@@ -36,7 +37,7 @@ class ErrorResponse(BaseModel):
         return cls(
             code=error.code,
             message=error.message,
-            context=dict(error.context),
+            context=redact_sensitive_mapping(error.context),
         )
 
 
