@@ -18,6 +18,9 @@ from pycrmkit.importers.base import (
     PersistResult,
     ValidationIssue,
 )
+from pycrmkit.importers.csv import CSVReader
+from pycrmkit.importers.json import JSONReader
+from pycrmkit.importers.jsonl import JSONLReader
 from pycrmkit.importers.mapping import FieldMapping, RecordMapper
 from pycrmkit.importers.normalization import (
     NormalizationRule,
@@ -46,6 +49,7 @@ from pycrmkit.importers.validation import (
 __all__ = [
     "AcceptAllValidator",
     "CompositeValidator",
+    "CSVReader",
     "DuplicateResult",
     "FieldMapping",
     "IdentityMapper",
@@ -64,6 +68,8 @@ __all__ = [
     "ImportStage",
     "ImportValidator",
     "IterableReader",
+    "JSONLReader",
+    "JSONReader",
     "NoDuplicateDetector",
     "NormalizationRule",
     "Normalizer",
