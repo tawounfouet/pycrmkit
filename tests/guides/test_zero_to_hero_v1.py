@@ -16,8 +16,8 @@ from pycrmkit.activities import (
 )
 from pycrmkit.contacts import (
     Address,
-    ContactId,
     ContactEmail,
+    ContactId,
     ContactPhone,
     ContactQuery,
     ContactStatus,
