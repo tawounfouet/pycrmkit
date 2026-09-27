@@ -285,6 +285,35 @@ The V1 candidate manifest is updated additively for
 Security hardening does not promote ORM models, migration internals or concrete
 facade implementation classes into the public API.
 
+## V1 performance baseline
+
+`1.0.0b2` keeps the CRM facade candidate unchanged and adds reproducible
+performance evidence for Contact creation/search, Timeline retrieval, bulk
+import, repository pagination and event publication.
+
+The performance contract also locks:
+
+```text
+default page limit = 50
+maximum page limit = 200
+repository list/search APIs use OffsetPageRequest
+SQLAlchemy pagination applies LIMIT/OFFSET in SQL
+bulk import accepts iterable input
+summary import mode can avoid retaining one result object per row
+```
+
+The Import Framework additions are backward-compatible:
+
+```text
+ImportPipeline.retain_row_results = True
+ImportReport.retain_row_results = True
+```
+
+Existing detailed reporting remains the default.
+
+The benchmark guardrails are regression ceilings, not V1 latency or throughput
+SLAs.
+
 ## Pre-1.0 policy
 
 PyCRMKit remains pre-`1.0.0`. Each stable milestone establishes compatibility
