@@ -16,6 +16,7 @@ nav:
       - 02 Your First CRM: guides/02_first_crm.md
       - 03 Contacts: guides/03_contacts.md
       - 04 Organizations: guides/04_organizations.md
+      - 05 Relationships: guides/05_relationships.md
   - Facade:
       - CRM: facade/index.md
   - Core:
