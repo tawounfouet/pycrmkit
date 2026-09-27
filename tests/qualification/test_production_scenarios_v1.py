@@ -220,3 +220,37 @@ def test_rc05_installed_artifact_qualification_is_isolated() -> None:
         path for path in rc05["evidence"] if not (ROOT / path).is_file()
     )
     assert missing == []
+
+
+def test_rc06_production_release_gate_requires_zero_blockers() -> None:
+    rc06 = MANIFEST["rc06_production_release_gate"]
+
+    assert rc06["status"] == "implemented"
+    assert rc06["blocking_failures_allowed"] == 0
+    assert rc06["workflow"] == ".github/workflows/production-qualification.yml"
+    assert rc06["final_job"] == "production-release-gate"
+    assert rc06["promotion_boundary"] == {
+        "package_version_during_gate": "1.0.0b3",
+        "target_candidate": "1.0.0rc1",
+        "actual_promotion_owned_by": "RC-07",
+        "promotion_ready_before_rc07": False,
+    }
+    assert set(rc06["convergence_layers"]) == {
+        "contract",
+        "cross-layer-e2e",
+        "persistence-migrations",
+        "framework-integrations",
+        "installed-artifacts",
+        "public-api-freeze",
+        "security-privacy",
+        "performance-baseline",
+        "compatibility-matrix",
+        "lint",
+        "typing",
+        "docs",
+    }
+
+    missing = sorted(
+        path for path in rc06["evidence"] if not (ROOT / path).is_file()
+    )
+    assert missing == []
