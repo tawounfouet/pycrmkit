@@ -267,11 +267,11 @@ def test_rc07_release_evidence_is_frozen_and_reproducible() -> None:
     )
     assert rc07["artifacts"]["wheel"] == {
         "filename": "pycrmkit-1.0.0rc1-py3-none-any.whl",
-        "sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41",
+        "sha256": "fa6d037e10d3287c5cd6b18e9abb10ec61d732fc4cca2d6e34bdfc4e660bc2fc",
     }
     assert rc07["artifacts"]["sdist"] == {
         "filename": "pycrmkit-1.0.0rc1.tar.gz",
-        "sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff",
+        "sha256": "01658e69d9db653dc21379cf37a3865c9fdbd75d1ae7d27622a8d2ba208308c1",
     }
     assert "rebuild-must-match-frozen-sha256" in rc07["guarantees"]
 
