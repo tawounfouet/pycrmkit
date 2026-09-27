@@ -1,0 +1,38 @@
+name: Security & Privacy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  security-privacy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install source checkout
+        run: python -m pip install -e ".[dev]"
+
+      - name: Source security and privacy hardening
+        run: python -m pytest tests/security -q
+
+      - name: Build release artifacts
+        run: python -m build
+
+      - name: Installed-wheel security and privacy hardening
+        shell: bash
+        run: |
+          python -m venv .venv-security
+          .venv-security/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-security/bin/python -m pip install "${wheel}" pytest
+          PYTHONPATH="" .venv-security/bin/python -m pytest tests/security -q
