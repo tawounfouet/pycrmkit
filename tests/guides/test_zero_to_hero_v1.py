@@ -33,6 +33,7 @@ from pycrmkit.communication import (
     EmailMessage,
     EmailProviderResult,
 )
+from pycrmkit.contacts import UNSET as CONTACT_UNSET
 from pycrmkit.contacts import (
     Address,
     Contact,
@@ -43,7 +44,6 @@ from pycrmkit.contacts import (
     ContactService,
     ContactStatus,
     ContactUpdate,
-    UNSET as CONTACT_UNSET,
 )
 from pycrmkit.core.ids import UUID4Factory
 from pycrmkit.core.pagination import OffsetPageRequest
