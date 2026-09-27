@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0b1 CSV / JSON / JSONL."""
+"""Installed-package smoke test for PyCRMKit 0.9.0b2 CSV / JSON / JSONL."""
 
 from __future__ import annotations
 
@@ -22,6 +22,12 @@ from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
 from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
+from pycrmkit.dedup import (
+    CandidateRecord,
+    DedupDecision,
+    DeduplicationEngine,
+    InMemoryCandidateSource,
+)
 from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
 from pycrmkit.importers import (
     CSVReader,
@@ -58,8 +64,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.9.0b1":
-        raise SystemExit(f"Expected PyCRMKit 0.9.0b1, got {version!r}")
+    if version != "0.9.0b2":
+        raise SystemExit(f"Expected PyCRMKit 0.9.0b2, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
@@ -112,6 +118,39 @@ def main() -> None:
     jsonl_stream.seek(0)
     if list(JSONLReader(jsonl_stream).read()) != list(nested_records):
         raise SystemExit("JSONL round-trip smoke failed")
+
+    dedup_engine = DeduplicationEngine(
+        InMemoryCandidateSource(
+            (
+                CandidateRecord(
+                    "contact-existing",
+                    {
+                        "email": "ada@example.com",
+                        "full_name": "Ada Lovelace",
+                        "organization": "Analytical Engines",
+                    },
+                ),
+            )
+        )
+    )
+    dedup_row = ImportRow(
+        1,
+        {
+            "email": "ADA@EXAMPLE.COM",
+            "display_name": "ada lovelace",
+            "company": "analytical engines",
+        },
+    )
+    dedup_assessment = dedup_engine.evaluate(dedup_row)[0]
+    dedup_result = dedup_engine.detect(dedup_row)
+    if dedup_assessment.decision is not DedupDecision.DUPLICATE:
+        raise SystemExit("Dedup decision smoke failed")
+    if dedup_assessment.provenance.score != 100:
+        raise SystemExit("Dedup scoring/provenance smoke failed")
+    if not dedup_result.is_duplicate:
+        raise SystemExit("ImportDeduplicator integration smoke failed")
+    if dedup_result.existing_entity_id != "contact-existing":
+        raise SystemExit("Dedup candidate resolution smoke failed")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -397,7 +436,7 @@ def main() -> None:
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: CSV/JSON/JSONL beta + stable regression smoke OK")
+    print(f"PyCRMKit {version}: Deduplication beta + stable regression smoke OK")
 
 
 if __name__ == "__main__":
