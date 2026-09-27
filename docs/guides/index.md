@@ -51,6 +51,7 @@ example application.
 16. [Domain Events](15_domain_events.md) — govern immutable versioned event envelopes, deterministic serialization, in-process subscriptions and causal tracing.
 17. [Webhooks](16_webhooks.md) — deliver committed DomainEvents externally with signed, idempotent, retryable HTTP delivery.
 18. [External Identities](17_external_identities.md) — map provider-owned record IDs to CRM entities with deterministic ownership, idempotent attach and privacy-aware events.
+19. [Importing Data](18_importing_data.md) — build provider-neutral Read → Map → Normalize → Validate → Deduplicate → Persist pipelines with structured and bounded reporting.
 
 ## LEVEL 1 complete
 
@@ -70,7 +71,7 @@ Email & Communications, Domain Events and Webhooks now form the complete Communi
 
 ## LEVEL 5 in progress
 
-External Identities now establishes deterministic provider-record ownership without polluting CRM aggregates with integration-specific IDs. The next chapter expands this foundation into bounded, inspectable bulk imports.
+External Identities establishes deterministic provider-record ownership, and Importing Data now adds provider-neutral readers, mapping, normalization, validation, persistence hooks and bounded reporting. Deduplication is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -97,7 +98,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 4 | 15 | Domain Events | Published |
 | 4 | 16 | Webhooks | Published |
 | 5 | 17 | External Identities | Published |
-| 5 | 18 | Importing Data | Planned |
+| 5 | 18 | Importing Data | Published |
 | 5 | 19 | Deduplication | Planned |
 | 5 | 20 | Contact Merge | Planned |
 | 5 | 21 | Exporting Data | Planned |
