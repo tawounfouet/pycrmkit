@@ -1108,9 +1108,8 @@ You can now explain and use:
 
 ## Next
 
-Continue with [04 — Organizations](04_organizations.md) once published.
+The next planned chapter is **04 — Organizations**.
 
-Organizations add the company/account side of the CRM model. After that,
-[05 — Relationships](05_relationships.md) will connect Contacts and
-Organizations explicitly instead of hiding that connection inside either
-aggregate.
+Organizations add the company/account side of the CRM model. Chapter 05 will
+then introduce Relationships to connect Contacts and Organizations explicitly
+instead of hiding that connection inside either aggregate.
