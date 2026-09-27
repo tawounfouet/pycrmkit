@@ -469,7 +469,7 @@ class DjangoExternalIdentityRepository:
 
     @staticmethod
     def _hydrate(model: ExternalIdentityModel) -> ExternalIdentity:
-        entity_id: EntityId
+        entity_id: ContactId | OrganizationId | EntityId
         if model.entity_type == "contact":
             entity_id = ContactId.parse(model.entity_id)
         elif model.entity_type == "organization":
