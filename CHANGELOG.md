@@ -6,6 +6,44 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.0.0a1] - 2026-09-27
+
+### Added
+- Machine-readable V1 public API freeze candidate at `tests/compatibility/public_api_v1_candidate.json`.
+- Executable compatibility contract covering root exports, bounded-context `__all__` surfaces, CRM facade namespaces/methods, typed exceptions, repository protocols, configuration fields, event names and event serialization.
+- Dedicated `Public API Freeze` GitHub Actions gate running the contract from both the source checkout and a clean installed wheel.
+- V1 API classification documentation separating `public`, `provisional` and `internal` surfaces.
+- V1 release documentation defining adapter/integration boundaries without promoting ORM implementation details into the domain API.
+
+### Public candidate
+- Root imports remain `CRM`, `CRMConfig`, `CRMContext` and `__version__`.
+- Stable bounded-context package exports accumulated through V0.1–V0.9 are captured exactly.
+- CRM facade namespace names and command/query methods are captured exactly.
+- Typed PyCRMKit exception hierarchy is captured.
+- Domain-owned repository protocols and `UnitOfWork` are classified as public extension points.
+- `CRMConfig` and `CRMContext` field shapes are captured.
+- Built-in event names, `DomainEvent` envelope fields and serializer round-trip behavior are captured.
+- `external_identity.attached` and `external_identity.detached` remain documented public event names.
+- `contact.merged` remains an audit action rather than a domain-event type.
+
+### Provisional
+- Low-level SQLAlchemy declarative/model/mapping surfaces remain provisional.
+- Individual Memory/SQLAlchemy repository implementation class import names remain provisional even though their behavior is contract-qualified.
+- Django ORM repository implementation names beyond the documented integration contract remain provisional.
+
+### Internal
+- Concrete `pycrmkit.facade.*` implementation classes and `CRMRuntime` remain internal.
+- Memory backing state, ORM model internals and migration implementation modules remain internal.
+- Underscored names remain internal unless explicitly documented otherwise.
+
+### Scope boundary
+- No new CRM aggregate, persistence schema, dedup scoring rule, merge policy or transport capability is introduced.
+- This alpha freezes candidate compatibility; it does not yet complete V1 security/privacy, performance or compatibility-matrix qualification.
+
+### Changed
+- Package version advanced from `0.9.0` to `1.0.0a1`.
+- Development roadmap advances to `1.0.0b1 — Security & Privacy Hardening`.
+
 ## [0.9.0] - 2026-09-27
 
 ### Stable

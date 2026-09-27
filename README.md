@@ -4,11 +4,12 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-Current stable version: **0.9.0 — Data Operations Stable**.
+Current stable version: **0.9.0 — Data Operations Stable**.  
+Latest V1 prerelease: **1.0.0a1 — Public API Freeze Candidate**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` added the format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework. `0.9.0b1` added standard-library CSV, JSON and JSONL readers/exporters. `0.9.0b2` added explainable candidate detection, deterministic signal scoring, conflicts and provenance. `0.9.0b3` adds conservative transactional Contact merge execution with activity/relationship reassignment, tag union, custom-field conflict policies, external-identity preservation, audit and provenance. `0.9.0rc1` qualified the complete CSV import → normalization/validation → duplicate review → merge → audit/provenance → CSV/JSON/JSONL export journey from both source checkout and the built wheel. `0.9.0` promotes that qualified behavior to the stable Data Operations line without adding new functional scope.
+The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` added the format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework. `0.9.0b1` added standard-library CSV, JSON and JSONL readers/exporters. `0.9.0b2` added explainable candidate detection, deterministic signal scoring, conflicts and provenance. `0.9.0b3` adds conservative transactional Contact merge execution with activity/relationship reassignment, tag union, custom-field conflict policies, external-identity preservation, audit and provenance. `0.9.0rc1` qualified the complete CSV import → normalization/validation → duplicate review → merge → audit/provenance → CSV/JSON/JSONL export journey from both source checkout and the built wheel. `0.9.0` promotes that qualified behavior to the stable Data Operations line without adding new functional scope. `1.0.0a1` starts the V1 stabilization cycle by classifying the existing facade, domain, repository, event/serialization, configuration and integration surfaces as public, provisional or internal, with an executable source/wheel compatibility contract.
 
 ## Architecture
 
@@ -128,8 +129,8 @@ pytest
 0.9.0b3 Merge                                                               ✓
 0.9.0rc1 Data Operations E2E                                                ✓
 0.9.0  Data Operations Stable                                               ✓
-1.0.0a1 Public API Freeze Candidate                                         →
-1.0.0b1 Security & Privacy Hardening
+1.0.0a1 Public API Freeze Candidate                                         ✓
+1.0.0b1 Security & Privacy Hardening                                         →
 1.0.0b2 Performance Baseline
 1.0.0b3 Compatibility Matrix
 1.0.0rc1 Full Production Qualification
