@@ -349,15 +349,14 @@
     "candidate_version": "1.0.0rc1",
     "baseline_release": "1.0.0b3",
     "qualified_code_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
-    "first_evidence_workflow_run": 36327901778,
     "artifacts": {
       "wheel": {
         "filename": "pycrmkit-1.0.0rc1-py3-none-any.whl",
-        "sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41"
+        "sha256": "fa6d037e10d3287c5cd6b18e9abb10ec61d732fc4cca2d6e34bdfc4e660bc2fc"
       },
       "sdist": {
         "filename": "pycrmkit-1.0.0rc1.tar.gz",
-        "sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff"
+        "sha256": "01658e69d9db653dc21379cf37a3865c9fdbd75d1ae7d27622a8d2ba208308c1"
       }
     },
     "guarantees": [
@@ -375,6 +374,9 @@
       "release/release-manifest-v1.0.0rc1.json",
       "release/SHA256SUMS-v1.0.0rc1.txt",
       ".github/workflows/release-candidate-evidence.yml"
-    ]
+    ],
+    "deterministic_evidence_workflow_run": 36328789323,
+    "source_date_epoch": 1790518963,
+    "byte_reproducible": true
   }
 }
