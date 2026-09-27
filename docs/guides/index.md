@@ -55,6 +55,7 @@ example application.
 20. [Deduplication](19_deduplication.md) — evaluate explainable candidate evidence with exact normalized signals, configurable scoring, conflicts and conservative auto-selection.
 21. [Contact Merge](20_contact_merge.md) — reconcile reviewed duplicate Contacts transactionally with explicit primary selection, conflict policy, linked-state reassignment, archival and minimized audit.
 22. [Exporting Data](21_exporting_data.md) — project authorized CRM state into deterministic CSV, JSON and JSONL records with explicit format, pagination and privacy boundaries.
+23. [Memory Adapter](22_memory_adapter.md) — understand the official in-process adapter, transaction snapshots, explicit commit/rollback, copy isolation, deterministic repository semantics and post-commit events.
 
 ## LEVEL 1 complete
 
@@ -75,6 +76,10 @@ Email & Communications, Domain Events and Webhooks now form the complete Communi
 ## LEVEL 5 complete
 
 External Identities, Importing Data, Deduplication, Contact Merge and Exporting Data now form the complete Data Operations layer: provider identity, ingestion, evidence-based duplicate detection, transactional reconciliation and portable outbound exchange.
+
+## LEVEL 6 in progress
+
+Memory Adapter establishes the reference persistence semantics beneath the domain layer: contract-conformant repositories, shared Unit of Work snapshots, explicit commit/rollback, copy isolation and post-commit event dispatch. SQLAlchemy is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -105,7 +110,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 5 | 19 | Deduplication | Published |
 | 5 | 20 | Contact Merge | Published |
 | 5 | 21 | Exporting Data | Published |
-| 6 | 22 | Memory Adapter | Planned |
+| 6 | 22 | Memory Adapter | Published |
 | 6 | 23 | SQLAlchemy | Planned |
 | 6 | 24 | PostgreSQL | Planned |
 | 6 | 25 | Migrations | Planned |
