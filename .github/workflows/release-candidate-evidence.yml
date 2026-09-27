@@ -38,6 +38,13 @@ jobs:
           echo "----- RC1 SHA256 BEGIN -----"
           cat /tmp/SHA256SUMS-v1.0.0rc1.txt
           echo "----- RC1 SHA256 END -----"
+      - name: Verify frozen SHA256 evidence is reproducible
+        run: |
+          diff -u release/SHA256SUMS-v1.0.0rc1.txt /tmp/SHA256SUMS-v1.0.0rc1.txt
+          (
+            cd dist
+            sha256sum -c ../release/SHA256SUMS-v1.0.0rc1.txt
+          )
       - name: Candidate gate contract
         run: |
           python -m pip install -e ".[dev]"
