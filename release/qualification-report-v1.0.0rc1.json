@@ -2,7 +2,7 @@
   "schema_version": 1,
   "release": "1.0.0rc1",
   "baseline_release": "1.0.0b3",
-  "status": "candidate-build-recorded-awaiting-reproducibility",
+  "status": "qualified",
   "qualified_rc06_commit": "216fd4161f113036fab4f6eb472a530dee65d9a5",
   "qualification_date": "2026-09-27",
   "blocking_failures": 0,
