@@ -1,9 +1,10 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0a2 Import Framework."""
+"""Installed-package smoke test for PyCRMKit 0.9.0b1 Import Framework."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
 from decimal import Decimal
+from io import StringIO
 
 import pycrmkit
 from pycrmkit.activities import ActivityParticipant
@@ -21,8 +22,12 @@ from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
 from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
+from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
 from pycrmkit.importers import (
+    CSVReader,
     ImportPipeline,
+    JSONLReader,
+    JSONReader,
     ImportRow,
     IterableReader,
     PersistAction,
@@ -53,8 +58,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.9.0a2":
-        raise SystemExit(f"Expected PyCRMKit 0.9.0a2, got {version!r}")
+    if version != "0.9.0b1":
+        raise SystemExit(f"Expected PyCRMKit 0.9.0b1, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
@@ -77,6 +82,36 @@ def main() -> None:
         "validation_errors": 0,
     }:
         raise SystemExit("Import framework smoke failed")
+
+    format_records = (
+        {"email": "ada@example.com", "name": "Ada"},
+        {"email": "zoe@example.com", "name": "Zoé"},
+    )
+
+    csv_stream = StringIO()
+    if CSVExporter(csv_stream).write(format_records) != 2:
+        raise SystemExit("CSV export smoke failed")
+    csv_stream.seek(0)
+    if list(CSVReader(csv_stream).read()) != list(format_records):
+        raise SystemExit("CSV round-trip smoke failed")
+
+    json_stream = StringIO()
+    nested_records = (
+        {"email": "ada@example.com", "custom": {"tier": 1}},
+        {"email": "zoe@example.com", "tags": ["vip"]},
+    )
+    if JSONExporter(json_stream).write(nested_records) != 2:
+        raise SystemExit("JSON export smoke failed")
+    json_stream.seek(0)
+    if list(JSONReader(json_stream).read()) != list(nested_records):
+        raise SystemExit("JSON round-trip smoke failed")
+
+    jsonl_stream = StringIO()
+    if JSONLExporter(jsonl_stream).write(nested_records) != 2:
+        raise SystemExit("JSONL export smoke failed")
+    jsonl_stream.seek(0)
+    if list(JSONLReader(jsonl_stream).read()) != list(nested_records):
+        raise SystemExit("JSONL round-trip smoke failed")
 
     address = CommunicationAddress(
         CommunicationChannel.EMAIL,
@@ -362,7 +397,7 @@ def main() -> None:
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: Import Framework alpha + stable regression smoke OK")
+    print(f"PyCRMKit {version}: CSV/JSON/JSONL beta + stable regression smoke OK")
 
 
 if __name__ == "__main__":
