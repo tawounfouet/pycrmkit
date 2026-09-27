@@ -2,7 +2,8 @@
 
 PyCRMKit is a modular, headless Python CRM domain framework.
 
-The current stable version is **`0.9.0 — Data Operations Stable`**.
+The current stable version is **`0.9.0 — Data Operations Stable`**.  
+The latest V1 prerelease is **`1.0.0a1 — Public API Freeze Candidate`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -105,4 +106,6 @@ qualification now form one compatibility-governed integration line.
 
 `0.9.0` promotes that fully qualified release candidate to stable without adding new Data Operations feature scope. External identities, the import framework, CSV/JSON/JSONL exchange, deterministic deduplication, conservative Contact merge, audit/provenance and the source/clean-wheel E2E now form one compatibility-governed `0.9.x` line.
 
-The next roadmap milestone is **`1.0.0a1 — Public API Freeze Candidate`**.
+`1.0.0a1` starts the V1 stabilization cycle without adding major domain capability. It classifies the accumulated API surface as `public`, `provisional` or `internal` and installs an executable compatibility contract for root imports, bounded-context exports, facade methods, repository protocols, configuration, event names and event serialization. The same contract is checked from source and from the built wheel.
+
+The next roadmap milestone is **`1.0.0b1 — Security & Privacy Hardening`**.
