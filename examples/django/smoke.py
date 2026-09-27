@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 
-EXPECTED_VERSION = "0.9.0b3"
+EXPECTED_VERSION = "0.9.0rc1"
 
 
 def _setup_django() -> None:
