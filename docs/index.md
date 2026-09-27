@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.8.0 — Django Integration Stable`**.  
-The latest data-operations prerelease is **`0.9.0b1 — CSV / JSON / JSONL`**.
+The latest data-operations prerelease is **`0.9.0b2 — Deduplication`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -98,4 +98,4 @@ qualification now form one compatibility-governed integration line.
 
 `0.9.0b1` adds standard-library CSV, JSON and JSONL readers/exporters. Format adapters preserve source order and duplicates; JSON/JSONL preserve nested JSON data, while CSV remains intentionally scalar/tabular.
 
-The next roadmap milestone is **`0.9.0b2 — Deduplication`**.
+`0.9.0b2` adds deterministic duplicate candidate evaluation across normalized email, phone, full name, organization, postal address, external identity and custom identifiers. Candidate decisions are scored, conflict-aware and explainable through provenance; automatic import skipping remains conservative and merge execution is still out of scope.\n\nThe next roadmap milestone is **`0.9.0b3 — Merge`**.
