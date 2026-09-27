@@ -61,6 +61,7 @@ example application.
 26. [Migrations](25_migrations.md) — evolve PostgreSQL safely through immutable Alembic revisions, drift checks, historical upgrades, controlled downgrade policy and installed-wheel migration qualification.
 27. [FastAPI](26_fastapi.md) — expose the CRM facade through Pydantic transport schemas, request-scoped context, command-oriented routers, stable HTTP errors, OpenAPI contracts and PostgreSQL-backed API qualification.
 28. [Django](27_django.md) — integrate Django ORM persistence, adapter-specific migrations, explicit transactions, ambient savepoints, admin operations and PostgreSQL qualification without making ORM models the domain.
+29. [Django REST Framework](28_django_rest_framework.md) — expose the bounded Django CRM surface through explicit serializers, facade-backed ViewSets, offset pagination, request context and privacy-safe error mapping.
 
 ## LEVEL 1 complete
 
@@ -84,7 +85,7 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 
 ## LEVEL 6 in progress
 
-Memory Adapter establishes reference semantics, SQLAlchemy/PostgreSQL and Alembic provide the primary relational path, FastAPI exposes the facade over HTTP, and Django now provides a separate ORM/migration/transaction/admin adapter while preserving the same domain boundary. Django REST Framework is next.
+Memory Adapter establishes reference semantics, SQLAlchemy/PostgreSQL and Alembic provide the primary relational path, FastAPI exposes the facade over HTTP, Django provides an ORM/migration/transaction/admin adapter, and DRF now exposes the bounded Django CRM surface without leaking ORM models into the API. Transactions & Unit of Work is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -121,7 +122,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 25 | Migrations | Published |
 | 6 | 26 | FastAPI | Published |
 | 6 | 27 | Django | Published |
-| 6 | 28 | Django REST Framework | Planned |
+| 6 | 28 | Django REST Framework | Published |
 | 6 | 29 | Transactions & Unit of Work | Planned |
 | 6 | 30 | Context, Events & Audit | Planned |
 | 6 | 31 | Error Handling | Planned |
