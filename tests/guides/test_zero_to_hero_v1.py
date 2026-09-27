@@ -8,6 +8,7 @@ from io import StringIO
 
 import pytest
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 from pycrmkit import CRM, CRMContext, __version__
@@ -155,8 +156,13 @@ from pycrmkit.storage.memory import (
 from pycrmkit.storage.sqlalchemy import (
     Base,
     ContactModel,
+    OpportunityModel,
     SQLAlchemyUnitOfWork,
+    TagAssignmentModel,
+    TagModel,
+    WebhookDeliveryModel,
 )
+from pycrmkit.storage.sqlalchemy.errors import translate_sqlalchemy_error
 from pycrmkit.tags import TagName, TagQuery
 from pycrmkit.tasks import (
     TaskPriority,
@@ -4479,3 +4485,76 @@ def test_zero_to_hero_sqlalchemy_deterministic_pagination_example() -> None:
         assert page_two.has_previous is True
     finally:
         engine.dispose()
+
+
+def test_zero_to_hero_postgresql_constraint_metadata_example() -> None:
+    tag_constraint_names = {
+        constraint.name
+        for constraint in TagModel.__table__.constraints
+        if constraint.name is not None
+    }
+    assignment_constraint_names = {
+        constraint.name
+        for constraint in TagAssignmentModel.__table__.constraints
+        if constraint.name is not None
+    }
+    webhook_index_names = {
+        index.name
+        for index in WebhookDeliveryModel.__table__.indexes
+        if index.name is not None
+    }
+
+    assert "uq_pycrmkit_tags_normalized_name" in tag_constraint_names
+    assert "uq_pycrmkit_tag_assignments_target" in assignment_constraint_names
+    assert (
+        "ix_pycrmkit_webhook_delivery_subscription_event"
+        in webhook_index_names
+    )
+
+    tag_foreign_keys = TagAssignmentModel.__table__.c.tag_id.foreign_keys
+    assert len(tag_foreign_keys) == 1
+    assert next(iter(tag_foreign_keys)).target_fullname == "pycrmkit_tags.id"
+
+    assert not OpportunityModel.__table__.c.contact_id.foreign_keys
+    assert not OpportunityModel.__table__.c.organization_id.foreign_keys
+    assert not WebhookDeliveryModel.__table__.c.subscription_id.foreign_keys
+
+
+def test_zero_to_hero_postgresql_numeric_precision_example() -> None:
+    estimated_value = OpportunityModel.__table__.c.estimated_value.type
+    probability = OpportunityModel.__table__.c.probability.type
+
+    assert estimated_value.precision == 19
+    assert estimated_value.scale == 4
+    assert probability.precision == 7
+    assert probability.scale == 6
+
+
+def test_zero_to_hero_postgresql_sqlstate_translation_example() -> None:
+    class Diagnostic:
+        constraint_name = "uq_pycrmkit_tags_normalized_name"
+        table_name = "pycrmkit_tags"
+        column_name = "normalized_name"
+
+    class DriverDuplicate(Exception):
+        sqlstate = "23505"
+        diag = Diagnostic()
+
+    backend_error = IntegrityError(
+        "INSERT INTO pycrmkit_tags (...) VALUES (...)",
+        {"normalized_name": "secret-value"},
+        DriverDuplicate("duplicate key"),
+    )
+
+    translated = translate_sqlalchemy_error(backend_error)
+
+    assert isinstance(translated, DuplicateError)
+    assert translated.code == "repository.duplicate"
+    assert translated.context == {
+        "sqlstate": "23505",
+        "constraint": "uq_pycrmkit_tags_normalized_name",
+        "table": "pycrmkit_tags",
+        "column": "normalized_name",
+    }
+    assert "statement" not in translated.context
+    assert "params" not in translated.context
