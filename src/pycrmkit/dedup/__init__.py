@@ -19,6 +19,13 @@ from pycrmkit.dedup.matchers import (
     StandardSignalMatcher,
     normalize_text,
 )
+from pycrmkit.dedup.merge import (
+    MergePolicy,
+    MergeResolution,
+    MergeResult,
+    MergeStatistics,
+    merge_contact_profile,
+)
 from pycrmkit.dedup.provenance import DedupProvenance
 from pycrmkit.dedup.scoring import (
     DEFAULT_SIGNAL_WEIGHTS,
@@ -26,6 +33,7 @@ from pycrmkit.dedup.scoring import (
     DedupScorePolicy,
     ScoreResult,
 )
+from pycrmkit.dedup.services import MergeService
 
 __all__ = [
     "DEFAULT_SIGNAL_WEIGHTS",
@@ -41,9 +49,15 @@ __all__ = [
     "DedupSignal",
     "DeduplicationEngine",
     "InMemoryCandidateSource",
+    "MergePolicy",
+    "MergeResolution",
+    "MergeResult",
+    "MergeService",
+    "MergeStatistics",
     "ScoreResult",
     "SignalMatch",
     "StandardConflictDetector",
     "StandardSignalMatcher",
+    "merge_contact_profile",
     "normalize_text",
 ]

@@ -188,9 +188,11 @@ merge decisions.
 
 ## Scope boundary
 
-`0.9.0b2` detects and explains duplicate candidates. It does **not** merge
-records.
+`0.9.0b2` detects and explains duplicate candidates.
 
-Merge execution, primary-record selection, relationship/activity reassignment,
-tag union, custom-field conflict policy and merge audit remain scheduled for
-`0.9.0b3 — Merge`.
+`0.9.0b3` adds conservative transactional Contact merge execution with explicit
+primary selection, relationship/activity reassignment, tag union, custom-field
+conflict policy, external-identity preservation, duplicate archival, audit and
+provenance.
+
+See [Merge](merge.md) for the execution contract and safety boundaries.

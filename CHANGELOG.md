@@ -6,6 +6,44 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0b3] - 2026-09-27
+
+### Added
+- `MergePolicy` with conservative configurable resolution for primary email, primary phone and custom-field conflicts.
+- `merge_contact_profile()` for deterministic Contact field/contact-point consolidation while preserving primary identity.
+- `MergeService` for transactional Contact merge execution through the existing Unit-of-Work contract.
+- Activity participant/reference reassignment with duplicate-reference collapse.
+- Active relationship reassignment and explicit closure of direct primary↔duplicate relationships.
+- Tag union with removal of duplicate-record assignments.
+- Custom-field move/deduplication plus `reject`, `keep_primary` and `keep_duplicate` conflict behavior.
+- External-identity ownership transfer preserving mapping identity, provider key, creation time and metadata.
+- Duplicate Contact archival after successful reassignment.
+- Append-only `contact.merged` audit record with PII-minimized provenance summary.
+- `MergeResult` retaining full `DedupProvenance` plus observable mutation statistics.
+- Unit/integration coverage for conflict policies, rollback, reassignment, archival, audit and provenance.
+- Installed-wheel transactional merge smoke coverage.
+
+### Conservative defaults
+- Merge primary record is always selected explicitly by the caller.
+- Duplicate provenance is required by default and must carry a `duplicate` decision for the selected duplicate record.
+- Primary email conflicts default to `reject`.
+- Primary phone conflicts default to `reject`.
+- Custom-field conflicts default to `reject`.
+- Any exception before commit rolls back the complete Unit of Work.
+
+### Semantics
+- The duplicate is archived rather than physically deleted.
+- Active relationships are reassigned; a direct primary↔duplicate relationship is ended to avoid creating a self-relationship.
+- Already-ended relationships remain historical records.
+- Audit persistence stores score/decision/signal names but not matched PII values; full provenance remains attached to `MergeResult`.
+
+### Scope boundary
+- `0.9.0b3` implements Contact merge execution.
+- Organization merge execution and the full import → detect → review → merge → export journey remain outside this beta.
+
+### Changed
+- Package version advanced from `0.9.0b2` to `0.9.0b3`.
+- Development roadmap advances to `0.9.0rc1 — Data Operations E2E`.
 ## [0.9.0b2] - 2026-09-27
 
 ### Added
@@ -41,6 +79,7 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 ### Changed
 - Package version advanced from `0.9.0b1` to `0.9.0b2`.
 - Development roadmap advances to `0.9.0b3 — Merge`.
+
 ## [0.9.0b1] - 2026-09-27
 
 ### Added
