@@ -4,6 +4,7 @@ import json
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
+from io import StringIO
 
 import pytest
 
@@ -32,6 +33,7 @@ from pycrmkit.contacts import (
     ContactId,
     ContactPhone,
     ContactQuery,
+    ContactService,
     ContactStatus,
     ContactUpdate,
 )
@@ -61,8 +63,30 @@ from pycrmkit.exceptions import (
     ValidationError,
 )
 from pycrmkit.external_identities import (
+    ExternalIdentityService,
     normalize_external_id,
     normalize_external_system,
+)
+from pycrmkit.importers import (
+    CompositeValidator,
+    CSVReader,
+    DuplicateResult,
+    FieldMapping,
+    ImportPipeline,
+    ImportRow,
+    IterableReader,
+    JSONLReader,
+    JSONReader,
+    NormalizationRule,
+    PersistAction,
+    PersistResult,
+    PredicateValidator,
+    RecordMapper,
+    RecordNormalizer,
+    RequiredFieldsValidator,
+    casefold_text,
+    compose_normalizers,
+    strip_text,
 )
 from pycrmkit.leads import LeadConversionService, LeadQuery, LeadService, LeadStatus
 from pycrmkit.opportunities import (
@@ -2989,3 +3013,298 @@ def test_zero_to_hero_external_identity_generic_reference_boundary_example() -> 
             system="external_platform",
             external_id="invalid-target",
         )
+
+
+
+class _ZeroToHeroImportDuplicateDetector:
+    def detect(self, row: ImportRow) -> DuplicateResult:
+        if row.values.get("email") == "duplicate@example.com":
+            return DuplicateResult.match(
+                existing_entity_id="contact-existing",
+                reason="normalized email",
+            )
+        return DuplicateResult.no_match()
+
+
+class _ZeroToHeroImportRecordingPersister:
+    def __init__(self) -> None:
+        self.rows: list[ImportRow] = []
+
+    def persist(self, row: ImportRow) -> PersistResult:
+        self.rows.append(row)
+        if row.values.get("email") == "update@example.com":
+            return PersistResult(
+                PersistAction.UPDATED,
+                entity_id="contact-update",
+            )
+        return PersistResult(
+            PersistAction.CREATED,
+            entity_id=f"contact-{row.number}",
+        )
+
+
+def _zero_to_hero_looks_like_email(value: object) -> bool:
+    return isinstance(value, str) and "@" in value
+
+
+def test_zero_to_hero_import_pipeline_mixed_outcomes_example() -> None:
+    persister = _ZeroToHeroImportRecordingPersister()
+    pipeline = ImportPipeline(
+        reader=IterableReader(
+            (
+                {"Email": " New@Example.COM ", "Name": "New"},
+                {"Email": " update@example.com ", "Name": "Update"},
+                {"Email": " DUPLICATE@example.com ", "Name": "Duplicate"},
+                {"Email": "invalid", "Name": " "},
+            )
+        ),
+        mapper=RecordMapper(
+            (
+                FieldMapping("Email", "email"),
+                FieldMapping("Name", "display_name"),
+            )
+        ),
+        normalizer=RecordNormalizer(
+            (
+                NormalizationRule(
+                    "email",
+                    compose_normalizers(
+                        strip_text,
+                        casefold_text,
+                    ),
+                ),
+                NormalizationRule("display_name", strip_text),
+            )
+        ),
+        validator=CompositeValidator(
+            (
+                RequiredFieldsValidator(("email", "display_name")),
+                PredicateValidator(
+                    field="email",
+                    predicate=_zero_to_hero_looks_like_email,
+                    code="guide.import.email.invalid",
+                    message="email must contain @",
+                ),
+            )
+        ),
+        deduplicator=_ZeroToHeroImportDuplicateDetector(),
+        persister=persister,
+    )
+
+    report = pipeline.run()
+
+    assert report.as_dict() == {
+        "rows_read": 4,
+        "rows_created": 1,
+        "rows_updated": 1,
+        "rows_skipped": 2,
+        "duplicates": 1,
+        "validation_errors": 2,
+    }
+    assert [row.values["email"] for row in persister.rows] == [
+        "new@example.com",
+        "update@example.com",
+    ]
+    assert report.row_results[2].duplicate is True
+    assert report.row_results[2].duplicate_entity_id == "contact-existing"
+    assert [error.code for error in report.row_results[3].errors] == [
+        "import.required.missing",
+        "guide.import.email.invalid",
+    ]
+    assert all(
+        error.stage.value == "validate"
+        for error in report.row_results[3].errors
+    )
+
+
+def test_zero_to_hero_import_readers_csv_json_jsonl_example() -> None:
+    csv_rows = list(
+        CSVReader(
+            StringIO(
+                "email,name,city\n"
+                "ada@example.com,Ada,Paris\n"
+                "zoe@example.com,Zoé,\n"
+            )
+        ).read()
+    )
+    assert csv_rows == [
+        {"email": "ada@example.com", "name": "Ada", "city": "Paris"},
+        {"email": "zoe@example.com", "name": "Zoé", "city": ""},
+    ]
+
+    json_rows = list(
+        JSONReader(
+            StringIO(
+                '[{"email":"ada@example.com","custom":{"tier":1}},'
+                '{"email":"ada@example.com","custom":{"tier":1}}]'
+            )
+        ).read()
+    )
+    assert json_rows[0]["custom"] == {"tier": 1}
+    assert json_rows[1] == json_rows[0]
+
+    jsonl_rows = list(
+        JSONLReader(
+            StringIO(
+                '{"email":"ada@example.com"}\n'
+                '\n'
+                '{"email":"grace@example.com"}\n'
+            )
+        ).read()
+    )
+    assert jsonl_rows == [
+        {"email": "ada@example.com"},
+        {"email": "grace@example.com"},
+    ]
+
+
+def test_zero_to_hero_import_summary_mode_keeps_exact_counters_example() -> None:
+    row_count = 250
+    persister = _ZeroToHeroImportRecordingPersister()
+    records = (
+        {
+            "email": f"user-{index}@example.com",
+            "display_name": f"User {index}",
+        }
+        for index in range(row_count)
+    )
+    report = ImportPipeline(
+        reader=IterableReader(records),
+        persister=persister,
+        retain_row_results=False,
+    ).run()
+
+    assert report.as_dict() == {
+        "rows_read": row_count,
+        "rows_created": row_count,
+        "rows_updated": 0,
+        "rows_skipped": 0,
+        "duplicates": 0,
+        "validation_errors": 0,
+    }
+    assert report.row_results == []
+    assert report.errors == ()
+    assert len(persister.rows) == row_count
+
+
+class _ZeroToHeroImportFailingPersister:
+    def persist(self, row: ImportRow) -> PersistResult:
+        raise RuntimeError(f"persistence failed for row {row.number}")
+
+
+def test_zero_to_hero_import_structural_and_persistence_failures_propagate() -> None:
+    with pytest.raises(ValidationError) as malformed_json:
+        list(JSONReader(StringIO('[{"email":}')).read())
+    assert malformed_json.value.code == "import.json.syntax.invalid"
+
+    pipeline = ImportPipeline(
+        reader=IterableReader(({"email": "ada@example.com"},)),
+        persister=_ZeroToHeroImportFailingPersister(),
+    )
+
+    with pytest.raises(RuntimeError, match="persistence failed for row 1"):
+        pipeline.run()
+
+
+def _zero_to_hero_import_text(row: ImportRow, field: str) -> str:
+    value = row.values.get(field)
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} must be a non-empty string")
+    return value
+
+
+class _ZeroToHeroExternalContactPersister:
+    def __init__(self, store: MemoryStore, clock: FixedClock) -> None:
+        self.store = store
+        self.clock = clock
+
+    def persist(self, row: ImportRow) -> PersistResult:
+        system = _zero_to_hero_import_text(row, "system")
+        external_id = _zero_to_hero_import_text(row, "external_id")
+        display_name = _zero_to_hero_import_text(row, "display_name")
+        email = _zero_to_hero_import_text(row, "email")
+
+        with MemoryUnitOfWork(self.store) as uow:
+            identities = ExternalIdentityService(
+                uow.external_identities,
+                clock=self.clock,
+            )
+            existing = identities.find(system, external_id)
+            if existing is not None:
+                return PersistResult(
+                    PersistAction.SKIPPED,
+                    entity_id=str(existing.entity_id),
+                )
+
+            contact = ContactService(
+                uow.contacts,
+                clock=self.clock,
+            ).create(
+                display_name=display_name,
+                emails=(
+                    ContactEmail(
+                        email,
+                        is_primary=True,
+                    ),
+                ),
+                source="zero-to-hero-import",
+            )
+            identities.attach(
+                EntityReference(
+                    "contact",
+                    contact.id,
+                ),
+                system=system,
+                external_id=external_id,
+                metadata={"source": "guide"},
+            )
+            uow.commit()
+
+        return PersistResult(
+            PersistAction.CREATED,
+            entity_id=str(contact.id),
+        )
+
+
+def test_zero_to_hero_import_external_identity_same_uow_replay_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 23, 30, tzinfo=UTC))
+    persister = _ZeroToHeroExternalContactPersister(store, clock)
+    records = (
+        {
+            "system": "legacy_crm",
+            "external_id": "ADA-42",
+            "display_name": "Ada Lovelace",
+            "email": "ada@example.com",
+        },
+    )
+
+    first = ImportPipeline(
+        reader=IterableReader(records),
+        persister=persister,
+    ).run()
+    second = ImportPipeline(
+        reader=IterableReader(records),
+        persister=persister,
+    ).run()
+
+    assert first.rows_created == 1
+    assert first.rows_skipped == 0
+    assert second.rows_created == 0
+    assert second.rows_skipped == 1
+
+    with MemoryUnitOfWork(store) as uow:
+        contacts = uow.contacts.search(
+            ContactQuery(),
+            OffsetPageRequest(),
+        )
+        identity = uow.external_identities.find(
+            "legacy_crm",
+            "ADA-42",
+        )
+
+    assert contacts.total == 1
+    assert identity is not None
+    assert identity.entity_type == "contact"
+    assert str(identity.entity_id) == first.row_results[0].entity_id
+    assert second.row_results[0].entity_id == first.row_results[0].entity_id

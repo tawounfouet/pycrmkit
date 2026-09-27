@@ -29,6 +29,7 @@ nav:
       - 15 Domain Events: guides/15_domain_events.md
       - 16 Webhooks: guides/16_webhooks.md
       - 17 External Identities: guides/17_external_identities.md
+      - 18 Importing Data: guides/18_importing_data.md
   - Facade:
       - CRM: facade/index.md
   - Core:
