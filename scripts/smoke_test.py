@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0b3 Deduplication."""
+"""Installed-package smoke test for PyCRMKit 0.9.0b3 Merge."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ from io import StringIO
 
 import pycrmkit
 from pycrmkit.activities import ActivityParticipant
-from pycrmkit.contacts import ContactEmail, ContactPhone, ContactService
 from pycrmkit.communication import (
     CommunicationAddress,
     CommunicationChannel,
@@ -19,6 +18,7 @@ from pycrmkit.communication import (
     EmailMessage,
     EmailProviderResult,
 )
+from pycrmkit.contacts import ContactEmail, ContactPhone, ContactService
 from pycrmkit.core import Money
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
