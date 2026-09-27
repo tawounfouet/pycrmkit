@@ -47,6 +47,13 @@ from pycrmkit.opportunities import (
     OpportunityService,
     OpportunityStatus,
 )
+from pycrmkit.organizations import (
+    OrganizationAddress,
+    OrganizationDomain,
+    OrganizationQuery,
+    OrganizationStatus,
+    OrganizationUpdate,
+)
 from pycrmkit.pipelines import (
     InvalidStageTransition,
     Pipeline,
@@ -54,13 +61,6 @@ from pycrmkit.pipelines import (
     Stage,
     StageOutcome,
     StageTransition,
-)
-from pycrmkit.organizations import (
-    OrganizationAddress,
-    OrganizationDomain,
-    OrganizationQuery,
-    OrganizationStatus,
-    OrganizationUpdate,
 )
 from pycrmkit.relationships import (
     RelationshipEndpoint,
@@ -1745,9 +1745,9 @@ def test_zero_to_hero_pipelines_facade_and_movement_example() -> None:
     assert opportunity.probability == Decimal("1")
     assert opportunity.is_terminal is True
 
-    with pytest.raises(InvalidStateError) as closed:
+    with pytest.raises(InvalidStageTransition) as closed:
         crm.opportunities.move(opportunity.id, to="proposal")
-    assert closed.value.code == "opportunity.stage.transition.closed"
+    assert closed.value.code == "pipeline.transition.invalid"
 
 
 def test_zero_to_hero_pipelines_policy_and_unassigned_entry_example() -> None:
