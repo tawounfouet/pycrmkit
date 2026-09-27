@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field, replace
+from datetime import datetime
 from typing import TypeVar
 
 from pycrmkit.activities import Activity, ActivityParticipant, ActivityQuery
@@ -55,7 +56,7 @@ def _merge_activity(
     *,
     duplicate: EntityReference,
     primary: EntityReference,
-    updated_at: object,
+    updated_at: datetime,
 ) -> Activity:
     participants: list[ActivityParticipant] = []
     participant_index: dict[EntityReference, int] = {}
@@ -240,7 +241,7 @@ class MergeService:
         *,
         duplicate_ref: EntityReference,
         primary_ref: EntityReference,
-        now: object,
+        now: datetime,
     ) -> int:
         by_id: dict[object, Activity] = {}
         for activity in _collect_pages(
@@ -275,7 +276,7 @@ class MergeService:
         *,
         duplicate_id: ContactId,
         primary_id: ContactId,
-        now: object,
+        now: datetime,
     ) -> tuple[int, int]:
         duplicate_endpoint = RelationshipEndpoint.contact(duplicate_id)
         primary_endpoint = RelationshipEndpoint.contact(primary_id)
@@ -323,7 +324,7 @@ class MergeService:
         *,
         duplicate_ref: EntityReference,
         primary_ref: EntityReference,
-        now: object,
+        now: datetime,
     ) -> int:
         primary_tags = {
             tag.id
@@ -358,7 +359,7 @@ class MergeService:
         *,
         duplicate_ref: EntityReference,
         primary_ref: EntityReference,
-        now: object,
+        now: datetime,
         resolution: MergeResolution,
     ) -> tuple[int, int]:
         primary_values = {
@@ -438,7 +439,7 @@ class MergeService:
         *,
         duplicate_ref: EntityReference,
         primary_ref: EntityReference,
-        now: object,
+        now: datetime,
     ) -> int:
         identities: tuple[ExternalIdentity, ...] = _collect_pages(
             lambda page: uow.external_identities.list_for_entity(
