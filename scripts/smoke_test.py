@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0rc1 Data Operations E2E."""
+"""Installed-package smoke test for PyCRMKit 0.9.0 Data Operations E2E."""
 
 from __future__ import annotations
 
@@ -70,8 +70,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "0.9.0rc1":
-        raise SystemExit(f"Expected PyCRMKit 0.9.0rc1, got {version!r}")
+    if version != "0.9.0":
+        raise SystemExit(f"Expected PyCRMKit 0.9.0, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
