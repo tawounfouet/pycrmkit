@@ -47,6 +47,19 @@ from pycrmkit.custom_fields import (
     CustomFieldOption,
     CustomFieldType,
 )
+from pycrmkit.dedup import (
+    CandidateRecord,
+    ConflictSeverity,
+    DedupDecision,
+    DedupProfile,
+    DedupScorePolicy,
+    DedupSignal,
+    DeduplicationEngine,
+    InMemoryCandidateSource,
+    SignalMatch,
+    StandardConflictDetector,
+    StandardSignalMatcher,
+)
 from pycrmkit.events import (
     DomainEvent,
     EventRegistry,
@@ -3308,3 +3321,291 @@ def test_zero_to_hero_import_external_identity_same_uow_replay_example() -> None
     assert identity.entity_type == "contact"
     assert str(identity.entity_id) == first.row_results[0].entity_id
     assert second.row_results[0].entity_id == first.row_results[0].entity_id
+
+
+
+def test_zero_to_hero_dedup_profile_and_all_signals_example() -> None:
+    incoming = DedupProfile.from_mapping(
+        {
+            "email": " Ada@Example.COM ",
+            "phone": "+33 (6) 12 34 56 78",
+            "first_name": " Ada ",
+            "last_name": " LOVELACE ",
+            "organization": " Analytical Engines ",
+            "address": {
+                "line1": " 10 Rue des Mathématiques ",
+                "postal_code": "75001",
+                "city": " Paris ",
+                "country_code": "FR",
+            },
+            "external_identity": {
+                "system": "HubSpot",
+                "external_id": " Contact-42 ",
+            },
+            "custom_identifiers": {
+                "customer_number": " C-001 ",
+            },
+        }
+    )
+    candidate = DedupProfile.from_mapping(
+        {
+            "normalized_email": "ada@example.com",
+            "normalized_phone": "+33612345678",
+            "display_name": "ADA LOVELACE",
+            "company": "analytical engines",
+            "address": {
+                "line1": "10 rue des mathématiques",
+                "postal_code": "75001",
+                "city": "paris",
+                "country_code": "fr",
+            },
+            "external_identities": (
+                {
+                    "system": "hubspot",
+                    "external_id": "Contact-42",
+                },
+            ),
+            "custom_identifiers": {
+                "Customer Number": "C-001",
+            },
+        }
+    )
+
+    matches = StandardSignalMatcher().match(incoming, candidate)
+
+    assert incoming.emails == frozenset({"ada@example.com"})
+    assert incoming.phones == frozenset({"+33612345678"})
+    assert incoming.full_name == "ada lovelace"
+    assert incoming.organization == "analytical engines"
+    assert incoming.addresses == frozenset(
+        {"10 rue des mathématiques|75001|paris|fr"}
+    )
+    assert incoming.external_identities == frozenset(
+        {("hubspot", "Contact-42")}
+    )
+    assert incoming.custom_identifiers == frozenset(
+        {("customer_number", "C-001")}
+    )
+    assert {match.signal for match in matches} == set(DedupSignal)
+
+
+def test_zero_to_hero_dedup_scoring_unique_signal_and_ordering_example() -> None:
+    duplicate_profile = {
+        "email": "ada@example.com",
+        "full_name": "Ada Lovelace",
+        "organization": "Analytical Engines",
+    }
+    engine = DeduplicationEngine(
+        InMemoryCandidateSource(
+            (
+                CandidateRecord("contact-c", duplicate_profile),
+                CandidateRecord(
+                    "contact-b",
+                    {"email": "ada@example.com"},
+                ),
+                CandidateRecord("contact-a", duplicate_profile),
+            )
+        )
+    )
+    row = ImportRow(
+        1,
+        {
+            "email": "ADA@EXAMPLE.COM",
+            "display_name": "ada lovelace",
+            "company": "analytical engines",
+        },
+    )
+
+    assessments = engine.evaluate(row)
+
+    assert [
+        (item.candidate.entity_id, item.score, item.decision)
+        for item in assessments
+    ] == [
+        ("contact-a", 100, DedupDecision.DUPLICATE),
+        ("contact-c", 100, DedupDecision.DUPLICATE),
+        ("contact-b", 70, DedupDecision.REVIEW),
+    ]
+
+    repeated_email_score = DedupScorePolicy().evaluate(
+        (
+            SignalMatch(DedupSignal.EMAIL, "ada@example.com"),
+            SignalMatch(DedupSignal.EMAIL, "ada+work@example.com"),
+        )
+    )
+    assert repeated_email_score.score == 70
+    assert repeated_email_score.decision is DedupDecision.REVIEW
+
+    custom_policy = DedupScorePolicy(
+        review_threshold=60,
+        duplicate_threshold=80,
+    )
+    custom_result = custom_policy.evaluate(
+        (
+            SignalMatch(DedupSignal.PHONE, "+33612345678"),
+            SignalMatch(DedupSignal.FULL_NAME, "ada lovelace"),
+        )
+    )
+    assert custom_result.score == 85
+    assert custom_result.decision is DedupDecision.DUPLICATE
+
+
+def test_zero_to_hero_dedup_warning_and_blocking_conflict_example() -> None:
+    warning_incoming = DedupProfile.from_mapping(
+        {
+            "email": "ada@example.com",
+            "full_name": "Ada Lovelace",
+            "organization": "Analytical Engines",
+            "phone": "+33611111111",
+        }
+    )
+    warning_candidate = DedupProfile.from_mapping(
+        {
+            "email": "ada@example.com",
+            "full_name": "Ada Lovelace",
+            "organization": "Analytical Engines",
+            "phone": "+33622222222",
+        }
+    )
+    matcher = StandardSignalMatcher()
+    detector = StandardConflictDetector()
+    policy = DedupScorePolicy()
+
+    warning_matches = matcher.match(
+        warning_incoming,
+        warning_candidate,
+    )
+    warning_conflicts = detector.detect(
+        warning_incoming,
+        warning_candidate,
+    )
+    warning_result = policy.evaluate(
+        warning_matches,
+        warning_conflicts,
+    )
+
+    assert warning_result.score == 100
+    assert warning_result.decision is DedupDecision.DUPLICATE
+    assert len(warning_conflicts) == 1
+    assert warning_conflicts[0].signal is DedupSignal.PHONE
+    assert warning_conflicts[0].severity is ConflictSeverity.WARNING
+
+    blocking_incoming = DedupProfile.from_mapping(
+        {
+            "email": "ada@example.com",
+            "full_name": "Ada Lovelace",
+            "organization": "Analytical Engines",
+            "custom_identifiers": {
+                "customer_number": "C-001",
+            },
+        }
+    )
+    blocking_candidate = DedupProfile.from_mapping(
+        {
+            "email": "ada@example.com",
+            "full_name": "Ada Lovelace",
+            "organization": "Analytical Engines",
+            "custom_identifiers": {
+                "customer_number": "C-999",
+            },
+        }
+    )
+    blocking_matches = matcher.match(
+        blocking_incoming,
+        blocking_candidate,
+    )
+    blocking_conflicts = detector.detect(
+        blocking_incoming,
+        blocking_candidate,
+    )
+    blocking_result = policy.evaluate(
+        blocking_matches,
+        blocking_conflicts,
+    )
+
+    assert blocking_result.score == 100
+    assert blocking_result.decision is DedupDecision.CONFLICT
+    assert any(
+        conflict.signal is DedupSignal.CUSTOM_IDENTIFIER
+        and conflict.severity is ConflictSeverity.BLOCKING
+        for conflict in blocking_conflicts
+    )
+
+
+def test_zero_to_hero_dedup_ambiguous_duplicate_is_not_auto_selected() -> None:
+    record = {
+        "email": "ada@example.com",
+        "full_name": "Ada Lovelace",
+        "organization": "Analytical Engines",
+    }
+    engine = DeduplicationEngine(
+        InMemoryCandidateSource(
+            (
+                CandidateRecord("contact-1", record),
+                CandidateRecord("contact-2", record),
+            )
+        )
+    )
+    row = ImportRow(1, record)
+
+    assessments = engine.evaluate(row)
+    detected = engine.detect(row)
+
+    assert len(assessments) == 2
+    assert all(
+        item.decision is DedupDecision.DUPLICATE
+        for item in assessments
+    )
+    assert detected.is_duplicate is False
+    assert detected.existing_entity_id is None
+    assert assessments[0].provenance.as_dict()["decision"] == "duplicate"
+
+
+def test_zero_to_hero_dedup_import_pipeline_unique_duplicate_example() -> None:
+    deduplicator = DeduplicationEngine(
+        InMemoryCandidateSource(
+            (
+                CandidateRecord(
+                    "contact-existing",
+                    {
+                        "email": "ada@example.com",
+                        "full_name": "Ada Lovelace",
+                        "organization": "Analytical Engines",
+                    },
+                ),
+            )
+        )
+    )
+    persister = _ZeroToHeroImportRecordingPersister()
+    report = ImportPipeline(
+        reader=IterableReader(
+            (
+                {
+                    "email": "ADA@EXAMPLE.COM",
+                    "full_name": "Ada Lovelace",
+                    "organization": "Analytical Engines",
+                },
+                {
+                    "email": "grace@example.com",
+                    "full_name": "Grace Hopper",
+                    "organization": "US Navy",
+                },
+            )
+        ),
+        deduplicator=deduplicator,
+        persister=persister,
+    ).run()
+
+    assert report.as_dict() == {
+        "rows_read": 2,
+        "rows_created": 1,
+        "rows_updated": 0,
+        "rows_skipped": 1,
+        "duplicates": 1,
+        "validation_errors": 0,
+    }
+    assert report.row_results[0].duplicate is True
+    assert report.row_results[0].duplicate_entity_id == "contact-existing"
+    assert [row.values["email"] for row in persister.rows] == [
+        "grace@example.com",
+    ]
