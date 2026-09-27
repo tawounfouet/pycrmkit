@@ -40,6 +40,7 @@ from pycrmkit.exceptions import (
     InvalidStateError,
     ValidationError,
 )
+from pycrmkit.leads import LeadQuery, LeadService, LeadStatus
 from pycrmkit.organizations import (
     OrganizationAddress,
     OrganizationDomain,
@@ -54,7 +55,11 @@ from pycrmkit.relationships import (
     RelationshipType,
     RelationshipUpdate,
 )
-from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
+from pycrmkit.storage.memory import (
+    MemoryLeadRepository,
+    MemoryStore,
+    MemoryUnitOfWork,
+)
 from pycrmkit.tags import TagName, TagQuery
 from pycrmkit.tasks import (
     TaskPriority,
@@ -1433,3 +1438,107 @@ def test_zero_to_hero_timeline_invalid_window_example() -> None:
             occurred_until=datetime(2026, 10, 1, tzinfo=UTC),
         )
     assert invalid_window.value.code == "timeline.query.invalid_interval"
+
+
+
+def test_zero_to_hero_leads_facade_lifecycle_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 14, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="sales-user-42",
+        correlation_id="lead-guide-001",
+    )
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+
+    lead = crm.leads.create(
+        contact_id=contact.id,
+        organization_id=organization.id,
+        source="  partner   referral ",
+    )
+
+    assert lead.status is LeadStatus.NEW
+    assert lead.source == "partner referral"
+    assert lead.contact_id == contact.id
+    assert lead.organization_id == organization.id
+
+    clock.advance(timedelta(minutes=15))
+    qualified = crm.leads.qualify(lead.id)
+
+    assert qualified.status is LeadStatus.QUALIFIED
+    assert qualified.updated_at == clock.now()
+
+    clock.advance(timedelta(minutes=15))
+    disqualified = crm.leads.disqualify(lead.id)
+
+    assert disqualified.status is LeadStatus.DISQUALIFIED
+
+    with pytest.raises(InvalidStateError) as invalid_transition:
+        crm.leads.qualify(lead.id)
+    assert invalid_transition.value.code == "lead.transition.invalid"
+
+
+def test_zero_to_hero_leads_service_states_and_queries_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 15, 0, tzinfo=UTC))
+    ids = UUID4Factory()
+    repository = MemoryLeadRepository()
+    service = LeadService(
+        repository,
+        id_factory=ids,
+        clock=clock,
+    )
+    contact_id = ids.new(ContactId)
+
+    lead = service.create(
+        contact_id=contact_id,
+        source="  Partner   Referral ",
+    )
+    assert lead.status is LeadStatus.NEW
+    assert lead.source == "Partner Referral"
+
+    clock.advance(timedelta(minutes=5))
+    opened = service.open(lead.id)
+    assert opened.status is LeadStatus.OPEN
+
+    clock.advance(timedelta(minutes=5))
+    contacted = service.mark_contacted(lead.id)
+    assert contacted.status is LeadStatus.CONTACTED
+
+    page = service.list(
+        LeadQuery(
+            status=LeadStatus.CONTACTED,
+            contact_id=contact_id,
+            source=" partner referral ",
+        ),
+        OffsetPageRequest(limit=10, offset=0),
+    )
+
+    assert page.items == (contacted,)
+    assert page.total == 1
+    assert page.has_next is False
+    assert service.get(lead.id) == contacted
+
+    terminal = service.disqualify(lead.id)
+    assert terminal.status is LeadStatus.DISQUALIFIED
+
+    with pytest.raises(InvalidStateError) as invalid_transition:
+        service.qualify(lead.id)
+    assert invalid_transition.value.code == "lead.transition.invalid"
+
+
+def test_zero_to_hero_leads_validation_example() -> None:
+    ids = UUID4Factory()
+    service = LeadService(
+        MemoryLeadRepository(),
+        id_factory=ids,
+        clock=FixedClock(datetime(2026, 9, 27, 16, 0, tzinfo=UTC)),
+    )
+
+    with pytest.raises(ValidationError) as source_too_long:
+        service.create(
+            contact_id=ids.new(ContactId),
+            source="x" * 121,
+        )
+    assert source_too_long.value.code == "lead.source.too_long"
