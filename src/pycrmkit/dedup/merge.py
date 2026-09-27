@@ -8,6 +8,7 @@ from enum import StrEnum
 
 from pycrmkit.audit import AuditEntry
 from pycrmkit.contacts import Contact
+from pycrmkit.contacts.policies import resolve_display_name
 from pycrmkit.contacts.value_objects import Address, ContactEmail, ContactPhone
 from pycrmkit.dedup.provenance import DedupProvenance
 from pycrmkit.exceptions import ConflictError, ValidationError
@@ -239,12 +240,28 @@ def merge_contact_profile(
     metadata = dict(duplicate.metadata)
     metadata.update(primary.metadata)
 
+    first_name = primary.first_name or duplicate.first_name
+    last_name = primary.last_name or duplicate.last_name
+    current_derived_name = resolve_display_name(
+        first_name=primary.first_name,
+        last_name=primary.last_name,
+        explicit=None,
+    )
+    if primary.display_name == current_derived_name:
+        display_name = resolve_display_name(
+            first_name=first_name,
+            last_name=last_name,
+            explicit=None,
+        )
+    else:
+        display_name = primary.display_name or duplicate.display_name
+
     return replace(
         primary,
         updated_at=at,
-        first_name=primary.first_name or duplicate.first_name,
-        last_name=primary.last_name or duplicate.last_name,
-        display_name=primary.display_name or duplicate.display_name,
+        first_name=first_name,
+        last_name=last_name,
+        display_name=display_name,
         owner_id=primary.owner_id or duplicate.owner_id,
         source=primary.source or duplicate.source,
         emails=_merge_emails(
