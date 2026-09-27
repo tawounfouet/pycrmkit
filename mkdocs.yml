@@ -22,6 +22,7 @@ nav:
       - 08 Tasks: guides/08_tasks.md
       - 09 Timeline: guides/09_timeline.md
       - 10 Leads: guides/10_leads.md
+      - 11 Opportunities: guides/11_opportunities.md
   - Facade:
       - CRM: facade/index.md
   - Core:

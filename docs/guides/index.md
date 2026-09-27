@@ -44,6 +44,7 @@ example application.
 9. [Tasks](08_tasks.md) — master actionable CRM work, priorities, due dates, lifecycle transitions and overdue queries.
 10. [Timeline](09_timeline.md) — understand immutable customer-history projections, replay safety, filters and transactional consistency.
 11. [Leads](10_leads.md) — model commercial qualification, explicit lifecycle transitions and portable Lead queries.
+12. [Opportunities](11_opportunities.md) — model commercial outcomes, Decimal-safe value, probability, lifecycle and portable Opportunity queries.
 
 ## LEVEL 1 complete
 
@@ -55,7 +56,7 @@ Activities, Tasks and Timeline now form the complete Customer Activity layer: in
 
 ## LEVEL 3 in progress
 
-Leads now establish the commercial qualification lifecycle. The next chapter is Opportunities, followed by Pipelines and atomic Lead Conversion.
+Leads establish the commercial qualification lifecycle, and Opportunities now model concrete potential business outcomes. The next chapter is Pipelines, followed by atomic Lead Conversion.
 
 ## Full Zero-to-Hero roadmap
 
@@ -75,7 +76,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 2 | 08 | Tasks | Published |
 | 2 | 09 | Timeline | Published |
 | 3 | 10 | Leads | Published |
-| 3 | 11 | Opportunities | Planned |
+| 3 | 11 | Opportunities | Published |
 | 3 | 12 | Pipelines | Planned |
 | 3 | 13 | Lead Conversion | Planned |
 | 4 | 14 | Email & Communications | Planned |

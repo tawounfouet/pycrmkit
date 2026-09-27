@@ -1,7 +1,8 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
 from dataclasses import replace
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
+from decimal import Decimal
 
 import pytest
 
@@ -41,6 +42,11 @@ from pycrmkit.exceptions import (
     ValidationError,
 )
 from pycrmkit.leads import LeadQuery, LeadService, LeadStatus
+from pycrmkit.opportunities import (
+    OpportunityQuery,
+    OpportunityService,
+    OpportunityStatus,
+)
 from pycrmkit.organizations import (
     OrganizationAddress,
     OrganizationDomain,
@@ -57,6 +63,7 @@ from pycrmkit.relationships import (
 )
 from pycrmkit.storage.memory import (
     MemoryLeadRepository,
+    MemoryOpportunityRepository,
     MemoryStore,
     MemoryUnitOfWork,
 )
@@ -1542,3 +1549,120 @@ def test_zero_to_hero_leads_validation_example() -> None:
             source="x" * 121,
         )
     assert source_too_long.value.code == "lead.source.too_long"
+
+
+
+def test_zero_to_hero_opportunities_facade_value_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 17, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="sales-user-42",
+        correlation_id="opportunity-guide-001",
+    )
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+
+    opportunity = crm.opportunities.create(
+        name="  Enterprise   renewal ",
+        contact_id=contact.id,
+        organization_id=organization.id,
+        estimated_value=Decimal("25000.00"),
+        currency=" eur ",
+        probability=Decimal("0.65"),
+        expected_close_date=date(2026, 12, 31),
+        owner_id=" seller-42 ",
+    )
+
+    assert opportunity.name == "Enterprise renewal"
+    assert opportunity.status is OpportunityStatus.OPEN
+    assert opportunity.money is not None
+    assert opportunity.money.amount == Decimal("25000.00")
+    assert opportunity.money.currency == "EUR"
+    assert opportunity.probability == Decimal("0.65")
+    assert opportunity.owner_id == "seller-42"
+    assert opportunity.organization_id == organization.id
+
+
+def test_zero_to_hero_opportunities_service_query_and_lifecycle_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 18, 0, tzinfo=UTC))
+    ids = UUID4Factory()
+    repository = MemoryOpportunityRepository()
+    service = OpportunityService(
+        repository,
+        id_factory=ids,
+        clock=clock,
+    )
+    contact_id = ids.new(ContactId)
+
+    opportunity = service.create(
+        name="Enterprise expansion",
+        contact_id=contact_id,
+        estimated_value=Decimal("40000"),
+        currency="EUR",
+        probability=Decimal("0.40"),
+        expected_close_date=date(2027, 1, 31),
+        owner_id="Seller-42",
+    )
+
+    page = service.list(
+        OpportunityQuery(
+            status=OpportunityStatus.OPEN,
+            contact_id=contact_id,
+            currency="eur",
+            owner_id="seller-42",
+            expected_close_date=date(2027, 1, 31),
+        ),
+        OffsetPageRequest(limit=10, offset=0),
+    )
+
+    assert page.items == (opportunity,)
+    assert page.total == 1
+    assert page.has_next is False
+    assert service.get(opportunity.id) == opportunity
+
+    clock.advance(timedelta(hours=1))
+    won = service.mark_won(opportunity.id)
+
+    assert won.status is OpportunityStatus.WON
+    assert won.is_terminal is True
+    assert won.updated_at == clock.now()
+
+    with pytest.raises(InvalidStateError) as invalid_transition:
+        service.mark_lost(opportunity.id)
+    assert invalid_transition.value.code == "opportunity.transition.invalid"
+
+
+def test_zero_to_hero_opportunities_validation_examples() -> None:
+    ids = UUID4Factory()
+    service = OpportunityService(
+        MemoryOpportunityRepository(),
+        id_factory=ids,
+        clock=FixedClock(datetime(2026, 9, 27, 19, 0, tzinfo=UTC)),
+    )
+    contact_id = ids.new(ContactId)
+
+    with pytest.raises(ValidationError) as missing_currency:
+        service.create(
+            name="Missing currency",
+            contact_id=contact_id,
+            estimated_value=Decimal("1000"),
+        )
+    assert missing_currency.value.code == "opportunity.currency.required"
+
+    with pytest.raises(ValidationError) as invalid_probability:
+        service.create(
+            name="Float probability",
+            contact_id=contact_id,
+            probability=0.5,  # type: ignore[arg-type]
+        )
+    assert invalid_probability.value.code == "opportunity.probability.decimal_required"
+
+    with pytest.raises(ValidationError) as stage_without_pipeline:
+        service.create(
+            name="Stage without pipeline",
+            contact_id=contact_id,
+            stage_id="proposal",
+        )
+    assert stage_without_pipeline.value.code == "opportunity.stage_id.pipeline_required"
