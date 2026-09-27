@@ -1,4 +1,4 @@
-"""Installed-package smoke test for PyCRMKit 0.9.0b1 Import Framework."""
+"""Installed-package smoke test for PyCRMKit 0.9.0b1 CSV / JSON / JSONL."""
 
 from __future__ import annotations
 
@@ -26,10 +26,10 @@ from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
 from pycrmkit.importers import (
     CSVReader,
     ImportPipeline,
-    JSONLReader,
-    JSONReader,
     ImportRow,
     IterableReader,
+    JSONLReader,
+    JSONReader,
     PersistAction,
     PersistResult,
     RequiredFieldsValidator,
