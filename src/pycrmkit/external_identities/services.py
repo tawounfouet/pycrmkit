@@ -42,7 +42,6 @@ class ExternalIdentityService:
                 code="external_identity.not_found",
                 context={
                     "system": normalize_external_system(system),
-                    "external_id": normalize_external_id(external_id),
                 },
             )
         return identity
@@ -66,7 +65,6 @@ class ExternalIdentityService:
                 code="external_identity.owner.conflict",
                 context={
                     "system": normalized_system,
-                    "external_id": normalized_external_id,
                     "owner_type": existing.entity_type,
                     "owner_id": str(existing.entity_id),
                 },
