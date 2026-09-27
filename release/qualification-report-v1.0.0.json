@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "release": "1.0.0",
+  "source_candidate": "1.0.0rc1",
+  "source_candidate_commit": "1d49db7ec74110bea36d858c4f40c2a59bd34e27",
+  "status": "artifact-build-pending-hashes",
+  "qualification_date": "2026-09-27",
+  "blocking_failures": 0,
+  "functional_delta_from_rc1": "none",
+  "migration_head": "0003",
+  "source_candidate_evidence": {
+    "status": "qualified",
+    "promotion_ready": true,
+    "byte_reproducible": true
+  },
+  "promotion_ready": false
+}
