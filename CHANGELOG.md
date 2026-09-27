@@ -6,6 +6,45 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.0.0b2] - 2026-09-27
+
+### Performance baseline
+- Added a reproducible standard-library benchmark runner covering Contact creation, Contact search, Timeline retrieval, bulk import, repository query pagination and synchronous event publication.
+- Added broad per-scenario CI guardrails intended to detect catastrophic regressions without claiming production SLAs.
+- Benchmark evidence records median/min/max milliseconds per logical operation, runtime/platform metadata and dataset sizes.
+- Added source-checkout and clean installed-wheel performance execution with JSON artifact upload.
+
+### Bounded-memory import
+- Added `ImportPipeline.retain_row_results` with backward-compatible default `True`.
+- Added `ImportReport.retain_row_results` with backward-compatible default `True`.
+- When disabled, exact import counters are preserved while per-row `ImportRowResult` objects are not retained.
+- Bulk import remains iterable/stream-oriented and can now avoid report growth proportional to input row count.
+
+### Pagination contract
+- Added performance-contract tests freezing `OffsetPageRequest.DEFAULT_LIMIT = 50` and `MAX_LIMIT = 200`.
+- Repository listing/search protocols continue to require explicit page objects.
+- SQLAlchemy pagination is qualified to push `LIMIT` and `OFFSET` into the database query rather than materializing the full result set.
+- Public Contact search remains bounded by the default page size when callers omit an explicit page.
+
+### Qualification
+- Added `tests/performance` for bounded pagination and streaming/reporting behavior.
+- Added dedicated `Performance Baseline` CI executing contract tests plus source and clean-wheel benchmarks.
+- Existing Security & Privacy, Public API Freeze, Data Operations, PostgreSQL, FastAPI, Django/DRF, persistence, build, docs, lint and typing gates remain mandatory.
+
+### Public API candidate delta
+- No new CRM facade method is introduced.
+- The only API additions are optional Import Framework reporting controls with previous behavior preserved by default.
+- No persistence schema or migration change is introduced.
+
+### Scope boundary
+- Benchmark ceilings are release-regression guardrails, not production latency/throughput SLAs.
+- The Memory adapter remains a development/test backend and is not positioned as a production-scale storage benchmark.
+- No PostgreSQL capacity, HTTP latency or distributed-event throughput guarantee is introduced.
+
+### Changed
+- Package version advanced from `1.0.0b1` to `1.0.0b2`.
+- Development roadmap advances to `1.0.0b3 — Compatibility Matrix`.
+
 ## [1.0.0b1] - 2026-09-27
 
 ### Security & privacy
