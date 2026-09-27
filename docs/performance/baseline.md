@@ -171,7 +171,7 @@ The current CI ceilings are:
 
 | Scenario | Guardrail |
 | --- | ---: |
-| Contact creation | 5.0 ms/op |
+| Contact creation | 30.0 ms/op |
 | Contact search | 50.0 ms/op |
 | Timeline retrieval | 50.0 ms/op |
 | Bulk import | 1.0 ms/row |
