@@ -34,6 +34,7 @@ nav:
       - 20 Contact Merge: guides/20_contact_merge.md
       - 21 Exporting Data: guides/21_exporting_data.md
       - 22 Memory Adapter: guides/22_memory_adapter.md
+      - 23 SQLAlchemy: guides/23_sqlalchemy.md
   - Facade:
       - CRM: facade/index.md
   - Core:
