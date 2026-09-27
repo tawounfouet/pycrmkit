@@ -34,7 +34,7 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ### Qualification
 - Added dedicated `Compatibility Matrix` CI with `fail-fast: false`.
-- Added PostgreSQL 16/17 × SQLAlchemy 2.0/2.1 cross-product qualification.
+- Added PostgreSQL 16/17 × SQLAlchemy 2.0/2.1 × psycopg 3.2/3.3 cross-product qualification.
 - Replayed FastAPI/Pydantic and Django/DRF integration suites on Python 3.11 and 3.13.
 - Existing Public API Freeze, Security & Privacy, Performance Baseline, Data Operations, persistence and integration gates remain mandatory.
 
