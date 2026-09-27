@@ -136,3 +136,28 @@ def test_rc02_cross_layer_e2e_is_executable_from_source_and_wheel() -> None:
         path for path in rc02["evidence"] if not (ROOT / path).is_file()
     )
     assert missing == []
+
+
+def test_rc03_persistence_and_migration_qualification_is_explicit() -> None:
+    rc03 = MANIFEST["rc03_persistence_migration_qualification"]
+
+    assert rc03["status"] == "implemented"
+    assert rc03["backend"] == "sqlalchemy-postgresql"
+    assert rc03["migration_head"] == "0003"
+    assert set(rc03["guarantees"]) == {
+        "empty-database-to-head",
+        "previous-stable-head-to-candidate-noop",
+        "representative-fixture-preservation",
+        "lead-conversion-transactionality",
+        "pipeline-transition-durability",
+        "contact-merge-multi-repository-atomicity",
+        "contact-merge-conflict-rollback",
+        "repository-conformance",
+        "installed-wheel-packaged-migrations",
+        "installed-wheel-postgresql-smoke",
+    }
+
+    missing = sorted(
+        path for path in rc03["evidence"] if not (ROOT / path).is_file()
+    )
+    assert missing == []
