@@ -226,6 +226,41 @@ The stable line does **not** promise fuzzy/ML matching, automatic primary
 selection, Organization merge execution, or a framework-owned universal
 Contact import persistence policy.
 
+## V1 public API freeze candidate
+
+`1.0.0a1` does not replace the current stable `0.9.0` line. It starts the V1
+compatibility freeze.
+
+The candidate classification is:
+
+```text
+public      intended V1 compatibility commitment
+provisional usable/importable but still adjustable before V1 stable
+internal    implementation detail with no compatibility promise
+```
+
+The executable candidate manifest covers:
+
+```text
+root exports
+bounded-context package exports
+CRM facade namespace methods
+typed exception hierarchy
+repository protocols and UnitOfWork
+CRMConfig / CRMContext fields
+built-in event names
+DomainEvent serialization envelope
+documented external-identity events
+public adapter/integration entry points
+```
+
+The exact candidate contract is documented in
+[PyCRMKit 1.0 Public API Freeze Candidate](../api/1.0-public-api-candidate.md).
+
+ORM models, mapper mechanics, migration implementation modules and concrete
+`pycrmkit.facade.*` classes are deliberately not promoted into the V1 public
+domain API.
+
 ## Pre-1.0 policy
 
 PyCRMKit remains pre-`1.0.0`. Each stable milestone establishes compatibility
