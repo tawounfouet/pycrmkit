@@ -8,7 +8,11 @@ from uuid import UUID
 import pytest
 
 from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactPhone
-from pycrmkit.dedup import MergePolicy, MergeResolution, merge_contact_profile
+from pycrmkit.dedup import (
+    merge_contact_profile,
+    MergePolicy,
+    MergeResolution,
+)
 from pycrmkit.exceptions import ConflictError
 
 
