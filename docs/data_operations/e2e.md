@@ -1,7 +1,8 @@
 # Data Operations E2E
 
-PyCRMKit `0.9.0rc1` qualifies the complete V0.9 data-operations journey without
-introducing a new public orchestration API.
+PyCRMKit `0.9.0rc1` qualified the complete V0.9 data-operations journey without
+introducing a new public orchestration API. `0.9.0` promotes the same behavior
+to the stable Data Operations line.
 
 The reference scenario composes the existing public building blocks delivered by
 `0.9.0a1` through `0.9.0b3`.
@@ -200,9 +201,10 @@ built wheel in a clean virtual environment
 The installed-wheel run clears `PYTHONPATH` so the scenario cannot
 accidentally import the source checkout instead of the built distribution.
 
-## Release-candidate boundary
+## Stable boundary
 
-`0.9.0rc1` adds qualification and reference wiring only.
+`0.9.0` freezes the behavior qualified by `0.9.0rc1` without expanding the
+V0.9 feature surface.
 
 It does not add:
 
@@ -215,11 +217,8 @@ new persistence schema
 new provider dependency
 ```
 
-The next milestone is:
+The next roadmap milestone is:
 
 ```text
-0.9.0 — Data Operations Stable
+1.0.0a1 — Public API Freeze Candidate
 ```
-
-That stable promotion should freeze the behavior qualified by this release
-candidate without expanding the V0.9 feature surface.

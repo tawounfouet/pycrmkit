@@ -6,6 +6,42 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-27
+
+### Stable
+- Promoted the fully qualified `0.9.0rc1` Data Operations line to stable without adding new functional scope.
+- Froze the documented External Identity, Import Framework, CSV/JSON/JSONL, deduplication, Contact merge, audit/provenance and Data Operations E2E contracts for the `0.9.x` line.
+- Promoted the source-checkout and clean installed-wheel Data Operations reference journey to the stable qualification path.
+- Preserved the framework-agnostic core and all optional dependency boundaries.
+
+### Compatibility
+- Stable Data Operations support targets Python 3.11, 3.12 and 3.13.
+- PostgreSQL 17 remains the production-reference persistence regression target.
+- SQLAlchemy `>=2.0,<3`, psycopg `>=3.2,<4` and Alembic `>=1.16,<2` remain the qualified persistence ranges.
+- FastAPI/Pydantic and Django/DRF integrations remain required regression gates.
+- The `0.9.x` Data Operations contract covers deterministic import stage ordering, report counter meanings, exchange format behavior, dedup signal/decision/provenance semantics, explicit primary Contact merge and conservative conflict defaults.
+
+### Qualification
+- Python 3.11/3.12/3.13 test matrix passes.
+- Ruff, strict mypy, strict MkDocs and wheel/sdist build pass.
+- PostgreSQL, Alembic migration and Persistence Qualification gates pass.
+- FastAPI/PostgreSQL, Django, DRF and Django/PostgreSQL regression gates pass.
+- Data Operations source-checkout E2E passes.
+- Data Operations clean installed-wheel E2E passes with `PYTHONPATH` cleared.
+
+### Functional delta from rc1
+- None.
+- No new public orchestration API, domain capability, persistence schema, scoring rule or merge policy is introduced by the stable promotion.
+
+### Scope boundary
+- Stable merge execution remains Contact-oriented.
+- Organization merge execution, fuzzy/ML matching and automatic primary selection remain outside the `0.9.x` stable contract.
+
+### Changed
+- Package version advanced from `0.9.0rc1` to `0.9.0`.
+- `0.9.0` becomes the current stable PyCRMKit line.
+- Development roadmap advances to `1.0.0a1 — Public API Freeze Candidate`.
+
 ## [0.9.0rc1] - 2026-09-27
 
 ### Qualified

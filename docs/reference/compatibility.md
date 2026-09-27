@@ -5,8 +5,12 @@ This page records the currently qualified compatibility baseline for PyCRMKit.
 ## Current stable line
 
 ```text
-PyCRMKit 0.8.0 — Django Integration Stable
+PyCRMKit 0.9.0 — Data Operations Stable
 ```
+
+The previously stabilized Django integration remains compatibility-governed
+within the `0.8.x` line; `0.9.0` becomes the current project-wide stable
+milestone.
 
 ## Python
 
@@ -79,24 +83,38 @@ It does **not** claim full cross-domain Django UnitOfWork/DRF coverage; the
 Django persistence adapter remains bounded to Contacts, Organizations and
 Relationships in the `0.8.x` line.
 
-## V0.9 prerelease qualification
+## V0.9 Data Operations stable qualification
 
-`0.9.0a1` extends the data/persistence surface with External Identities while the current stable line remains `0.8.0`.
+`0.9.0` promotes the complete V0.9 Data Operations release candidate to a
+stable line without adding new functional scope.
 
-Qualified alpha behavior:
+The stable V0.9 surface covers:
 
 ```text
 ExternalIdentity domain/service/repository contract
-Memory repository conformance
-SQLAlchemy repository conformance
-Django repository conformance
-PostgreSQL persistence round trip
-Django/PostgreSQL cross-process round trip
-Alembic head 0003
-Django migration 0002_external_identity
+Memory / SQLAlchemy / Django external-identity persistence
+ImportRow / ImportPipeline
+mapping / normalization / validation / reports
+CSV / JSON / JSONL readers and exporters
+deterministic candidate matching and scoring
+conflict detection and provenance
+conservative transactional Contact merge
+activity / relationship reassignment
+tag union
+custom-field conflict policy
+external-identity ownership transfer
+duplicate archival
+append-only merge audit
+source-checkout Data Operations E2E
+clean installed-wheel Data Operations E2E
 ```
 
-The alpha defines `(system, external_id)` as the unique upstream-record key. It does not yet claim import-pipeline, deduplication or merge compatibility.
+The upstream-record key remains `(system, external_id)`.
+
+The stable Data Operations E2E uses `MemoryUnitOfWork` for the complete
+cross-capability journey, while the release gate separately retains
+PostgreSQL persistence, migrations, FastAPI/PostgreSQL, Django and DRF
+regression qualification.
 
 ## PostgreSQL
 
@@ -112,8 +130,15 @@ qualified.
 
 ## Persistence schema
 
-The stable `0.8.0` line keeps the SQLAlchemy/Alembic and Django migration
+The stable `0.9.0` line keeps the SQLAlchemy/Alembic and Django migration
 histories explicit and separate.
+
+The currently qualified external-identity schema heads are:
+
+```text
+SQLAlchemy / Alembic  0003
+Django                0002_external_identity
+```
 
 SQLAlchemy-backed applications migrate through:
 
@@ -173,6 +198,33 @@ PYCRMKIT_CRM_FACTORY application-owned wiring
 The stable Django adapter is intentionally bounded to Contacts, Organizations
 and Relationships. `0.8.0` does not claim a complete cross-domain Django
 `UnitOfWork` or a persistent Django implementation for every PyCRMKit module.
+
+## Data Operations compatibility contract
+
+Within `0.9.x`, backward compatibility covers the documented stable Data
+Operations surface:
+
+```text
+ExternalIdentity ownership semantics
+ImportReader / Mapper / Normalizer / Validator / Deduplicator / Persister protocols
+ImportPipeline stage order
+ImportReport counter meanings
+CSV / JSON / JSONL adapter behavior
+DedupSignal names
+default deterministic scoring semantics
+no_match / review / duplicate / conflict decisions
+DedupProvenance evidence shape
+explicit primary selection for Contact merge
+MergePolicy conservative defaults
+duplicate archival rather than physical deletion
+activity / relationship / tag / custom-field / external-identity merge behavior
+contact.merged audit action
+source and clean-wheel Data Operations reference scenario
+```
+
+The stable line does **not** promise fuzzy/ML matching, automatic primary
+selection, Organization merge execution, or a framework-owned universal
+Contact import persistence policy.
 
 ## Pre-1.0 policy
 
