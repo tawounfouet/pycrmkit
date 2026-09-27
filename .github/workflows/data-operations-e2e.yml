@@ -1,0 +1,38 @@
+name: Data Operations E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  data-operations-e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: python -m pip install --upgrade pip
+
+      - name: Install source checkout
+        run: python -m pip install -e ".[dev]"
+
+      - name: Source checkout Data Operations E2E
+        run: python examples/data_operations/scenario.py
+
+      - name: Build release artifacts
+        run: python -m build
+
+      - name: Installed-wheel Data Operations E2E
+        shell: bash
+        run: |
+          python -m venv .venv-data-operations-wheel
+          .venv-data-operations-wheel/bin/python -m pip install --upgrade pip
+          wheel="$(ls dist/pycrmkit-*.whl)"
+          .venv-data-operations-wheel/bin/python -m pip install "${wheel}"
+          PYTHONPATH="" .venv-data-operations-wheel/bin/python examples/data_operations/scenario.py
