@@ -39,6 +39,7 @@ nav:
       - 25 Migrations: guides/25_migrations.md
       - 26 FastAPI: guides/26_fastapi.md
       - 27 Django: guides/27_django.md
+      - 28 Django REST Framework: guides/28_django_rest_framework.md
   - Facade:
       - CRM: facade/index.md
   - Core:
