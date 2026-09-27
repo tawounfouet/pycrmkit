@@ -66,10 +66,7 @@ class ExternalIdentitiesAPI:
                     aggregate_type=reference.kind,
                     aggregate_id=reference.id,
                     changes={"fields": ["external_identities"]},
-                    payload={
-                        "system": identity.system,
-                        "external_id": identity.external_id,
-                    },
+                    payload={"system": identity.system},
                 )
             uow.commit()
             return identity
@@ -113,10 +110,7 @@ class ExternalIdentitiesAPI:
                     aggregate_type=existing.entity_type,
                     aggregate_id=existing.entity_id,
                     changes={"fields": ["external_identities"]},
-                    payload={
-                        "system": existing.system,
-                        "external_id": existing.external_id,
-                    },
+                    payload={"system": existing.system},
                 )
             uow.commit()
             return removed

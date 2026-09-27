@@ -31,7 +31,6 @@ class MemoryExternalIdentityRepository:
                     code="external_identity.owner.conflict",
                     context={
                         "system": identity.system,
-                        "external_id": identity.external_id,
                         "owner_type": existing.entity_type,
                         "owner_id": str(existing.entity_id),
                     },
@@ -41,7 +40,6 @@ class MemoryExternalIdentityRepository:
                 code="external_identity.duplicate",
                 context={
                     "system": identity.system,
-                    "external_id": identity.external_id,
                 },
             )
         self._state.external_identities[key] = deepcopy(identity)

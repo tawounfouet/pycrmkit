@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import ClassVar
 
+from pycrmkit._privacy import redact_sensitive_mapping
+
 
 class PyCRMKitError(Exception):
     """Base class for typed, machine-readable PyCRMKit errors."""
@@ -29,7 +31,7 @@ class PyCRMKitError(Exception):
         return {
             "code": self.code,
             "message": self.message,
-            "context": dict(self.context),
+            "context": redact_sensitive_mapping(self.context),
         }
 
 

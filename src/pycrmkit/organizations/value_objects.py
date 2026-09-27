@@ -24,7 +24,6 @@ def normalize_domain(value: str) -> str:
         raise ValidationError(
             "domain must be a bare DNS name",
             code="organization.domain.invalid",
-            context={"value": value},
         )
     try:
         ascii_domain = cleaned.encode("idna").decode("ascii").casefold()
@@ -32,7 +31,6 @@ def normalize_domain(value: str) -> str:
         raise ValidationError(
             "domain contains invalid internationalized characters",
             code="organization.domain.invalid",
-            context={"value": value},
         ) from exc
     if len(ascii_domain) > 253:
         raise ValidationError(
@@ -44,7 +42,6 @@ def normalize_domain(value: str) -> str:
         raise ValidationError(
             "domain must contain valid DNS labels and a suffix",
             code="organization.domain.invalid",
-            context={"value": value},
         )
     return ascii_domain
 

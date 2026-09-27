@@ -61,7 +61,6 @@ class SQLAlchemyExternalIdentityRepository:
                     code="external_identity.owner.conflict",
                     context={
                         "system": identity.system,
-                        "external_id": identity.external_id,
                         "owner_type": existing.entity_type,
                         "owner_id": str(existing.entity_id),
                     },
@@ -71,7 +70,6 @@ class SQLAlchemyExternalIdentityRepository:
                 code="external_identity.duplicate",
                 context={
                     "system": identity.system,
-                    "external_id": identity.external_id,
                 },
             )
 

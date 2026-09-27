@@ -16,6 +16,7 @@ from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.custom_fields import CustomFieldValue
+from pycrmkit.dedup.conflicts import ConflictSeverity
 from pycrmkit.dedup.merge import (
     MergePolicy,
     MergeResolution,
@@ -221,6 +222,22 @@ class MergeService:
                 "merge provenance candidate does not match duplicate contact",
                 code="merge.provenance.candidate_mismatch",
             )
+        if provenance is not None:
+            blocking_signals = tuple(
+                sorted(
+                    {
+                        conflict.signal.value
+                        for conflict in provenance.conflicts
+                        if conflict.severity is ConflictSeverity.BLOCKING
+                    }
+                )
+            )
+            if blocking_signals:
+                raise ConflictError(
+                    "merge provenance contains blocking duplicate conflicts",
+                    code="merge.provenance.blocking_conflict",
+                    context={"signals": blocking_signals},
+                )
         if not policy.require_duplicate_provenance:
             return
         if provenance is None:

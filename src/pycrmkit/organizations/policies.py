@@ -54,7 +54,7 @@ def validate_organization_domains(domains: Iterable[OrganizationDomain]) -> None
             raise ConflictError(
                 "duplicate domain within organization",
                 code="organization.domain.duplicate",
-                context={"domain": domain.normalized},
+                context={"field": "domain"},
             )
         seen.add(domain.normalized)
         primary += int(domain.is_primary)

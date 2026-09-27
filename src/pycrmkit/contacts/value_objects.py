@@ -25,14 +25,12 @@ def normalize_email(value: str) -> str:
         raise ValidationError(
             "email must contain one @ and no whitespace",
             code="contact.email.invalid",
-            context={"value": value},
         )
     local, domain = cleaned.rsplit("@", 1)
     if not local or not domain or domain.startswith(".") or domain.endswith("."):
         raise ValidationError(
             "email local-part and domain are required",
             code="contact.email.invalid",
-            context={"value": value},
         )
     return f"{local.casefold()}@{domain.casefold()}"
 
@@ -53,7 +51,6 @@ def normalize_phone(value: str) -> str:
         raise ValidationError(
             "phone may only contain digits, common separators, and an optional leading +",
             code="contact.phone.invalid",
-            context={"value": value},
         )
     if not 3 <= len(compact) <= 20:
         raise ValidationError(

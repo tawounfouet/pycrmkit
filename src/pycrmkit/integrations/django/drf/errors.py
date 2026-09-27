@@ -11,6 +11,7 @@ from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
+from pycrmkit._privacy import redact_sensitive_mapping
 from pycrmkit.exceptions import (
     ConflictError,
     IntegrationError,
@@ -68,7 +69,7 @@ def _error_payload(error: PyCRMKitError) -> dict[str, object]:
     return {
         "code": error.code,
         "message": error.message,
-        "context": _json_safe(error.context),
+        "context": _json_safe(redact_sensitive_mapping(error.context)),
     }
 
 

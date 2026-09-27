@@ -261,6 +261,30 @@ ORM models, mapper mechanics, migration implementation modules and concrete
 `pycrmkit.facade.*` classes are deliberately not promoted into the V1 public
 domain API.
 
+## V1 security and privacy hardening
+
+`1.0.0b1` retains the `1.0.0a1` candidate classification and hardens the
+observable security/privacy behavior.
+
+Qualified additions and constraints:
+
+```text
+public error serialization redacts sensitive context values
+FastAPI/DRF public error bridges use the same redaction
+external identity events omit external_id values
+webhook subscription/request repr excludes secret-bearing material
+crm.webhooks.rotate_secret is an additive public candidate method
+webhook HMAC verification can enforce timestamp freshness
+merge rejects provenance containing blocking conflicts
+public aggregate facades expose lifecycle operations, not generic hard delete
+```
+
+The V1 candidate manifest is updated additively for
+`crm.webhooks.rotate_secret`.
+
+Security hardening does not promote ORM models, migration internals or concrete
+facade implementation classes into the public API.
+
 ## Pre-1.0 policy
 
 PyCRMKit remains pre-`1.0.0`. Each stable milestone establishes compatibility

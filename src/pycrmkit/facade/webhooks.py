@@ -77,6 +77,37 @@ class WebhooksAPI:
             uow.commit()
             return subscription
 
+    def rotate_secret(
+        self,
+        subscription_id: WebhookSubscriptionId,
+        *,
+        signing_secret: str | None = None,
+    ) -> WebhookSubscription:
+        """Rotate one webhook signing secret and audit only the field change."""
+
+        with self._runtime.uow_factory() as uow:
+            subscription = uow.webhooks.get(subscription_id)
+            changed = subscription.rotate_signing_secret(
+                signing_secret,
+                at=self._runtime.clock.now(),
+            )
+            if changed:
+                uow.webhooks.save(subscription)
+                AuditService(
+                    uow.audit,
+                    id_factory=self._runtime.id_factory,
+                    clock=self._runtime.clock,
+                ).record(
+                    action="webhook.subscription.secret_rotated",
+                    entity_type="webhook_subscription",
+                    entity_id=subscription.id,
+                    actor_id=self._runtime.context.actor_id,
+                    correlation_id=self._runtime.context.correlation_id,
+                    changes={"fields": ["signing_secret"]},
+                )
+            uow.commit()
+            return subscription
+
     def disable(
         self,
         subscription_id: WebhookSubscriptionId,

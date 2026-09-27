@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 from dataclasses import dataclass, field
 from datetime import datetime
 from urllib.parse import urlsplit, urlunsplit
@@ -74,7 +75,7 @@ def normalize_webhook_url(value: str) -> str:
 class WebhookSubscription(TimestampedEntity[WebhookSubscriptionId]):
     """Persistent registration for exact public event-type subscriptions."""
 
-    url: str
+    url: str = field(repr=False)
     event_types: tuple[EventType, ...]
     signing_secret: str = field(default_factory=generate_webhook_secret, repr=False)
     disabled_at: datetime | None = None
@@ -108,6 +109,30 @@ class WebhookSubscription(TimestampedEntity[WebhookSubscriptionId]):
         """Whether this registration is currently active."""
 
         return self.disabled_at is None
+
+    def rotate_signing_secret(
+        self,
+        secret: str | None,
+        *,
+        at: datetime,
+    ) -> bool:
+        """Rotate signing material without exposing either secret in diagnostics."""
+
+        candidate = normalize_webhook_secret(
+            secret if secret is not None else generate_webhook_secret()
+        )
+        if hmac.compare_digest(candidate, self.signing_secret):
+            return False
+        when = as_utc(at)
+        if when < self.created_at:
+            raise ValidationError(
+                "secret rotation time cannot be earlier than subscription creation",
+                code="webhook.signing.rotation_time.invalid",
+            )
+        self.signing_secret = candidate
+        if when > self.updated_at:
+            self.updated_at = when
+        return True
 
     def disable(self, at: datetime) -> bool:
         """Disable the subscription idempotently."""

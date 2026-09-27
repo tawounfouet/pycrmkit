@@ -27,9 +27,9 @@ class WebhookTransportError(IntegrationError):
 class WebhookRequest:
     """One outbound webhook HTTP request."""
 
-    url: str
+    url: str = field(repr=False)
     body: bytes = field(repr=False)
-    headers: Mapping[str, str]
+    headers: Mapping[str, str] = field(repr=False)
     timeout_seconds: float = 10.0
 
     def __post_init__(self) -> None:
