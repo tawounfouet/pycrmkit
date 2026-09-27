@@ -1,0 +1,36 @@
+name: Production Integration Qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  integration-contract:
+    name: V1 integration architecture contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - name: Install full integration qualification stack
+        run: python -m pip install -e ".[dev,fastapi,django,drf,postgresql,migrations]"
+      - name: Enforce facade boundaries and declared adapter scope
+        run: python -m pytest tests/qualification/test_v1_integration_qualification.py -q
+      - name: FastAPI integration contract regression
+        run: python -m pytest tests/integrations/fastapi -m "not postgresql" -q
+      - name: Django adapter contract regression
+        run: python -m pytest tests/integrations/django -q
+      - name: DRF facade contract regression
+        run: python -m pytest tests/integrations/drf -q
+
+  fastapi-postgresql:
+    name: FastAPI → facade → PostgreSQL
+    uses: ./.github/workflows/fastapi-e2e.yml
+
+  django-postgresql:
+    name: Django/DRF → facade → PostgreSQL
+    uses: ./.github/workflows/django-e2e.yml

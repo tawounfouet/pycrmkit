@@ -161,3 +161,33 @@ def test_rc03_persistence_and_migration_qualification_is_explicit() -> None:
         path for path in rc03["evidence"] if not (ROOT / path).is_file()
     )
     assert missing == []
+
+
+def test_rc04_integration_qualification_is_explicit_and_scope_aware() -> None:
+    rc04 = MANIFEST["rc04_integration_qualification"]
+
+    assert rc04["status"] == "implemented"
+    assert rc04["integration_surfaces"]["fastapi"]["facade_boundary"] is True
+    assert rc04["integration_surfaces"]["fastapi"]["source_and_wheel"] is True
+    assert rc04["integration_surfaces"]["django_drf"]["facade_boundary"] is True
+    assert rc04["integration_surfaces"]["django_drf"]["source_and_wheel"] is True
+    assert set(rc04["integration_surfaces"]["django_drf"]["capabilities"]) == {
+        "contacts",
+        "organizations",
+        "relationships",
+        "external_identities",
+    }
+    assert set(rc04["guarantees"]) == {
+        "http-never-bypasses-facade-to-orm",
+        "stable-error-contracts",
+        "request-context-propagation",
+        "postgresql-restart-durability",
+        "source-and-installed-wheel-integration",
+        "typed-external-identity-owner-parity",
+        "django-scope-remains-explicit",
+    }
+
+    missing = sorted(
+        path for path in rc04["evidence"] if not (ROOT / path).is_file()
+    )
+    assert missing == []

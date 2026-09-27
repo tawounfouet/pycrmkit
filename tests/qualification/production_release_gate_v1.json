@@ -84,9 +84,14 @@
     {
       "id": "RC-04",
       "name": "Integration qualification",
-      "status": "pending",
-      "planned_evidence": [
-        "tests/qualification/test_v1_integration_qualification.py"
+      "status": "implemented",
+      "evidence": [
+        "tests/qualification/test_v1_integration_qualification.py",
+        ".github/workflows/production-integration-qualification.yml",
+        ".github/workflows/fastapi-e2e.yml",
+        ".github/workflows/django-e2e.yml",
+        ".github/workflows/drf.yml",
+        "tests/integrations/django/test_external_identities_repository.py"
       ]
     },
     {

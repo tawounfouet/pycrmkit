@@ -469,6 +469,12 @@ class DjangoExternalIdentityRepository:
 
     @staticmethod
     def _hydrate(model: ExternalIdentityModel) -> ExternalIdentity:
+        if model.entity_type == "contact":
+            entity_id = ContactId.parse(model.entity_id)
+        elif model.entity_type == "organization":
+            entity_id = OrganizationId.parse(model.entity_id)
+        else:
+            entity_id = EntityId.parse(model.entity_id)
         return ExternalIdentity(
             id=ExternalIdentityId.parse(model.id),
             created_at=as_utc(model.created_at),
@@ -476,7 +482,7 @@ class DjangoExternalIdentityRepository:
             system=model.system,
             external_id=model.external_id,
             entity_type=model.entity_type,
-            entity_id=EntityId.parse(model.entity_id),
+            entity_id=entity_id,
             metadata=dict(model.metadata_json or {}),
         )
 
