@@ -1,12 +1,13 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
+import json
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
-from pycrmkit import CRM, __version__
+from pycrmkit import CRM, CRMContext, __version__
 from pycrmkit.activities import (
     ActivityDirection,
     ActivityParticipant,
@@ -44,12 +45,19 @@ from pycrmkit.custom_fields import (
     CustomFieldOption,
     CustomFieldType,
 )
-from pycrmkit.events import DomainEvent
+from pycrmkit.events import (
+    DomainEvent,
+    EventRegistry,
+    EventSerializer,
+    InProcessEventBus,
+    default_event_registry,
+)
 from pycrmkit.exceptions import (
     ConflictError,
     DuplicateError,
     IntegrationError,
     InvalidStateError,
+    NotFoundError,
     ValidationError,
 )
 from pycrmkit.leads import LeadConversionService, LeadQuery, LeadService, LeadStatus
@@ -2361,3 +2369,190 @@ def test_zero_to_hero_email_configuration_and_content_validation_examples() -> N
             to=(recipient,),
         )
     assert invalid_choice.value.code == "communication.email.content.choice_invalid"
+
+
+
+def test_zero_to_hero_domain_event_envelope_registry_and_serializer_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 11, 0, tzinfo=UTC))
+    event = DomainEvent.create(
+        id_factory=UUID4Factory(),
+        clock=clock,
+        type=" Contact.Created ",
+        aggregate_type=" Contact ",
+        aggregate_id=" contact-123 ",
+        actor_id=" agent-7 ",
+        correlation_id=" request-900 ",
+        payload={
+            "source": "guide",
+            "labels": ["vip", "new"],
+        },
+        metadata={"origin": "zero-to-hero"},
+    )
+
+    assert str(event.type) == "contact.created"
+    assert event.schema_version == 1
+    assert event.aggregate_type == "contact"
+    assert event.aggregate_id == "contact-123"
+    assert event.occurred_at == clock.now()
+    assert event.actor_id == "agent-7"
+    assert event.correlation_id == "request-900"
+    assert event.payload["labels"] == ("vip", "new")
+
+    registry = EventRegistry()
+    v1 = registry.register("contact.created", 1)
+    v2 = registry.register("CONTACT.CREATED", 2)
+
+    assert registry.resolve("contact.created", 1) == v1
+    assert registry.latest("contact.created") == v2
+    assert registry.supports("contact.created", 1)
+    assert registry.definitions() == (v1, v2)
+
+    serializer = EventSerializer(registry)
+    encoded = serializer.dumps(event)
+    restored = serializer.loads(encoded)
+
+    assert encoded == json.dumps(
+        event.to_dict(),
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    )
+    assert restored.to_dict() == event.to_dict()
+
+    unsupported = DomainEvent.create(
+        id_factory=UUID4Factory(),
+        clock=clock,
+        type="contact.updated",
+        aggregate_type="contact",
+        aggregate_id="contact-123",
+    )
+    with pytest.raises(NotFoundError) as unknown:
+        serializer.dumps(unsupported)
+    assert unknown.value.code == "event.registry.definition.not_found"
+
+    builtins = default_event_registry()
+    assert len(builtins) == 41
+    assert builtins.supports("email.delivered", 1)
+
+
+def test_zero_to_hero_domain_event_bus_exact_order_and_subscription_example() -> None:
+    bus = InProcessEventBus()
+    clock = FixedClock(datetime(2026, 9, 28, 12, 0, tzinfo=UTC))
+    ids = UUID4Factory()
+    calls: list[str] = []
+
+    def first(event: DomainEvent) -> None:
+        calls.append(f"first:{event.type}")
+
+    def second(event: DomainEvent) -> None:
+        calls.append(f"second:{event.type}")
+
+    bus.subscribe("contact.created", first)
+    bus.subscribe("contact.created", first)
+    bus.subscribe("contact.created", second)
+
+    created = DomainEvent.create(
+        id_factory=ids,
+        clock=clock,
+        type="contact.created",
+        aggregate_type="contact",
+        aggregate_id="contact-1",
+    )
+    updated = DomainEvent.create(
+        id_factory=ids,
+        clock=clock,
+        type="contact.updated",
+        aggregate_type="contact",
+        aggregate_id="contact-1",
+    )
+
+    bus.publish(created)
+    bus.publish(updated)
+
+    assert calls == [
+        "first:contact.created",
+        "second:contact.created",
+    ]
+    assert bus.unsubscribe("contact.created", first) is True
+    assert bus.unsubscribe("contact.created", first) is False
+
+
+def test_zero_to_hero_domain_event_correlation_and_causation_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 13, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="agent-7",
+        correlation_id="request-900",
+    )
+
+    root_events: list[DomainEvent] = []
+    child_events: list[DomainEvent] = []
+    grandchild_events: list[DomainEvent] = []
+
+    crm.events.subscribe("contact.created", root_events.append)
+    crm.events.subscribe("task.created", child_events.append)
+    crm.events.subscribe("task.completed", grandchild_events.append)
+
+    crm.contacts.create(display_name="Trace Root")
+    root = root_events[0]
+
+    task = crm.with_event(root).tasks.create(title="Follow up")
+    child = child_events[0]
+
+    crm.with_event(child).tasks.complete(task.id)
+    grandchild = grandchild_events[0]
+
+    assert root.actor_id == "agent-7"
+    assert root.correlation_id == "request-900"
+    assert root.causation_id is None
+
+    assert child.actor_id == "agent-7"
+    assert child.correlation_id == "request-900"
+    assert child.causation_id == root.id
+
+    assert grandchild.actor_id == "agent-7"
+    assert grandchild.correlation_id == "request-900"
+    assert grandchild.causation_id == child.id
+
+    parent_without_correlation = DomainEvent.create(
+        id_factory=UUID4Factory(),
+        clock=clock,
+        type="contact.created",
+        aggregate_type="contact",
+        aggregate_id="uncorrelated",
+    )
+    context = CRMContext.from_event(parent_without_correlation)
+    assert context.correlation_id == str(parent_without_correlation.id)
+    assert context.causation_id == parent_without_correlation.id
+
+
+def test_zero_to_hero_domain_event_post_commit_subscriber_semantics_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 14, 0, tzinfo=UTC))
+    )
+    observed_totals: list[int] = []
+
+    def observe_committed_state(event: DomainEvent) -> None:
+        del event
+        observed_totals.append(
+            crm.contacts.search(
+                ContactQuery(name="Committed Contact")
+            ).total
+        )
+
+    def fail_after_commit(event: DomainEvent) -> None:
+        del event
+        raise RuntimeError("subscriber failed after commit")
+
+    crm.events.subscribe("contact.created", observe_committed_state)
+    crm.events.subscribe("contact.created", fail_after_commit)
+
+    with pytest.raises(RuntimeError, match="subscriber failed after commit"):
+        crm.contacts.create(display_name="Committed Contact")
+
+    assert observed_totals == [1]
+    assert (
+        crm.contacts.search(
+            ContactQuery(name="Committed Contact")
+        ).total
+        == 1
+    )
