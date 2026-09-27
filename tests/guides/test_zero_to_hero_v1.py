@@ -120,6 +120,7 @@ from pycrmkit.opportunities import (
 )
 from pycrmkit.organizations import (
     OrganizationAddress,
+    OrganizationService,
     OrganizationDomain,
     OrganizationQuery,
     OrganizationStatus,
@@ -141,6 +142,7 @@ from pycrmkit.relationships import (
     RelationshipUpdate,
 )
 from pycrmkit.storage.memory import (
+    MemoryContactRepository,
     MemoryLeadRepository,
     MemoryOpportunityRepository,
     MemoryPipelineRepository,
@@ -4174,3 +4176,142 @@ def test_zero_to_hero_export_paginated_contact_projection_example() -> None:
         str(contact.id) for contact in created
     }
     assert all(row["status"] == "active" for row in loaded)
+
+
+def test_zero_to_hero_memory_repository_copy_isolation_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 14, tzinfo=UTC))
+    repository = MemoryContactRepository()
+    service = ContactService(repository, clock=clock)
+
+    contact = service.create(
+        first_name="Ada",
+        last_name="Lovelace",
+    )
+
+    contact.source = "mutated-after-save"
+    assert repository.get(contact.id).source is None
+
+    loaded = repository.get(contact.id)
+    loaded.source = "mutated-after-read"
+    assert repository.get(contact.id).source is None
+
+
+def test_zero_to_hero_memory_uow_atomic_commit_and_rollback_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 15, tzinfo=UTC))
+
+    with MemoryUnitOfWork(store) as uow:
+        contact = ContactService(
+            uow.contacts,
+            clock=clock,
+        ).create(
+            first_name="Ada",
+            last_name="Lovelace",
+        )
+        organization = OrganizationService(
+            uow.organizations,
+            clock=clock,
+        ).create(
+            legal_name="Analytical Engines Ltd",
+        )
+        uow.commit()
+
+    with MemoryUnitOfWork(store) as uow:
+        assert uow.contacts.get(contact.id) == contact
+        assert uow.organizations.get(organization.id) == organization
+
+    with MemoryUnitOfWork(store) as uow:
+        rolled_back = ContactService(
+            uow.contacts,
+            clock=clock,
+        ).create(
+            display_name="Rolled Back",
+        )
+        uow.rollback()
+        assert uow.contacts.find(rolled_back.id) is None
+
+    with MemoryUnitOfWork(store) as uow:
+        assert uow.contacts.find(rolled_back.id) is None
+
+
+def test_zero_to_hero_memory_uncommitted_exit_and_nested_transaction_example() -> None:
+    store = MemoryStore()
+    clock = FixedClock(datetime(2026, 9, 28, 16, tzinfo=UTC))
+
+    with MemoryUnitOfWork(store) as uow:
+        uncommitted = ContactService(
+            uow.contacts,
+            clock=clock,
+        ).create(
+            display_name="Uncommitted",
+        )
+
+    with MemoryUnitOfWork(store) as uow:
+        assert uow.contacts.find(uncommitted.id) is None
+
+    with MemoryUnitOfWork(store):
+        with pytest.raises(InvalidStateError) as nested:
+            with MemoryUnitOfWork(store):
+                pass
+
+    assert nested.value.code == "memory.uow.already_active"
+
+
+def test_zero_to_hero_memory_post_commit_event_boundary_example() -> None:
+    store = MemoryStore()
+    bus = InProcessEventBus()
+    clock = FixedClock(datetime(2026, 9, 28, 17, tzinfo=UTC))
+    observed_names: list[str] = []
+    ids = UUID4Factory()
+
+    with MemoryUnitOfWork(store) as setup:
+        contact = ContactService(
+            setup.contacts,
+            clock=clock,
+        ).create(
+            first_name="Grace",
+            last_name="Hopper",
+        )
+        setup.commit()
+
+    event = DomainEvent.create(
+        id_factory=ids,
+        clock=clock,
+        type="contact.updated",
+        aggregate_type="contact",
+        aggregate_id=str(contact.id),
+    )
+
+    def inspect_committed_state(published: DomainEvent) -> None:
+        assert published == event
+        with MemoryUnitOfWork(store) as follow_up:
+            observed_names.append(
+                follow_up.contacts.get(contact.id).display_name or ""
+            )
+
+    bus.subscribe("contact.updated", inspect_committed_state)
+
+    with MemoryUnitOfWork(store, event_publisher=bus) as uow:
+        loaded = uow.contacts.get(contact.id)
+        loaded.display_name = "Amazing Grace"
+        uow.contacts.save(loaded)
+        uow.add_event(event)
+
+        assert uow.pending_events == (event,)
+        assert observed_names == []
+
+        uow.commit()
+
+    assert observed_names == ["Amazing Grace"]
+
+
+def test_zero_to_hero_memory_second_commit_is_rejected_example() -> None:
+    store = MemoryStore()
+
+    with MemoryUnitOfWork(store) as uow:
+        uow.commit()
+
+        with pytest.raises(InvalidStateError) as second:
+            uow.commit()
+
+    assert second.value.code == "memory.uow.already_committed"
