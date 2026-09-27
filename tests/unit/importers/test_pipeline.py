@@ -105,3 +105,31 @@ def test_normalization_error_is_reported_without_persisting_the_row() -> None:
     assert report.validation_errors == 1
     assert report.errors[0].code == "import.normalization.failed"
     assert persister.rows == []
+
+
+def test_summary_mode_keeps_exact_counters_without_row_result_retention() -> None:
+    row_count = 1_000
+    persister = RecordingPersister()
+    records = (
+        {"email": f"user-{index}@example.com", "display_name": f"User {index}"}
+        for index in range(row_count)
+    )
+    pipeline = ImportPipeline(
+        reader=IterableReader(records),
+        persister=persister,
+        retain_row_results=False,
+    )
+
+    report = pipeline.run()
+
+    assert report.as_dict() == {
+        "rows_read": row_count,
+        "rows_created": row_count,
+        "rows_updated": 0,
+        "rows_skipped": 0,
+        "duplicates": 0,
+        "validation_errors": 0,
+    }
+    assert report.row_results == []
+    assert report.errors == ()
+    assert len(persister.rows) == row_count
