@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "0.9.0b2"
+    assert __version__ == "0.9.0b3"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -121,6 +121,15 @@ def test_0_9_deduplication_surface() -> None:
     assert DedupScorePolicy.__name__ == "DedupScorePolicy"
     assert DeduplicationEngine.__name__ == "DeduplicationEngine"
     assert InMemoryCandidateSource.__name__ == "InMemoryCandidateSource"
+
+
+def test_0_9_merge_surface() -> None:
+    from pycrmkit.dedup import MergePolicy, MergeResolution, MergeResult, MergeService
+
+    assert MergePolicy.__name__ == "MergePolicy"
+    assert MergeResolution.__name__ == "MergeResolution"
+    assert MergeResult.__name__ == "MergeResult"
+    assert MergeService.__name__ == "MergeService"
 
 
 def test_0_5_webhook_delivery_surface() -> None:
