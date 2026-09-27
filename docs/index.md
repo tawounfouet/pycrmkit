@@ -98,4 +98,6 @@ qualification now form one compatibility-governed integration line.
 
 `0.9.0b1` adds standard-library CSV, JSON and JSONL readers/exporters. Format adapters preserve source order and duplicates; JSON/JSONL preserve nested JSON data, while CSV remains intentionally scalar/tabular.
 
-`0.9.0b2` adds deterministic duplicate candidate evaluation across normalized email, phone, full name, organization, postal address, external identity and custom identifiers. Candidate decisions are scored, conflict-aware and explainable through provenance; automatic import skipping remains conservative and merge execution is still out of scope.\n\nThe next roadmap milestone is **`0.9.0b3 — Merge`**.
+`0.9.0b2` adds deterministic duplicate candidate evaluation across normalized email, phone, full name, organization, postal address, external identity and custom identifiers. Candidate decisions are scored, conflict-aware and explainable through provenance; automatic import skipping remains conservative and merge execution is still out of scope.
+
+The next roadmap milestone is **`0.9.0b3 — Merge`**.
