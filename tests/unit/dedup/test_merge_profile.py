@@ -9,12 +9,11 @@ import pytest
 
 from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactPhone
 from pycrmkit.dedup import (
-    merge_contact_profile,
     MergePolicy,
     MergeResolution,
+    merge_contact_profile,
 )
 from pycrmkit.exceptions import ConflictError
-
 
 CREATED_AT = datetime(2026, 9, 27, 8, tzinfo=UTC)
 MERGED_AT = datetime(2026, 9, 27, 9, tzinfo=UTC)
