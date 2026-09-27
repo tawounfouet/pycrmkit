@@ -72,6 +72,7 @@ nav:
       - Repository Contract: external-identities/repository-contract.md
   - Imports:
       - Import Framework: imports/index.md
+      - CSV / JSON / JSONL: imports/formats.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
