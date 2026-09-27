@@ -7,6 +7,7 @@ from decimal import Decimal
 from io import StringIO
 
 import pytest
+from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
@@ -163,6 +164,11 @@ from pycrmkit.storage.sqlalchemy import (
     WebhookDeliveryModel,
 )
 from pycrmkit.storage.sqlalchemy.errors import translate_sqlalchemy_error
+from pycrmkit.storage.sqlalchemy.migrations.cli import (
+    DATABASE_ENV,
+    SCRIPT_LOCATION,
+    migration_config,
+)
 from pycrmkit.tags import TagName, TagQuery
 from pycrmkit.tasks import (
     TaskPriority,
@@ -4558,3 +4564,52 @@ def test_zero_to_hero_postgresql_sqlstate_translation_example() -> None:
     }
     assert "statement" not in translated.context
     assert "params" not in translated.context
+
+
+def test_zero_to_hero_migrations_packaged_history_example() -> None:
+    config = migration_config(
+        "postgresql+psycopg://crm:secret@localhost:5432/crm"
+    )
+    script = ScriptDirectory.from_config(config)
+
+    assert config.get_main_option("script_location") == SCRIPT_LOCATION
+    assert script.get_current_head() == "0003"
+
+    revision_0003 = script.get_revision("0003")
+    revision_0002 = script.get_revision("0002")
+    revision_0001 = script.get_revision("0001")
+
+    assert revision_0003 is not None
+    assert revision_0002 is not None
+    assert revision_0001 is not None
+
+    assert revision_0003.down_revision == "0002"
+    assert revision_0002.down_revision == "0001"
+    assert revision_0001.down_revision is None
+
+    assert tuple(
+        revision.revision
+        for revision in script.walk_revisions(
+            base="base",
+            head="heads",
+        )
+    ) == ("0003", "0002", "0001")
+
+
+def test_zero_to_hero_migrations_explicit_database_url_example() -> None:
+    database_url = "postgresql+psycopg://crm:secret@localhost:5432/crm"
+    config = migration_config(database_url)
+
+    assert config.get_main_option("script_location") == SCRIPT_LOCATION
+    assert config.get_main_option("sqlalchemy.url") == database_url
+
+
+def test_zero_to_hero_migrations_missing_database_url_example(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv(DATABASE_ENV, raising=False)
+
+    with pytest.raises(ValueError) as error:
+        migration_config()
+
+    assert DATABASE_ENV in str(error.value)
