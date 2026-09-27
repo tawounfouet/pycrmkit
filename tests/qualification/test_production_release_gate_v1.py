@@ -34,7 +34,7 @@ EXPECTED_RC_GATES = {
     "RC-07",
 }
 
-IMPLEMENTED_RC_GATES = {"RC-01", "RC-02", "RC-03", "RC-04", "RC-05"}
+IMPLEMENTED_RC_GATES = {"RC-01", "RC-02", "RC-03", "RC-04", "RC-05", "RC-06"}
 
 
 def test_gate_and_scenario_contract_target_the_same_candidate() -> None:
@@ -68,7 +68,7 @@ def test_existing_release_qualification_workflows_are_frozen() -> None:
     assert missing == []
 
 
-def test_rc01_to_rc05_are_implemented_without_claiming_full_rc_qualification() -> None:
+def test_rc01_to_rc06_are_implemented_without_claiming_full_rc_qualification() -> None:
     gates = {item["id"]: item for item in GATE["rc_gates"]}
 
     assert set(gates) == EXPECTED_RC_GATES

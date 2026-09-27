@@ -106,9 +106,11 @@
     {
       "id": "RC-06",
       "name": "Production release gate",
-      "status": "pending",
-      "planned_evidence": [
-        ".github/workflows/production-qualification.yml"
+      "status": "implemented",
+      "evidence": [
+        ".github/workflows/production-qualification.yml",
+        "scripts/v1_production_gate.py",
+        "tests/qualification/test_v1_production_release_gate.py"
       ]
     },
     {

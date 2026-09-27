@@ -312,5 +312,36 @@
       "scripts/v1_production_wheel_smoke.py",
       ".github/workflows/production-installed-artifact.yml"
     ]
+  },
+  "rc06_production_release_gate": {
+    "status": "implemented",
+    "blocking_failures_allowed": 0,
+    "workflow": ".github/workflows/production-qualification.yml",
+    "final_job": "production-release-gate",
+    "convergence_layers": [
+      "contract",
+      "cross-layer-e2e",
+      "persistence-migrations",
+      "framework-integrations",
+      "installed-artifacts",
+      "public-api-freeze",
+      "security-privacy",
+      "performance-baseline",
+      "compatibility-matrix",
+      "lint",
+      "typing",
+      "docs"
+    ],
+    "promotion_boundary": {
+      "package_version_during_gate": "1.0.0b3",
+      "target_candidate": "1.0.0rc1",
+      "actual_promotion_owned_by": "RC-07",
+      "promotion_ready_before_rc07": false
+    },
+    "evidence": [
+      ".github/workflows/production-qualification.yml",
+      "scripts/v1_production_gate.py",
+      "tests/qualification/test_v1_production_release_gate.py"
+    ]
   }
 }
