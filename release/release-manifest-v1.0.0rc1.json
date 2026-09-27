@@ -9,16 +9,16 @@
     {
       "filename": "pycrmkit-1.0.0rc1-py3-none-any.whl",
       "type": "wheel",
-      "sha256": null
+      "sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41"
     },
     {
       "filename": "pycrmkit-1.0.0rc1.tar.gz",
       "type": "sdist",
-      "sha256": null
+      "sha256": "fb8418c4bc0d92c4e302215ca7841a11367cc70adb3c9d0eb6dca67818f951ff"
     }
   ],
   "checksum_algorithm": "sha256",
-  "checksum_status": "pending-ci-build",
+  "checksum_status": "frozen",
   "supported_python": [
     "3.11",
     "3.12",
@@ -29,5 +29,11 @@
     "tag": "v1.0.0rc1",
     "github_prerelease": true,
     "pypi_publish": false
+  },
+  "first_evidence_workflow_run": 36327901778,
+  "reproducibility": {
+    "required": true,
+    "verification_workflow": ".github/workflows/release-candidate-evidence.yml",
+    "policy": "rebuild-and-sha256-check-before-merge"
   }
 }
