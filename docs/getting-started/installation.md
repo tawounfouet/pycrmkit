@@ -2,6 +2,26 @@
 
 PyCRMKit `0.7.0` is the current stable FastAPI Integration release.
 
+## V1 qualified compatibility
+
+PyCRMKit `1.0.0b3` qualifies:
+
+```text
+Python      3.11 / 3.12 / 3.13
+PostgreSQL  16 / 17
+SQLAlchemy  2.0.x / 2.1.x
+FastAPI     0.141.x
+Pydantic    2.13.x
+Django      5.2.x
+DRF         3.18.x
+```
+
+The complete matrix, including optional-extra combinations, is documented in
+[V1 Compatibility Matrix](../compatibility/v1-matrix.md).
+
+Package metadata intentionally blocks unqualified future families rather than
+assuming compatibility.
+
 ## Core
 
 The core package remains framework-agnostic:
