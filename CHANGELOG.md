@@ -6,6 +6,46 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.0.0b3] - 2026-09-27
+
+### Compatibility matrix
+- Published a machine-readable V1 compatibility contract at `tests/compatibility/compatibility_matrix_v1.json`.
+- Added executable checks ensuring package metadata matches the published support policy.
+- Qualified Python 3.11, 3.12 and 3.13 as the V1 runtime matrix.
+- Qualified PostgreSQL 16 and 17 as supported production-reference server families.
+- Qualified SQLAlchemy 2.0.x and 2.1.x across both PostgreSQL server versions.
+- Qualified psycopg 3.2.x and 3.3.x within the supported persistence stack.
+- Qualified FastAPI 0.141.x with Pydantic 2.13.x.
+- Qualified Django 5.2.x with Django REST Framework 3.18.x.
+- Qualified Jinja2 3.1.x and Resend 2.x provider integrations.
+
+### Optional dependency combinations
+- Added compatibility installation/import coverage for core, SQLAlchemy, PostgreSQL, migrations, FastAPI, Django, DRF, email and Resend extras.
+- Added composite-stack qualification for `fastapi,postgresql,migrations`.
+- Added composite-stack qualification for `django,drf,postgresql`.
+
+### Packaging
+- Tightened `Requires-Python` from `>=3.11` to `>=3.11,<3.14` so unqualified Python 3.14+ installs are not implied.
+- Tightened SQLAlchemy to `>=2.0,<2.2`.
+- Tightened psycopg to `>=3.2,<3.4`.
+- Tightened FastAPI to `>=0.141,<0.142` and Pydantic to `>=2.13,<2.14`.
+- Tightened Django to `>=5.2,<5.3` and DRF to `>=3.18,<3.19`.
+- Tightened Jinja2 to `>=3.1,<3.2`.
+
+### Qualification
+- Added dedicated `Compatibility Matrix` CI with `fail-fast: false`.
+- Added PostgreSQL 16/17 × SQLAlchemy 2.0/2.1 cross-product qualification.
+- Replayed FastAPI/Pydantic and Django/DRF integration suites on Python 3.11 and 3.13.
+- Existing Public API Freeze, Security & Privacy, Performance Baseline, Data Operations, persistence and integration gates remain mandatory.
+
+### Scope boundary
+- No CRM facade method, aggregate, event schema, persistence schema or migration is added.
+- Versions outside the published matrix may work but are not V1-qualified by this release.
+
+### Changed
+- Package version advanced from `1.0.0b2` to `1.0.0b3`.
+- Development roadmap advances to `1.0.0rc1 — Full Production Qualification`.
+
 ## [1.0.0b2] - 2026-09-27
 
 ### Performance baseline
