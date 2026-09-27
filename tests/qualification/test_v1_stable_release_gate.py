@@ -25,6 +25,8 @@ def test_stable_gate_promotes_only_the_qualified_rc() -> None:
     assert result["blocking_failures_allowed"] == 0
     assert result["migration_head"] == "0003"
     assert result["candidate_qualified"] is True
+    assert GATE["status"] == "qualified"
+    assert GATE["promotion_ready"] is True
 
 
 def test_stable_policy_forbids_functional_delta() -> None:
