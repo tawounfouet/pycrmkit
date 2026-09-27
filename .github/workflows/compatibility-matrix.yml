@@ -229,7 +229,22 @@ jobs:
           import os
           import pycrmkit
 
-          for module in os.environ["IMPORTS"].split(","):
+          modules = os.environ["IMPORTS"].split(",")
+          if "pycrmkit.integrations.django.drf" in modules:
+              from django.conf import settings
+
+              if not settings.configured:
+                  settings.configure(
+                      SECRET_KEY="pycrmkit-compatibility-smoke",
+                      INSTALLED_APPS=[],
+                      USE_TZ=True,
+                      REST_FRAMEWORK={"UNAUTHENTICATED_USER": None},
+                  )
+              import django
+
+              django.setup()
+
+          for module in modules:
               importlib.import_module(module)
 
           assert pycrmkit.__version__ == "1.0.0b3"
