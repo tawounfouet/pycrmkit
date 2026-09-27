@@ -1,0 +1,104 @@
+name: Production Integration Qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  integration-contract:
+    name: V1 integration architecture contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - name: Install full integration qualification stack
+        run: python -m pip install -e ".[dev,fastapi,django,drf,postgresql,migrations]"
+      - name: Enforce facade boundaries and declared adapter scope
+        run: python -m pytest tests/qualification/test_v1_integration_qualification.py -q
+      - name: FastAPI integration contract regression
+        run: python -m pytest tests/integrations/fastapi -m "not postgresql" -q
+      - name: Django adapter contract regression
+        run: python -m pytest tests/integrations/django -q
+      - name: DRF facade contract regression
+        run: python -m pytest tests/integrations/drf -q
+
+  fastapi-postgresql:
+    name: FastAPI → facade → PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_rc04_fastapi
+          POSTGRES_USER: pycrmkit
+          POSTGRES_PASSWORD: pycrmkit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_rc04_fastapi"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_rc04_fastapi
+      PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_rc04_fastapi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - name: Install FastAPI/PostgreSQL source stack
+        run: python -m pip install -e ".[fastapi,postgresql,migrations,dev]"
+      - name: FastAPI PostgreSQL restart-durability journey
+        env:
+          PYTHONPATH: ".:src"
+        run: python -m pytest -m postgresql tests/integrations/fastapi/test_postgresql_e2e.py -q
+
+  django-drf-postgresql:
+    name: Django/DRF → facade → PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_rc04_django
+          POSTGRES_USER: pycrmkit
+          POSTGRES_PASSWORD: pycrmkit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_rc04_django"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PYCRMKIT_DATABASE_URL: postgresql://pycrmkit:pycrmkit@localhost:5432/pycrmkit_rc04_django
+      DJANGO_SECRET_KEY: pycrmkit-rc04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - name: Install Django/DRF/PostgreSQL source stack
+        run: python -m pip install -e ".[django,drf,postgresql,dev]"
+      - name: Apply packaged Django migrations
+        run: python examples/django/manage.py migrate --noinput
+      - name: Verify Django model/migration parity
+        run: python examples/django/manage.py makemigrations pycrmkit_crm --check --dry-run
+      - name: Django PostgreSQL cross-process journey
+        shell: bash
+        run: |
+          state="$(mktemp)"
+          python examples/django/smoke.py seed --state "$state"
+          python examples/django/smoke.py verify --state "$state"
+      - name: DRF facade contract on Django stack
+        run: python -m pytest tests/integrations/drf -q

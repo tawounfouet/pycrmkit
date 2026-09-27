@@ -237,5 +237,52 @@
       "scripts/postgresql_wheel_smoke.py",
       ".github/workflows/production-persistence-migration.yml"
     ]
+  },
+  "rc04_integration_qualification": {
+    "status": "implemented",
+    "integration_surfaces": {
+      "fastapi": {
+        "persistence": "sqlalchemy-postgresql",
+        "facade_boundary": true,
+        "source_and_wheel": true,
+        "capabilities": [
+          "contacts",
+          "organizations",
+          "relationships",
+          "activities",
+          "tasks",
+          "timeline",
+          "sales"
+        ]
+      },
+      "django_drf": {
+        "persistence": "django-postgresql",
+        "facade_boundary": true,
+        "source_and_wheel": true,
+        "capabilities": [
+          "contacts",
+          "organizations",
+          "relationships",
+          "external_identities"
+        ]
+      }
+    },
+    "guarantees": [
+      "http-never-bypasses-facade-to-orm",
+      "stable-error-contracts",
+      "request-context-propagation",
+      "postgresql-restart-durability",
+      "source-and-installed-wheel-integration",
+      "typed-external-identity-owner-parity",
+      "django-scope-remains-explicit"
+    ],
+    "evidence": [
+      "tests/qualification/test_v1_integration_qualification.py",
+      ".github/workflows/production-integration-qualification.yml",
+      ".github/workflows/fastapi-e2e.yml",
+      ".github/workflows/django-e2e.yml",
+      ".github/workflows/drf.yml",
+      "tests/integrations/django/test_external_identities_repository.py"
+    ]
   }
 }
