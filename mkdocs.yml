@@ -35,6 +35,7 @@ nav:
       - 21 Exporting Data: guides/21_exporting_data.md
       - 22 Memory Adapter: guides/22_memory_adapter.md
       - 23 SQLAlchemy: guides/23_sqlalchemy.md
+      - 24 PostgreSQL: guides/24_postgresql.md
   - Facade:
       - CRM: facade/index.md
   - Core:
