@@ -85,6 +85,7 @@ from pycrmkit.exceptions import (
     NotFoundError,
     ValidationError,
 )
+from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
 from pycrmkit.external_identities import (
     ExternalIdentityService,
     normalize_external_id,
@@ -4010,3 +4011,166 @@ def test_zero_to_hero_contact_merge_rollback_on_custom_field_conflict() -> None:
     assert primary_value.value == "gold"
     assert duplicate_value.value == "silver"
     assert audit.total == 0
+
+
+def test_zero_to_hero_export_csv_explicit_schema_example() -> None:
+    output = StringIO()
+    records = (
+        {
+            "entity_id": "contact-1",
+            "display_name": "Ada Lovelace",
+            "email": "ada@example.com",
+        },
+        {
+            "entity_id": "contact-2",
+            "display_name": "Grace Hopper",
+        },
+    )
+
+    count = CSVExporter(
+        output,
+        fieldnames=(
+            "entity_id",
+            "display_name",
+            "email",
+        ),
+    ).write(records)
+
+    output.seek(0)
+    assert count == 2
+    assert list(CSVReader(output).read()) == [
+        {
+            "entity_id": "contact-1",
+            "display_name": "Ada Lovelace",
+            "email": "ada@example.com",
+        },
+        {
+            "entity_id": "contact-2",
+            "display_name": "Grace Hopper",
+            "email": "",
+        },
+    ]
+
+
+def test_zero_to_hero_export_format_boundaries_example() -> None:
+    csv_output = StringIO()
+    with pytest.raises(ValidationError) as csv_error:
+        CSVExporter(csv_output).write(
+            (
+                {
+                    "entity_id": "contact-1",
+                    "custom_fields": {"tier": "gold"},
+                },
+            )
+        )
+    assert csv_error.value.code == "export.csv.value.invalid"
+
+    json_output = StringIO()
+    records = (
+        {
+            "entity_id": "contact-1",
+            "display_name": "Zoé",
+            "tags": ["vip", "équipe"],
+            "custom_fields": {"segment": "R&D"},
+        },
+    )
+    assert JSONExporter(json_output).write(records) == 1
+    json_output.seek(0)
+    assert list(JSONReader(json_output).read()) == list(records)
+
+    with pytest.raises(ValidationError) as json_error:
+        JSONExporter(StringIO()).write(
+            (
+                {
+                    "entity_id": "contact-2",
+                    "amount": Decimal("12.50"),
+                },
+            )
+        )
+    assert json_error.value.code == "export.json.value.invalid"
+
+
+def test_zero_to_hero_export_jsonl_streaming_generator_example() -> None:
+    output = StringIO()
+    consumed: list[int] = []
+
+    def records():
+        for index in range(1000):
+            consumed.append(index)
+            yield {
+                "index": index,
+                "display_name": f"Contact {index}",
+            }
+
+    assert JSONLExporter(output).write(records()) == 1000
+    assert consumed == list(range(1000))
+
+    output.seek(0)
+    loaded = list(JSONLReader(output).read())
+    assert len(loaded) == 1000
+    assert loaded[0] == {
+        "index": 0,
+        "display_name": "Contact 0",
+    }
+    assert loaded[-1] == {
+        "index": 999,
+        "display_name": "Contact 999",
+    }
+
+
+def test_zero_to_hero_export_paginated_contact_projection_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 13, tzinfo=UTC))
+    )
+    created = [
+        crm.contacts.create(
+            first_name="Contact",
+            last_name=str(index),
+            emails=(
+                ContactEmail(
+                    f"contact-{index}@example.com",
+                    is_primary=True,
+                ),
+            ),
+        )
+        for index in range(5)
+    ]
+
+    def projected_records():
+        offset = 0
+        page_size = 2
+
+        while True:
+            page = crm.contacts.search(
+                ContactQuery(),
+                OffsetPageRequest(
+                    limit=page_size,
+                    offset=offset,
+                ),
+            )
+            for contact in page.items:
+                yield {
+                    "entity_id": str(contact.id),
+                    "display_name": contact.display_name or "",
+                    "email": (
+                        contact.emails[0].normalized
+                        if contact.emails
+                        else ""
+                    ),
+                    "status": contact.status.value,
+                }
+
+            if not page.has_next:
+                break
+            offset += page_size
+
+    output = StringIO()
+    assert JSONLExporter(output).write(projected_records()) == 5
+
+    output.seek(0)
+    loaded = list(JSONLReader(output).read())
+    assert len(loaded) == 5
+    assert {row["entity_id"] for row in loaded} == {
+        str(contact.id) for contact in created
+    }
+    assert all(row["status"] == "active" for row in loaded)

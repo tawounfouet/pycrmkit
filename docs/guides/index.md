@@ -54,6 +54,7 @@ example application.
 19. [Importing Data](18_importing_data.md) — build provider-neutral Read → Map → Normalize → Validate → Deduplicate → Persist pipelines with structured and bounded reporting.
 20. [Deduplication](19_deduplication.md) — evaluate explainable candidate evidence with exact normalized signals, configurable scoring, conflicts and conservative auto-selection.
 21. [Contact Merge](20_contact_merge.md) — reconcile reviewed duplicate Contacts transactionally with explicit primary selection, conflict policy, linked-state reassignment, archival and minimized audit.
+22. [Exporting Data](21_exporting_data.md) — project authorized CRM state into deterministic CSV, JSON and JSONL records with explicit format, pagination and privacy boundaries.
 
 ## LEVEL 1 complete
 
@@ -71,9 +72,9 @@ Leads, Opportunities, Pipelines and Lead Conversion now form the complete Sales 
 
 Email & Communications, Domain Events and Webhooks now form the complete Communication & Automation layer: provider-neutral communication, governed event contracts, causal tracing and signed/retryable external delivery.
 
-## LEVEL 5 in progress
+## LEVEL 5 complete
 
-External Identities establishes provider-record ownership; Importing Data adds provider-neutral ingestion; Deduplication adds explainable candidate evidence; Contact Merge now reconciles reviewed duplicates transactionally. Exporting Data is next.
+External Identities, Importing Data, Deduplication, Contact Merge and Exporting Data now form the complete Data Operations layer: provider identity, ingestion, evidence-based duplicate detection, transactional reconciliation and portable outbound exchange.
 
 ## Full Zero-to-Hero roadmap
 
@@ -103,7 +104,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 5 | 18 | Importing Data | Published |
 | 5 | 19 | Deduplication | Published |
 | 5 | 20 | Contact Merge | Published |
-| 5 | 21 | Exporting Data | Planned |
+| 5 | 21 | Exporting Data | Published |
 | 6 | 22 | Memory Adapter | Planned |
 | 6 | 23 | SQLAlchemy | Planned |
 | 6 | 24 | PostgreSQL | Planned |

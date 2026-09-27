@@ -32,6 +32,7 @@ nav:
       - 18 Importing Data: guides/18_importing_data.md
       - 19 Deduplication: guides/19_deduplication.md
       - 20 Contact Merge: guides/20_contact_merge.md
+      - 21 Exporting Data: guides/21_exporting_data.md
   - Facade:
       - CRM: facade/index.md
   - Core:
