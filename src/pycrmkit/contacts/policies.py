@@ -37,12 +37,12 @@ def validate_contact_points(*, emails: Iterable[ContactEmail], phones: Iterable[
     primary_emails = primary_phones = primary_addresses = 0
     for email in emails:
         if email.normalized in email_values:
-            raise ConflictError("duplicate email within contact", code="contact.email.duplicate", context={"email": email.normalized})
+            raise ConflictError(\n                "duplicate email within contact",\n                code="contact.email.duplicate",\n                context={"field": "email"},\n            )
         email_values.add(email.normalized)
         primary_emails += int(email.is_primary)
     for phone in phones:
         if phone.normalized in phone_values:
-            raise ConflictError("duplicate phone within contact", code="contact.phone.duplicate", context={"phone": phone.normalized})
+            raise ConflictError(\n                "duplicate phone within contact",\n                code="contact.phone.duplicate",\n                context={"field": "phone"},\n            )
         phone_values.add(phone.normalized)
         primary_phones += int(phone.is_primary)
     for address in addresses:
