@@ -577,5 +577,26 @@
     "pycrmkit.integrations.django.models",
     "pycrmkit.integrations.django.migrations.*",
     "names beginning with _ unless explicitly documented"
-  ]
+  ],
+  "import_performance_fields": {
+    "ImportPipeline": [
+      "reader",
+      "persister",
+      "mapper",
+      "normalizer",
+      "validator",
+      "deduplicator",
+      "retain_row_results"
+    ],
+    "ImportReport": [
+      "rows_read",
+      "rows_created",
+      "rows_updated",
+      "rows_skipped",
+      "duplicates",
+      "validation_errors",
+      "row_results",
+      "retain_row_results"
+    ]
+  }
 }
