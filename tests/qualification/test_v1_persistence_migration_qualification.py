@@ -242,9 +242,14 @@ def test_v1_contact_merge_commits_all_postgresql_participants_atomically(
     moved_identity = reloaded.external_identities.resolve("legacy_crm", "legacy-ada-42")
     assert moved_identity.id == identity.id
     assert moved_identity.entity == primary_ref
-    assert reloaded.audit.by_correlation("rc03-merge-commit").items[0].action == (
-        "contact.merged"
-    )
+    merge_audits = [
+        entry
+        for entry in reloaded.audit.by_correlation("rc03-merge-commit").items
+        if entry.action == "contact.merged"
+    ]
+    assert len(merge_audits) == 1
+    assert merge_audits[0].changes["duplicate_id"] == str(duplicate.id)
+    assert merge_audits[0].changes["provenance"]["decision"] == "duplicate"
 
 
 def test_v1_contact_merge_conflict_rolls_back_every_postgresql_participant(
