@@ -45,10 +45,6 @@ from pycrmkit.custom_fields import (
     CustomFieldOption,
     CustomFieldType,
 )
-from pycrmkit.external_identities import (
-    normalize_external_id,
-    normalize_external_system,
-)
 from pycrmkit.events import (
     DomainEvent,
     EventRegistry,
@@ -63,6 +59,10 @@ from pycrmkit.exceptions import (
     InvalidStateError,
     NotFoundError,
     ValidationError,
+)
+from pycrmkit.external_identities import (
+    normalize_external_id,
+    normalize_external_system,
 )
 from pycrmkit.leads import LeadConversionService, LeadQuery, LeadService, LeadStatus
 from pycrmkit.opportunities import (
