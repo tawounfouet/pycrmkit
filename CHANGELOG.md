@@ -6,6 +6,47 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.0.0b1] - 2026-09-27
+
+### Security & privacy
+- Public `PyCRMKitError.as_dict()` serialization recursively redacts sensitive context keys.
+- FastAPI and DRF error bridges use the same sensitive-context redaction.
+- Contact validation no longer copies malformed email/phone values into diagnostic context.
+- Organization domain validation no longer copies invalid domain values into diagnostic context.
+- External Identity errors retain system/owner metadata without exposing the external record identifier.
+- External Identity domain events retain `system` but no longer emit `external_id`.
+- Merge contact-point conflict errors no longer expose competing email/phone values.
+- Webhook subscription/request representations exclude URL/body/header/key material from ordinary repr output.
+
+### Webhooks
+- Added `crm.webhooks.rotate_secret(...)` as an audited additive V1 candidate API.
+- Rotation can use caller-supplied secret material or generate a fresh high-entropy secret.
+- Audit history records only that `signing_secret` changed; old/new values are not persisted into audit changes.
+- `verify_webhook_signature(...)` keeps backward-compatible integrity-only behavior and adds optional `current_timestamp` / `tolerance_seconds` freshness validation.
+- Timestamp freshness allows webhook receivers to reject valid-but-stale replay attempts.
+- Existing HMAC-SHA256 and constant-time signature comparison remain unchanged.
+
+### Merge safeguards
+- Merge now rejects provenance containing any `blocking` deduplication conflict, even if the supplied decision says `duplicate`.
+- Existing explicit-primary, explicit-duplicate, matching-provenance, conservative conflict-policy, transaction rollback and duplicate-archival safeguards remain required.
+
+### Destructive actions
+- Security tests freeze the absence of generic `delete`, `purge` and `hard_delete` methods on primary public CRM facade namespaces.
+- Lifecycle operations remain explicit: archive, end, disable, detach and provenance-backed merge.
+
+### Qualification
+- Added `tests/security` with privacy, event-redaction, webhook, destructive-action and merge-integrity regressions.
+- Added dedicated `Security & Privacy` CI running the same suite from source and a clean installed wheel.
+- Existing Public API Freeze, Data Operations, PostgreSQL, FastAPI, Django/DRF and persistence gates remain mandatory.
+
+### Public API candidate delta
+- Added only `crm.webhooks.rotate_secret` to the V1 facade candidate.
+- No new CRM aggregate or persistence schema is introduced.
+
+### Changed
+- Package version advanced from `1.0.0a1` to `1.0.0b1`.
+- Development roadmap advances to `1.0.0b2 — Performance Baseline`.
+
 ## [1.0.0a1] - 2026-09-27
 
 ### Added
