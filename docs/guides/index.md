@@ -46,6 +46,7 @@ example application.
 11. [Leads](10_leads.md) — model commercial qualification, explicit lifecycle transitions and portable Lead queries.
 12. [Opportunities](11_opportunities.md) — model commercial outcomes, Decimal-safe value, probability, lifecycle and portable Opportunity queries.
 13. [Pipelines](12_pipelines.md) — define ordered sales stages, transition policy, default probabilities and Opportunity movement.
+14. [Lead Conversion](13_lead_conversion.md) — convert qualified Leads atomically into exactly one Opportunity with idempotent retry semantics.
 
 ## LEVEL 1 complete
 
@@ -55,9 +56,9 @@ Contacts, Organizations, Relationships, Tags and Custom Fields now form the comp
 
 Activities, Tasks and Timeline now form the complete Customer Activity layer: interactions, actionable work and ordered relationship history. LEVEL 3 now begins with Sales: Leads, Opportunities, Pipelines and Lead Conversion.
 
-## LEVEL 3 in progress
+## LEVEL 3 complete
 
-Leads establish qualification, Opportunities model concrete business outcomes, and Pipelines now define the governed sales process. The next chapter closes LEVEL 3 with atomic Lead Conversion.
+Leads, Opportunities, Pipelines and Lead Conversion now form the complete Sales Foundation learning layer: qualification, commercial outcome, governed process and atomic/idempotent cross-aggregate conversion. LEVEL 4 begins next with Email & Communications.
 
 ## Full Zero-to-Hero roadmap
 
@@ -79,7 +80,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 3 | 10 | Leads | Published |
 | 3 | 11 | Opportunities | Published |
 | 3 | 12 | Pipelines | Published |
-| 3 | 13 | Lead Conversion | Planned |
+| 3 | 13 | Lead Conversion | Published |
 | 4 | 14 | Email & Communications | Planned |
 | 4 | 15 | Domain Events | Planned |
 | 4 | 16 | Webhooks | Planned |
