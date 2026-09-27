@@ -41,6 +41,7 @@ example application.
 6. [Relationships](05_relationships.md) — connect CRM entities with typed, directional and temporal relationships.
 7. [Tags & Custom Fields](06_tags_and_custom_fields.md) — extend CRM entities with reusable classification and versioned typed business data.
 8. [Activities](07_activities.md) — model customer interaction history, participants, references and temporal queries.
+9. [Tasks](08_tasks.md) — master actionable CRM work, priorities, due dates, lifecycle transitions and overdue queries.
 
 ## LEVEL 1 complete
 
@@ -61,7 +62,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 1 | 05 | Relationships | Published |
 | 1 | 06 | Tags & Custom Fields | Published |
 | 2 | 07 | Activities | Published |
-| 2 | 08 | Tasks | Planned |
+| 2 | 08 | Tasks | Published |
 | 2 | 09 | Timeline | Planned |
 | 3 | 10 | Leads | Planned |
 | 3 | 11 | Opportunities | Planned |
