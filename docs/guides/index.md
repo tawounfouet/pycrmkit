@@ -40,6 +40,7 @@ example application.
 5. [Organizations](04_organizations.md) — master company/account identity, domains, addresses, lifecycle and search.
 6. [Relationships](05_relationships.md) — connect CRM entities with typed, directional and temporal relationships.
 7. [Tags & Custom Fields](06_tags_and_custom_fields.md) — extend CRM entities with reusable classification and versioned typed business data.
+8. [Activities](07_activities.md) — model customer interaction history, participants, references and temporal queries.
 
 ## LEVEL 1 complete
 
@@ -59,7 +60,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 1 | 04 | Organizations | Published |
 | 1 | 05 | Relationships | Published |
 | 1 | 06 | Tags & Custom Fields | Published |
-| 2 | 07 | Activities | Planned |
+| 2 | 07 | Activities | Published |
 | 2 | 08 | Tasks | Planned |
 | 2 | 09 | Timeline | Planned |
 | 3 | 10 | Leads | Planned |
