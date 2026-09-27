@@ -18,6 +18,7 @@ from pycrmkit.events import (
     default_event_registry,
 )
 from pycrmkit.exceptions import PyCRMKitError
+from pycrmkit.importers import ImportPipeline, ImportReport
 
 MANIFEST_PATH = Path(__file__).with_name("public_api_v1_candidate.json")
 MANIFEST = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
@@ -95,6 +96,15 @@ def test_configuration_shape_is_candidate_frozen() -> None:
     assert [field.name for field in fields(CRMContext)] == MANIFEST["config_fields"][
         "CRMContext"
     ]
+
+
+def test_import_performance_controls_are_candidate_frozen() -> None:
+    assert [field.name for field in fields(ImportPipeline)] == MANIFEST[
+        "import_performance_fields"
+    ]["ImportPipeline"]
+    assert [field.name for field in fields(ImportReport)] == MANIFEST[
+        "import_performance_fields"
+    ]["ImportReport"]
 
 
 def test_event_registry_names_and_envelope_shape_are_frozen() -> None:
