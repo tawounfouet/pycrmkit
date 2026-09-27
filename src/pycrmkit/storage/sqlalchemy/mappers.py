@@ -43,6 +43,7 @@ from pycrmkit.contacts import (
 )
 from pycrmkit.core.events import EventId, EventType
 from pycrmkit.core.ids import EntityId, UUIDId
+from pycrmkit.core.json import thaw_json_mapping
 from pycrmkit.core.references import EntityReference
 from pycrmkit.custom_fields import (
     CustomFieldDefinition,
@@ -814,7 +815,7 @@ def audit_to_model(entry: AuditEntry) -> AuditEntryModel:
         entity_type=entry.entity_type,
         entity_id=entry.entity_id,
         occurred_at=entry.occurred_at,
-        changes_json=dict(entry.changes),
+        changes_json=thaw_json_mapping(entry.changes),
         correlation_id=entry.correlation_id,
     )
 

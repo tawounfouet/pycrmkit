@@ -72,9 +72,13 @@
     {
       "id": "RC-03",
       "name": "Persistence and migration qualification",
-      "status": "pending",
-      "planned_evidence": [
-        "tests/qualification/test_v1_persistence_migration_qualification.py"
+      "status": "implemented",
+      "evidence": [
+        "tests/qualification/test_v1_persistence_migration_qualification.py",
+        ".github/workflows/production-persistence-migration.yml",
+        "tests/persistence/test_persistence_release_candidate.py",
+        "tests/migrations/test_alembic_migrations.py",
+        "scripts/postgresql_wheel_smoke.py"
       ]
     },
     {

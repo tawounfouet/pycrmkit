@@ -213,5 +213,29 @@
       "fastapi-postgresql",
       "django-drf-postgresql"
     ]
+  },
+  "rc03_persistence_migration_qualification": {
+    "status": "implemented",
+    "backend": "sqlalchemy-postgresql",
+    "migration_head": "0003",
+    "guarantees": [
+      "empty-database-to-head",
+      "previous-stable-head-to-candidate-noop",
+      "representative-fixture-preservation",
+      "lead-conversion-transactionality",
+      "pipeline-transition-durability",
+      "contact-merge-multi-repository-atomicity",
+      "contact-merge-conflict-rollback",
+      "repository-conformance",
+      "installed-wheel-packaged-migrations",
+      "installed-wheel-postgresql-smoke"
+    ],
+    "evidence": [
+      "tests/qualification/test_v1_persistence_migration_qualification.py",
+      "tests/persistence/test_persistence_release_candidate.py",
+      "tests/migrations/test_alembic_migrations.py",
+      "scripts/postgresql_wheel_smoke.py",
+      ".github/workflows/production-persistence-migration.yml"
+    ]
   }
 }
