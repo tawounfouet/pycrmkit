@@ -1,6 +1,6 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -50,6 +50,12 @@ from pycrmkit.relationships import (
     RelationshipUpdate,
 )
 from pycrmkit.tags import TagName, TagQuery
+from pycrmkit.tasks import (
+    TaskPriority,
+    TaskQuery,
+    TaskStatus,
+    TaskUpdate,
+)
 
 
 def test_zero_to_hero_getting_started_example() -> None:
@@ -960,3 +966,209 @@ def test_zero_to_hero_activities_invariant_examples() -> None:
             occurred_at=datetime(2026, 1, 1),
             subject="Naive timestamp",
         )
+
+
+
+def test_zero_to_hero_tasks_mastery_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 10, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock).with_context(
+        actor_id="guide-user",
+        correlation_id="tasks-guide-001",
+    )
+
+    contact = crm.contacts.create(
+        display_name="Ada Lovelace",
+    )
+    contact_ref = EntityReference(
+        kind="contact",
+        id=contact.id,
+    )
+
+    task = crm.tasks.create(
+        title="  Prepare   renewal proposal ",
+        description="Prepare the Q4 renewal package.",
+        priority=TaskPriority.HIGH,
+        due_at=datetime(2026, 10, 1, 12, 0, tzinfo=UTC),
+        owner_id="sales-team",
+        assignee_id="seller-7",
+        references=(contact_ref,),
+        source="manual",
+        external_id="renewal-task-001",
+    )
+
+    assert task.title == "Prepare renewal proposal"
+    assert task.status is TaskStatus.OPEN
+    assert task.priority is TaskPriority.HIGH
+    assert task.started_at is None
+
+    started = crm.tasks.start(task.id)
+    assert started.status is TaskStatus.IN_PROGRESS
+    assert started.started_at == clock.now()
+
+    clock.advance(timedelta(minutes=5))
+    updated = crm.tasks.update(
+        task.id,
+        TaskUpdate(
+            priority="urgent",
+            assignee_id="seller-9",
+        ),
+    )
+    assert updated.status is TaskStatus.IN_PROGRESS
+    assert updated.started_at == started.started_at
+    assert updated.priority is TaskPriority.URGENT
+    assert updated.assignee_id == "seller-9"
+
+    clock.advance(timedelta(minutes=5))
+    completed = crm.tasks.complete(task.id)
+    assert completed.status is TaskStatus.COMPLETED
+    assert completed.completed_at == clock.now()
+    assert completed.is_terminal is True
+
+    corrected = crm.tasks.update(
+        task.id,
+        TaskUpdate(
+            description="Corrected completion context",
+        ),
+    )
+    assert corrected.status is TaskStatus.COMPLETED
+    assert corrected.completed_at == completed.completed_at
+
+    reopened = crm.tasks.reopen(task.id)
+    assert reopened.status is TaskStatus.OPEN
+    assert reopened.started_at is None
+    assert reopened.completed_at is None
+    assert reopened.cancelled_at is None
+
+    page = crm.tasks.list(
+        TaskQuery(
+            status=TaskStatus.OPEN,
+            priority=TaskPriority.URGENT,
+            assignee_id=" seller-9 ",
+            reference=contact_ref,
+            source="MANUAL",
+            external_id="renewal-task-001",
+        ),
+        OffsetPageRequest(limit=10),
+    )
+    assert page.items == (reopened,)
+    assert page.total == 1
+
+
+def test_zero_to_hero_tasks_overdue_and_ordering_examples() -> None:
+    crm = CRM.memory()
+
+    reference_contact = crm.contacts.create(
+        display_name="Grace Hopper",
+    )
+    ref = EntityReference(
+        kind="contact",
+        id=reference_contact.id,
+    )
+
+    overdue_task = crm.tasks.create(
+        title="Old follow-up",
+        priority="high",
+        due_at=datetime(2026, 9, 1, tzinfo=UTC),
+        assignee_id="seller-7",
+        references=(ref,),
+    )
+    future_task = crm.tasks.create(
+        title="Future follow-up",
+        priority="normal",
+        due_at=datetime(2026, 11, 1, tzinfo=UTC),
+        assignee_id="seller-7",
+        references=(ref,),
+    )
+    undated = crm.tasks.create(
+        title="Backlog research",
+        assignee_id="seller-7",
+        references=(ref,),
+    )
+
+    ordered = crm.tasks.list(
+        TaskQuery(
+            assignee_id="seller-7",
+            reference=ref,
+        )
+    )
+    assert ordered.items == (
+        overdue_task,
+        future_task,
+        undated,
+    )
+
+    instant = datetime(2026, 9, 27, tzinfo=UTC)
+    overdue = crm.tasks.list(
+        TaskQuery(
+            overdue_at=instant,
+        )
+    )
+    assert overdue.items == (overdue_task,)
+    assert overdue_task.is_overdue(instant) is True
+
+    crm.tasks.complete(overdue_task.id)
+    no_longer_overdue = crm.tasks.list(
+        TaskQuery(
+            overdue_at=instant,
+        )
+    )
+    assert no_longer_overdue.total == 0
+
+
+def test_zero_to_hero_tasks_invariant_examples() -> None:
+    clock = FixedClock(datetime(2026, 9, 27, 10, 0, tzinfo=UTC))
+    crm = CRM.memory(clock=clock)
+
+    with pytest.raises(ValidationError) as blank_title:
+        crm.tasks.create(title="   ")
+    assert blank_title.value.code == "task.title.required"
+
+    with pytest.raises(ValidationError) as invalid_priority:
+        crm.tasks.create(
+            title="Invalid priority",
+            priority="critical",
+        )
+    assert invalid_priority.value.code == "task.priority.invalid"
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    ref = EntityReference(kind="contact", id=contact.id)
+    with pytest.raises(ValidationError) as duplicate_reference:
+        crm.tasks.create(
+            title="Duplicate references",
+            references=(ref, ref),
+        )
+    assert duplicate_reference.value.code == "task.reference.duplicate"
+
+    direct = crm.tasks.create(title="Direct completion")
+    completed = crm.tasks.complete(direct.id)
+    assert completed.status is TaskStatus.COMPLETED
+    assert completed.started_at is None
+    assert completed.completed_at is not None
+
+    with pytest.raises(InvalidStateError) as complete_again:
+        crm.tasks.complete(direct.id)
+    assert complete_again.value.code == "task.transition.invalid"
+
+    cancelled = crm.tasks.create(title="Cancellation cycle")
+    cancelled = crm.tasks.cancel(cancelled.id)
+    assert cancelled.status is TaskStatus.CANCELLED
+    reopened = crm.tasks.reopen(cancelled.id)
+    assert reopened.status is TaskStatus.OPEN
+    assert reopened.cancelled_at is None
+
+    with pytest.raises(InvalidStateError) as reopen_open:
+        crm.tasks.reopen(cancelled.id)
+    assert reopen_open.value.code == "task.transition.invalid"
+
+    with pytest.raises(ValidationError) as invalid_due_window:
+        TaskQuery(
+            due_from=datetime(2026, 10, 1, tzinfo=UTC),
+            due_until=datetime(2026, 10, 1, tzinfo=UTC),
+        )
+    assert invalid_due_window.value.code == "task.query.invalid_due_interval"
+
+    before_creation = crm.tasks.create(title="Clock integrity")
+    clock.set(datetime(2026, 9, 26, 10, 0, tzinfo=UTC))
+    with pytest.raises(ValidationError) as transition_before_creation:
+        crm.tasks.start(before_creation.id)
+    assert transition_before_creation.value.code == "task.transition.before_creation"
