@@ -148,6 +148,7 @@ def test_merge_coalesces_missing_profile_fields_and_preserves_primary_metadata()
 
     assert merged.first_name == "Ada"
     assert merged.last_name == "Lovelace"
+    assert merged.display_name == "Ada Lovelace"
     assert len(merged.emails) == 1
     assert merged.emails[0].normalized == "ada@example.com"
     assert merged.phones[0].normalized == "+33612345678"
