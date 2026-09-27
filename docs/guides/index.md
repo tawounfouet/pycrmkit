@@ -42,10 +42,15 @@ example application.
 7. [Tags & Custom Fields](06_tags_and_custom_fields.md) — extend CRM entities with reusable classification and versioned typed business data.
 8. [Activities](07_activities.md) — model customer interaction history, participants, references and temporal queries.
 9. [Tasks](08_tasks.md) — master actionable CRM work, priorities, due dates, lifecycle transitions and overdue queries.
+10. [Timeline](09_timeline.md) — understand immutable customer-history projections, replay safety, filters and transactional consistency.
 
 ## LEVEL 1 complete
 
 Contacts, Organizations, Relationships, Tags and Custom Fields now form the complete CRM-core foundation. The next learning level is Customer Activity: Activities, Tasks and Timeline.
+
+## LEVEL 2 complete
+
+Activities, Tasks and Timeline now form the complete Customer Activity layer: interactions, actionable work and ordered relationship history. The next learning level is Sales: Leads, Opportunities, Pipelines and Lead Conversion.
 
 ## Full Zero-to-Hero roadmap
 
@@ -63,7 +68,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 1 | 06 | Tags & Custom Fields | Published |
 | 2 | 07 | Activities | Published |
 | 2 | 08 | Tasks | Published |
-| 2 | 09 | Timeline | Planned |
+| 2 | 09 | Timeline | Published |
 | 3 | 10 | Leads | Planned |
 | 3 | 11 | Opportunities | Planned |
 | 3 | 12 | Pipelines | Planned |
