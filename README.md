@@ -133,8 +133,8 @@ pytest
 1.0.0b1 Security & Privacy Hardening                                         ✓
 1.0.0b2 Performance Baseline                                                  ✓
 1.0.0b3 Compatibility Matrix                                                   ✓
-1.0.0rc1 Full Production Qualification                                          →
-1.0.0  Production Stable
+1.0.0rc1 Full Production Qualification                                          ✓
+1.0.0  Production Stable                                                         →
 ```
 
 ## Quality
