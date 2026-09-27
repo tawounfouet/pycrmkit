@@ -1,4 +1,4 @@
-"""PyCRMKit 1.0.0b1 reference Data Operations E2E scenario."""
+"""PyCRMKit 1.0.0b2 reference Data Operations E2E scenario."""
 
 from __future__ import annotations
 
@@ -218,7 +218,7 @@ def run_scenario() -> dict[str, object]:
                 external_id="legacy-ada-42",
                 entity_type="contact",
                 entity_id=duplicate_id,
-                metadata={"source": "1.0.0b1-e2e"},
+                metadata={"source": "1.0.0b2-e2e"},
             )
         )
         uow.commit()
@@ -240,7 +240,7 @@ def run_scenario() -> dict[str, object]:
         duplicate_id=duplicate_id,
         provenance=review.provenance,
         actor_id="data-operations-e2e",
-        correlation_id="1.0.0b1",
+        correlation_id="1.0.0b2",
     )
     assert merged.duplicate.status is ContactStatus.ARCHIVED
 
@@ -311,7 +311,7 @@ def run_scenario() -> dict[str, object]:
 
 def main() -> None:
     summary = run_scenario()
-    assert summary["version"] == "1.0.0b1"
+    assert summary["version"] == "1.0.0b2"
     print(json.dumps(summary, indent=2, sort_keys=True))
 
 
