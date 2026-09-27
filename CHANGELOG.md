@@ -6,6 +6,41 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0b2] - 2026-09-27
+
+### Added
+- `DedupProfile` normalization for email, phone, full name, organization, postal address, external identity and custom identifier signals.
+- `StandardSignalMatcher` with deterministic exact matching over normalized signals.
+- `DedupScorePolicy` with configurable immutable weights and review/duplicate thresholds.
+- `StandardConflictDetector` separating contradictory evidence from positive matches.
+- `DedupProvenance` with machine-readable score, decision, matched evidence and conflicts.
+- `CandidateRecord`, `CandidateSource`, `InMemoryCandidateSource` and `CandidateAssessment`.
+- `DeduplicationEngine` implementing the existing `ImportDeduplicator` contract.
+- Conservative unique-candidate auto-detection: multiple high-confidence candidates are never silently selected.
+- Unit and integration coverage for signal extraction, matcher behavior, scoring, thresholds, conflicts, provenance and ImportPipeline integration.
+- Installed-wheel deduplication/scoring/provenance smoke coverage.
+
+### Default scoring
+- External identity: `100`.
+- Custom identifier: `100`.
+- Email: `70`.
+- Phone: `60`.
+- Full name: `25`.
+- Organization: `15`.
+- Postal address: `20`.
+- Default review threshold: `50`; duplicate threshold: `100`; total score capped at `100`.
+
+### Conflict policy
+- Conflicting custom identifiers within the same namespace are blocking for automatic duplicate selection.
+- Email, phone, full-name, organization and same-system external-identity disagreements are retained as warnings.
+
+### Scope boundary
+- No merge execution is introduced in this beta.
+- Primary-record selection, reassignment, tag union, custom-field merge policy and merge audit remain scheduled for `0.9.0b3`.
+
+### Changed
+- Package version advanced from `0.9.0b1` to `0.9.0b2`.
+- Development roadmap advances to `0.9.0b3 — Merge`.
 ## [0.9.0b1] - 2026-09-27
 
 ### Added
@@ -31,6 +66,7 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 ### Changed
 - Package version advanced from `0.9.0a2` to `0.9.0b1`.
 - Development roadmap advances to `0.9.0b2 — Deduplication`.
+
 ## [0.9.0a2] - 2026-09-27
 
 ### Added
