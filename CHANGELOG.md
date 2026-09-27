@@ -6,6 +6,31 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [0.9.0b1] - 2026-09-27
+
+### Added
+- `CSVReader`, `JSONReader` and `JSONLReader` adapters implementing the existing `ImportReader` contract.
+- `CSVExporter`, `JSONExporter` and `JSONLExporter` for mapping-shaped CRM exchange records.
+- Filesystem-path and text-stream support across all six format adapters.
+- UTF-8/Unicode qualification, including UTF-8 BOM-compatible CSV path reading.
+- JSON/JSONL support for nested objects, arrays, booleans, numbers and null values.
+- Streaming JSON array export and line-by-line JSONL import/export.
+- Format tests covering empty input, duplicates, invalid structure, path/stream round-trips and a 1,000-row JSONL batch.
+- Installed-wheel CSV, JSON and JSONL round-trip smoke coverage.
+
+### Semantics
+- Format adapters preserve source order and duplicate rows.
+- CSV remains intentionally scalar/tabular and returns textual cell values for later normalization.
+- JSON and JSONL preserve JSON-native nested structures.
+- Structural format errors raise typed `ValidationError` instances and are never silently discarded.
+
+### Scope boundary
+- No deduplication candidate detection/scoring is implemented in this beta.
+- No merge execution is implemented in this beta.
+
+### Changed
+- Package version advanced from `0.9.0a2` to `0.9.0b1`.
+- Development roadmap advances to `0.9.0b2 — Deduplication`.
 ## [0.9.0a2] - 2026-09-27
 
 ### Added
@@ -35,6 +60,7 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 ### Changed
 - Package version advanced from `0.9.0a1` to `0.9.0a2`.
 - Development roadmap advances to `0.9.0b1 — CSV / JSON / JSONL`.
+
 ## [0.9.0a1] - 2026-09-26
 
 ### Added
