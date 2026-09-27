@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "source_candidate": "1.0.0rc1",
+  "source_candidate_commit": "1d49db7ec74110bea36d858c4f40c2a59bd34e27",
+  "target_release": "1.0.0",
+  "status": "promotion-in-progress",
+  "promotion_ready": false,
+  "blocking_failures_allowed": 0,
+  "functional_delta": "none",
+  "migration_head": "0003",
+  "required_candidate_evidence": [
+    "release/qualification-report-v1.0.0rc1.json",
+    "release/release-manifest-v1.0.0rc1.json",
+    "release/SHA256SUMS-v1.0.0rc1.txt"
+  ],
+  "required_stable_evidence": [
+    "release/qualification-report-v1.0.0.json",
+    "release/release-manifest-v1.0.0.json",
+    "release/SHA256SUMS-v1.0.0.txt"
+  ],
+  "policy": {
+    "candidate_must_be_qualified": true,
+    "candidate_blocking_failures_must_equal": 0,
+    "new_features_allowed": false,
+    "new_public_api_allowed": false,
+    "persistence_schema_change_allowed": false,
+    "migration_change_allowed": false,
+    "stable_artifacts_must_be_reproducible": true
+  }
+}
