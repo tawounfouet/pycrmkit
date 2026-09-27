@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "target_release": "1.0.0rc1",
+  "baseline_release": "1.0.0b3",
+  "status": "qualification-in-progress",
+  "promotion_ready": false,
+  "prerequisite_milestones": [
+    {
+      "version": "1.0.0a1",
+      "name": "Public API Freeze Candidate",
+      "workflow": ".github/workflows/public-api-freeze.yml"
+    },
+    {
+      "version": "1.0.0b1",
+      "name": "Security & Privacy Hardening",
+      "workflow": ".github/workflows/security-privacy.yml"
+    },
+    {
+      "version": "1.0.0b2",
+      "name": "Performance Baseline",
+      "workflow": ".github/workflows/performance-baseline.yml"
+    },
+    {
+      "version": "1.0.0b3",
+      "name": "Compatibility Matrix",
+      "workflow": ".github/workflows/compatibility-matrix.yml"
+    }
+  ],
+  "existing_qualification_workflows": [
+    ".github/workflows/compatibility-matrix.yml",
+    ".github/workflows/public-api-freeze.yml",
+    ".github/workflows/security-privacy.yml",
+    ".github/workflows/performance-baseline.yml",
+    ".github/workflows/data-operations-e2e.yml",
+    ".github/workflows/tests.yml",
+    ".github/workflows/lint.yml",
+    ".github/workflows/typing.yml",
+    ".github/workflows/build.yml",
+    ".github/workflows/docs.yml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/postgresql.yml",
+    ".github/workflows/migrations.yml",
+    ".github/workflows/persistence-qualification.yml",
+    ".github/workflows/fastapi-e2e.yml",
+    ".github/workflows/django.yml",
+    ".github/workflows/drf.yml",
+    ".github/workflows/django-e2e.yml"
+  ],
+  "rc_gates": [
+    {
+      "id": "RC-01",
+      "name": "Production qualification contract",
+      "status": "implemented",
+      "evidence": [
+        "tests/qualification/production_scenarios_v1.json",
+        "tests/qualification/production_release_gate_v1.json",
+        "tests/qualification/test_production_scenarios_v1.py",
+        "tests/qualification/test_production_release_gate_v1.py",
+        ".github/workflows/production-qualification-contract.yml"
+      ]
+    },
+    {
+      "id": "RC-02",
+      "name": "Cross-layer E2E qualification",
+      "status": "pending",
+      "planned_evidence": [
+        "tests/e2e/test_v1_production_qualification.py"
+      ]
+    },
+    {
+      "id": "RC-03",
+      "name": "Persistence and migration qualification",
+      "status": "pending",
+      "planned_evidence": [
+        "tests/qualification/test_v1_persistence_migration_qualification.py"
+      ]
+    },
+    {
+      "id": "RC-04",
+      "name": "Integration qualification",
+      "status": "pending",
+      "planned_evidence": [
+        "tests/qualification/test_v1_integration_qualification.py"
+      ]
+    },
+    {
+      "id": "RC-05",
+      "name": "Installed artifact qualification",
+      "status": "pending",
+      "planned_evidence": [
+        "scripts/v1_production_wheel_smoke.py"
+      ]
+    },
+    {
+      "id": "RC-06",
+      "name": "Production release gate",
+      "status": "pending",
+      "planned_evidence": [
+        ".github/workflows/production-qualification.yml"
+      ]
+    },
+    {
+      "id": "RC-07",
+      "name": "Release evidence and artifacts",
+      "status": "pending",
+      "planned_evidence": [
+        "release/qualification-report-v1.0.0rc1.json",
+        "release/release-manifest-v1.0.0rc1.json",
+        "release/SHA256SUMS-v1.0.0rc1.txt"
+      ]
+    }
+  ],
+  "promotion_rule": {
+    "required_gate_status": "qualified",
+    "blocking_failures_allowed": 0,
+    "candidate_version_after_success": "1.0.0rc1",
+    "next_candidate_on_blocking_fix": "1.0.0rc2"
+  }
+}

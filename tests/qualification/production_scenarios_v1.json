@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "target_release": "1.0.0rc1",
+  "baseline_release": "1.0.0b3",
+  "status": "qualification-contract",
+  "qualification_mode": "full-system-no-new-capability",
+  "policy": {
+    "new_features_allowed": false,
+    "architectural_redesign_allowed": false,
+    "candidate_version_bump_requires_all_gates": true,
+    "blocking_failure_requires_new_candidate": true
+  },
+  "required_layers": [
+    "unit",
+    "contract",
+    "adapter",
+    "integration",
+    "e2e",
+    "smoke",
+    "migration",
+    "security",
+    "performance",
+    "compatibility"
+  ],
+  "required_capabilities": [
+    "contacts",
+    "organizations",
+    "relationships",
+    "activities",
+    "timeline",
+    "tasks",
+    "leads",
+    "opportunities",
+    "pipelines",
+    "email",
+    "webhooks",
+    "external_identities",
+    "import",
+    "dedup",
+    "merge",
+    "export",
+    "postgresql",
+    "fastapi",
+    "django",
+    "drf"
+  ],
+  "scenarios": [
+    {
+      "id": "core-relationship-lifecycle",
+      "status": "specified",
+      "capabilities": [
+        "contacts",
+        "organizations",
+        "relationships"
+      ],
+      "baseline_evidence": [
+        "tests/e2e/test_crm_memory_end_to_end.py"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "memory",
+        "sqlalchemy-postgresql",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "activity-timeline-followup",
+      "status": "specified",
+      "capabilities": [
+        "activities",
+        "timeline",
+        "tasks"
+      ],
+      "baseline_evidence": [
+        "tests/e2e/test_activity_timeline_rc_end_to_end.py"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "memory",
+        "sqlalchemy-postgresql",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "sales-lifecycle",
+      "status": "specified",
+      "capabilities": [
+        "leads",
+        "opportunities",
+        "pipelines"
+      ],
+      "baseline_evidence": [
+        "tests/e2e/test_sales_release_candidate.py",
+        "tests/e2e/test_sales_sqlalchemy_end_to_end.py"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "memory",
+        "sqlalchemy-postgresql",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "communication-email-history",
+      "status": "specified",
+      "capabilities": [
+        "email"
+      ],
+      "baseline_evidence": [
+        "tests/e2e/test_communication_history_rc_end_to_end.py"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "memory",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "event-webhook-delivery",
+      "status": "specified",
+      "capabilities": [
+        "webhooks"
+      ],
+      "baseline_evidence": [
+        "tests/e2e/test_webhook_eventing_rc.py",
+        "tests/e2e/test_webhook_delivery_engine.py"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "memory",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "data-operations-roundtrip",
+      "status": "specified",
+      "capabilities": [
+        "external_identities",
+        "import",
+        "dedup",
+        "merge",
+        "export"
+      ],
+      "baseline_evidence": [
+        "tests/e2e/test_data_operations_rc.py",
+        ".github/workflows/data-operations-e2e.yml"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "memory",
+        "sqlalchemy-postgresql",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "fastapi-postgresql-application",
+      "status": "specified",
+      "capabilities": [
+        "fastapi",
+        "postgresql"
+      ],
+      "baseline_evidence": [
+        ".github/workflows/fastapi-e2e.yml"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "sqlalchemy-postgresql",
+        "installed-wheel"
+      ]
+    },
+    {
+      "id": "django-drf-postgresql-application",
+      "status": "specified",
+      "capabilities": [
+        "django",
+        "drf",
+        "postgresql"
+      ],
+      "baseline_evidence": [
+        ".github/workflows/django-e2e.yml",
+        ".github/workflows/django.yml",
+        ".github/workflows/drf.yml"
+      ],
+      "rc_execution_targets": [
+        "source",
+        "django-postgresql",
+        "installed-wheel"
+      ]
+    }
+  ]
+}
