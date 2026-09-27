@@ -103,6 +103,14 @@ from pycrmkit.tasks import (
     TaskUpdate,
 )
 from pycrmkit.timeline import TimelineEntryKind, TimelineProjector
+from pycrmkit.webhooks import (
+    WebhookDeliveryState,
+    WebhookRequest,
+    WebhookResponse,
+    WebhookRetryPolicy,
+    sign_webhook_payload,
+    verify_webhook_signature,
+)
 
 
 def test_zero_to_hero_getting_started_example() -> None:
@@ -2556,3 +2564,253 @@ def test_zero_to_hero_domain_event_post_commit_subscriber_semantics_example() ->
         ).total
         == 1
     )
+
+
+
+class _ZeroToHeroWebhookSequenceTransport:
+    def __init__(self, responses: list[WebhookResponse]) -> None:
+        self.responses = responses
+        self.requests: list[WebhookRequest] = []
+
+    def send(self, request: WebhookRequest) -> WebhookResponse:
+        self.requests.append(request)
+        return self.responses.pop(0)
+
+
+def test_zero_to_hero_webhooks_auto_delivery_retry_signature_and_idempotency() -> None:
+    secret = "0123456789abcdef0123456789abcdef"
+    clock = FixedClock(datetime(2026, 9, 28, 15, 0, tzinfo=UTC))
+    transport = _ZeroToHeroWebhookSequenceTransport(
+        [
+            WebhookResponse(503),
+            WebhookResponse(204),
+        ]
+    )
+    crm = CRM.memory(
+        clock=clock,
+        webhook_transport=transport,
+        webhook_retry_policy=WebhookRetryPolicy(max_attempts=2),
+    )
+    subscription = crm.webhooks.register(
+        url=" HTTPS://Hooks.Example.COM/crm ",
+        events=("contact.created",),
+        signing_secret=secret,
+    )
+    observed: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", observed.append)
+
+    contact = crm.contacts.create(display_name="Webhook Guide")
+
+    assert crm.contacts.get(contact.id) == contact
+    assert subscription.url == "https://hooks.example.com/crm"
+    assert len(observed) == 1
+    event = observed[0]
+
+    history = crm.webhooks.deliveries(event_id=event.id)
+    assert history.total == 1
+    first = history.items[0]
+    assert first.subscription_id == subscription.id
+    assert first.state is WebhookDeliveryState.RETRY_SCHEDULED
+    assert first.attempt_count == 1
+    assert first.last_status_code == 503
+    assert len(transport.requests) == 1
+
+    first_request = transport.requests[0]
+    timestamp = int(first_request.headers["X-PyCRMKit-Timestamp"])
+    assert verify_webhook_signature(
+        secret,
+        timestamp,
+        first_request.body,
+        first_request.headers["X-PyCRMKit-Signature"],
+    )
+
+    assert crm.webhooks.retry_due() == ()
+    clock.advance(timedelta(seconds=10))
+    retried = crm.webhooks.retry_due()
+
+    assert len(retried) == 1
+    final = retried[0]
+    assert final.id == first.id
+    assert final.state is WebhookDeliveryState.SUCCEEDED
+    assert final.attempt_count == 2
+    assert len(transport.requests) == 2
+    assert (
+        transport.requests[0].headers["X-PyCRMKit-Idempotency-Key"]
+        == transport.requests[1].headers["X-PyCRMKit-Idempotency-Key"]
+    )
+
+    attempts = crm.webhooks.attempts(final.id)
+    assert [attempt.status_code for attempt in attempts.items] == [503, 204]
+    assert [attempt.outcome.value for attempt in attempts.items] == [
+        "retry_scheduled",
+        "succeeded",
+    ]
+
+    replay = crm.webhooks.deliver(event)
+    assert replay[0].id == final.id
+    assert len(transport.requests) == 2
+
+
+def test_zero_to_hero_webhooks_manual_delivery_when_auto_bridge_is_disabled() -> None:
+    transport = _ZeroToHeroWebhookSequenceTransport([WebhookResponse(202)])
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 16, 0, tzinfo=UTC)),
+        webhook_transport=transport,
+        webhook_auto_delivery=False,
+    )
+    crm.webhooks.register(
+        url="https://hooks.example.com/manual",
+        events=("contact.created",),
+        signing_secret="0123456789abcdef0123456789abcdef",
+    )
+    observed: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", observed.append)
+
+    crm.contacts.create(display_name="Manual Webhook")
+
+    assert len(observed) == 1
+    assert crm.webhooks.deliveries().total == 0
+    assert transport.requests == []
+
+    delivered = crm.webhooks.deliver(observed[0])
+
+    assert len(delivered) == 1
+    assert delivered[0].state is WebhookDeliveryState.SUCCEEDED
+    assert len(transport.requests) == 1
+
+
+def test_zero_to_hero_webhooks_non_retryable_response_dead_letters() -> None:
+    transport = _ZeroToHeroWebhookSequenceTransport([WebhookResponse(400)])
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 17, 0, tzinfo=UTC)),
+        webhook_transport=transport,
+    )
+    crm.webhooks.register(
+        url="https://hooks.example.com/dead-letter",
+        events=("contact.created",),
+        signing_secret="0123456789abcdef0123456789abcdef",
+    )
+    observed: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", observed.append)
+
+    crm.contacts.create(display_name="Dead Letter")
+
+    delivery = crm.webhooks.deliveries(event_id=observed[0].id).items[0]
+    assert delivery.state is WebhookDeliveryState.DEAD_LETTER
+    assert delivery.attempt_count == 1
+    assert delivery.last_status_code == 400
+    assert delivery.last_error_code == "webhook.http.400"
+    assert delivery.next_attempt_at is None
+    assert len(transport.requests) == 1
+
+    replay = crm.webhooks.deliver(observed[0])
+    assert replay[0].id == delivery.id
+    assert len(transport.requests) == 1
+
+
+def test_zero_to_hero_webhooks_disabled_subscription_dead_letters_due_retry() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 18, 0, tzinfo=UTC))
+    transport = _ZeroToHeroWebhookSequenceTransport([WebhookResponse(503)])
+    crm = CRM.memory(
+        clock=clock,
+        webhook_transport=transport,
+        webhook_retry_policy=WebhookRetryPolicy(max_attempts=3),
+    )
+    subscription = crm.webhooks.register(
+        url="https://hooks.example.com/disable-before-retry",
+        events=("contact.created",),
+        signing_secret="0123456789abcdef0123456789abcdef",
+    )
+    observed: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", observed.append)
+
+    crm.contacts.create(display_name="Disable Before Retry")
+
+    scheduled = crm.webhooks.deliveries(event_id=observed[0].id).items[0]
+    assert scheduled.state is WebhookDeliveryState.RETRY_SCHEDULED
+    assert len(transport.requests) == 1
+
+    crm.webhooks.disable(subscription.id)
+    clock.advance(timedelta(seconds=10))
+    retried = crm.webhooks.retry_due()
+
+    assert len(retried) == 1
+    final = retried[0]
+    assert final.id == scheduled.id
+    assert final.state is WebhookDeliveryState.DEAD_LETTER
+    assert final.last_error_code == "webhook.subscription_disabled"
+    assert len(transport.requests) == 1
+
+    attempts = crm.webhooks.attempts(final.id)
+    assert [attempt.outcome.value for attempt in attempts.items] == [
+        "retry_scheduled",
+        "dead_letter",
+    ]
+
+
+def test_zero_to_hero_webhooks_secret_rotation_and_freshness_example() -> None:
+    old_secret = "0123456789abcdef0123456789abcdef"
+    new_secret = "fedcba9876543210fedcba9876543210"
+    now = datetime(2026, 9, 28, 19, 0, tzinfo=UTC)
+    crm = CRM.memory(
+        clock=FixedClock(now),
+        webhook_auto_delivery=False,
+    ).with_context(
+        actor_id="security-admin",
+        correlation_id="webhook-rotation-guide",
+    )
+    subscription = crm.webhooks.register(
+        url="https://hooks.example.com/security",
+        events=("contact.created",),
+        signing_secret=old_secret,
+    )
+
+    rotated = crm.webhooks.rotate_secret(
+        subscription.id,
+        signing_secret=new_secret,
+    )
+
+    assert rotated.signing_secret == new_secret
+
+    payload = b'{"type":"contact.created"}'
+    timestamp = int(now.timestamp())
+    old_signature = sign_webhook_payload(
+        old_secret,
+        timestamp,
+        payload,
+    )
+    new_signature = sign_webhook_payload(
+        new_secret,
+        timestamp,
+        payload,
+    )
+
+    assert not verify_webhook_signature(
+        rotated.signing_secret,
+        timestamp,
+        payload,
+        old_signature,
+    )
+    assert verify_webhook_signature(
+        rotated.signing_secret,
+        timestamp,
+        payload,
+        new_signature,
+        current_timestamp=timestamp + 300,
+        tolerance_seconds=300,
+    )
+    assert not verify_webhook_signature(
+        rotated.signing_secret,
+        timestamp,
+        payload,
+        new_signature,
+        current_timestamp=timestamp + 301,
+        tolerance_seconds=300,
+    )
+
+    audit = crm.audit.by_correlation("webhook-rotation-guide")
+    actions = [entry.action for entry in audit.items]
+    assert actions.count("webhook.subscription.secret_rotated") == 1
+    audit_text = repr(tuple(entry.changes for entry in audit.items))
+    assert old_secret not in audit_text
+    assert new_secret not in audit_text
