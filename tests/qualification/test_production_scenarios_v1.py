@@ -191,3 +191,32 @@ def test_rc04_integration_qualification_is_explicit_and_scope_aware() -> None:
         path for path in rc04["evidence"] if not (ROOT / path).is_file()
     )
     assert missing == []
+
+
+def test_rc05_installed_artifact_qualification_is_isolated() -> None:
+    rc05 = MANIFEST["rc05_installed_artifact_qualification"]
+
+    assert rc05["status"] == "implemented"
+    assert set(rc05["artifacts"]) == {"wheel", "sdist"}
+    assert rc05["isolation"] == {
+        "checkout_imports_allowed": False,
+        "pythonpath": "",
+        "execution_directory": "outside-repository",
+    }
+    assert set(rc05["guarantees"]) == {
+        "wheel-and-sdist-build",
+        "twine-metadata-validation",
+        "wheel-content-contract",
+        "sdist-content-contract",
+        "core-wheel-no-optional-dependency-leakage",
+        "full-extra-wheel-installability",
+        "public-v1-smoke-from-installed-wheel",
+        "console-script-installation",
+        "sdist-independent-installability",
+        "installed-package-provenance-outside-checkout",
+    }
+
+    missing = sorted(
+        path for path in rc05["evidence"] if not (ROOT / path).is_file()
+    )
+    assert missing == []
