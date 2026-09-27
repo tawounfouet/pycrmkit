@@ -6,6 +6,23 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-27
+
+### Production Stable
+- Promoted the fully qualified `1.0.0rc1` V1 contract to stable without adding functional scope.
+- Preserved the frozen V1 public API, security/privacy guarantees, performance guardrails and compatibility matrix.
+- Preserved PostgreSQL transaction/rollback semantics, migration head `0003`, FastAPI and Django/DRF integration boundaries, and installed-distribution behavior.
+- Stable artifacts are rebuilt deterministically from the qualified RC lineage and verified from clean wheel/sdist installations.
+
+### Functional delta from 1.0.0rc1
+- None.
+- No new aggregate, facade method, event schema, dependency family, persistence table or migration.
+- Stable promotion changes release metadata and evidence only.
+
+### Changed
+- Package version advanced from `1.0.0rc1` to `1.0.0`.
+- PyCRMKit V1 becomes the current Production Stable line.
+
 ## [1.0.0rc1] - 2026-09-27
 
 ### Full production qualification
