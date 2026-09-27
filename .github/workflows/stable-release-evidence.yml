@@ -54,6 +54,13 @@ jobs:
           sha256sum             dist/pycrmkit-1.0.0-py3-none-any.whl             dist/pycrmkit-1.0.0.tar.gz             | sed 's#  dist/#  #'             | tee /tmp/SHA256SUMS-v1.0.0-second.txt
           diff -u /tmp/SHA256SUMS-v1.0.0-first.txt /tmp/SHA256SUMS-v1.0.0-second.txt
           cp /tmp/SHA256SUMS-v1.0.0-second.txt /tmp/SHA256SUMS-v1.0.0.txt
+      - name: Verify frozen stable checksums
+        run: |
+          diff -u release/SHA256SUMS-v1.0.0.txt /tmp/SHA256SUMS-v1.0.0.txt
+          (
+            cd dist
+            sha256sum -c ../release/SHA256SUMS-v1.0.0.txt
+          )
       - name: Stable promotion contract
         run: |
           python -m pip install -e ".[dev]"
