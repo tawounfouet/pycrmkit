@@ -16,7 +16,18 @@ from pycrmkit.contacts import (
 )
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
-from pycrmkit.exceptions import ConflictError, InvalidStateError, ValidationError
+from pycrmkit.custom_fields import (
+    CustomFieldDefinitionQuery,
+    CustomFieldDefinitionRevision,
+    CustomFieldOption,
+    CustomFieldType,
+)
+from pycrmkit.exceptions import (
+    ConflictError,
+    DuplicateError,
+    InvalidStateError,
+    ValidationError,
+)
 from pycrmkit.organizations import (
     OrganizationAddress,
     OrganizationDomain,
@@ -31,6 +42,7 @@ from pycrmkit.relationships import (
     RelationshipType,
     RelationshipUpdate,
 )
+from pycrmkit.tags import TagName, TagQuery
 
 
 def test_zero_to_hero_getting_started_example() -> None:
@@ -512,3 +524,235 @@ def test_zero_to_hero_relationships_invariant_examples() -> None:
             valid_until=start,
         )
     assert invalid_interval.value.code == "relationship.validity.invalid_interval"
+
+
+
+def test_zero_to_hero_tags_mastery_example() -> None:
+    crm = CRM.memory()
+
+    contact = crm.contacts.create(
+        display_name="Ada Lovelace",
+    )
+    contact_ref = EntityReference(
+        kind="contact",
+        id=contact.id,
+    )
+
+    vip = crm.tags.create(
+        "  VIP   Client ",
+        metadata={"segment": "strategic"},
+    )
+    assert vip.name.value == "VIP Client"
+    assert vip.name.normalized == "vip client"
+
+    assignment = crm.tags.assign(
+        vip.id,
+        contact_ref,
+    )
+    assert assignment.tag_id == vip.id
+    assert assignment.entity == contact_ref
+
+    assigned = crm.tags.list_for_entity(
+        contact_ref,
+        OffsetPageRequest(limit=10),
+    )
+    assert assigned.items == (vip,)
+    assert assigned.total == 1
+
+    found = crm.tags.search(
+        TagQuery(
+            name=TagName(" vip client "),
+        )
+    )
+    assert found.items == (vip,)
+
+    with pytest.raises(DuplicateError) as duplicate_assignment:
+        crm.tags.assign(
+            vip.id,
+            contact_ref,
+        )
+    assert duplicate_assignment.value.code == "tag.assignment.duplicate"
+
+    assert crm.tags.remove(vip.id, contact_ref) is True
+    assert crm.tags.remove(vip.id, contact_ref) is False
+    assert crm.tags.list_for_entity(contact_ref).items == ()
+
+
+def test_zero_to_hero_tags_invariant_examples() -> None:
+    crm = CRM.memory()
+
+    with pytest.raises(ValidationError) as blank_name:
+        crm.tags.create("   ")
+    assert blank_name.value.code == "tag.name.required"
+
+    crm.tags.create("Priority")
+    with pytest.raises(DuplicateError) as duplicate_name:
+        crm.tags.create(" priority ")
+    assert duplicate_name.value.code == "tag.duplicate"
+
+
+def test_zero_to_hero_custom_fields_mastery_example() -> None:
+    crm = CRM.memory()
+
+    contact = crm.contacts.create(
+        display_name="Ada Lovelace",
+    )
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+    contact_ref = EntityReference(
+        kind="contact",
+        id=contact.id,
+    )
+    organization_ref = EntityReference(
+        kind="organization",
+        id=organization.id,
+    )
+
+    tier = crm.custom_fields.define(
+        key="Customer Tier",
+        label="Customer Tier",
+        field_type=CustomFieldType.ENUM,
+        applies_to=("contact", "organization"),
+        options=(
+            CustomFieldOption("gold", "Gold"),
+            CustomFieldOption("silver", "Silver"),
+        ),
+    )
+
+    assert tier.key == "customer_tier"
+    assert tier.schema_version == 1
+
+    first_value = crm.custom_fields.set_value(
+        tier.id,
+        contact_ref,
+        "GOLD",
+    )
+    assert first_value.value == "gold"
+    assert first_value.schema_version == 1
+
+    tier_v2 = crm.custom_fields.revise(
+        tier.id,
+        CustomFieldDefinitionRevision(
+            label="CRM Customer Tier",
+            options=(
+                CustomFieldOption("gold", "Gold"),
+                CustomFieldOption("silver", "Silver"),
+                CustomFieldOption("bronze", "Bronze"),
+            ),
+        ),
+    )
+
+    assert tier_v2.id == tier.id
+    assert tier_v2.schema_version == 2
+    assert crm.custom_fields.get_definition(tier.id, version=1).schema_version == 1
+    assert crm.custom_fields.get_definition(tier.id).schema_version == 2
+
+    second_value = crm.custom_fields.set_value(
+        tier.id,
+        contact_ref,
+        "bronze",
+    )
+    assert second_value.id == first_value.id
+    assert second_value.value == "bronze"
+    assert second_value.schema_version == 2
+
+    definitions = crm.custom_fields.search_definitions(
+        CustomFieldDefinitionQuery(
+            key="customer-tier",
+        ),
+        OffsetPageRequest(limit=10),
+    )
+    assert definitions.items == (tier_v2,)
+
+    assert crm.custom_fields.list_values(
+        contact_ref,
+    ).items == (second_value,)
+
+    manager = crm.custom_fields.define(
+        key="account_manager",
+        label="Account Manager",
+        field_type=CustomFieldType.REFERENCE,
+        applies_to=("organization",),
+        reference_kinds=("contact",),
+    )
+    manager_value = crm.custom_fields.set_value(
+        manager.id,
+        organization_ref,
+        contact_ref,
+    )
+    assert manager_value.value == contact_ref
+
+
+def test_zero_to_hero_custom_fields_invariant_examples() -> None:
+    crm = CRM.memory()
+
+    contact = crm.contacts.create(
+        display_name="Ada Lovelace",
+    )
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+    contact_ref = EntityReference(
+        kind="contact",
+        id=contact.id,
+    )
+    organization_ref = EntityReference(
+        kind="organization",
+        id=organization.id,
+    )
+
+    contact_only = crm.custom_fields.define(
+        key="preferred_name",
+        label="Preferred Name",
+        field_type=CustomFieldType.STRING,
+        applies_to=("contact",),
+    )
+
+    with pytest.raises(ValidationError) as wrong_entity:
+        crm.custom_fields.set_value(
+            contact_only.id,
+            organization_ref,
+            "Example",
+        )
+    assert wrong_entity.value.code == "custom_field.entity_kind.not_allowed"
+
+    required_score = crm.custom_fields.define(
+        key="account_score",
+        label="Account Score",
+        field_type=CustomFieldType.INTEGER,
+        applies_to=("contact",),
+        required=True,
+    )
+    with pytest.raises(ValidationError) as required_value:
+        crm.custom_fields.set_value(
+            required_score.id,
+            contact_ref,
+            None,
+        )
+    assert required_value.value.code == "custom_field.value.required"
+
+    inactive = crm.custom_fields.revise(
+        contact_only.id,
+        CustomFieldDefinitionRevision(
+            active=False,
+        ),
+    )
+    assert inactive.active is False
+
+    with pytest.raises(InvalidStateError) as inactive_definition:
+        crm.custom_fields.set_value(
+            inactive.id,
+            contact_ref,
+            "Ada",
+        )
+    assert inactive_definition.value.code == "custom_field.inactive"
+
+    with pytest.raises(ValidationError) as enum_without_options:
+        crm.custom_fields.define(
+            key="risk_level",
+            label="Risk Level",
+            field_type=CustomFieldType.ENUM,
+            applies_to=("contact",),
+        )
+    assert enum_without_options.value.code == "custom_field.option.required"
