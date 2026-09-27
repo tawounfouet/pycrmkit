@@ -15,6 +15,16 @@ from pycrmkit.activities import (
     ActivityType,
     ActivityUpdate,
 )
+from pycrmkit.communication import (
+    CommunicationAddress,
+    CommunicationChannel,
+    CommunicationContent,
+    CommunicationRecipient,
+    EmailDeliveryEventType,
+    EmailDeliveryStatus,
+    EmailMessage,
+    EmailProviderResult,
+)
 from pycrmkit.contacts import (
     Address,
     ContactEmail,
@@ -38,6 +48,7 @@ from pycrmkit.events import DomainEvent
 from pycrmkit.exceptions import (
     ConflictError,
     DuplicateError,
+    IntegrationError,
     InvalidStateError,
     ValidationError,
 )
@@ -2068,3 +2079,285 @@ def test_zero_to_hero_lead_conversion_post_commit_retry_example() -> None:
     assert persisted_lead.converted_opportunity_id == opportunity.id
     assert opportunities.total == 1
     assert opportunities.items[0].id == opportunity.id
+
+
+
+class _ZeroToHeroAcceptingEmailProvider:
+    def __init__(self) -> None:
+        self.messages: list[EmailMessage] = []
+
+    def send(self, message: EmailMessage) -> EmailProviderResult:
+        self.messages.append(message)
+        return EmailProviderResult(
+            provider="guide-fake",
+            status=EmailDeliveryStatus.ACCEPTED,
+            provider_message_id="guide-provider-001",
+            provider_metadata={"request_id": "guide-request-001"},
+        )
+
+
+class _ZeroToHeroFailingEmailProvider:
+    def send(self, message: EmailMessage) -> EmailProviderResult:
+        del message
+        return EmailProviderResult(
+            provider="guide-fake",
+            status=EmailDeliveryStatus.FAILED,
+            failure_code="guide.rejected",
+        )
+
+
+def test_zero_to_hero_email_direct_send_history_and_idempotency_example() -> None:
+    provider = _ZeroToHeroAcceptingEmailProvider()
+    clock = FixedClock(datetime(2026, 9, 28, 8, 0, tzinfo=UTC))
+    crm = CRM.memory(
+        clock=clock,
+        email_provider=provider,
+        email_sender=CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "sales@example.com",
+        ),
+    ).with_context(
+        actor_id="seller-42",
+        correlation_id="email-guide-001",
+    )
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    reference = EntityReference("contact", contact.id)
+    recipient = CommunicationRecipient(
+        CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "Ada@Example.COM",
+        ),
+        display_name="  Ada   Lovelace ",
+        reference=reference,
+    )
+    content = CommunicationContent(
+        subject="  Enterprise   proposal ",
+        text_body="Your proposal is ready.",
+    )
+
+    first = crm.email.send(
+        to=(recipient,),
+        content=content,
+        idempotency_key="proposal-001",
+    )
+    retry = crm.email.send(
+        to=(recipient,),
+        content=content,
+        idempotency_key="proposal-001",
+    )
+
+    assert retry.id == first.id
+    assert len(provider.messages) == 1
+    assert provider.messages[0].sender.normalized == "sales@example.com"
+    assert provider.messages[0].recipients[0].address.normalized == "ada@example.com"
+    assert first.subject == "Enterprise proposal"
+    assert first.delivery_status is EmailDeliveryEventType.SENT
+    assert first.external_id == "guide-provider-001"
+    assert crm.email.get(first.id) == first
+    assert crm.email.for_contact(contact.id).items == (first,)
+
+    history = crm.email.delivery_history(first.id)
+    assert history.total == 2
+    assert {item.event_type for item in history.items} == {
+        EmailDeliveryEventType.QUEUED,
+        EmailDeliveryEventType.SENT,
+    }
+
+
+def test_zero_to_hero_email_callbacks_replay_timeline_and_out_of_order_example() -> None:
+    provider = _ZeroToHeroAcceptingEmailProvider()
+    clock = FixedClock(datetime(2026, 9, 28, 9, 0, tzinfo=UTC))
+    crm = CRM.memory(
+        clock=clock,
+        email_provider=provider,
+        email_sender=CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "sales@example.com",
+        ),
+    )
+    contact = crm.contacts.create(display_name="Grace Hopper")
+    reference = EntityReference("contact", contact.id)
+
+    published: list[DomainEvent] = []
+    for event_name in (
+        "email.queued",
+        "email.sent",
+        "email.delivered",
+        "email.opened",
+    ):
+        crm.events.subscribe(event_name, published.append)
+
+    record = crm.email.send(
+        to=(
+            CommunicationRecipient(
+                CommunicationAddress(
+                    CommunicationChannel.EMAIL,
+                    "grace@example.com",
+                ),
+                reference=reference,
+            ),
+        ),
+        content=CommunicationContent(
+            subject="Follow-up",
+            text_body="Hello Grace.",
+        ),
+    )
+
+    clock.advance(timedelta(minutes=4))
+    opened = crm.email.record_delivery_event(
+        provider="guide-fake",
+        provider_message_id="guide-provider-001",
+        event_type=EmailDeliveryEventType.OPENED,
+        occurred_at=clock.now(),
+        external_event_id="evt-opened-001",
+    )
+
+    clock.advance(timedelta(minutes=1))
+    late_delivered = crm.email.record_delivery_event(
+        provider="guide-fake",
+        provider_message_id="guide-provider-001",
+        event_type=EmailDeliveryEventType.DELIVERED,
+        occurred_at=datetime(2026, 9, 28, 9, 3, tzinfo=UTC),
+        external_event_id="evt-delivered-late",
+    )
+
+    before_replay = crm.email.delivery_history(record.id).total
+    replay = crm.email.record_delivery_event(
+        provider="guide-fake",
+        provider_message_id="guide-provider-001",
+        event_type=EmailDeliveryEventType.OPENED,
+        occurred_at=datetime(2026, 9, 28, 9, 4, tzinfo=UTC),
+        external_event_id="evt-opened-001",
+    )
+    after_replay = crm.email.delivery_history(record.id).total
+
+    assert replay.id == opened.id
+    assert late_delivered.event_type is EmailDeliveryEventType.DELIVERED
+    assert after_replay == before_replay
+
+    current = crm.email.get(record.id)
+    assert current.delivery_status is EmailDeliveryEventType.OPENED
+    assert current.last_delivery_event_at == datetime(
+        2026,
+        9,
+        28,
+        9,
+        4,
+        tzinfo=UTC,
+    )
+
+    history_types = {
+        item.event_type
+        for item in crm.email.delivery_history(record.id).items
+    }
+    assert {
+        EmailDeliveryEventType.QUEUED,
+        EmailDeliveryEventType.SENT,
+        EmailDeliveryEventType.OPENED,
+        EmailDeliveryEventType.DELIVERED,
+    } <= history_types
+
+    timeline = crm.timeline.for_contact(
+        contact.id,
+        kind=TimelineEntryKind.COMMUNICATION,
+    )
+    timeline_types = {
+        str(item.event_type)
+        for item in timeline.items
+    }
+    assert {
+        "email.queued",
+        "email.sent",
+        "email.opened",
+        "email.delivered",
+    } <= timeline_types
+
+    event_types = [str(event.type) for event in published]
+    assert event_types.count("email.opened") == 1
+    assert all("grace@example.com" not in repr(event.payload) for event in published)
+
+
+def test_zero_to_hero_email_provider_failure_is_normalized_example() -> None:
+    crm = CRM.memory(
+        clock=FixedClock(datetime(2026, 9, 28, 10, 0, tzinfo=UTC)),
+        email_provider=_ZeroToHeroFailingEmailProvider(),
+        email_sender=CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "sales@example.com",
+        ),
+    )
+    contact = crm.contacts.create(display_name="Failure Contact")
+    reference = EntityReference("contact", contact.id)
+
+    record = crm.email.send(
+        to=(
+            CommunicationRecipient(
+                CommunicationAddress(
+                    CommunicationChannel.EMAIL,
+                    "failure@example.com",
+                ),
+                reference=reference,
+            ),
+        ),
+        content=CommunicationContent(
+            subject="Failure path",
+            text_body="Body",
+        ),
+    )
+
+    assert record.delivery_status is EmailDeliveryEventType.FAILED
+    assert record.external_id is None
+
+    history = crm.email.delivery_history(record.id)
+    failed = next(
+        item
+        for item in history.items
+        if item.event_type is EmailDeliveryEventType.FAILED
+    )
+    assert failed.failure_code == "guide.rejected"
+
+
+def test_zero_to_hero_email_configuration_and_content_validation_examples() -> None:
+    recipient = CommunicationRecipient(
+        CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "ada@example.com",
+        ),
+    )
+    content = CommunicationContent(text_body="Hello.")
+
+    without_provider = CRM.memory(
+        email_sender=CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "sales@example.com",
+        ),
+    )
+    with pytest.raises(IntegrationError) as missing_provider:
+        without_provider.email.send(
+            to=(recipient,),
+            content=content,
+        )
+    assert missing_provider.value.code == "communication.email.provider.required"
+
+    provider = _ZeroToHeroAcceptingEmailProvider()
+    without_sender = CRM.memory(email_provider=provider)
+    with pytest.raises(ValidationError) as missing_sender:
+        without_sender.email.send(
+            to=(recipient,),
+            content=content,
+        )
+    assert missing_sender.value.code == "communication.email.sender.required"
+
+    configured = CRM.memory(
+        email_provider=provider,
+        email_sender=CommunicationAddress(
+            CommunicationChannel.EMAIL,
+            "sales@example.com",
+        ),
+    )
+    with pytest.raises(ValidationError) as invalid_choice:
+        configured.email.send(
+            to=(recipient,),
+        )
+    assert invalid_choice.value.code == "communication.email.content.choice_invalid"
