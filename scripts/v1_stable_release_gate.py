@@ -23,7 +23,9 @@ RC_MANIFEST = json.loads(
 
 
 def assert_stable_release_gate() -> dict[str, object]:
-    if pycrmkit.__version__ != STABLE_GATE["target_release"] != "1.0.0":
+    if STABLE_GATE["target_release"] != "1.0.0":
+        raise SystemExit("Stable gate target must remain 1.0.0")
+    if pycrmkit.__version__ != "1.0.0":
         raise SystemExit("Stable gate must execute the 1.0.0 package version")
 
     if STABLE_GATE["source_candidate"] != "1.0.0rc1":
