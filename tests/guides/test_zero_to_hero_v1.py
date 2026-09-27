@@ -1,6 +1,8 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
 import json
+import subprocess
+import sys
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
@@ -4758,3 +4760,106 @@ def test_zero_to_hero_fastapi_command_oriented_surface_example() -> None:
 
     assert "/crm/leads/{lead_id}" not in paths
     assert "/crm/opportunities/{opportunity_id}" not in paths
+
+
+def test_zero_to_hero_django_adapter_boundary_example() -> None:
+    script = r"""
+from datetime import UTC, datetime
+from uuid import UUID
+
+from django.conf import settings
+
+settings.configure(
+    SECRET_KEY="zero-to-hero-django",
+    INSTALLED_APPS=[
+        "pycrmkit.integrations.django.apps.PyCRMKitDjangoConfig",
+    ],
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+    USE_TZ=True,
+    TIME_ZONE="UTC",
+    DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
+)
+
+import django
+
+django.setup()
+
+from django.apps import apps
+from django.core.management import call_command
+from django.db import models
+from django.db.migrations.recorder import MigrationRecorder
+
+from pycrmkit.contacts import Contact, ContactId
+from pycrmkit.integrations.django.models import ContactModel, ExternalIdentityModel
+from pycrmkit.integrations.django.repositories import (
+    DjangoContactRepository,
+    DjangoExternalIdentityRepository,
+)
+from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+
+call_command(
+    "migrate",
+    "pycrmkit_crm",
+    verbosity=0,
+    interactive=False,
+)
+
+config = apps.get_app_config("pycrmkit_crm")
+assert config.name == "pycrmkit.integrations.django"
+assert config.label == "pycrmkit_crm"
+
+assert issubclass(ContactModel, models.Model)
+assert ContactModel._meta.db_table == "pycrmkit_contacts"
+assert ExternalIdentityModel._meta.db_table == "pycrmkit_external_identities"
+
+now = datetime(2026, 9, 28, 21, 0, tzinfo=UTC)
+contact = Contact(
+    id=ContactId(UUID("00000000-0000-4000-8000-00000000d701")),
+    created_at=now,
+    updated_at=now,
+    first_name="Django",
+    last_name="Guide",
+)
+
+assert not isinstance(contact, models.Model)
+
+with DjangoTransactionBridge() as bridge:
+    assert isinstance(bridge.external_identities, DjangoExternalIdentityRepository)
+    bridge.contacts.save(contact)
+    bridge.commit()
+
+reloaded = DjangoContactRepository().get(contact.id)
+assert reloaded == contact
+assert isinstance(reloaded, Contact)
+assert not isinstance(reloaded, ContactModel)
+
+discarded = Contact(
+    id=ContactId(UUID("00000000-0000-4000-8000-00000000d702")),
+    created_at=now,
+    updated_at=now,
+    display_name="Rollback me",
+)
+
+with DjangoTransactionBridge() as bridge:
+    bridge.contacts.save(discarded)
+
+assert DjangoContactRepository().find(discarded.id) is None
+
+applied = MigrationRecorder.Migration.objects.filter(
+    app="pycrmkit_crm"
+).values_list("name", flat=True)
+assert set(applied) >= {"0001_initial", "0002_external_identity"}
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr

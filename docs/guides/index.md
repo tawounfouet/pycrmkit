@@ -60,6 +60,7 @@ example application.
 25. [PostgreSQL](24_postgresql.md) — qualify production-reference persistence with database constraints, concurrency-safe uniqueness, ownership foreign keys, exact numeric round trips and backend-neutral SQLSTATE translation.
 26. [Migrations](25_migrations.md) — evolve PostgreSQL safely through immutable Alembic revisions, drift checks, historical upgrades, controlled downgrade policy and installed-wheel migration qualification.
 27. [FastAPI](26_fastapi.md) — expose the CRM facade through Pydantic transport schemas, request-scoped context, command-oriented routers, stable HTTP errors, OpenAPI contracts and PostgreSQL-backed API qualification.
+28. [Django](27_django.md) — integrate Django ORM persistence, adapter-specific migrations, explicit transactions, ambient savepoints, admin operations and PostgreSQL qualification without making ORM models the domain.
 
 ## LEVEL 1 complete
 
@@ -83,7 +84,7 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 
 ## LEVEL 6 in progress
 
-Memory Adapter establishes reference semantics, SQLAlchemy and PostgreSQL provide durable relational persistence, Alembic governs versioned schema evolution, and FastAPI now exposes the stable CRM facade through a framework-isolated HTTP adapter. Django is next.
+Memory Adapter establishes reference semantics, SQLAlchemy/PostgreSQL and Alembic provide the primary relational path, FastAPI exposes the facade over HTTP, and Django now provides a separate ORM/migration/transaction/admin adapter while preserving the same domain boundary. Django REST Framework is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -119,7 +120,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 24 | PostgreSQL | Published |
 | 6 | 25 | Migrations | Published |
 | 6 | 26 | FastAPI | Published |
-| 6 | 27 | Django | Planned |
+| 6 | 27 | Django | Published |
 | 6 | 28 | Django REST Framework | Planned |
 | 6 | 29 | Transactions & Unit of Work | Planned |
 | 6 | 30 | Context, Events & Audit | Planned |

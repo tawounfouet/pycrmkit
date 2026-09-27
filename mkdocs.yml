@@ -38,6 +38,7 @@ nav:
       - 24 PostgreSQL: guides/24_postgresql.md
       - 25 Migrations: guides/25_migrations.md
       - 26 FastAPI: guides/26_fastapi.md
+      - 27 Django: guides/27_django.md
   - Facade:
       - CRM: facade/index.md
   - Core:
