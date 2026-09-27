@@ -1,0 +1,135 @@
+name: Production Installed Artifact Qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  installed-artifacts:
+    name: Wheel + sdist isolated qualification
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install packaging toolchain
+        run: python -m pip install --upgrade pip "build>=1.2" "twine>=6"
+
+      - name: Build wheel and sdist from clean checkout
+        run: |
+          rm -rf dist build
+          python -m build
+
+      - name: Validate distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Inspect wheel and sdist contents
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import tarfile
+          import zipfile
+
+          dist = Path("dist")
+          artifacts = sorted(path.name for path in dist.iterdir())
+          assert artifacts == [
+              "pycrmkit-1.0.0b3-py3-none-any.whl",
+              "pycrmkit-1.0.0b3.tar.gz",
+          ], artifacts
+
+          wheel = dist / "pycrmkit-1.0.0b3-py3-none-any.whl"
+          with zipfile.ZipFile(wheel) as archive:
+              names = set(archive.namelist())
+
+          required_wheel = {
+              "pycrmkit/py.typed",
+              "pycrmkit/storage/sqlalchemy/migrations/script.py.mako",
+              "pycrmkit/storage/sqlalchemy/migrations/README.md",
+              "pycrmkit/storage/sqlalchemy/migrations/versions/0001_persistence_baseline.py",
+              "pycrmkit/storage/sqlalchemy/migrations/versions/0002_align_repository_reference_semantics.py",
+              "pycrmkit/storage/sqlalchemy/migrations/versions/0003_external_identities.py",
+              "pycrmkit-1.0.0b3.dist-info/METADATA",
+              "pycrmkit-1.0.0b3.dist-info/entry_points.txt",
+          }
+          missing = sorted(required_wheel - names)
+          assert not missing, missing
+          assert not any(
+              name.startswith(("tests/", "examples/", ".github/", "scripts/"))
+              for name in names
+          )
+
+          sdist = dist / "pycrmkit-1.0.0b3.tar.gz"
+          with tarfile.open(sdist, "r:gz") as archive:
+              names = set(archive.getnames())
+
+          prefix = "pycrmkit-1.0.0b3/"
+          required_sdist = {
+              prefix + "pyproject.toml",
+              prefix + "README.md",
+              prefix + "LICENSE",
+              prefix + "src/pycrmkit/__about__.py",
+              prefix + "src/pycrmkit/py.typed",
+              prefix + "src/pycrmkit/storage/sqlalchemy/migrations/versions/0003_external_identities.py",
+          }
+          missing = sorted(required_sdist - names)
+          assert not missing, missing
+          print("PyCRMKit V1 wheel/sdist content contract: PASS")
+          PY
+
+      - name: Stage isolated smoke script outside repository
+        run: cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
+
+      - name: Core-only wheel remains dependency-free
+        shell: bash
+        run: |
+          python -m venv /tmp/pycrmkit-v1-core-wheel
+          /tmp/pycrmkit-v1-core-wheel/bin/python -m pip install --upgrade pip
+          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0b3-py3-none-any.whl"
+          /tmp/pycrmkit-v1-core-wheel/bin/python -m pip install --no-deps "$wheel"
+          (
+            cd /tmp
+            PYTHONPATH=""             PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE"             PYCRMKIT_EXPECT_CORE_ONLY=1             /tmp/pycrmkit-v1-core-wheel/bin/python /tmp/v1_production_wheel_smoke.py
+          )
+          /tmp/pycrmkit-v1-core-wheel/bin/python -m pip check
+
+      - name: Full-extra wheel installs and imports all supported integrations
+        shell: bash
+        run: |
+          python -m venv /tmp/pycrmkit-v1-full-wheel
+          /tmp/pycrmkit-v1-full-wheel/bin/python -m pip install --upgrade pip
+          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0b3-py3-none-any.whl"
+          /tmp/pycrmkit-v1-full-wheel/bin/python -m pip install             "$wheel[sqlalchemy,postgresql,migrations,fastapi,django,drf,email,resend]"
+          (
+            cd /tmp
+            PYTHONPATH=""             PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE"             PYCRMKIT_REQUIRE_OPTIONALS=1             /tmp/pycrmkit-v1-full-wheel/bin/python /tmp/v1_production_wheel_smoke.py
+          )
+          (
+            cd /tmp
+            PYTHONPATH=""             /tmp/pycrmkit-v1-full-wheel/bin/pycrmkit-migrate --help >/dev/null
+          )
+          /tmp/pycrmkit-v1-full-wheel/bin/python -m pip check
+
+      - name: Sdist builds and installs independently
+        shell: bash
+        run: |
+          python -m venv /tmp/pycrmkit-v1-sdist
+          /tmp/pycrmkit-v1-sdist/bin/python -m pip install --upgrade pip
+          sdist="$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0b3.tar.gz"
+          /tmp/pycrmkit-v1-sdist/bin/python -m pip install "$sdist"
+          (
+            cd /tmp
+            PYTHONPATH=""             PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE"             PYCRMKIT_EXPECT_CORE_ONLY=1             /tmp/pycrmkit-v1-sdist/bin/python /tmp/v1_production_wheel_smoke.py
+          )
+          /tmp/pycrmkit-v1-sdist/bin/python -m pip check
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pycrmkit-v1-rc05-distributions
+          path: dist/*

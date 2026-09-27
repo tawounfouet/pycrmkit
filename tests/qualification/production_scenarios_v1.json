@@ -284,5 +284,33 @@
       ".github/workflows/drf.yml",
       "tests/integrations/django/test_external_identities_repository.py"
     ]
+  },
+  "rc05_installed_artifact_qualification": {
+    "status": "implemented",
+    "artifacts": [
+      "wheel",
+      "sdist"
+    ],
+    "isolation": {
+      "checkout_imports_allowed": false,
+      "pythonpath": "",
+      "execution_directory": "outside-repository"
+    },
+    "guarantees": [
+      "wheel-and-sdist-build",
+      "twine-metadata-validation",
+      "wheel-content-contract",
+      "sdist-content-contract",
+      "core-wheel-no-optional-dependency-leakage",
+      "full-extra-wheel-installability",
+      "public-v1-smoke-from-installed-wheel",
+      "console-script-installation",
+      "sdist-independent-installability",
+      "installed-package-provenance-outside-checkout"
+    ],
+    "evidence": [
+      "scripts/v1_production_wheel_smoke.py",
+      ".github/workflows/production-installed-artifact.yml"
+    ]
   }
 }

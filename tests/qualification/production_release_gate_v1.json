@@ -97,9 +97,10 @@
     {
       "id": "RC-05",
       "name": "Installed artifact qualification",
-      "status": "pending",
-      "planned_evidence": [
-        "scripts/v1_production_wheel_smoke.py"
+      "status": "implemented",
+      "evidence": [
+        "scripts/v1_production_wheel_smoke.py",
+        ".github/workflows/production-installed-artifact.yml"
       ]
     },
     {
