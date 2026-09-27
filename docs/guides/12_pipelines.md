@@ -1165,23 +1165,35 @@ StageOutcome.CANCELLED -> OpportunityStatus.CANCELLED
 
 The Stage definition drives the terminal commercial result.
 
-## 51. Closed Opportunities cannot keep moving
+## 51. Terminal Pipeline stages cannot be exited
 
-After terminal movement:
+Through the public facade, movement first resolves Pipeline policy.
+
+After the Opportunity has entered the terminal "won" Stage:
 
 ~~~python
-from pycrmkit.exceptions import InvalidStateError
+from pycrmkit.pipelines import InvalidStageTransition
 
 try:
     crm.opportunities.move(
         opportunity.id,
         to="proposal",
     )
-except InvalidStateError as exc:
-    assert exc.code == "opportunity.stage.transition.closed"
+except InvalidStageTransition as exc:
+    assert exc.code == "pipeline.transition.invalid"
 ~~~
 
-Opportunity itself enforces this protection even beyond Pipeline graph rules.
+The policy rejects the request because terminal Stages cannot be exited.
+
+There is a second, lower-level protection inside Opportunity.move_to_stage():
+calling that aggregate method on any closed Opportunity raises:
+
+~~~text
+InvalidStateError
+code = opportunity.stage.transition.closed
+~~~
+
+So both layers protect closure, but the facade encounters Pipeline policy first.
 
 ## 52. Movement events
 
@@ -1490,9 +1502,9 @@ Pipeline.
 
 Movement requires an explicit StageTransition.
 
-### Moving a terminal Opportunity
+### Moving from a terminal Pipeline Stage
 
-Closed Opportunities cannot move further.
+Facade movement is rejected by PipelineTransitionPolicy because terminal Stages cannot be exited. The Opportunity aggregate also independently rejects direct stage movement once closed.
 
 ### Updating Pipeline in place
 
