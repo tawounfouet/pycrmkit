@@ -34,7 +34,8 @@ def _checksums() -> dict[str, str]:
 
 
 def test_release_version_and_promotion_are_frozen() -> None:
-    assert pycrmkit.__version__ == MANIFEST["version"] == "1.0.0rc1"
+    assert MANIFEST["version"] == "1.0.0rc1"
+    assert pycrmkit.__version__ == "1.0.0"
     assert REPORT["release"] == "1.0.0rc1"
     assert REPORT["baseline_release"] == "1.0.0b3"
     assert REPORT["status"] == "qualified"
