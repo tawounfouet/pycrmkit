@@ -6,8 +6,8 @@ from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from io import StringIO
 
-import pytest
 from alembic.script import ScriptDirectory
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
