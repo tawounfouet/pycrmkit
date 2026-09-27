@@ -49,6 +49,7 @@ example application.
 14. [Lead Conversion](13_lead_conversion.md) — convert qualified Leads atomically into exactly one Opportunity with idempotent retry semantics.
 15. [Email & Communications](14_email_and_communications.md) — send provider-neutral email, track delivery history, callbacks, idempotency and Timeline projection.
 16. [Domain Events](15_domain_events.md) — govern immutable versioned event envelopes, deterministic serialization, in-process subscriptions and causal tracing.
+17. [Webhooks](16_webhooks.md) — deliver committed DomainEvents externally with signed, idempotent, retryable HTTP delivery.
 
 ## LEVEL 1 complete
 
@@ -62,9 +63,9 @@ Activities, Tasks and Timeline now form the complete Customer Activity layer: in
 
 Leads, Opportunities, Pipelines and Lead Conversion now form the complete Sales Foundation learning layer: qualification, commercial outcome, governed process and atomic/idempotent cross-aggregate conversion.
 
-## LEVEL 4 in progress
+## LEVEL 4 complete
 
-Email & Communications establishes provider-neutral messaging and delivery history; Domain Events now adds versioned envelopes, registry-governed serialization, synchronous subscriptions and correlation/causation tracing. Webhooks is the final LEVEL 4 chapter.
+Email & Communications, Domain Events and Webhooks now form the complete Communication & Automation layer: provider-neutral communication, governed event contracts, causal tracing and signed/retryable external delivery. LEVEL 5 begins next with External Identities.
 
 ## Full Zero-to-Hero roadmap
 
@@ -89,7 +90,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 3 | 13 | Lead Conversion | Published |
 | 4 | 14 | Email & Communications | Published |
 | 4 | 15 | Domain Events | Published |
-| 4 | 16 | Webhooks | Planned |
+| 4 | 16 | Webhooks | Published |
 | 5 | 17 | External Identities | Planned |
 | 5 | 18 | Importing Data | Planned |
 | 5 | 19 | Deduplication | Planned |
