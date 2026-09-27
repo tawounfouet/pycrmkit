@@ -1,5 +1,7 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
+from datetime import UTC, datetime
+
 import pytest
 
 from pycrmkit import CRM, __version__
@@ -22,7 +24,13 @@ from pycrmkit.organizations import (
     OrganizationStatus,
     OrganizationUpdate,
 )
-from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
+from pycrmkit.relationships import (
+    RelationshipEndpoint,
+    RelationshipEntityKind,
+    RelationshipQuery,
+    RelationshipType,
+    RelationshipUpdate,
+)
 
 
 def test_zero_to_hero_getting_started_example() -> None:
@@ -359,3 +367,148 @@ def test_zero_to_hero_organizations_invariant_examples() -> None:
     assert direct_archive.value.code == (
         "organization.update.archive_requires_archive_operation"
     )
+
+
+
+def test_zero_to_hero_relationships_mastery_example() -> None:
+    crm = CRM.memory().with_context(
+        actor_id="guide-user",
+        correlation_id="relationships-guide-001",
+    )
+
+    contact = crm.contacts.create(
+        first_name="Ada",
+        last_name="Lovelace",
+    )
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+
+    source = RelationshipEndpoint.contact(contact.id)
+    target = RelationshipEndpoint.organization(organization.id)
+
+    relationship = crm.relationships.create(
+        source=source,
+        target=target,
+        relationship_type=RelationshipType("Board Member"),
+        role="founder",
+        title="Director",
+        is_primary=True,
+        metadata={"source_system": "manual"},
+    )
+
+    assert relationship.source == source
+    assert relationship.target == target
+    assert relationship.source.kind is RelationshipEntityKind.CONTACT
+    assert relationship.target.kind is RelationshipEntityKind.ORGANIZATION
+    assert str(relationship.relationship_type) == "board-member"
+    assert relationship.is_ended is False
+
+    updated = crm.relationships.update(
+        relationship.id,
+        RelationshipUpdate(
+            title="Executive Director",
+            is_primary=False,
+        ),
+    )
+    assert updated.title == "Executive Director"
+    assert updated.is_primary is False
+
+    by_entity = crm.relationships.search(
+        RelationshipQuery(entity=source),
+        OffsetPageRequest(limit=10),
+    )
+    assert by_entity.items == (updated,)
+    assert by_entity.total == 1
+
+    by_direction = crm.relationships.search(
+        RelationshipQuery(
+            source=source,
+            target=target,
+            relationship_type=RelationshipType("board_member"),
+        )
+    )
+    assert by_direction.items == (updated,)
+
+    ended = crm.relationships.end(relationship.id)
+    assert ended.is_ended is True
+    assert crm.relationships.search().total == 0
+
+    history = crm.relationships.search(
+        RelationshipQuery(include_ended=True)
+    )
+    assert history.items == (ended,)
+
+    with pytest.raises(
+        InvalidStateError,
+        match="ended relationships cannot be updated",
+    ):
+        crm.relationships.update(
+            relationship.id,
+            RelationshipUpdate(title="Changed"),
+        )
+
+
+def test_zero_to_hero_relationships_invariant_examples() -> None:
+    crm = CRM.memory()
+
+    contact = crm.contacts.create(display_name="Ada Lovelace")
+    other_contact = crm.contacts.create(display_name="Charles Babbage")
+    organization = crm.organizations.create(
+        legal_name="Analytical Engines Ltd",
+    )
+
+    contact_endpoint = RelationshipEndpoint.contact(contact.id)
+
+    with pytest.raises(ConflictError) as self_link:
+        crm.relationships.create(
+            source=contact_endpoint,
+            target=contact_endpoint,
+            relationship_type=RelationshipType("peer"),
+        )
+    assert self_link.value.code == "relationship.self_link"
+
+    normalized = RelationshipType("  Board_Member  ")
+    assert normalized.code == "board-member"
+
+    with pytest.raises(ValidationError) as missing_type:
+        RelationshipType("   ")
+    assert missing_type.value.code == "relationship.type.required"
+
+    start = datetime(2025, 1, 1, tzinfo=UTC)
+    end = datetime(2026, 1, 1, tzinfo=UTC)
+
+    historical = crm.relationships.create(
+        source=RelationshipEndpoint.contact(other_contact.id),
+        target=RelationshipEndpoint.organization(organization.id),
+        relationship_type=RelationshipType("employment"),
+        valid_from=start,
+        valid_until=end,
+    )
+
+    assert historical.is_active(datetime(2025, 6, 1, tzinfo=UTC))
+    assert not historical.is_active(datetime(2026, 1, 1, tzinfo=UTC))
+
+    active_page = crm.relationships.search(
+        RelationshipQuery(
+            active_at=datetime(2025, 6, 1, tzinfo=UTC),
+        )
+    )
+    assert historical in active_page.items
+
+    inactive_page = crm.relationships.search(
+        RelationshipQuery(
+            active_at=datetime(2026, 1, 1, tzinfo=UTC),
+        )
+    )
+    assert historical not in inactive_page.items
+
+    with pytest.raises(ValidationError) as invalid_interval:
+        crm.relationships.create(
+            source=RelationshipEndpoint.contact(contact.id),
+            target=RelationshipEndpoint.organization(organization.id),
+            relationship_type=RelationshipType("employment"),
+            valid_from=end,
+            valid_until=start,
+        )
+    assert invalid_interval.value.code == "relationship.validity.invalid_interval"
