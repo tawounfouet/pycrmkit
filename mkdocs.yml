@@ -72,6 +72,7 @@ nav:
       - Repository Contract: external-identities/repository-contract.md
   - Imports:
       - Import Framework: imports/index.md
+      - CSV / JSON / JSONL: imports/formats.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
@@ -120,6 +121,8 @@ nav:
       - 0.8.0rc1 Django Example & E2E: releases/0.8.0rc1.md
       - 0.8.0 Django Integration Stable: releases/0.8.0.md
       - 0.9.0a1 External Identities: releases/0.9.0a1.md
+      - 0.9.0a2 Import Framework: releases/0.9.0a2.md
+      - 0.9.0b1 CSV / JSON / JSONL: releases/0.9.0b1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

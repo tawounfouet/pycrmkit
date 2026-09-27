@@ -3,7 +3,7 @@
 PyCRMKit is a modular, headless Python CRM domain framework.
 
 The current stable version is **`0.8.0 — Django Integration Stable`**.  
-The latest data-operations prerelease is **`0.9.0a2 — Import Framework`**.
+The latest data-operations prerelease is **`0.9.0b1 — CSV / JSON / JSONL`**.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 
@@ -94,4 +94,8 @@ qualification now form one compatibility-governed integration line.
 
 `0.9.0a1` introduces provider-neutral external identities. A normalized `(system, external_id)` pair maps to one PyCRMKit entity, same-owner attach is idempotent, conflicting ownership is explicit, and the repository contract is qualified across Memory, SQLAlchemy/PostgreSQL and Django. SQLAlchemy advances to Alembic `0003`; Django advances to `0002_external_identity`.
 
-`0.9.0a2` adds the format-neutral import framework: explicit field mapping, composable normalization, structured validation, provisional deduplication and persistence hooks, and deterministic import reports. Physical CSV/JSON/JSONL adapters remain outside this alpha.\n\nThe next roadmap milestone is **`0.9.0b1 — CSV / JSON / JSONL`**.
+`0.9.0a2` adds the format-neutral import framework: explicit field mapping, composable normalization, structured validation, provisional deduplication and persistence hooks, and deterministic import reports.
+
+`0.9.0b1` adds standard-library CSV, JSON and JSONL readers/exporters. Format adapters preserve source order and duplicates; JSON/JSONL preserve nested JSON data, while CSV remains intentionally scalar/tabular.
+
+The next roadmap milestone is **`0.9.0b2 — Deduplication`**.
