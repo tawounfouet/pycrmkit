@@ -1170,3 +1170,638 @@ The score still contributes the EMAIL weight once.
 
 This separates detailed evidence from scoring policy.
 
+
+## 84. Custom score policy
+
+Applications can redefine weights and thresholds:
+
+~~~python
+policy = DedupScorePolicy(
+    weights={
+        DedupSignal.EMAIL: 50,
+        DedupSignal.PHONE: 50,
+        DedupSignal.EXTERNAL_IDENTITY: 100,
+    },
+    review_threshold=50,
+    duplicate_threshold=100,
+)
+~~~
+
+Signals absent from the mapping contribute zero.
+
+Matching normalization remains unchanged unless a different matcher is injected.
+
+## 85. Engine components are injectable
+
+DeduplicationEngine accepts:
+
+~~~text
+source
+matcher
+conflict_detector
+score_policy
+~~~
+
+The defaults are:
+
+~~~text
+StandardSignalMatcher
+StandardConflictDetector
+DedupScorePolicy
+~~~
+
+This separates candidate retrieval, evidence matching, contradiction detection
+and classification policy.
+
+## 86. Complete evaluation example
+
+~~~python
+engine = DeduplicationEngine(
+    InMemoryCandidateSource(
+        (
+            CandidateRecord(
+                "contact-1",
+                {
+                    "email": "ada@example.com",
+                    "full_name": "Ada Lovelace",
+                    "organization": "Analytical Engines",
+                },
+            ),
+            CandidateRecord(
+                "contact-2",
+                {
+                    "email": "grace@example.com",
+                    "full_name": "Grace Hopper",
+                },
+            ),
+        )
+    )
+)
+
+row = ImportRow(
+    1,
+    {
+        "email": "ADA@EXAMPLE.COM",
+        "display_name": "ada lovelace",
+        "company": "analytical engines",
+    },
+)
+
+assessments = engine.evaluate(row)
+
+assert assessments[0].candidate.entity_id == "contact-1"
+assert assessments[0].score == 100
+assert assessments[0].decision is DedupDecision.DUPLICATE
+~~~
+
+## 87. Import bridge example
+
+~~~python
+result = engine.detect(row)
+
+assert result.is_duplicate is True
+assert result.existing_entity_id == "contact-1"
+~~~
+
+The result is automatic only because exactly one candidate is DUPLICATE.
+
+## 88. Ambiguous duplicate example
+
+~~~python
+record = {
+    "email": "ada@example.com",
+    "full_name": "Ada Lovelace",
+    "organization": "Analytical Engines",
+}
+
+engine = DeduplicationEngine(
+    InMemoryCandidateSource(
+        (
+            CandidateRecord(
+                "contact-1",
+                record,
+            ),
+            CandidateRecord(
+                "contact-2",
+                record,
+            ),
+        )
+    )
+)
+
+result = engine.detect(
+    ImportRow(
+        1,
+        record,
+    )
+)
+
+assert result.is_duplicate is False
+~~~
+
+The engine refuses hidden candidate selection.
+
+## 89. Review example
+
+A single email match gives:
+
+~~~text
+score = 70
+decision = review
+detect = no match
+~~~
+
+The application can route the CandidateAssessment to a secured review UI.
+
+## 90. Deterministic ranking example
+
+Suppose assessments produce:
+
+~~~text
+contact-b score 70
+contact-c score 100
+contact-a score 100
+~~~
+
+The final evaluate order is:
+
+~~~text
+contact-a 100
+contact-c 100
+contact-b 70
+~~~
+
+because score descends and entity_id breaks ties.
+
+## 91. Provenance machine-readable example
+
+~~~python
+evidence = assessment.provenance.as_dict()
+~~~
+
+The result contains:
+
+~~~text
+candidate_entity_id
+score
+decision
+matches[]
+conflicts[]
+~~~
+
+This is useful for review, secured audit evidence and explicit merge
+justification.
+
+## 92. Provenance and Contact Merge
+
+MergeService accepts optional DedupProvenance.
+
+That lets a reviewed dedup decision travel into merge audit evidence.
+
+Chapter 20 will show that exact transaction boundary.
+
+## 93. Deduplication after import normalization
+
+ImportPipeline places deduplication after:
+
+~~~text
+map
+normalize
+validate
+~~~
+
+The engine still normalizes its own supported signals again when building
+DedupProfile.
+
+This is boundary defense rather than an assumption that import rows are always
+perfectly normalized.
+
+## 94. Dedup normalization can raise
+
+Email, phone and external identity normalization reuse strict domain functions.
+
+If invalid signal data reaches DedupProfile, candidate evaluation may raise.
+
+In ImportPipeline, deduplicator failures propagate.
+
+Validate predictable source-quality problems before deduplication when you want
+row-level reporting instead.
+
+## 95. Candidate construction can raise
+
+CandidateRecord builds its DedupProfile during construction.
+
+Invalid candidate evidence can therefore fail before evaluate is called.
+
+Candidate-source data quality is an application responsibility.
+
+## 96. Detection is deterministic
+
+Given the same:
+
+~~~text
+incoming mapping
+candidate records
+matcher
+conflict detector
+score policy
+~~~
+
+the engine produces the same normalized evidence, score, decision and
+assessment ordering.
+
+Stable V1 matching contains no randomness.
+
+## 97. Explainability rule
+
+Every default score can be reconstructed from:
+
+~~~text
+matched unique signal types
+configured weights
+100-point cap
+review threshold
+duplicate threshold
+blocking conflicts
+~~~
+
+No hidden model contributes to the result.
+
+## 98. CandidateRecord IDs are generic strings
+
+CandidateRecord does not require ContactId.
+
+This keeps the engine reusable for candidate sources that project other
+application identifiers.
+
+Applications can parse IDs into typed CRM IDs at their own boundary.
+
+## 99. CandidateSource structural typing
+
+A custom CandidateSource can be:
+
+~~~text
+repository-backed
+search-index-backed
+tenant-aware
+organization-scoped
+batch-aware
+~~~
+
+as long as it yields CandidateRecord values for one ImportRow.
+
+## 100. A repository-backed source pattern
+
+Conceptually:
+
+~~~text
+incoming row
+   |
+   +--> normalized email
+   +--> normalized phone
+   +--> external identity
+   |
+   v
+query indexed Contact candidates
+   |
+   v
+project to CandidateRecord
+   |
+   v
+DeduplicationEngine.evaluate
+~~~
+
+The candidate source should narrow the set without changing scoring semantics.
+
+## 101. Deduplication and privacy
+
+The engine can normalize and retain personally identifying values as evidence.
+
+Do not assume the privacy rules of DomainEvent payloads apply to
+DedupProvenance.
+
+The two models serve different purposes.
+
+## 102. Import integration example
+
+~~~python
+persister = RecordingPersister()
+
+pipeline = ImportPipeline(
+    reader=IterableReader(
+        (
+            {
+                "email": "ADA@EXAMPLE.COM",
+                "full_name": "Ada Lovelace",
+                "organization": "Analytical Engines",
+            },
+            {
+                "email": "grace@example.com",
+                "full_name": "Grace Hopper",
+                "organization": "US Navy",
+            },
+        )
+    ),
+    deduplicator=engine,
+    persister=persister,
+)
+
+report = pipeline.run()
+~~~
+
+If Ada has exactly one DUPLICATE assessment:
+
+~~~text
+Ada
+-> skipped as duplicate
+-> persister not called
+
+Grace
+-> no automatic duplicate
+-> persisted
+~~~
+
+## 103. Import report evidence
+
+The generic ImportReport retains:
+
+~~~text
+duplicates count
+rows_skipped count
+duplicate_entity_id
+~~~
+
+It does not retain the complete DedupProvenance.
+
+Applications needing full review evidence should call evaluate and store
+provenance through an explicit secured path.
+
+## 104. ExternalIdentity can be used before fuzzy-style review
+
+A useful application architecture is:
+
+~~~text
+incoming record
+   |
+   v
+deterministic ExternalIdentity lookup
+   |
+   +--> found -> route existing owner
+   |
+   +--> not found
+           |
+           v
+       candidate retrieval
+           |
+           v
+       DeduplicationEngine
+~~~
+
+Stable V1 still uses exact normalized matching, but this separation keeps strong
+identity routing distinct from evidence-based review.
+
+## 105. Why exact matching is a sound V1 baseline
+
+A conservative rules engine offers:
+
+~~~text
+determinism
+explainability
+portable behavior
+easy testing
+no model dependency
+no probabilistic opacity
+~~~
+
+Applications can build more advanced CandidateSource or matching policies later
+without changing the stable import and merge boundaries.
+
+## Common mistakes
+
+### Treating score as probability
+
+The score is a deterministic rules score, not a calibrated likelihood.
+
+### Expecting fuzzy name matching
+
+Stable V1 uses exact normalized equality.
+
+### Expecting CandidateSource to scan the CRM automatically
+
+The source determines which candidates are evaluated.
+
+### Loading every Contact into InMemoryCandidateSource in production
+
+Use a pre-filtering CandidateSource suitable for your scale.
+
+### Counting multiple emails as multiple weights
+
+Scoring counts unique signal types.
+
+### Assuming warning conflicts subtract score
+
+They do not. Warning conflicts remain provenance.
+
+### Assuming score 100 always means duplicate
+
+A blocking conflict forces decision conflict while score can remain 100.
+
+### Treating address disagreement as a built-in conflict
+
+StandardConflictDetector does not generate address conflicts.
+
+### Lowercasing external IDs
+
+External-ID case remains provider-owned.
+
+### Lowercasing custom identifier values
+
+Namespaces normalize, but identifier values preserve case after trim and NFKC.
+
+### Assuming evaluate preserves CandidateSource order
+
+Assessments sort by score descending then entity_id ascending.
+
+### Assuming detect selects the first duplicate
+
+detect returns a match only when exactly one DUPLICATE candidate exists.
+
+### Treating ambiguous no-match as no evidence
+
+Use evaluate. detect deliberately collapses ambiguity into no automatic match.
+
+### Expecting REVIEW to skip an import row
+
+Only one unambiguous DUPLICATE becomes DuplicateResult.match.
+
+### Automatically merging after detection
+
+Detection and merge are separate explicit operations.
+
+### Logging provenance without privacy review
+
+Provenance can contain emails, phone numbers, addresses and identifiers.
+
+### Sending invalid signals directly into deduplication
+
+Strict domain normalizers can raise during candidate evaluation.
+
+## Testing deduplication
+
+Signal extraction tests should cover:
+
+~~~text
+email aliases
+phone aliases
+full-name fallback
+organization aliases
+structured address
+external identity
+custom identifiers
+case and whitespace rules
+~~~
+
+Matcher tests should cover:
+
+~~~text
+all seven signals
+multiple values
+exact normalized equality
+namespaced matches
+~~~
+
+Scoring tests should cover:
+
+~~~text
+default weights
+unique signal type scoring
+100 cap
+review threshold
+duplicate threshold
+custom thresholds
+custom weights
+invalid thresholds
+negative weights
+~~~
+
+Conflict tests should cover:
+
+~~~text
+email warning
+phone warning
+full-name warning
+organization warning
+external identity warning
+custom identifier blocking
+blocking override
+~~~
+
+Engine tests should cover:
+
+~~~text
+deterministic ordering
+unique duplicate
+review-only candidate
+conflict candidate
+ambiguous duplicate candidates
+provenance summary
+provenance as_dict
+~~~
+
+Import integration tests should cover:
+
+~~~text
+unique duplicate skipped
+persister not called for duplicate
+duplicate_entity_id retained
+ambiguous set not auto-selected
+~~~
+
+## What you learned
+
+You can now explain and use:
+
+- CandidateRecord;
+- CandidateSource;
+- InMemoryCandidateSource;
+- CandidateAssessment;
+- DedupProfile;
+- DedupSignal;
+- normalize_text;
+- all seven stable signal types;
+- field alias precedence;
+- StandardSignalMatcher;
+- exact normalized equality;
+- SignalMatch;
+- DEFAULT_SIGNAL_WEIGHTS;
+- DedupScorePolicy;
+- unique-signal scoring;
+- score capping;
+- configurable thresholds;
+- DedupDecision;
+- ConflictSeverity;
+- DedupConflict;
+- StandardConflictDetector;
+- warning conflicts;
+- blocking custom identifier conflicts;
+- blocking conflict override;
+- deterministic assessment ordering;
+- DedupProvenance;
+- provenance summary and as_dict;
+- provenance privacy boundaries;
+- DeduplicationEngine.evaluate;
+- DeduplicationEngine.detect;
+- the exactly-one-duplicate rule;
+- ImportDeduplicator integration;
+- the distinction between ExternalIdentity, dedup evidence and merge.
+
+## LEVEL 5 in progress
+
+The Data Operations path now contains:
+
+~~~text
+17 External Identities
+18 Importing Data
+19 Deduplication
+~~~
+
+PyCRMKit can now identify and explain likely duplicate candidates.
+
+It still does not mutate or merge them.
+
+## Next
+
+The next chapter is **20 - Contact Merge**.
+
+The flow becomes:
+
+~~~text
+DedupProvenance
+        |
+        v
+explicit primary Contact
+explicit duplicate Contact
+        |
+        v
+MergePolicy
+        |
+        v
+MergeService
+        |
+        +--> profile reconciliation
+        +--> relationships
+        +--> activities
+        +--> tags
+        +--> custom fields
+        +--> external identities
+        +--> duplicate archive
+        +--> audit
+        |
+        v
+MergeResult
+~~~
+
+The next learning question is:
+
+> How does PyCRMKit merge two Contacts conservatively, transactionally and
+> audibly without silently choosing a primary record or losing related data?
