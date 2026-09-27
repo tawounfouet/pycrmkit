@@ -125,6 +125,7 @@ nav:
       - 0.9.0a1 External Identities: releases/0.9.0a1.md
       - 0.9.0a2 Import Framework: releases/0.9.0a2.md
       - 0.9.0b1 CSV / JSON / JSONL: releases/0.9.0b1.md
+      - 0.9.0b2 Deduplication: releases/0.9.0b2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
