@@ -41,7 +41,10 @@ from pycrmkit.dedup import (
     SignalMatch,
 )
 from pycrmkit.exceptions import ConflictError, ValidationError
-from pycrmkit.external_identities import ExternalIdentity, ExternalIdentityId
+from pycrmkit.external_identities import (
+    ExternalIdentity,
+    ExternalIdentityId,
+)
 from pycrmkit.organizations import OrganizationId
 from pycrmkit.relationships import (
     Relationship,
@@ -51,7 +54,13 @@ from pycrmkit.relationships import (
     RelationshipType,
 )
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
-from pycrmkit.tags import Tag, TagAssignment, TagAssignmentId, TagId, TagName
+from pycrmkit.tags import (
+    Tag,
+    TagAssignment,
+    TagAssignmentId,
+    TagId,
+    TagName,
+)
 
 
 CREATED_AT = datetime(2026, 9, 27, 8, tzinfo=UTC)
@@ -337,9 +346,7 @@ def test_merge_reassigns_owned_state_archives_duplicate_and_records_audit() -> N
         assert audit.total == 1
         assert audit.items[0].changes["duplicate_id"] == str(duplicate_id)
         assert audit.items[0].changes["provenance"]["score"] == 100
-        assert audit.items[0].changes["provenance"]["matched_signals"] == [
-            "email"
-        ]
+        assert audit.items[0].changes["provenance"]["matched_signals"] == ("email",)
 
 
 def test_custom_field_conflict_rolls_back_every_prior_merge_mutation() -> None:
