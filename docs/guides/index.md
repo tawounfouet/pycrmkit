@@ -50,6 +50,7 @@ example application.
 15. [Email & Communications](14_email_and_communications.md) — send provider-neutral email, track delivery history, callbacks, idempotency and Timeline projection.
 16. [Domain Events](15_domain_events.md) — govern immutable versioned event envelopes, deterministic serialization, in-process subscriptions and causal tracing.
 17. [Webhooks](16_webhooks.md) — deliver committed DomainEvents externally with signed, idempotent, retryable HTTP delivery.
+18. [External Identities](17_external_identities.md) — map provider-owned record IDs to CRM entities with deterministic ownership, idempotent attach and privacy-aware events.
 
 ## LEVEL 1 complete
 
@@ -65,7 +66,11 @@ Leads, Opportunities, Pipelines and Lead Conversion now form the complete Sales 
 
 ## LEVEL 4 complete
 
-Email & Communications, Domain Events and Webhooks now form the complete Communication & Automation layer: provider-neutral communication, governed event contracts, causal tracing and signed/retryable external delivery. LEVEL 5 begins next with External Identities.
+Email & Communications, Domain Events and Webhooks now form the complete Communication & Automation layer: provider-neutral communication, governed event contracts, causal tracing and signed/retryable external delivery.
+
+## LEVEL 5 in progress
+
+External Identities now establishes deterministic provider-record ownership without polluting CRM aggregates with integration-specific IDs. The next chapter expands this foundation into bounded, inspectable bulk imports.
 
 ## Full Zero-to-Hero roadmap
 
@@ -91,7 +96,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 4 | 14 | Email & Communications | Published |
 | 4 | 15 | Domain Events | Published |
 | 4 | 16 | Webhooks | Published |
-| 5 | 17 | External Identities | Planned |
+| 5 | 17 | External Identities | Published |
 | 5 | 18 | Importing Data | Planned |
 | 5 | 19 | Deduplication | Planned |
 | 5 | 20 | Contact Merge | Planned |
