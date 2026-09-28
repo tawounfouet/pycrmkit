@@ -270,3 +270,260 @@ The stable External Identity event payload is:
 It intentionally does not include external_id.
 
 The provider-owned identifier remains available through explicit authorized repository/facade APIs; it is simply not copied into the public event stream.
+
+
+## 11. Audit minimization
+
+AuditEntry.changes is explicit evidence, not a full entity snapshot.
+
+AuditService.record_event does not automatically copy DomainEvent.payload.
+
+Webhook registration audit records safe field names. Secret rotation records:
+
+~~~text
+["signing_secret"]
+~~~
+
+The old and new secret values are never written into Audit changes. Actor and correlation metadata still provide operational traceability.
+
+## 12. Webhook signing-secret storage
+
+Webhook delivery needs signing key material later, so supported persistence adapters store the configured signing secret as application data.
+
+PyCRMKit does not claim transparent encryption-at-rest for that field.
+
+Production deployments must protect databases and backups through their normal encryption and access-control mechanisms.
+
+Secrets should not be committed to source control. Test fixtures should use dummy values.
+
+## 13. Secret generation and validation
+
+If the application does not provide a webhook secret, PyCRMKit generates one with:
+
+~~~text
+secrets.token_urlsafe(32)
+~~~
+
+Supplied signing secrets are normalized and validated. Their UTF-8 encoded length must be between 16 and 512 bytes.
+
+Validation errors do not echo the secret.
+
+## 14. Webhook secret rotation
+
+The public facade supports:
+
+~~~python
+crm.webhooks.rotate_secret(
+    subscription.id,
+    signing_secret="new-secret-material",
+)
+~~~
+
+If signing_secret is omitted, PyCRMKit generates fresh material.
+
+The flow is:
+
+~~~text
+load subscription
+      |
+normalize/generate candidate
+      |
+compare safely
+      |
+persist change
+      |
+audit field name only
+      |
+commit
+~~~
+
+The entity uses hmac.compare_digest when checking whether the candidate is already active. Reusing the current secret is idempotent.
+
+Applications remain responsible for distributing the new secret to consumers through their own secure channel.
+
+## 15. Webhook HMAC integrity
+
+Webhook signing uses:
+
+~~~text
+v1=HMAC_SHA256(
+    secret,
+    "<unix_timestamp>.<payload_bytes>"
+)
+~~~
+
+Both timestamp and payload bytes are covered by the signature.
+
+Verification uses hmac.compare_digest.
+
+The integrity-only call remains supported:
+
+~~~python
+verify_webhook_signature(
+    secret,
+    timestamp,
+    payload,
+    signature,
+)
+~~~
+
+## 16. Replay-age validation
+
+Internet-facing receivers can additionally pass current_timestamp and tolerance_seconds.
+
+The default tolerance is 300 seconds.
+
+~~~text
+difference = 300 seconds -> accepted
+difference = 301 seconds -> rejected
+~~~
+
+HMAC integrity and replay-age checking are distinct protections: an old message can have a valid HMAC and still be rejected as stale.
+
+## 17. Webhook URL validation
+
+Registration rejects:
+
+~~~text
+non-HTTP(S) schemes
+missing host
+embedded username/password
+fragments
+whitespace / header-injection forms
+oversized URLs
+~~~
+
+Hostnames are normalized through IDNA.
+
+For example:
+
+~~~text
+https://user:password@example.com/hook
+~~~
+
+is rejected.
+
+## 18. Private-network and SSRF protection
+
+StdlibWebhookTransport defaults to:
+
+~~~text
+allow_private_networks = False
+~~~
+
+Before sending, literal IP addresses are checked and hostnames are resolved.
+
+Every destination address must be globally routable.
+
+Non-public destinations raise:
+
+~~~text
+webhook.transport.destination_forbidden
+~~~
+
+DNS resolution failures use:
+
+~~~text
+webhook.transport.dns_error
+~~~
+
+Private-network delivery is an explicit opt-in.
+
+Enabling it changes the trust model and becomes the embedding application's responsibility.
+
+## 19. Redirects are disabled
+
+The built-in stdlib webhook transport refuses redirect requests.
+
+A configured public URL therefore cannot automatically redirect the built-in transport into a different internal/private target.
+
+## 20. Webhook delivery diagnostics
+
+Transport failures use stable codes such as:
+
+~~~text
+webhook.transport.timeout
+webhook.transport.network_error
+webhook.transport.dns_error
+webhook.transport.destination_forbidden
+~~~
+
+Persistent delivery state keeps bounded diagnostics such as last status code, last error code, attempt count and next-attempt time.
+
+The canonical event payload is persisted for retry purposes, but payload_json is excluded from repr.
+
+## 21. Conservative destructive operations
+
+The stable public facades intentionally avoid generic:
+
+~~~text
+delete
+purge
+hard_delete
+~~~
+
+for important CRM namespaces.
+
+Instead lifecycle operations are explicit:
+
+~~~text
+Contact       -> archive
+Organization  -> archive
+Relationship  -> end
+Webhook       -> disable
+External ID   -> detach
+Duplicate     -> merge + archive
+~~~
+
+The security suite locks this boundary.
+
+## 22. Archived-record mutation protection
+
+Archived Contacts cannot be updated through the public facade.
+
+Stable failure:
+
+~~~text
+InvalidStateError
+code = contact.archived
+~~~
+
+Organizations have the corresponding immutable-after-archive guard.
+
+Archive therefore changes what mutations are allowed; it is not merely a query filter.
+
+## 23. Duplicate merge provenance
+
+The default merge policy is conservative.
+
+It requires duplicate provenance by default.
+
+Primary and duplicate must be different records.
+
+Provenance must correspond to the duplicate candidate and must support a duplicate decision.
+
+## 24. Blocking merge conflicts cannot be bypassed
+
+Even if a caller constructs provenance whose decision says duplicate, a blocking conflict forces rejection.
+
+Stable code:
+
+~~~text
+merge.provenance.blocking_conflict
+~~~
+
+Qualified context stores signal names rather than underlying matched sensitive values.
+
+## 25. Contact-point merge conflicts are conservative
+
+Different primary emails reject by default.
+
+Different primary phones reject by default.
+
+Custom-field conflicts are conservative by default.
+
+Merge runs transactionally so rejected operations do not leave partial state.
+
+Full DedupProvenance can itself contain CRM evidence and must be treated as CRM data.
+
+Persisted merge audit is intentionally minimized to identifiers, score, decision, signal names, conflict descriptors, statistics and policy rather than matched email/phone/custom-identifier values.
