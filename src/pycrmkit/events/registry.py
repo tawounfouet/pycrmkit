@@ -153,6 +153,10 @@ BUILTIN_EVENT_TYPES: tuple[str, ...] = (
     "relationship.created",
     "relationship.ended",
     "relationship.updated",
+    "segment.archived",
+    "segment.created",
+    "segment.member_added",
+    "segment.member_removed",
     "tag.assigned",
     "tag.created",
     "tag.removed",
@@ -166,7 +170,7 @@ BUILTIN_EVENT_TYPES: tuple[str, ...] = (
 
 
 def default_event_registry() -> EventRegistry:
-    """Build a fresh registry containing all stable event contracts through 0.4."""
+    """Build a fresh registry containing all current built-in event contracts."""
 
     registry = EventRegistry()
     for event_type in BUILTIN_EVENT_TYPES:
