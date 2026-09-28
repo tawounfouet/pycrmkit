@@ -8,7 +8,7 @@ from examples.data_operations.scenario import run_scenario
 def test_data_operations_release_candidate_end_to_end() -> None:
     summary = run_scenario()
 
-    assert summary["version"] == "1.1.0a1"
+    assert summary["version"] == "1.1.0a2"
     assert summary["import"] == {
         "rows_read": 4,
         "rows_created": 3,
