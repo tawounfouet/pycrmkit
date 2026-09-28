@@ -21,6 +21,7 @@ from pycrmkit.segments.expressions import (
     Or,
     Predicate,
     QueryExpression,
+    RelativeTimeValue,
     normalize_query_field_key,
     validate_expression_complexity,
 )
@@ -172,6 +173,20 @@ class QueryField(ValueObject):
         if predicate.operator in {QueryOperator.IS_NULL, QueryOperator.IS_NOT_NULL}:
             return
         value = predicate.value
+        if isinstance(value, RelativeTimeValue):
+            if self.type not in {QueryFieldType.DATE, QueryFieldType.DATETIME}:
+                raise ValidationError(
+                    "relative time requires a date or datetime field",
+                    code="segment.query.relative_time.invalid_field",
+                    context={"field": self.key, "field_type": self.type.value},
+                )
+            if predicate.operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
+                raise ValidationError(
+                    "relative time cannot be used inside in/not_in",
+                    code="segment.query.relative_time.invalid_operator",
+                    context={"field": self.key, "operator": predicate.operator.value},
+                )
+            return
         if predicate.operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
             assert isinstance(value, tuple)
             for item in value:
