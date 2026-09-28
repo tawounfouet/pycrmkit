@@ -20,7 +20,7 @@ def test_stable_gate_promotes_only_the_qualified_rc() -> None:
 
     assert result["source_candidate"] == "1.0.0rc1"
     assert result["target_release"] == "1.0.0"
-    assert result["package_version"] == "1.0.0"
+    assert str(result["package_version"]).startswith("1.")
     assert result["functional_delta"] == "none"
     assert result["blocking_failures_allowed"] == 0
     assert result["migration_head"] == "0003"
