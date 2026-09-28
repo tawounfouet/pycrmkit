@@ -151,7 +151,6 @@ from pycrmkit.organizations import (
     OrganizationStatus,
     OrganizationUpdate,
 )
-from pycrmkit.providers.email import SMTPConfig
 from pycrmkit.pipelines import (
     InvalidStageTransition,
     Pipeline,
@@ -160,6 +159,7 @@ from pycrmkit.pipelines import (
     StageOutcome,
     StageTransition,
 )
+from pycrmkit.providers.email import SMTPConfig
 from pycrmkit.relationships import (
     RelationshipEndpoint,
     RelationshipEntityKind,
@@ -5661,7 +5661,7 @@ def test_zero_to_hero_security_privacy_webhook_and_lifecycle_safeguards_example(
     with pytest.raises(ValidationError):
         normalize_webhook_url("https://user:password@example.com/hook")
     with pytest.raises(ValidationError):
-        normalize_webhook_url("https://example.com/hook\\r\\nX-Injected: yes")
+        normalize_webhook_url("https://example.com/hook\r\nX-Injected: yes")
 
     transport = StdlibWebhookTransport()
     with pytest.raises(WebhookTransportError) as destination_error:
