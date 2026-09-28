@@ -21,6 +21,11 @@ from pycrmkit.storage.memory.opportunities import MemoryOpportunityRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.pipelines import MemoryPipelineRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
+from pycrmkit.storage.memory.segments import (
+    MemorySegmentMembershipRepository,
+    MemorySegmentQueryExecutor,
+    MemorySegmentRepository,
+)
 from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
 from pycrmkit.storage.memory.timeline import MemoryTimelineRepository
@@ -57,6 +62,9 @@ class MemoryUnitOfWork:
         self._organizations: MemoryOrganizationRepository | None = None
         self._relationships: MemoryRelationshipRepository | None = None
         self._tasks: MemoryTaskRepository | None = None
+        self._segments: MemorySegmentRepository | None = None
+        self._segment_memberships: MemorySegmentMembershipRepository | None = None
+        self._segment_query_executor: MemorySegmentQueryExecutor | None = None
         self._timeline: MemoryTimelineRepository | None = None
         self._tags: MemoryTagRepository | None = None
         self._custom_fields: MemoryCustomFieldRepository | None = None
@@ -119,6 +127,24 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._tasks is not None
         return self._tasks
+
+    @property
+    def segments(self) -> MemorySegmentRepository:
+        self._ensure_active()
+        assert self._segments is not None
+        return self._segments
+
+    @property
+    def segment_memberships(self) -> MemorySegmentMembershipRepository:
+        self._ensure_active()
+        assert self._segment_memberships is not None
+        return self._segment_memberships
+
+    @property
+    def segment_query_executor(self) -> MemorySegmentQueryExecutor:
+        self._ensure_active()
+        assert self._segment_query_executor is not None
+        return self._segment_query_executor
 
     @property
     def timeline(self) -> MemoryTimelineRepository:
@@ -249,6 +275,9 @@ class MemoryUnitOfWork:
         self._organizations = MemoryOrganizationRepository(state)
         self._relationships = MemoryRelationshipRepository(state)
         self._tasks = MemoryTaskRepository(state)
+        self._segments = MemorySegmentRepository(state)
+        self._segment_memberships = MemorySegmentMembershipRepository(state)
+        self._segment_query_executor = MemorySegmentQueryExecutor(state)
         self._timeline = MemoryTimelineRepository(state)
         self._tags = MemoryTagRepository(state)
         self._custom_fields = MemoryCustomFieldRepository(state)

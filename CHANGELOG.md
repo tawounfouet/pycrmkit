@@ -6,6 +6,32 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.1.0a1] - 2026-09-28
+
+### Added
+- Added the first-class Segmentation bounded context with typed `SegmentId`, Static and Dynamic Segment definitions, lifecycle state, explicit stored membership records and a new `crm.segments` facade.
+- Added a portable, serializable and bounded query-expression AST with `Predicate`, `And`, `Or`, `Not` and the initial operator set: equality, ordering, membership, explicit null checks and string matching.
+- Added typed `QueryField` / `QuerySchema` definitions for Contact, Organization, Lead and Opportunity, including Decimal-safe, timezone-aware and UUID-safe value validation.
+- Added the Memory reference evaluator and transactional Memory Segment repositories with deterministic pagination and duplicate-key/member protection.
+- Added public Segment lifecycle/member events: `segment.created`, `segment.archived`, `segment.member_added` and `segment.member_removed`.
+- Added query-expression schema version 1 with typed Decimal/date/datetime serialization round-trips.
+
+### Compatibility
+- Preserved the frozen V1 root exports, bounded-context exports and existing facade behavior while allowing additive 1.x namespaces/events.
+- Kept SQLAlchemy/PostgreSQL and Django Segmentation support explicitly deferred to the later 1.1 beta milestones; unsupported persistence adapters fail with the typed `segment.persistence.unsupported` integration error.
+
+### Qualification
+- Added Segmentation domain, expression, Memory adapter and facade/event tests.
+- Existing V1 regression, compatibility and production-qualification scenarios remain executable on the 1.x line.
+
+### Deferred
+- Saved Queries, Custom Field/Tag query integration and relative-time expressions remain scheduled for `1.1.0a2`.
+- Task ergonomics and Business Calendar remain scheduled for `1.1.0a3`.
+- SQLAlchemy/PostgreSQL Segmentation remains scheduled for `1.1.0b1`.
+- Snapshot Segments, Django persistence and bulk membership remain later 1.1 milestones.
+- Cadence execution remains outside the mandatory 1.1 scope.
+
+
 ## [1.0.0] - 2026-09-27
 
 ### Production Stable

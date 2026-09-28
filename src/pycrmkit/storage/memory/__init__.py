@@ -12,6 +12,11 @@ from pycrmkit.storage.memory.opportunities import MemoryOpportunityRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.pipelines import MemoryPipelineRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
+from pycrmkit.storage.memory.segments import (
+    MemorySegmentMembershipRepository,
+    MemorySegmentQueryExecutor,
+    MemorySegmentRepository,
+)
 from pycrmkit.storage.memory.tags import MemoryTagRepository
 from pycrmkit.storage.memory.tasks import MemoryTaskRepository
 from pycrmkit.storage.memory.timeline import MemoryTimelineRepository
@@ -31,6 +36,9 @@ __all__ = [
     "MemoryPipelineRepository",
     "MemoryOrganizationRepository",
     "MemoryRelationshipRepository",
+    "MemorySegmentMembershipRepository",
+    "MemorySegmentQueryExecutor",
+    "MemorySegmentRepository",
     "MemoryStore",
     "MemoryTaskRepository",
     "MemoryTimelineRepository",

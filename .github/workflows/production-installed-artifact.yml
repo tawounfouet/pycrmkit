@@ -40,11 +40,11 @@ jobs:
           dist = Path("dist")
           artifacts = sorted(path.name for path in dist.iterdir())
           assert artifacts == [
-              "pycrmkit-1.0.0-py3-none-any.whl",
-              "pycrmkit-1.0.0.tar.gz",
+              "pycrmkit-1.1.0a1-py3-none-any.whl",
+              "pycrmkit-1.1.0a1.tar.gz",
           ], artifacts
 
-          wheel = dist / "pycrmkit-1.0.0-py3-none-any.whl"
+          wheel = dist / "pycrmkit-1.1.0a1-py3-none-any.whl"
           with zipfile.ZipFile(wheel) as archive:
               names = set(archive.namelist())
 
@@ -55,8 +55,8 @@ jobs:
               "pycrmkit/storage/sqlalchemy/migrations/versions/0001_persistence_baseline.py",
               "pycrmkit/storage/sqlalchemy/migrations/versions/0002_align_repository_reference_semantics.py",
               "pycrmkit/storage/sqlalchemy/migrations/versions/0003_external_identities.py",
-              "pycrmkit-1.0.0.dist-info/METADATA",
-              "pycrmkit-1.0.0.dist-info/entry_points.txt",
+              "pycrmkit-1.1.0a1.dist-info/METADATA",
+              "pycrmkit-1.1.0a1.dist-info/entry_points.txt",
           }
           missing = sorted(required_wheel - names)
           assert not missing, missing
@@ -65,11 +65,11 @@ jobs:
               for name in names
           )
 
-          sdist = dist / "pycrmkit-1.0.0.tar.gz"
+          sdist = dist / "pycrmkit-1.1.0a1.tar.gz"
           with tarfile.open(sdist, "r:gz") as archive:
               names = set(archive.getnames())
 
-          prefix = "pycrmkit-1.0.0/"
+          prefix = "pycrmkit-1.1.0a1/"
           required_sdist = {
               prefix + "pyproject.toml",
               prefix + "README.md",
@@ -91,7 +91,7 @@ jobs:
         run: |
           python -m venv /tmp/pycrmkit-v1-core-wheel
           /tmp/pycrmkit-v1-core-wheel/bin/python -m pip install --upgrade pip
-          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0-py3-none-any.whl"
+          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-1.1.0a1-py3-none-any.whl"
           /tmp/pycrmkit-v1-core-wheel/bin/python -m pip install --no-deps "$wheel"
           (
             cd /tmp
@@ -104,7 +104,7 @@ jobs:
         run: |
           python -m venv /tmp/pycrmkit-v1-full-wheel
           /tmp/pycrmkit-v1-full-wheel/bin/python -m pip install --upgrade pip
-          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0-py3-none-any.whl"
+          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-1.1.0a1-py3-none-any.whl"
           /tmp/pycrmkit-v1-full-wheel/bin/python -m pip install             "$wheel[sqlalchemy,postgresql,migrations,fastapi,django,drf,email,resend]"
           (
             cd /tmp
@@ -121,7 +121,7 @@ jobs:
         run: |
           python -m venv /tmp/pycrmkit-v1-sdist
           /tmp/pycrmkit-v1-sdist/bin/python -m pip install --upgrade pip
-          sdist="$GITHUB_WORKSPACE/dist/pycrmkit-1.0.0.tar.gz"
+          sdist="$GITHUB_WORKSPACE/dist/pycrmkit-1.1.0a1.tar.gz"
           /tmp/pycrmkit-v1-sdist/bin/python -m pip install "$sdist"
           (
             cd /tmp

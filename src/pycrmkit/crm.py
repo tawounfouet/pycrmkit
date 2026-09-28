@@ -24,6 +24,7 @@ from pycrmkit.facade.opportunities import OpportunitiesAPI
 from pycrmkit.facade.organizations import OrganizationsAPI
 from pycrmkit.facade.pipelines import PipelinesAPI
 from pycrmkit.facade.relationships import RelationshipsAPI
+from pycrmkit.facade.segments import SegmentsAPI
 from pycrmkit.facade.tags import TagsAPI
 from pycrmkit.facade.tasks import TasksAPI
 from pycrmkit.facade.timeline import TimelineAPI
@@ -96,6 +97,7 @@ class CRM:
         self.pipelines = PipelinesAPI(runtime)
         self.organizations = OrganizationsAPI(runtime)
         self.relationships = RelationshipsAPI(runtime)
+        self.segments = SegmentsAPI(runtime)
         self.tasks = TasksAPI(runtime)
         self.timeline = TimelineAPI(runtime)
         self.tags = TagsAPI(runtime)

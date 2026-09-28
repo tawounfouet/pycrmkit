@@ -44,7 +44,7 @@ def test_event_definition_requires_positive_schema_version() -> None:
     assert error.value.code == "event.registry.schema_version.invalid"
 
 
-def test_default_registry_covers_stable_events_through_0_4() -> None:
+def test_default_registry_includes_stable_events_through_0_4() -> None:
     registry = default_event_registry()
 
     for event_type in (
@@ -58,4 +58,4 @@ def test_default_registry_covers_stable_events_through_0_4() -> None:
     ):
         assert registry.supports(event_type, 1)
 
-    assert len(registry) == 41
+    assert len(registry) >= 41
