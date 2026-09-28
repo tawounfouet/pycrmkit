@@ -1,6 +1,7 @@
 """Executable examples for the V1 Zero-to-Hero guides."""
 
 import json
+import logging
 import subprocess
 import sys
 from dataclasses import replace
@@ -5873,3 +5874,169 @@ def test_zero_to_hero_application_fastapi_memory_integration_example() -> None:
     openapi = app.openapi()
     assert "/crm/contacts" in openapi["paths"]
     assert "/crm/contacts/{contact_id}" in openapi["paths"]
+
+
+def test_zero_to_hero_observability_structured_logging_example(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    logger = logging.getLogger("pycrmkit.guide.observability")
+    correlation_id = "observability-guide-34"
+    email = "ada.private@example.com"
+    crm = CRM.memory(
+        webhook_auto_delivery=False,
+    ).with_context(
+        actor_id="support-agent-34",
+        correlation_id=correlation_id,
+    )
+
+    with caplog.at_level(logging.INFO, logger=logger.name):
+        contact = crm.contacts.create(
+            first_name="Ada",
+            last_name="Lovelace",
+            emails=(ContactEmail(email, is_primary=True),),
+        )
+        logger.info(
+            "crm.command.completed",
+            extra={
+                "operation": "contact.create",
+                "result": "success",
+                "entity_type": "contact",
+                "entity_id": str(contact.id),
+                "actor_id": crm.context.actor_id,
+                "correlation_id": crm.context.correlation_id,
+            },
+        )
+
+    record = next(
+        item
+        for item in caplog.records
+        if item.getMessage() == "crm.command.completed"
+    )
+    assert record.operation == "contact.create"
+    assert record.result == "success"
+    assert record.entity_type == "contact"
+    assert record.entity_id == str(contact.id)
+    assert record.actor_id == "support-agent-34"
+    assert record.correlation_id == correlation_id
+    assert email not in caplog.text
+
+    safe_error = ValidationError(
+        "invalid contact input",
+        code="contact.email.invalid",
+        context={
+            "email": email,
+            "contact_id": str(contact.id),
+        },
+    ).as_dict()
+
+    with caplog.at_level(logging.WARNING, logger=logger.name):
+        logger.warning(
+            "crm.command.failed",
+            extra={
+                "operation": "contact.update",
+                "result": "failure",
+                "error_code": safe_error["code"],
+                "error_context": safe_error["context"],
+                "correlation_id": correlation_id,
+            },
+        )
+
+    failure = next(
+        item
+        for item in caplog.records
+        if item.getMessage() == "crm.command.failed"
+    )
+    assert failure.error_code == "contact.email.invalid"
+    assert failure.error_context["email"] == "[REDACTED]"
+    assert failure.error_context["contact_id"] == str(contact.id)
+
+
+def test_zero_to_hero_observability_correlation_and_causation_example() -> None:
+    correlation_id = "observability-causal-34"
+    crm = CRM.memory(
+        webhook_auto_delivery=False,
+    ).with_context(
+        actor_id="operator-34",
+        correlation_id=correlation_id,
+    )
+    observed: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", observed.append)
+    crm.events.subscribe("task.created", observed.append)
+
+    contact = crm.contacts.create(
+        first_name="Grace",
+        last_name="Hopper",
+    )
+    root_event = observed[0]
+
+    child_crm = crm.with_event(root_event)
+    task = child_crm.tasks.create(
+        title="Investigate follow-up",
+        references=(EntityReference("contact", contact.id),),
+    )
+    child_event = observed[1]
+
+    assert root_event.correlation_id == correlation_id
+    assert root_event.causation_id is None
+    assert child_event.correlation_id == correlation_id
+    assert child_event.causation_id == root_event.id
+    assert child_event.aggregate_id == str(task.id)
+
+    audit = crm.audit.by_correlation(correlation_id)
+    actions = {entry.action for entry in audit.items}
+    assert {"contact.created", "task.created"}.issubset(actions)
+    assert all(entry.actor_id == "operator-34" for entry in audit.items)
+    assert all(entry.correlation_id == correlation_id for entry in audit.items)
+
+    timeline = crm.timeline.for_contact(contact.id)
+    task_entry = next(
+        entry
+        for entry in timeline.items
+        if str(entry.event_type) == "task.created"
+    )
+    assert task_entry.source_event_id == child_event.id
+    assert task_entry.correlation_id == correlation_id
+
+
+def test_zero_to_hero_observability_webhook_delivery_diagnostics_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 13, 15, tzinfo=UTC))
+    transport = _ZeroToHeroWebhookSequenceTransport(
+        [WebhookResponse(503)]
+    )
+    crm = CRM.memory(
+        clock=clock,
+        webhook_transport=transport,
+        webhook_retry_policy=WebhookRetryPolicy(max_attempts=3),
+        webhook_auto_delivery=False,
+    )
+    subscription = crm.webhooks.register(
+        url="https://hooks.example.com/observability",
+        events=("contact.created",),
+        signing_secret="0123456789abcdef0123456789abcdef",
+    )
+    observed: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", observed.append)
+
+    crm.contacts.create(display_name="Observability Webhook")
+    event = observed[0]
+
+    delivered = crm.webhooks.deliver(event)
+    assert len(delivered) == 1
+
+    delivery = delivered[0]
+    assert delivery.subscription_id == subscription.id
+    assert delivery.event_id == event.id
+    assert delivery.state is WebhookDeliveryState.RETRY_SCHEDULED
+    assert delivery.attempt_count == 1
+    assert delivery.last_status_code == 503
+    assert delivery.last_error_code == "webhook.http.503"
+    assert delivery.next_attempt_at is not None
+
+    attempts = crm.webhooks.attempts(delivery.id)
+    assert attempts.total == 1
+    attempt = attempts.items[0]
+    assert attempt.attempt_number == 1
+    assert attempt.status_code == 503
+    assert attempt.error_code == "webhook.http.503"
+    assert attempt.outcome.value == "retry_scheduled"
+    assert attempt.next_attempt_at == delivery.next_attempt_at

@@ -45,6 +45,7 @@ nav:
       - 31 Error Handling: guides/31_error_handling.md
       - 32 Security and Privacy: guides/32_security_and_privacy.md
       - 33 Testing PyCRMKit Applications: guides/33_testing_pycrmkit_applications.md
+      - 34 Observability and Debugging: guides/34_observability_and_debugging.md
   - Facade:
       - CRM: facade/index.md
   - Core:
