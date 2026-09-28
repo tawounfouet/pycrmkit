@@ -41,6 +41,7 @@ nav:
       - 27 Django: guides/27_django.md
       - 28 Django REST Framework: guides/28_django_rest_framework.md
       - 29 Transactions & Unit of Work: guides/29_transactions_and_unit_of_work.md
+      - 30 Context Events and Audit: guides/30_context_events_and_audit.md
   - Facade:
       - CRM: facade/index.md
   - Core:
