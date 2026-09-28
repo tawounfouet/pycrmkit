@@ -1,0 +1,75 @@
+"""Segmentation domain and portable query-expression model."""
+
+from pycrmkit.segments.entities import (
+    SEGMENTABLE_ENTITY_KINDS,
+    Segment,
+    SegmentId,
+    SegmentMember,
+    normalize_segment_key,
+)
+from pycrmkit.segments.enums import (
+    QueryFieldType,
+    QueryOperator,
+    SegmentMode,
+    SegmentStatus,
+)
+from pycrmkit.segments.expressions import (
+    MAX_EXPRESSION_DEPTH,
+    MAX_IN_VALUES,
+    MAX_PREDICATES,
+    QUERY_EXPRESSION_SCHEMA_VERSION,
+    And,
+    Not,
+    Or,
+    Predicate,
+    QueryExpression,
+    expression_from_dict,
+    expression_to_dict,
+)
+from pycrmkit.segments.queries import SegmentQuery
+from pycrmkit.segments.repository import (
+    SegmentMembershipRepository,
+    SegmentQueryExecutor,
+    SegmentRepository,
+)
+from pycrmkit.segments.schema import (
+    QueryField,
+    QuerySchema,
+    QuerySchemaRegistry,
+    default_query_schemas,
+)
+from pycrmkit.segments.services import SegmentService
+from pycrmkit.segments.unit_of_work import SegmentUnitOfWork
+
+__all__ = [
+    "MAX_EXPRESSION_DEPTH",
+    "MAX_IN_VALUES",
+    "MAX_PREDICATES",
+    "QUERY_EXPRESSION_SCHEMA_VERSION",
+    "SEGMENTABLE_ENTITY_KINDS",
+    "And",
+    "Not",
+    "Or",
+    "Predicate",
+    "QueryExpression",
+    "QueryField",
+    "QueryFieldType",
+    "QueryOperator",
+    "QuerySchema",
+    "QuerySchemaRegistry",
+    "Segment",
+    "SegmentId",
+    "SegmentMember",
+    "SegmentMembershipRepository",
+    "SegmentMode",
+    "SegmentQuery",
+    "SegmentQueryExecutor",
+    "SegmentRepository",
+    "SegmentService",
+    "SegmentStatus",
+    "SegmentUnitOfWork",
+    "default_query_schemas",
+    "expression_from_dict",
+    "expression_to_dict",
+    "normalize_segment_key",
+]
