@@ -22,7 +22,6 @@ from pycrmkit.segments import (
     Segment,
     SegmentId,
     SegmentMember,
-    SegmentMode,
     SegmentQuery,
     SegmentStatus,
     default_query_schemas,
