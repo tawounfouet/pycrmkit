@@ -637,3 +637,240 @@ django + drf + postgresql
 ~~~
 
 Applications with multiple deployment profiles should similarly test the profiles they claim to support.
+
+
+## 41. Test source checkout and installed artifact separately
+
+Source tests can pass while packaging is broken.
+
+Typical packaging failures include:
+
+~~~text
+missing package data
+missing migration files
+bad entry point
+undeclared dependency
+source-path shadowing
+~~~
+
+An installed-wheel test catches these failures.
+
+## 42. Clear PYTHONPATH for artifact qualification
+
+PyCRMKit clean-wheel qualification explicitly clears PYTHONPATH.
+
+This helps prove imports come from the installed distribution rather than the repository checkout.
+
+## 43. Test the artifact you deploy
+
+PyCRMKit verifies both wheel and sdist.
+
+A deployable application may instead qualify:
+
+~~~text
+wheel
+container image
+zip bundle
+serverless artifact
+~~~
+
+The important rule is to test the same artifact that production will execute.
+
+## 44. Inspect required package assets
+
+PyCRMKit explicitly checks that migration files, py.typed and package metadata are present in the wheel.
+
+Applications should similarly check runtime-critical assets such as:
+
+~~~text
+migrations
+templates
+static files
+configuration schemas
+entry points
+~~~
+
+## 45. Security regression should be a dedicated layer
+
+Security/privacy invariants deserve focused tests.
+
+Examples:
+
+~~~text
+error redaction
+secret-safe repr
+event PII minimization
+webhook HMAC
+replay freshness
+unsafe webhook URLs
+archive mutation guard
+merge provenance
+~~~
+
+## 46. Run security checks against the installed artifact
+
+PyCRMKit runs tests/security twice:
+
+~~~text
+source checkout
+built wheel in clean environment
+~~~
+
+This protects against packaging regressions in hardening code.
+
+## 47. Performance tests are regression guardrails
+
+PyCRMKit baseline covers:
+
+~~~text
+Contact creation
+Contact search
+Timeline retrieval
+bulk import
+repository pagination
+event publication
+~~~
+
+The published budgets are release guardrails, not production SLAs.
+
+## 48. Do not turn CI microbenchmarks into latency promises
+
+Production performance depends on database sizing, network, deployment topology, concurrency, data distribution and external services.
+
+Use benchmarks to detect regressions under a controlled runner.
+
+## 49. Compatibility claims should be executable
+
+PyCRMKit qualifies supported Python and optional dependency families through CI.
+
+If your application claims several Python, PostgreSQL or framework versions, encode that matrix in automated tests.
+
+## 50. Keep the main suite broad and fast
+
+The standard PyCRMKit Tests workflow runs pytest with coverage on:
+
+~~~text
+Python 3.11
+Python 3.12
+Python 3.13
+~~~
+
+A consuming application should preserve a reasonably fast default developer loop.
+
+## 51. Separate slow resource tests
+
+Use markers, folders or CI jobs to distinguish:
+
+~~~text
+fast local tests
+live PostgreSQL
+migrations
+HTTP E2E
+security qualification
+performance
+artifact qualification
+~~~
+
+## 52. Suggested application test layout
+
+A consuming repository can use:
+
+~~~text
+tests/
+├── unit/
+│   ├── domain/
+│   └── application/
+├── integration/
+│   ├── persistence/
+│   ├── fastapi/
+│   └── django/
+├── contracts/
+├── migrations/
+├── security/
+├── e2e/
+└── qualification/
+~~~
+
+The exact folder names are optional. The separation of intent is what matters.
+
+## 53. Unit tests should be deterministic
+
+Avoid network, wall-clock sleeps, shared databases and unordered global state in unit tests.
+
+## 54. Fixtures should reduce boilerplate, not hide the scenario
+
+Useful fixtures include:
+
+~~~text
+FixedClock
+CRM.memory()
+sample Contact
+sample Organization
+temporary engine
+TestClient
+~~~
+
+Important business actions should remain visible in the test body.
+
+## 55. Prefer small domain factories
+
+Helpers such as make_contact or make_task can keep setup readable while preserving explicit behavior.
+
+Keep defaults predictable.
+
+## 56. Do not share mutable CRM state across tests
+
+Each test should normally get its own MemoryStore or isolated database state.
+
+Shared global state creates order-dependent failures.
+
+## 57. Test rollback explicitly
+
+Cross-aggregate workflows should have at least one failure-path test.
+
+Examples:
+
+~~~text
+merge conflict -> no partial reassignment
+commit failure -> no event publication
+invalid transition -> no mutation
+~~~
+
+## 58. Test post-commit behavior separately
+
+For event-driven behavior distinguish:
+
+~~~text
+before commit
+after commit
+subscriber failure
+~~~
+
+The source transaction can remain committed even when a post-commit subscriber raises.
+
+## 59. Test idempotency where retries are plausible
+
+Examples include:
+
+~~~text
+lead conversion
+webhook delivery
+External Identity attach
+documented idempotent lifecycle operations
+~~~
+
+Invoke the operation twice and assert the stable semantic result.
+
+## 60. Test normalization boundaries
+
+Examples include:
+
+~~~text
+email normalization
+phone normalization
+RelationshipType normalization
+Tag name normalization
+External Identity system normalization
+~~~
+
+Normalization bugs often become uniqueness bugs in production.
