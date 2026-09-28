@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol, runtime_checkable
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.segments.entities import Segment, SegmentId, SegmentMember
 from pycrmkit.segments.expressions import QueryExpression
+from pycrmkit.segments.ordering import SortExpression
 from pycrmkit.segments.queries import SegmentQuery
 
 
@@ -59,15 +61,32 @@ class SegmentMembershipRepository(Protocol):
 class SegmentQueryExecutor(Protocol):
     """Evaluate portable expressions against canonical CRM entities."""
 
+    def validate(
+        self,
+        entity_kind: str,
+        expression: QueryExpression,
+        ordering: tuple[SortExpression, ...] = (),
+    ) -> None:
+        """Validate current field definitions and ordering."""
+
     def execute(
         self,
         entity_kind: str,
         expression: QueryExpression,
         page: OffsetPageRequest,
+        *,
+        at: datetime,
+        ordering: tuple[SortExpression, ...] = (),
     ) -> Page[EntityReference]:
         """Return matching entity references."""
 
-    def count(self, entity_kind: str, expression: QueryExpression) -> int:
+    def count(
+        self,
+        entity_kind: str,
+        expression: QueryExpression,
+        *,
+        at: datetime,
+    ) -> int:
         """Return exact matching entity count."""
 
     def exists(self, entity: EntityReference) -> bool:
