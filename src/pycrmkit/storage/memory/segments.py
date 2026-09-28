@@ -3,31 +3,42 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from datetime import date, datetime
+from functools import cmp_to_key
 from typing import Any, cast
 
 from pycrmkit.contacts import Contact
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
-from pycrmkit.exceptions import DuplicateError, NotFoundError
+from pycrmkit.custom_fields import CustomFieldDefinition
+from pycrmkit.exceptions import DuplicateError, NotFoundError, ValidationError
 from pycrmkit.leads import Lead
 from pycrmkit.opportunities import Opportunity
 from pycrmkit.organizations import Organization
 from pycrmkit.segments import (
     And,
     Not,
+    NullOrder,
     Or,
     Predicate,
     QueryExpression,
     QueryOperator,
+    RelativeTimeValue,
     Segment,
     SegmentId,
     SegmentMember,
     SegmentQuery,
     SegmentStatus,
+    SortDirection,
+    SortExpression,
     default_query_schemas,
     normalize_segment_key,
 )
-from pycrmkit.segments.schema import QueryField
+from pycrmkit.segments.schema import (
+    QueryField,
+    QuerySchema,
+    query_field_from_custom_definition,
+)
 from pycrmkit.storage.memory._state import _MemoryState
 
 SegmentEntity = Contact | Organization | Lead | Opportunity
@@ -157,26 +168,55 @@ class MemorySegmentMembershipRepository:
 
 
 class MemorySegmentQueryExecutor:
-    """Semantic reference evaluator over the in-memory canonical CRM state."""
+    """Semantic reference evaluator over canonical in-memory CRM state."""
 
     def __init__(self, state: _MemoryState) -> None:
         self._state = state
-        self._schemas = default_query_schemas()
+        self._base_schemas = default_query_schemas()
+
+    def validate(
+        self,
+        entity_kind: str,
+        expression: QueryExpression,
+        ordering: tuple[SortExpression, ...] = (),
+    ) -> None:
+        schema = self._schema(entity_kind)
+        schema.validate(expression)
+        for item in ordering:
+            field = schema.field(item.field)
+            if field.key == "tag":
+                raise ValidationError(
+                    "tag collection cannot be used as an ordering field",
+                    code="segment.query.ordering.invalid_field",
+                    context={"field": field.key},
+                )
 
     def execute(
         self,
         entity_kind: str,
         expression: QueryExpression,
         page: OffsetPageRequest,
+        *,
+        at: datetime,
+        ordering: tuple[SortExpression, ...] = (),
     ) -> Page[EntityReference]:
-        schema = self._schemas.get(entity_kind)
-        schema.validate(expression)
+        schema = self._schema(entity_kind)
+        self.validate(entity_kind, expression, ordering)
         values = [
             entity
             for entity in self._entities(entity_kind)
-            if self._matches(entity, expression, schema)
+            if self._matches(entity, expression, schema, at)
         ]
-        values.sort(key=lambda item: (item.created_at, str(item.id)))
+        values.sort(
+            key=cmp_to_key(
+                lambda left, right: self._compare_entities(
+                    left,
+                    right,
+                    schema,
+                    tuple(ordering),
+                )
+            )
+        )
         total = len(values)
         selected = values[page.offset : page.offset + page.limit]
         return Page(
@@ -186,17 +226,40 @@ class MemorySegmentQueryExecutor:
             total=total,
         )
 
-    def count(self, entity_kind: str, expression: QueryExpression) -> int:
-        schema = self._schemas.get(entity_kind)
+    def count(
+        self,
+        entity_kind: str,
+        expression: QueryExpression,
+        *,
+        at: datetime,
+    ) -> int:
+        schema = self._schema(entity_kind)
         schema.validate(expression)
         return sum(
             1
             for entity in self._entities(entity_kind)
-            if self._matches(entity, expression, schema)
+            if self._matches(entity, expression, schema, at)
         )
 
     def exists(self, entity: EntityReference) -> bool:
         return any(str(item.id) == str(entity.id) for item in self._entities(entity.kind))
+
+    def _schema(self, entity_kind: str) -> QuerySchema:
+        base = self._base_schemas.get(entity_kind)
+        custom_fields: list[QueryField] = []
+        for versions in self._state.custom_field_definitions.values():
+            definition = versions[-1]
+            if entity_kind not in definition.applies_to:
+                continue
+            field = query_field_from_custom_definition(definition)
+            if field is not None:
+                custom_fields.append(field)
+        custom_fields.sort(key=lambda item: item.key)
+        return QuerySchema(
+            entity_kind=base.entity_kind,
+            fields=(*base.fields, *custom_fields),
+            version=base.version,
+        )
 
     def _entities(self, entity_kind: str) -> tuple[SegmentEntity, ...]:
         if entity_kind == "contact":
@@ -207,34 +270,135 @@ class MemorySegmentQueryExecutor:
             return tuple(self._state.leads.values())
         if entity_kind == "opportunity":
             return tuple(self._state.opportunities.values())
-        self._schemas.get(entity_kind)
+        self._base_schemas.get(entity_kind)
         raise AssertionError("unreachable")
 
     def _matches(
         self,
         entity: SegmentEntity,
         expression: QueryExpression,
-        schema: object,
+        schema: QuerySchema,
+        at: datetime,
     ) -> bool:
-        from pycrmkit.segments.schema import QuerySchema
-
-        assert isinstance(schema, QuerySchema)
         if isinstance(expression, Predicate):
             field = schema.field(expression.field)
-            return self._predicate(field, getattr(entity, expression.field), expression)
+            actual = self._field_value(entity, field.key)
+            if field.key == "tag":
+                return self._tag_predicate(tuple(actual or ()), predicate)
+            return self._predicate(field, actual, expression, at)
         if isinstance(expression, And):
-            return all(self._matches(entity, item, schema) for item in expression.expressions)
+            return all(
+                self._matches(entity, item, schema, at)
+                for item in expression.expressions
+            )
         if isinstance(expression, Or):
-            return any(self._matches(entity, item, schema) for item in expression.expressions)
+            return any(
+                self._matches(entity, item, schema, at)
+                for item in expression.expressions
+            )
         if isinstance(expression, Not):
-            return not self._matches(entity, expression.expression, schema)
+            return not self._matches(entity, expression.expression, schema, at)
         raise AssertionError(f"unsupported expression node: {type(expression).__name__}")
+
+    def _field_value(self, entity: SegmentEntity, key: str) -> object:
+        if key == "tag":
+            reference = EntityReference(self._entity_kind(entity), entity.id)
+            names = []
+            for tag_id, assigned in self._state.tag_assignments:
+                if assigned == reference:
+                    tag = self._state.tags.get(tag_id)
+                    if tag is not None:
+                        names.append(tag.name.normalized)
+            return tuple(sorted(names))
+        if key.startswith("custom."):
+            custom_key = key.split(".", 1)[1]
+            definition = self._custom_definition(custom_key, self._entity_kind(entity))
+            if definition is None:
+                return None
+            value = self._state.custom_field_values.get(
+                (
+                    definition.id,
+                    EntityReference(self._entity_kind(entity), entity.id),
+                )
+            )
+            return None if value is None else value.value
+        return getattr(entity, key)
+
+    def _custom_definition(
+        self,
+        key: str,
+        entity_kind: str,
+    ) -> CustomFieldDefinition | None:
+        for versions in self._state.custom_field_definitions.values():
+            definition = versions[-1]
+            if (
+                definition.key == key
+                and definition.active
+                and entity_kind in definition.applies_to
+            ):
+                return definition
+        return None
+
+    @staticmethod
+    def _entity_kind(entity: SegmentEntity) -> str:
+        if isinstance(entity, Contact):
+            return "contact"
+        if isinstance(entity, Organization):
+            return "organization"
+        if isinstance(entity, Lead):
+            return "lead"
+        if isinstance(entity, Opportunity):
+            return "opportunity"
+        raise AssertionError(type(entity).__name__)
+
+    @staticmethod
+    def _tag_predicate(tags: tuple[str, ...], predicate: Predicate) -> bool:
+        operator = predicate.operator
+        if operator is QueryOperator.IS_NULL:
+            return not tags
+        if operator is QueryOperator.IS_NOT_NULL:
+            return bool(tags)
+        raw = predicate.value
+        assert raw is not None
+
+        def normalize(value: object) -> str:
+            if not isinstance(value, str):
+                raise ValidationError(
+                    "tag query values must be strings",
+                    code="segment.query.invalid_value",
+                    context={"field": "tag"},
+                )
+            return " ".join(value.strip().split()).casefold()
+
+        if operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
+            assert isinstance(raw, tuple)
+            wanted = {normalize(item) for item in raw}
+            present = any(tag in wanted for tag in tags)
+            return present if operator is QueryOperator.IN else not present
+
+        right = normalize(raw)
+        if operator is QueryOperator.EQ:
+            return right in tags
+        if operator is QueryOperator.NE:
+            return right not in tags
+        if operator is QueryOperator.CONTAINS:
+            return any(right in tag for tag in tags)
+        if operator is QueryOperator.STARTS_WITH:
+            return any(tag.startswith(right) for tag in tags)
+        if operator is QueryOperator.ENDS_WITH:
+            return any(tag.endswith(right) for tag in tags)
+        raise ValidationError(
+            "operator is not supported for tag filtering",
+            code="segment.query.invalid_operator",
+            context={"field": "tag", "operator": operator.value},
+        )
 
     @staticmethod
     def _predicate(
         field: QueryField,
         actual: object,
         predicate: Predicate,
+        at: datetime,
     ) -> bool:
         operator = predicate.operator
         if operator is QueryOperator.IS_NULL:
@@ -247,6 +411,10 @@ class MemorySegmentQueryExecutor:
         left = field.normalize_value(actual)
         raw_right = predicate.value
         assert raw_right is not None
+
+        if isinstance(raw_right, RelativeTimeValue):
+            resolved = raw_right.resolve(at)
+            raw_right = resolved.date() if field.type.value == "date" else resolved
 
         if operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
             assert isinstance(raw_right, tuple)
@@ -276,6 +444,53 @@ class MemorySegmentQueryExecutor:
         if operator is QueryOperator.ENDS_WITH:
             return left.endswith(right)
         raise AssertionError(f"unsupported query operator: {operator}")
+
+    def _compare_entities(
+        self,
+        left: SegmentEntity,
+        right: SegmentEntity,
+        schema: QuerySchema,
+        ordering: tuple[SortExpression, ...],
+    ) -> int:
+        rules = ordering or (SortExpression("created_at"),)
+        for rule in rules:
+            field = schema.field(rule.field)
+            left_value = self._field_value(left, field.key)
+            right_value = self._field_value(right, field.key)
+            compared = self._compare_values(
+                field,
+                left_value,
+                right_value,
+                direction=rule.direction,
+                null_order=rule.null_order,
+            )
+            if compared:
+                return compared
+        left_id = str(left.id)
+        right_id = str(right.id)
+        return (left_id > right_id) - (left_id < right_id)
+
+    @staticmethod
+    def _compare_values(
+        field: QueryField,
+        left: object,
+        right: object,
+        *,
+        direction: SortDirection,
+        null_order: NullOrder,
+    ) -> int:
+        if left is None or right is None:
+            if left is None and right is None:
+                return 0
+            null_first = null_order is NullOrder.FIRST
+            result = -1 if left is None else 1
+            return result if null_first else -result
+        left_value = field.normalize_value(left)
+        right_value = field.normalize_value(right)
+        result = (cast(Any, left_value) > cast(Any, right_value)) - (
+            cast(Any, left_value) < cast(Any, right_value)
+        )
+        return result if direction is SortDirection.ASC else -result
 
 
 __all__ = [
