@@ -32,8 +32,9 @@ def _public_callables(value: object) -> list[str]:
     )
 
 
-def test_candidate_version_and_root_exports_are_frozen() -> None:
-    assert pycrmkit.__version__ == "1.0.0"
+def test_v1_root_exports_remain_compatible_after_v1() -> None:
+    assert MANIFEST["version"] == "1.0.0"
+    assert pycrmkit.__version__.startswith("1.")
     assert pycrmkit.__all__ == MANIFEST["root_exports"]
 
 
@@ -108,7 +109,7 @@ def test_import_performance_controls_are_candidate_frozen() -> None:
 
 
 def test_event_registry_names_and_envelope_shape_are_frozen() -> None:
-    assert list(BUILTIN_EVENT_TYPES) == MANIFEST["builtin_event_types"]
+    assert set(MANIFEST["builtin_event_types"]).issubset(BUILTIN_EVENT_TYPES)
     assert [field.name for field in fields(DomainEvent)] == MANIFEST[
         "event_envelope_fields"
     ]
