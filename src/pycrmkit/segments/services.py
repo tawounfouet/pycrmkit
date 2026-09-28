@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory
+from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory, UUIDId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
@@ -45,6 +45,8 @@ class SegmentService:
         mode: SegmentMode,
         description: str | None = None,
         query: QueryExpression | None = None,
+        saved_query_id: UUIDId | None = None,
+        saved_query_revision: int | None = None,
         owner_id: EntityId | None = None,
         metadata: Mapping[str, object] | None = None,
     ) -> Segment:
@@ -77,6 +79,8 @@ class SegmentService:
             mode=mode,
             description=description,
             query=query,
+            saved_query_id=saved_query_id,
+            saved_query_revision=saved_query_revision,
             owner_id=owner_id,
             metadata=dict(metadata or {}),
         )
