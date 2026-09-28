@@ -22,8 +22,9 @@ def _optional(extra: str) -> list[str]:
     return list(PYPROJECT["project"]["optional-dependencies"][extra])
 
 
-def test_release_version_matches_compatibility_manifest() -> None:
-    assert pycrmkit.__version__ == MANIFEST["version"] == "1.0.0"
+def test_v1_compatibility_manifest_remains_the_1x_baseline() -> None:
+    assert MANIFEST["version"] == "1.0.0"
+    assert pycrmkit.__version__.startswith("1.")
 
 
 def test_runtime_python_is_one_of_the_qualified_minor_versions() -> None:
