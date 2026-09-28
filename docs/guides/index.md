@@ -66,6 +66,7 @@ example application.
 31. [Context, Events & Audit](30_context_events_and_audit.md) — propagate actor, correlation and causation through immutable Domain Events, privacy-conscious Audit records, transactional Timeline projections and post-commit subscribers.
 32. [Error Handling](31_error_handling.md) — normalize domain, persistence and integration failures through stable codes, privacy-safe context, backend translation and predictable FastAPI/DRF HTTP contracts.
 33. [Security & Privacy](32_security_and_privacy.md) — harden sensitive diagnostics, secret-bearing representations, event/audit payloads, webhook integrity and destinations, destructive operations and merge safeguards.
+34. [Testing PyCRMKit Applications](33_testing_pycrmkit_applications.md) — build an application test pyramid from deterministic Memory workflows through adapter contracts, PostgreSQL/migrations, HTTP E2E and installed-artifact qualification.
 
 ## LEVEL 1 complete
 
@@ -90,6 +91,10 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 ## LEVEL 6 complete
 
 Memory, SQLAlchemy/PostgreSQL, migrations, FastAPI, Django/DRF, transaction semantics, context/events/audit, stable errors and security/privacy hardening now form the complete Persistence & Integrations learning layer. LEVEL 7 begins with Testing PyCRMKit Applications.
+
+## LEVEL 7 in progress
+
+Production Applications now begins with a layered testing strategy: Memory for fast business confidence, adapter contracts for portability, PostgreSQL/migrations for production persistence, HTTP E2E for composition and installed-artifact qualification for deployment confidence. Observability & Debugging is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -131,7 +136,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 30 | Context, Events & Audit | Published |
 | 6 | 31 | Error Handling | Published |
 | 6 | 32 | Security & Privacy | Published |
-| 7 | 33 | Testing PyCRMKit Applications | Planned |
+| 7 | 33 | Testing PyCRMKit Applications | Published |
 | 7 | 34 | Observability & Debugging | Planned |
 | 7 | 35 | Performance | Planned |
 | 7 | 36 | Application Architecture | Planned |

@@ -5725,3 +5725,151 @@ def test_zero_to_hero_security_privacy_webhook_and_lifecycle_safeguards_example(
             ContactUpdate(display_name="Should not change"),
         )
     assert archived_error.value.code == "contact.archived"
+
+
+def test_zero_to_hero_application_testing_memory_workflow_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 11, 0, tzinfo=UTC))
+    crm = CRM.memory(
+        clock=clock,
+        webhook_auto_delivery=False,
+    ).with_context(
+        actor_id="application-test-user",
+        correlation_id="application-test-33",
+    )
+
+    events: list[DomainEvent] = []
+    crm.events.subscribe("task.created", events.append)
+    crm.events.subscribe("task.completed", events.append)
+
+    contact = crm.contacts.create(
+        first_name="Ada",
+        last_name="Lovelace",
+    )
+    task = crm.tasks.create(
+        title="Prepare follow-up",
+        references=(EntityReference("contact", contact.id),),
+    )
+
+    clock.advance(timedelta(minutes=10))
+    completed = crm.tasks.complete(task.id)
+
+    assert completed.status is TaskStatus.COMPLETED
+    assert [str(event.type) for event in events] == [
+        "task.created",
+        "task.completed",
+    ]
+    assert all(event.actor_id == "application-test-user" for event in events)
+    assert all(event.correlation_id == "application-test-33" for event in events)
+
+    audit = crm.audit.by_correlation("application-test-33")
+    assert {
+        entry.action
+        for entry in audit.items
+        if entry.entity_type == "task"
+    } == {
+        "task.created",
+        "task.completed",
+    }
+
+    timeline = crm.timeline.for_contact(contact.id)
+    assert [str(entry.event_type) for entry in timeline.items] == [
+        "task.completed",
+        "task.created",
+    ]
+
+
+def test_zero_to_hero_application_behavior_runs_on_memory_and_sqlalchemy_example() -> None:
+    now = datetime(2026, 9, 28, 11, 30, tzinfo=UTC)
+
+    def exercise(crm: CRM) -> tuple[str, int, int]:
+        contact = crm.contacts.create(
+            first_name="Grace",
+            last_name="Hopper",
+        )
+        crm.tasks.create(
+            title="Adapter-neutral follow-up",
+            references=(EntityReference("contact", contact.id),),
+        )
+        timeline = crm.timeline.for_contact(contact.id)
+        audit = crm.audit.by_correlation("adapter-contract-33")
+        return contact.display_name or "", timeline.total, audit.total
+
+    memory_result = exercise(
+        CRM.memory(
+            clock=FixedClock(now),
+            webhook_auto_delivery=False,
+        ).with_context(
+            actor_id="adapter-test",
+            correlation_id="adapter-contract-33",
+        )
+    )
+
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(bind=engine, expire_on_commit=False)
+    bus = InProcessEventBus()
+
+    def uow_factory() -> SQLAlchemyUnitOfWork:
+        return SQLAlchemyUnitOfWork(
+            session_factory,
+            event_publisher=bus,
+        )
+
+    sqlalchemy_result = exercise(
+        CRM(
+            uow_factory=uow_factory,
+            event_bus=bus,
+            clock=FixedClock(now),
+            webhook_auto_delivery=False,
+        ).with_context(
+            actor_id="adapter-test",
+            correlation_id="adapter-contract-33",
+        )
+    )
+
+    assert memory_result == sqlalchemy_result
+    assert memory_result[0] == "Grace Hopper"
+    assert memory_result[1] == 1
+    assert memory_result[2] >= 2
+
+    engine.dispose()
+
+
+def test_zero_to_hero_application_fastapi_memory_integration_example() -> None:
+    crm = CRM.memory(
+        webhook_auto_delivery=False,
+    )
+    app = FastAPI(title="Application under test")
+    install_error_handlers(app)
+    app.include_router(
+        create_crm_router(lambda: crm),
+        prefix="/crm",
+    )
+    client = TestClient(app)
+
+    created = client.post(
+        "/crm/contacts",
+        json={
+            "first_name": "Katherine",
+            "last_name": "Johnson",
+        },
+        headers={
+            "X-Actor-ID": "api-test-user",
+            "X-Correlation-ID": "api-test-33",
+        },
+    )
+
+    assert created.status_code == 201
+    contact_id = created.json()["id"]
+
+    loaded = client.get(f"/crm/contacts/{contact_id}")
+    assert loaded.status_code == 200
+    assert loaded.json()["display_name"] == "Katherine Johnson"
+
+    missing = client.get("/crm/contacts/00000000-0000-4000-8000-000000000001")
+    assert missing.status_code == 404
+    assert missing.json()["code"] == "contact.not_found"
+
+    openapi = app.openapi()
+    assert "/crm/contacts" in openapi["paths"]
+    assert "/crm/contacts/{contact_id}" in openapi["paths"]
