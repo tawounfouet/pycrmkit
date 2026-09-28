@@ -757,3 +757,513 @@ safe provider metadata
 ~~~
 
 Escalate access to raw CRM data only when genuinely necessary and authorized.
+
+
+## 56. Use logging levels semantically
+
+A practical application convention can be:
+
+~~~text
+DEBUG     diagnostic detail
+INFO      successful application operation
+WARNING   degraded or retryable behavior
+ERROR     failed operation requiring investigation
+CRITICAL  service-level failure or invariant break
+~~~
+
+PyCRMKit does not define these levels for the embedding application.
+
+## 57. Not every domain error is an infrastructure incident
+
+A contact.not_found or resource conflict may be an expected client/business outcome.
+
+Severity should reflect operational impact rather than merely the existence of an exception.
+
+## 58. Repository failures deserve stronger attention
+
+Failures such as repository.deadlock, repository.serialization_failure and repository.backend_error are stronger candidates for infrastructure-oriented ERROR logs and metrics.
+
+## 59. Retryable does not mean invisible
+
+A retryable webhook/provider/database failure should still expose bounded evidence:
+
+~~~text
+retry_count
+next_attempt_at
+error_code
+operation
+correlation_id
+~~~
+
+## 60. Dead-letter state should be visible
+
+Useful webhook operational signals include:
+
+~~~text
+dead_letter count
+age of oldest dead letter
+error-code distribution
+event-type distribution
+~~~
+
+Unique event IDs should stay in logs/traces rather than metric labels.
+
+## 61. Keep observability payloads bounded
+
+Prefer counts, offsets and identifiers over serialized collections.
+
+For pagination, useful fields include:
+
+~~~text
+limit
+offset
+total
+has_next
+has_previous
+query type
+~~~
+
+## 62. Import jobs need batch-level observability
+
+Useful import diagnostics include:
+
+~~~text
+source system
+batch correlation ID
+row count
+success count
+failure count
+duplicate count
+review count
+duration
+~~~
+
+Raw source rows should not be logged by default.
+
+## 63. Aggregate import failures by stable code
+
+A summary by stable failure code is usually more useful and safer than storing every failed customer row in logs.
+
+## 64. Merge operations deserve correlation-level traces
+
+A Contact merge may touch Contacts, Activities, Relationships, Tags, Custom Fields, External Identities and Audit.
+
+One correlation ID lets operators connect those effects without logging each payload.
+
+## 65. Lead conversion is another cross-aggregate trace
+
+A conversion can span Lead, Opportunity, Audit and Domain Events.
+
+Treat the conversion as one correlation scope.
+
+## 66. Webhook auto-delivery is post-commit work
+
+When webhook_auto_delivery is enabled:
+
+~~~text
+source mutation
+      |
+      v
+commit
+      |
+      v
+DomainEvent publication
+      |
+      v
+WebhookEventBridge
+      |
+      v
+delivery attempt
+~~~
+
+A destination failure does not mean the source CRM mutation failed.
+
+## 67. Distinguish source and side-effect results
+
+A structured record can say:
+
+~~~text
+source_result = committed
+side_effect = webhook
+side_effect_result = retry_scheduled
+error_code = webhook.http.503
+~~~
+
+This is more precise than one generic failure flag.
+
+## 68. Preserve transaction boundaries in traces
+
+For a command:
+
+~~~text
+started
+      |
+domain work
+      |
+commit
+      |
+post-commit side effects
+      |
+completed
+~~~
+
+do not emit a final success signal before the transactional facade call has actually completed.
+
+## 69. Log exceptions once per ownership boundary
+
+Avoid logging the same exception as ERROR in repository, service, router and middleware layers.
+
+Choose clear logging ownership to prevent duplicate incidents.
+
+## 70. Prefer machine-readable event names
+
+Examples:
+
+~~~text
+crm.command.started
+crm.command.completed
+crm.command.failed
+crm.webhook.retry_scheduled
+crm.webhook.dead_letter
+crm.provider.failed
+~~~
+
+Stable event names are easier to query and dashboard.
+
+## 71. Duration belongs to application instrumentation
+
+PyCRMKit does not expose a built-in command-duration metric.
+
+Middleware or service wrappers can measure elapsed time using a monotonic clock.
+
+Domain timestamps and operational latency are different concepts.
+
+## 72. Audit and DomainEvent timestamps use the injected CRM Clock
+
+That makes domain-time tests deterministic.
+
+Request or job latency should be measured separately.
+
+## 73. Allow-list provider metadata
+
+If your application adds providers, copy selected safe metadata fields rather than entire provider responses.
+
+This follows the existing SMTP and Resend adapter pattern.
+
+## 74. Provider request IDs are valuable bridges
+
+If a provider returns a request ID, log it beside your own correlation ID.
+
+Example:
+
+~~~text
+correlation_id = app-request-123
+provider = resend
+provider_request_id = req_abc
+failure_code = resend.rate_limit_error
+~~~
+
+This enables support correlation without message-body exposure.
+
+## 75. Service context belongs in application logs
+
+Useful fields can include:
+
+~~~text
+service
+environment
+version
+operation
+result
+actor_id
+correlation_id
+entity_type
+entity_id
+error_code
+~~~
+
+Deployment-specific fields remain application-owned.
+
+## 76. Keep metrics low-cardinality
+
+Good labels:
+
+~~~text
+operation
+result
+error_code
+event_type
+provider
+delivery_state
+~~~
+
+Risky labels:
+
+~~~text
+contact_id
+correlation_id
+event_id
+email
+external_id
+~~~
+
+Unique identifiers belong in logs/traces.
+
+## 77. External tracing can coexist with CRM correlation
+
+An application may have trace_id, span_id, request_id, correlation_id and job_id simultaneously.
+
+PyCRMKit does not require correlation_id to equal a vendor tracing ID.
+
+Define their relationship explicitly in application architecture.
+
+## 78. HTTP middleware is a natural observability boundary
+
+A FastAPI or Django application can:
+
+~~~text
+receive or generate correlation
+      |
+authenticate
+      |
+authorize
+      |
+bind actor_id
+      |
+call CRM
+      |
+log status, duration and safe IDs
+~~~
+
+PyCRMKit does not own this middleware.
+
+## 79. Background jobs need the same context discipline
+
+Scheduled jobs and queue consumers should bind actor_id and correlation_id before CRM calls.
+
+Event-triggered child work should use with_event when direct causation matters.
+
+## 80. Preserve context across queue handoff
+
+If your application queues work, transport the safe correlation ID explicitly.
+
+For event-triggered work, transport the parent EventId when you need causation to survive the handoff.
+
+The queue envelope remains application-specific.
+
+## 81. Audit helps verify commit outcome
+
+If a command-start log exists but no corresponding Audit entry exists, investigate whether the transactional mutation failed or rolled back before commit.
+
+## 82. Domain Events help isolate post-commit failures
+
+If source state and Audit exist but a downstream subscriber failed, event ID, correlation and causation help locate the failure after commit.
+
+## 83. Timeline can verify projection behavior
+
+For supported projections, TimelineEntry.source_event_id matches the source DomainEvent ID.
+
+This helps distinguish source mutation issues from projection/display issues.
+
+## 84. Start incident investigation with minimized evidence
+
+A good first-pass dataset is:
+
+~~~text
+correlation ID
+actor ID
+operation
+entity ID
+error code
+Audit actions
+event type / ID
+webhook delivery state
+safe provider metadata
+~~~
+
+Escalate access to raw CRM data only when authorized and necessary.
+
+## 85. Retention and access controls still matter
+
+Even minimized observability data can expose entity IDs, actor IDs, operation names, failure patterns and system topology.
+
+Logging/tracing platforms should be protected as production systems.
+
+## 86. Runbooks should use stable codes
+
+Runbooks can anchor on conditions such as:
+
+~~~text
+repository.deadlock
+webhook.transport.destination_forbidden
+contact.archived
+~~~
+
+Stable codes are more reliable than message fragments.
+
+## 87. Test observability contracts
+
+If dashboards depend on fields such as event, operation, result, correlation_id and error_code, write tests asserting those fields and privacy rules.
+
+## 88. Test correlation propagation
+
+A useful test proves:
+
+~~~text
+request or job correlation
+      |
+      v
+CRMContext
+      |
+      +--> DomainEvent
+      +--> Audit
+      +--> application log
+~~~
+
+## 89. Test webhook attempt diagnostics
+
+With a fake transport returning HTTP 503, verify:
+
+~~~text
+delivery.state = retry_scheduled
+last_status_code = 503
+last_error_code = webhook.http.503
+attempt.outcome = retry_scheduled
+~~~
+
+No real network is required.
+
+## 90. Test public-safe error logging
+
+An application logging helper can use error.as_dict for context intended for ordinary structured logs, then test that sensitive keys are redacted.
+
+## Common mistakes
+
+### Generating a new correlation ID at every layer
+
+This destroys end-to-end traceability.
+
+### Logging whole CRM entities or raw request bodies
+
+Those can contain PII and arbitrary metadata.
+
+### Logging raw SQL params
+
+PyCRMKit deliberately removes them from translated persistence errors.
+
+### Dumping complete provider responses
+
+Prefer allow-listed metadata.
+
+### Treating Domain Events as a durable event store
+
+The built-in bus is synchronous and process-local.
+
+### Treating Timeline as full mutation history
+
+Use Audit for operational mutation history.
+
+### Treating Audit as a stack-trace store
+
+Audit should stay minimized and domain-oriented.
+
+### Logging one exception at every layer
+
+This produces duplicate incidents and noisy alerts.
+
+### Alerting on every 404 or conflict
+
+Expected business outcomes are not always infrastructure incidents.
+
+### Using unique IDs as metric labels
+
+This creates high-cardinality metrics.
+
+### Assuming a subscriber failure rolled back the source mutation
+
+Event publication happens after commit.
+
+### Logging a secret through direct field access because repr hides it
+
+repr protection does not make explicit secret logging safe.
+
+### Using wall-clock timestamps to calculate latency
+
+Use monotonic elapsed time for application duration measurement.
+
+## Observability checklist
+
+A production application should be able to answer yes to questions like:
+
+~~~text
+Can one correlation follow a request or job end-to-end?             ✅
+Can Audit be queried by correlation?                                ✅
+Are stable error codes included in diagnostics?                     ✅
+Are raw customer payloads absent from ordinary logs?                 ✅
+Are SQL params absent from persistence diagnostics?                  ✅
+Can webhook retries and dead letters be inspected?                  ✅
+Are provider request IDs retained when safely available?             ✅
+Can post-commit failure be distinguished from source rollback?       ✅
+Are log fields machine-readable and stable?                          ✅
+Are metric labels bounded-cardinality?                               ✅
+Are observability privacy rules regression-tested?                  ✅
+~~~
+
+## What you learned
+
+You can now explain:
+
+- why PyCRMKit provides observability primitives rather than an observability platform;
+- how actor, correlation and causation relate;
+- how to propagate context through HTTP, jobs and event-triggered work;
+- how Audit supports persistent investigation;
+- how Domain Events support causal debugging;
+- why Timeline has a different role;
+- how stable error codes and safe persistence diagnostics help operations;
+- how webhook delivery/attempt records expose retry evidence;
+- how provider failure codes and request IDs help external-service diagnosis;
+- why post-commit subscriber failures differ from rollback;
+- how to design privacy-safe structured logs and bounded metrics.
+
+## LEVEL 7 in progress
+
+~~~text
+33 Testing PyCRMKit Applications ✅
+34 Observability & Debugging      ✅
+35 Performance                    ← NEXT
+36 Application Architecture
+37 Production Deployment
+38 Complete FastAPI Application
+39 Complete Django Application
+40 Zero-to-Hero Final Project
+~~~
+
+## Next
+
+The next chapter is **35 - Performance**.
+
+The next architecture is:
+
+~~~text
+application workload
+      |
+      +--> pagination
+      +--> search
+      +--> timeline queries
+      +--> bulk import
+      +--> event publication
+      +--> database queries
+      |
+      v
+measure
+      |
+      v
+baseline
+      |
+      v
+optimize verified bottlenecks
+~~~
+
+The next learning question is:
+
+> How should a production application measure and optimize PyCRMKit workloads without mistaking synthetic benchmark guardrails for real production capacity or latency guarantees?
