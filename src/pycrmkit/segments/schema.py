@@ -13,6 +13,7 @@ from uuid import UUID
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.time import as_utc
 from pycrmkit.core.value_objects import ValueObject
+from pycrmkit.custom_fields import CustomFieldDefinition, CustomFieldType
 from pycrmkit.exceptions import NotFoundError, ValidationError
 from pycrmkit.segments.enums import QueryFieldType, QueryOperator
 from pycrmkit.segments.expressions import (
@@ -21,6 +22,7 @@ from pycrmkit.segments.expressions import (
     Or,
     Predicate,
     QueryExpression,
+    RelativeTimeValue,
     normalize_query_field_key,
     validate_expression_complexity,
 )
@@ -172,6 +174,20 @@ class QueryField(ValueObject):
         if predicate.operator in {QueryOperator.IS_NULL, QueryOperator.IS_NOT_NULL}:
             return
         value = predicate.value
+        if isinstance(value, RelativeTimeValue):
+            if self.type not in {QueryFieldType.DATE, QueryFieldType.DATETIME}:
+                raise ValidationError(
+                    "relative time requires a date or datetime field",
+                    code="segment.query.relative_time.invalid_field",
+                    context={"field": self.key, "field_type": self.type.value},
+                )
+            if predicate.operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
+                raise ValidationError(
+                    "relative time cannot be used inside in/not_in",
+                    code="segment.query.relative_time.invalid_operator",
+                    context={"field": self.key, "operator": predicate.operator.value},
+                )
+            return
         if predicate.operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
             assert isinstance(value, tuple)
             for item in value:
@@ -284,6 +300,40 @@ def iter_predicates(expression: QueryExpression) -> tuple[Predicate, ...]:
     )
 
 
+def query_field_from_custom_definition(
+    definition: CustomFieldDefinition,
+) -> QueryField | None:
+    """Map supported scalar Custom Fields into portable query fields."""
+
+    mapping = {
+        CustomFieldType.STRING: QueryFieldType.STRING,
+        CustomFieldType.TEXT: QueryFieldType.STRING,
+        CustomFieldType.INTEGER: QueryFieldType.INTEGER,
+        CustomFieldType.DECIMAL: QueryFieldType.DECIMAL,
+        CustomFieldType.BOOLEAN: QueryFieldType.BOOLEAN,
+        CustomFieldType.DATE: QueryFieldType.DATE,
+        CustomFieldType.DATETIME: QueryFieldType.DATETIME,
+        CustomFieldType.EMAIL: QueryFieldType.STRING,
+        CustomFieldType.PHONE: QueryFieldType.STRING,
+        CustomFieldType.URL: QueryFieldType.STRING,
+        CustomFieldType.ENUM: QueryFieldType.ENUM,
+    }
+    field_type = mapping.get(definition.field_type)
+    if field_type is None or not definition.active:
+        return None
+    enum_values = (
+        tuple(option.code for option in definition.options)
+        if definition.field_type is CustomFieldType.ENUM
+        else ()
+    )
+    return QueryField(
+        key=f"custom.{definition.key}",
+        type=field_type,
+        nullable=True,
+        enum_values=enum_values,
+    )
+
+
 def _field(
     key: str,
     type: QueryFieldType,
@@ -301,6 +351,7 @@ def default_query_schemas() -> QuerySchemaRegistry:
         _field("id", QueryFieldType.ID),
         _field("created_at", QueryFieldType.DATETIME),
         _field("updated_at", QueryFieldType.DATETIME),
+        _field("tag", QueryFieldType.STRING, nullable=True),
     )
     contact = QuerySchema(
         "contact",
@@ -387,4 +438,5 @@ __all__ = [
     "QuerySchemaRegistry",
     "default_query_schemas",
     "iter_predicates",
+    "query_field_from_custom_definition",
 ]

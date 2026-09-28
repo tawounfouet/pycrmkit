@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from enum import StrEnum
 from typing import Any
@@ -20,7 +20,8 @@ _FIELD_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,63}(?:\.[a-z][a-z0-9_]{0,63})*$"
 MAX_EXPRESSION_DEPTH = 12
 MAX_PREDICATES = 100
 MAX_IN_VALUES = 100
-QUERY_EXPRESSION_SCHEMA_VERSION = 1
+QUERY_EXPRESSION_SCHEMA_VERSION = 2
+SUPPORTED_QUERY_EXPRESSION_SCHEMA_VERSIONS = frozenset({1, 2})
 
 
 def normalize_query_field_key(value: str) -> str:
@@ -37,6 +38,8 @@ def normalize_query_field_key(value: str) -> str:
 
 
 def _canonical_literal(value: object) -> object:
+    if isinstance(value, RelativeTimeValue):
+        return value
     if isinstance(value, UUIDId | UUID):
         return str(value)
     if isinstance(value, StrEnum):
@@ -64,6 +67,42 @@ def _canonical_literal(value: object) -> object:
         code="segment.query.invalid_value",
         context={"value_type": type(value).__name__},
     )
+
+
+class RelativeTimeUnit(StrEnum):
+    """Supported relative-time units for moving query windows."""
+
+    MINUTES = "minutes"
+    HOURS = "hours"
+    DAYS = "days"
+    WEEKS = "weeks"
+
+
+@dataclass(frozen=True, slots=True)
+class RelativeTimeValue:
+    """Value resolved from an injected evaluation instant."""
+
+    offset: int
+    unit: RelativeTimeUnit
+    anchor: str = "now"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "unit", RelativeTimeUnit(self.unit))
+        if self.anchor != "now":
+            raise ValidationError(
+                "relative time currently supports only the now anchor",
+                code="segment.query.relative_time.invalid_anchor",
+            )
+
+    def resolve(self, at: datetime) -> datetime:
+        instant = as_utc(at)
+        multipliers = {
+            RelativeTimeUnit.MINUTES: timedelta(minutes=self.offset),
+            RelativeTimeUnit.HOURS: timedelta(hours=self.offset),
+            RelativeTimeUnit.DAYS: timedelta(days=self.offset),
+            RelativeTimeUnit.WEEKS: timedelta(weeks=self.offset),
+        }
+        return instant + multipliers[self.unit]
 
 
 class QueryExpression:
@@ -209,6 +248,13 @@ def validate_expression_complexity(expression: QueryExpression) -> None:
 
 
 def _encode_literal(value: object) -> dict[str, object]:
+    if isinstance(value, RelativeTimeValue):
+        return {
+            "type": "relative_time",
+            "anchor": value.anchor,
+            "offset": value.offset,
+            "unit": value.unit.value,
+        }
     if isinstance(value, Decimal):
         return {"type": "decimal", "value": str(value)}
     if isinstance(value, datetime):
@@ -228,6 +274,12 @@ def _decode_literal(payload: object) -> object:
         )
     kind = payload.get("type")
     value = payload.get("value")
+    if kind == "relative_time":
+        return RelativeTimeValue(
+            offset=int(payload.get("offset", 0)),
+            unit=RelativeTimeUnit(str(payload.get("unit", ""))),
+            anchor=str(payload.get("anchor", "now")),
+        )
     if kind == "decimal":
         return Decimal(str(value))
     if kind == "datetime":
@@ -283,7 +335,7 @@ def expression_to_dict(expression: QueryExpression) -> dict[str, Any]:
 def expression_from_dict(payload: dict[str, Any]) -> QueryExpression:
     """Deserialize one validated expression mapping."""
 
-    if payload.get("schema_version") != QUERY_EXPRESSION_SCHEMA_VERSION:
+    if payload.get("schema_version") not in SUPPORTED_QUERY_EXPRESSION_SCHEMA_VERSIONS:
         raise ValidationError(
             "unsupported query-expression schema version",
             code="segment.query.serialization.version_unsupported",
@@ -326,11 +378,14 @@ __all__ = [
     "MAX_IN_VALUES",
     "MAX_PREDICATES",
     "QUERY_EXPRESSION_SCHEMA_VERSION",
+    "SUPPORTED_QUERY_EXPRESSION_SCHEMA_VERSIONS",
     "And",
     "Not",
     "Or",
     "Predicate",
     "QueryExpression",
+    "RelativeTimeUnit",
+    "RelativeTimeValue",
     "expression_from_dict",
     "expression_to_dict",
     "normalize_query_field_key",

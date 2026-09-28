@@ -21,6 +21,7 @@ from pycrmkit.storage.memory.opportunities import MemoryOpportunityRepository
 from pycrmkit.storage.memory.organizations import MemoryOrganizationRepository
 from pycrmkit.storage.memory.pipelines import MemoryPipelineRepository
 from pycrmkit.storage.memory.relationships import MemoryRelationshipRepository
+from pycrmkit.storage.memory.saved_queries import MemorySavedQueryRepository
 from pycrmkit.storage.memory.segments import (
     MemorySegmentMembershipRepository,
     MemorySegmentQueryExecutor,
@@ -63,6 +64,7 @@ class MemoryUnitOfWork:
         self._relationships: MemoryRelationshipRepository | None = None
         self._tasks: MemoryTaskRepository | None = None
         self._segments: MemorySegmentRepository | None = None
+        self._saved_queries: MemorySavedQueryRepository | None = None
         self._segment_memberships: MemorySegmentMembershipRepository | None = None
         self._segment_query_executor: MemorySegmentQueryExecutor | None = None
         self._timeline: MemoryTimelineRepository | None = None
@@ -133,6 +135,12 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._segments is not None
         return self._segments
+
+    @property
+    def saved_queries(self) -> MemorySavedQueryRepository:
+        self._ensure_active()
+        assert self._saved_queries is not None
+        return self._saved_queries
 
     @property
     def segment_memberships(self) -> MemorySegmentMembershipRepository:
@@ -276,6 +284,7 @@ class MemoryUnitOfWork:
         self._relationships = MemoryRelationshipRepository(state)
         self._tasks = MemoryTaskRepository(state)
         self._segments = MemorySegmentRepository(state)
+        self._saved_queries = MemorySavedQueryRepository(state)
         self._segment_memberships = MemorySegmentMembershipRepository(state)
         self._segment_query_executor = MemorySegmentQueryExecutor(state)
         self._timeline = MemoryTimelineRepository(state)

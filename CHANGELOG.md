@@ -6,6 +6,29 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.1.0a2] - 2026-09-29
+
+### Added
+- Added the versioned `SavedQuery` domain with stable IDs/keys, private/shared visibility, revision history, optimistic update preconditions, archive lifecycle and the new `crm.saved_queries` facade.
+- Added deterministic SavedQuery ordering through `SortExpression`, `SortDirection` and explicit null placement.
+- Added `RelativeTimeValue` with Clock-based minutes/hours/days/weeks evaluation for moving Dynamic Segment/SavedQuery windows.
+- Added first-class scalar Custom Field filtering through `custom.<key>` and Tag filtering through the virtual `tag` field in the Memory semantic evaluator.
+- Added Dynamic Segment binding to an exact SavedQuery revision so later SavedQuery edits cannot silently alter an existing Segment.
+- Added SavedQuery lifecycle events: `saved_query.created`, `saved_query.updated` and `saved_query.archived`.
+
+### Changed
+- Query-expression serialization now emits schema version 2 while preserving version-1 read compatibility.
+- The portable query-executor contract now receives an explicit evaluation instant and optional ordering.
+
+### Compatibility
+- V1 and `1.1.0a1` behavior remains additive and compatibility-governed.
+- SQLAlchemy/PostgreSQL and Django SavedQuery/Segmentation persistence remain explicitly deferred to the later 1.1 beta milestones and fail closed through the existing unsupported-capability boundary.
+
+### Deferred
+- Task ergonomics and Business Calendar remain scheduled for `1.1.0a3`.
+- SQLAlchemy/PostgreSQL Segmentation/SavedQuery persistence remains scheduled for `1.1.0b1`.
+- Snapshot Segments, Django persistence and bulk membership remain scheduled for `1.1.0b2`.
+
 ## [1.1.0a1] - 2026-09-28
 
 ### Added

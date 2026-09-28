@@ -9,6 +9,7 @@ from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import IntegrationError
 from pycrmkit.facade._runtime import CRMRuntime
+from pycrmkit.saved_queries import SavedQueryId, SavedQueryUnitOfWork
 from pycrmkit.segments import (
     QueryExpression,
     Segment,
@@ -107,6 +108,63 @@ class SegmentsAPI:
             owner_id=owner_id,
             metadata=metadata,
         )
+
+    def create_dynamic_from_saved_query(
+        self,
+        *,
+        key: str,
+        name: str,
+        saved_query_id: SavedQueryId,
+        revision: int | None = None,
+        description: str | None = None,
+        owner_id: EntityId | None = None,
+        metadata: Mapping[str, object] | None = None,
+    ) -> Segment:
+        with self._runtime.uow_factory() as uow:
+            capabilities = self._capabilities(uow)
+            if not isinstance(uow, SavedQueryUnitOfWork):
+                raise IntegrationError(
+                    "Saved Queries are not available for this persistence adapter yet",
+                    code="saved_query.persistence.unsupported",
+                )
+            saved_query = uow.saved_queries.get(saved_query_id, revision)
+            segment = self._service(capabilities).create(
+                key=key,
+                name=name,
+                entity_kind=saved_query.entity_kind,
+                mode=SegmentMode.DYNAMIC,
+                description=description,
+                query=saved_query.expression,
+                saved_query_id=saved_query.id,
+                saved_query_revision=saved_query.revision,
+                owner_id=owner_id,
+                metadata=metadata,
+            )
+            self._runtime.record_change(
+                uow,
+                event_type="segment.created",
+                aggregate_type="segment",
+                aggregate_id=segment.id,
+                changes={
+                    "fields": [
+                        "key",
+                        "name",
+                        "entity_kind",
+                        "mode",
+                        "saved_query_id",
+                        "saved_query_revision",
+                    ]
+                },
+                payload={
+                    "key": segment.key,
+                    "entity_kind": segment.entity_kind,
+                    "mode": segment.mode.value,
+                    "saved_query_id": str(saved_query.id),
+                    "saved_query_revision": saved_query.revision,
+                },
+            )
+            uow.commit()
+            return segment
 
     def get(self, segment_id: SegmentId) -> Segment:
         with self._runtime.uow_factory() as uow:

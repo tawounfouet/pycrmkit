@@ -32,6 +32,7 @@ from pycrmkit.opportunities import Opportunity, OpportunityId
 from pycrmkit.organizations.entities import Organization, OrganizationId
 from pycrmkit.pipelines import Pipeline
 from pycrmkit.relationships.entities import Relationship, RelationshipId
+from pycrmkit.saved_queries import SavedQuery, SavedQueryId
 from pycrmkit.segments import Segment, SegmentId, SegmentMember
 from pycrmkit.tags.entities import Tag, TagAssignment, TagId
 from pycrmkit.tasks.entities import Task, TaskId
@@ -67,6 +68,7 @@ class _MemoryState:
     relationships: dict[RelationshipId, Relationship] = field(default_factory=dict)
     tasks: dict[TaskId, Task] = field(default_factory=dict)
     segments: dict[SegmentId, Segment] = field(default_factory=dict)
+    saved_queries: dict[SavedQueryId, list[SavedQuery]] = field(default_factory=dict)
     segment_members: dict[tuple[SegmentId, EntityReference], SegmentMember] = field(
         default_factory=dict
     )

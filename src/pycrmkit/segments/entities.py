@@ -76,6 +76,8 @@ class Segment(TimestampedEntity[SegmentId]):
     description: str | None = None
     status: SegmentStatus = SegmentStatus.ACTIVE
     query: QueryExpression | None = None
+    saved_query_id: UUIDId | None = None
+    saved_query_revision: int | None = None
     owner_id: EntityId | None = None
     revision: int = 1
     metadata: dict[str, object] = field(default_factory=dict)
@@ -111,6 +113,21 @@ class Segment(TimestampedEntity[SegmentId]):
             raise ValidationError(
                 "dynamic segments require a query expression",
                 code="segment.query.required",
+            )
+        if (self.saved_query_id is None) != (self.saved_query_revision is None):
+            raise ValidationError(
+                "saved-query binding requires both id and revision",
+                code="segment.saved_query.invalid_binding",
+            )
+        if self.saved_query_revision is not None and self.saved_query_revision < 1:
+            raise ValidationError(
+                "saved-query revision must be at least 1",
+                code="segment.saved_query.invalid_revision",
+            )
+        if self.saved_query_id is not None and self.mode is not SegmentMode.DYNAMIC:
+            raise ValidationError(
+                "only dynamic segments may bind to a SavedQuery",
+                code="segment.saved_query.not_allowed",
             )
         if self.mode is not SegmentMode.DYNAMIC and self.query is not None:
             raise ValidationError(

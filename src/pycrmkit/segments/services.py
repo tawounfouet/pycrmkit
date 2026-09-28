@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory
+from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory, UUIDId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
@@ -24,7 +24,6 @@ from pycrmkit.segments.repository import (
     SegmentQueryExecutor,
     SegmentRepository,
 )
-from pycrmkit.segments.schema import default_query_schemas
 
 
 @dataclass(slots=True)
@@ -46,6 +45,8 @@ class SegmentService:
         mode: SegmentMode,
         description: str | None = None,
         query: QueryExpression | None = None,
+        saved_query_id: UUIDId | None = None,
+        saved_query_revision: int | None = None,
         owner_id: EntityId | None = None,
         metadata: Mapping[str, object] | None = None,
     ) -> Segment:
@@ -65,7 +66,7 @@ class SegmentService:
                 context={"entity_kind": entity_kind},
             )
         if query is not None:
-            default_query_schemas().get(entity_kind).validate(query)
+            self.query_executor.validate(entity_kind, query)
 
         now = self.clock.now()
         segment = Segment(
@@ -78,6 +79,8 @@ class SegmentService:
             mode=mode,
             description=description,
             query=query,
+            saved_query_id=saved_query_id,
+            saved_query_revision=saved_query_revision,
             owner_id=owner_id,
             metadata=dict(metadata or {}),
         )
@@ -111,11 +114,12 @@ class SegmentService:
         page: OffsetPageRequest | None = None,
     ) -> Page[EntityReference]:
         kind = entity_kind.strip().casefold()
-        default_query_schemas().get(kind).validate(expression)
+        self.query_executor.validate(kind, expression)
         return self.query_executor.execute(
             kind,
             expression,
             page or OffsetPageRequest(),
+            at=self.clock.now(),
         )
 
     def evaluate(
@@ -131,6 +135,7 @@ class SegmentService:
                 segment.entity_kind,
                 segment.query,
                 request,
+                at=self.clock.now(),
             )
         stored = self.memberships.list(segment.id, request)
         return Page(
@@ -144,7 +149,11 @@ class SegmentService:
         segment = self.repository.get(segment_id)
         if segment.mode is SegmentMode.DYNAMIC:
             assert segment.query is not None
-            return self.query_executor.count(segment.entity_kind, segment.query)
+            return self.query_executor.count(
+                segment.entity_kind,
+                segment.query,
+                at=self.clock.now(),
+            )
         return self.memberships.count(segment.id)
 
     def add_member(
@@ -186,6 +195,7 @@ class SegmentService:
                 segment.entity_kind,
                 segment.query,
                 OffsetPageRequest(limit=OffsetPageRequest.MAX_LIMIT),
+                at=self.clock.now(),
             )
             if entity in page.items:
                 return True
@@ -205,6 +215,7 @@ class SegmentService:
                     limit=OffsetPageRequest.MAX_LIMIT,
                     offset=offset,
                 ),
+                at=self.clock.now(),
             )
             if entity in page.items:
                 return True
