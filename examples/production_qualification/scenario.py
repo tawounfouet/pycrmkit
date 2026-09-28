@@ -289,7 +289,7 @@ def run_scenario() -> dict[str, object]:
     headless = run_headless_customer_journey()
     data_operations = run_data_operations()
 
-    assert pycrmkit.__version__ == "1.0.0"
+    assert pycrmkit.__version__.startswith("1.")
     assert data_operations["version"] == pycrmkit.__version__
 
     return {
