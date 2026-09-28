@@ -18,6 +18,7 @@ from pycrmkit.segments.expressions import (
     MAX_IN_VALUES,
     MAX_PREDICATES,
     QUERY_EXPRESSION_SCHEMA_VERSION,
+    SUPPORTED_QUERY_EXPRESSION_SCHEMA_VERSIONS,
     And,
     Not,
     Or,
@@ -25,7 +26,6 @@ from pycrmkit.segments.expressions import (
     QueryExpression,
     RelativeTimeUnit,
     RelativeTimeValue,
-    SUPPORTED_QUERY_EXPRESSION_SCHEMA_VERSIONS,
     expression_from_dict,
     expression_to_dict,
 )
