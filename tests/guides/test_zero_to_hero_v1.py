@@ -94,6 +94,8 @@ from pycrmkit.exceptions import (
     IntegrationError,
     InvalidStateError,
     NotFoundError,
+    PyCRMKitError,
+    RepositoryError,
     ValidationError,
 )
 from pycrmkit.exporters import CSVExporter, JSONExporter, JSONLExporter
@@ -128,6 +130,7 @@ from pycrmkit.integrations.fastapi import (
     ContactEmailSchema,
     ContactUpdateRequest,
     CRMDependency,
+    ErrorResponse,
     create_crm_router,
     install_error_handlers,
     status_code_for_error,
@@ -5343,3 +5346,171 @@ def test_zero_to_hero_timeline_is_independent_of_event_and_audit_switches() -> N
     assert timeline.total == 1
     assert str(timeline.items[0].event_type) == "task.created"
     assert timeline.items[0].entity.id == task.id
+
+
+def test_zero_to_hero_error_hierarchy_and_privacy_boundary_example() -> None:
+    error = ValidationError(
+        "invalid customer input",
+        code="contact.email.invalid",
+        context={
+            "contact_id": "contact-31",
+            "email": "ada@example.com",
+            "nested": {
+                "api_key": "rk_live_secret",
+                "phone": "+33612345678",
+                "safe": "kept",
+            },
+        },
+    )
+
+    assert isinstance(error, PyCRMKitError)
+    assert error.context["email"] == "ada@example.com"
+    assert error.as_dict() == {
+        "code": "contact.email.invalid",
+        "message": "invalid customer input",
+        "context": {
+            "contact_id": "contact-31",
+            "email": "[REDACTED]",
+            "nested": {
+                "api_key": "[REDACTED]",
+                "phone": "[REDACTED]",
+                "safe": "kept",
+            },
+        },
+    }
+
+    response = ErrorResponse.from_error(error)
+    assert response.model_dump() == error.as_dict()
+
+    assert status_code_for_error(error) == 422
+    assert status_code_for_error(NotFoundError("missing")) == 404
+    assert status_code_for_error(DuplicateError("duplicate")) == 409
+    assert status_code_for_error(InvalidStateError("invalid state")) == 409
+    assert status_code_for_error(RepositoryError("repository")) == 500
+    assert status_code_for_error(IntegrationError("integration")) == 502
+
+
+def test_zero_to_hero_sqlalchemy_error_translation_is_backend_safe() -> None:
+    class Diagnostic:
+        constraint_name = "uq_pycrmkit_contacts_email"
+        table_name = "pycrmkit_contacts"
+        column_name = "email"
+
+    class DriverError(Exception):
+        sqlstate = "23505"
+        diag = Diagnostic()
+
+    sqlalchemy_error = IntegrityError(
+        "INSERT INTO pycrmkit_contacts VALUES (?)",
+        {"email": "private@example.com"},
+        DriverError("duplicate private@example.com"),
+    )
+
+    translated = translate_sqlalchemy_error(sqlalchemy_error)
+
+    assert isinstance(translated, DuplicateError)
+    assert translated.code == "repository.duplicate"
+    assert translated.message == "A persistence uniqueness constraint was violated"
+    assert translated.context == {
+        "sqlstate": "23505",
+        "constraint": "uq_pycrmkit_contacts_email",
+        "table": "pycrmkit_contacts",
+        "column": "email",
+    }
+    assert "statement" not in translated.context
+    assert "params" not in translated.context
+    assert "private@example.com" not in translated.message
+    assert "private@example.com" not in str(translated.as_dict())
+
+
+def test_zero_to_hero_drf_error_mapping_and_request_validation_example() -> None:
+    script = r"""
+from django.conf import settings
+
+settings.configure(
+    SECRET_KEY="zero-to-hero-errors",
+    INSTALLED_APPS=[],
+    REST_FRAMEWORK={
+        "UNAUTHENTICATED_USER": None,
+    },
+)
+
+import django
+
+django.setup()
+
+from rest_framework import serializers
+
+from pycrmkit.exceptions import (
+    ConflictError,
+    IntegrationError,
+    NotFoundError,
+    RepositoryError,
+    ValidationError,
+)
+from pycrmkit.integrations.django.drf.errors import (
+    pycrmkit_exception_handler,
+    status_code_for_error,
+)
+
+assert status_code_for_error(ValidationError("invalid")) == 422
+assert status_code_for_error(NotFoundError("missing")) == 404
+assert status_code_for_error(ConflictError("conflict")) == 409
+assert status_code_for_error(RepositoryError("database")) == 500
+assert status_code_for_error(IntegrationError("provider")) == 502
+
+repository_error = RepositoryError(
+    "persistence failed",
+    code="repository.backend_error",
+    context={
+        "constraint": "uq_contacts",
+        "token": "top-secret-token",
+    },
+)
+repository_response = pycrmkit_exception_handler(repository_error, {})
+
+assert repository_response is not None
+assert repository_response.status_code == 500
+assert repository_response.data == {
+    "code": "repository.backend_error",
+    "message": "persistence failed",
+    "context": {
+        "constraint": "uq_contacts",
+        "token": "[REDACTED]",
+    },
+}
+
+request_error = serializers.ValidationError(
+    {
+        "email": [
+            serializers.ErrorDetail(
+                "Enter a valid email address.",
+                code="invalid",
+            )
+        ]
+    }
+)
+request_response = pycrmkit_exception_handler(request_error, {})
+
+assert request_response is not None
+assert request_response.status_code == 400
+assert request_response.data["code"] == "request.validation_error"
+assert request_response.data["context"] == {
+    "errors": [
+        {
+            "code": "invalid",
+            "location": ["email", "0"],
+            "message": "Enter a valid email address.",
+        }
+    ]
+}
+assert "submitted" not in str(request_response.data)
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr

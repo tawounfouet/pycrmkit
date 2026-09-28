@@ -64,6 +64,7 @@ example application.
 29. [Django REST Framework](28_django_rest_framework.md) — expose the bounded Django CRM surface through explicit serializers, facade-backed ViewSets, offset pagination, request context and privacy-safe error mapping.
 30. [Transactions & Unit of Work](29_transactions_and_unit_of_work.md) — unify explicit commit, rollback, multi-repository atomicity and post-commit events across Memory snapshots, SQLAlchemy Sessions and Django atomic/savepoint boundaries.
 31. [Context, Events & Audit](30_context_events_and_audit.md) — propagate actor, correlation and causation through immutable Domain Events, privacy-conscious Audit records, transactional Timeline projections and post-commit subscribers.
+32. [Error Handling](31_error_handling.md) — normalize domain, persistence and integration failures through stable codes, privacy-safe context, backend translation and predictable FastAPI/DRF HTTP contracts.
 
 ## LEVEL 1 complete
 
@@ -87,7 +88,7 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 
 ## LEVEL 6 in progress
 
-Memory, SQLAlchemy and Django now share an explicit transaction model, while CRMContext, Domain Events, Audit and Timeline carry trace metadata across committed changes without coupling the domain to HTTP or a framework. Error Handling is next.
+Memory, SQLAlchemy and Django share explicit transaction semantics; context/events/audit preserve traceability; and Error Handling now stabilizes domain, repository and integration failures across persistence and HTTP adapters. Security & Privacy is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -127,7 +128,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 28 | Django REST Framework | Published |
 | 6 | 29 | Transactions & Unit of Work | Published |
 | 6 | 30 | Context, Events & Audit | Published |
-| 6 | 31 | Error Handling | Planned |
+| 6 | 31 | Error Handling | Published |
 | 6 | 32 | Security & Privacy | Planned |
 | 7 | 33 | Testing PyCRMKit Applications | Planned |
 | 7 | 34 | Observability & Debugging | Planned |
