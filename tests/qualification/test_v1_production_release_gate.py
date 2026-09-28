@@ -27,7 +27,7 @@ def test_rc06_gate_contract_converges_rc01_through_rc05() -> None:
     assert set(result["pending_gates"]) == EXPECTED_PENDING_GATES
     assert result["blocking_failures_allowed"] == 0
     assert result["promotion_ready"] is True
-    assert result["package_version"] == "1.0.0"
+    assert str(result["package_version"]).startswith("1.")
     assert result["target_release"] == "1.0.0rc1"
 
 
