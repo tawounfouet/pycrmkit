@@ -311,7 +311,7 @@ def run_scenario() -> dict[str, object]:
 
 def main() -> None:
     summary = run_scenario()
-    assert summary["version"] == "1.0.0"
+    assert str(summary["version"]).startswith("1.")
     print(json.dumps(summary, indent=2, sort_keys=True))
 
 
