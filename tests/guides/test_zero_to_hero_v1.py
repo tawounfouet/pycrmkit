@@ -7,6 +7,7 @@ from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from io import StringIO
+from uuid import UUID
 
 import pytest
 from alembic.script import ScriptDirectory
@@ -140,8 +141,8 @@ from pycrmkit.opportunities import (
 from pycrmkit.organizations import (
     Organization,
     OrganizationAddress,
-    OrganizationId,
     OrganizationDomain,
+    OrganizationId,
     OrganizationQuery,
     OrganizationService,
     OrganizationStatus,
