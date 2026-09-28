@@ -67,6 +67,7 @@ example application.
 32. [Error Handling](31_error_handling.md) — normalize domain, persistence and integration failures through stable codes, privacy-safe context, backend translation and predictable FastAPI/DRF HTTP contracts.
 33. [Security & Privacy](32_security_and_privacy.md) — harden sensitive diagnostics, secret-bearing representations, event/audit payloads, webhook integrity and destinations, destructive operations and merge safeguards.
 34. [Testing PyCRMKit Applications](33_testing_pycrmkit_applications.md) — build an application test pyramid from deterministic Memory workflows through adapter contracts, PostgreSQL/migrations, HTTP E2E and installed-artifact qualification.
+35. [Observability & Debugging](34_observability_and_debugging.md) — correlate production operations through CRM context, Audit, Domain Events, stable error codes, delivery attempts and privacy-safe application logs.
 
 ## LEVEL 1 complete
 
@@ -94,7 +95,7 @@ Memory, SQLAlchemy/PostgreSQL, migrations, FastAPI, Django/DRF, transaction sema
 
 ## LEVEL 7 in progress
 
-Production Applications now begins with a layered testing strategy: Memory for fast business confidence, adapter contracts for portability, PostgreSQL/migrations for production persistence, HTTP E2E for composition and installed-artifact qualification for deployment confidence. Observability & Debugging is next.
+Production Applications now combines a layered testing strategy with a production observability model built from context correlation, Audit, Domain Events, stable errors and bounded delivery/provider diagnostics. Performance is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -137,7 +138,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 31 | Error Handling | Published |
 | 6 | 32 | Security & Privacy | Published |
 | 7 | 33 | Testing PyCRMKit Applications | Published |
-| 7 | 34 | Observability & Debugging | Planned |
+| 7 | 34 | Observability & Debugging | Published |
 | 7 | 35 | Performance | Planned |
 | 7 | 36 | Application Architecture | Planned |
 | 7 | 37 | Production Deployment | Planned |
