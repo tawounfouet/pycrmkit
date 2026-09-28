@@ -138,7 +138,9 @@ from pycrmkit.opportunities import (
     OpportunityStatus,
 )
 from pycrmkit.organizations import (
+    Organization,
     OrganizationAddress,
+    OrganizationId,
     OrganizationDomain,
     OrganizationQuery,
     OrganizationService,
@@ -4981,6 +4983,214 @@ with override_settings(PYCRMKIT_CRM_FACTORY=lambda: crm):
         format="json",
     )
     assert put.status_code == 405
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_zero_to_hero_transaction_portable_semantics_example() -> None:
+    now = datetime(2026, 9, 28, 22, 0, tzinfo=UTC)
+
+    def contact(number: int) -> Contact:
+        return Contact(
+            id=ContactId(UUID(int=number)),
+            created_at=now,
+            updated_at=now,
+            display_name=f"Contact {number}",
+        )
+
+    def organization(number: int) -> Organization:
+        return Organization(
+            id=OrganizationId(UUID(int=number)),
+            created_at=now,
+            updated_at=now,
+            legal_name=f"Organization {number}",
+        )
+
+    def event(number: int, aggregate_id: ContactId) -> DomainEvent:
+        return DomainEvent.create(
+            id_factory=UUID4Factory(),
+            clock=FixedClock(now),
+            type="contact.created",
+            aggregate_type="contact",
+            aggregate_id=aggregate_id,
+            correlation_id=f"guide-uow-{number}",
+        )
+
+    memory_store = MemoryStore()
+    memory_bus = InProcessEventBus()
+    memory_published: list[DomainEvent] = []
+    memory_bus.subscribe("contact.created", memory_published.append)
+
+    def memory_factory() -> MemoryUnitOfWork:
+        return MemoryUnitOfWork(memory_store, event_publisher=memory_bus)
+
+    engine = create_engine("sqlite+pysqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    sql_session_factory = sessionmaker(bind=engine, expire_on_commit=False)
+    sql_bus = InProcessEventBus()
+    sql_published: list[DomainEvent] = []
+    sql_bus.subscribe("contact.created", sql_published.append)
+
+    def sqlalchemy_factory() -> SQLAlchemyUnitOfWork:
+        return SQLAlchemyUnitOfWork(sql_session_factory, event_publisher=sql_bus)
+
+    for factory, published in (
+        (memory_factory, memory_published),
+        (sqlalchemy_factory, sql_published),
+    ):
+        discarded = contact(2901)
+        committed_org = organization(2902)
+
+        with factory() as uow:
+            uow.contacts.save(discarded)
+            uow.add_event(event(2901, discarded.id))
+            assert len(uow.pending_events) == 1
+
+            uow.rollback()
+
+            assert uow.contacts.find(discarded.id) is None
+            assert uow.pending_events == ()
+
+            uow.organizations.save(committed_org)
+            uow.commit()
+
+        assert published == []
+
+        with factory() as uow:
+            assert uow.contacts.find(discarded.id) is None
+            assert uow.organizations.get(committed_org.id) == committed_org
+
+        committed_contact = contact(2903)
+        committed_event = event(2903, committed_contact.id)
+
+        with factory() as uow:
+            uow.contacts.save(committed_contact)
+            uow.add_event(committed_event)
+            assert published == []
+            uow.commit()
+
+        assert published == [committed_event]
+
+        with factory() as uow:
+            assert uow.contacts.get(committed_contact.id) == committed_contact
+
+    with MemoryUnitOfWork(memory_store):
+        with pytest.raises(InvalidStateError) as nested_error:
+            with MemoryUnitOfWork(memory_store):
+                pass
+
+    assert nested_error.value.code == "memory.uow.already_active"
+
+    with SQLAlchemyUnitOfWork(sql_session_factory) as uow:
+        assert uow.contacts.session is uow.organizations.session
+
+
+def test_zero_to_hero_django_ambient_transaction_semantics_example() -> None:
+    script = r"""
+from datetime import UTC, datetime
+from uuid import UUID
+
+from django.conf import settings
+
+settings.configure(
+    SECRET_KEY="zero-to-hero-uow-django",
+    INSTALLED_APPS=[
+        "pycrmkit.integrations.django.apps.PyCRMKitDjangoConfig",
+    ],
+    DATABASES={
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
+    },
+    USE_TZ=True,
+    TIME_ZONE="UTC",
+    DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",
+)
+
+import django
+
+django.setup()
+
+from django.core.management import call_command
+from django.db import transaction
+
+from pycrmkit.contacts import Contact, ContactId
+from pycrmkit.core.events import EventId, EventType
+from pycrmkit.events import DomainEvent, InProcessEventBus
+from pycrmkit.integrations.django.repositories import DjangoContactRepository
+from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+
+call_command(
+    "migrate",
+    "pycrmkit_crm",
+    verbosity=0,
+    interactive=False,
+)
+
+now = datetime(2026, 9, 28, 22, 30, tzinfo=UTC)
+
+def contact(number):
+    return Contact(
+        id=ContactId(UUID(int=number)),
+        created_at=now,
+        updated_at=now,
+        display_name=f"Django {number}",
+    )
+
+def event(number, aggregate_id):
+    return DomainEvent(
+        id=EventId(UUID(int=number)),
+        type=EventType("contact.created"),
+        schema_version=1,
+        aggregate_type="contact",
+        aggregate_id=str(aggregate_id),
+        occurred_at=now,
+        correlation_id=f"django-uow-{number}",
+    )
+
+bus = InProcessEventBus()
+published = []
+bus.subscribe("contact.created", published.append)
+
+committed = contact(2910)
+committed_event = event(2911, committed.id)
+
+with transaction.atomic():
+    with DjangoTransactionBridge(event_publisher=bus) as bridge:
+        bridge.contacts.save(committed)
+        bridge.add_event(committed_event)
+        bridge.commit()
+
+    assert published == []
+
+assert published == [committed_event]
+assert DjangoContactRepository().get(committed.id) == committed
+
+rolled_back = contact(2920)
+rolled_back_event = event(2921, rolled_back.id)
+
+try:
+    with transaction.atomic():
+        with DjangoTransactionBridge(event_publisher=bus) as bridge:
+            bridge.contacts.save(rolled_back)
+            bridge.add_event(rolled_back_event)
+            bridge.commit()
+
+        assert published == [committed_event]
+        raise RuntimeError("force outer rollback")
+except RuntimeError:
+    pass
+
+assert DjangoContactRepository().find(rolled_back.id) is None
+assert published == [committed_event]
 """
     result = subprocess.run(
         [sys.executable, "-c", script],
