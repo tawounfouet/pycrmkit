@@ -874,3 +874,547 @@ External Identity system normalization
 ~~~
 
 Normalization bugs often become uniqueness bugs in production.
+
+
+## 61. Test privacy where data leaves the boundary
+
+Examples:
+
+~~~text
+HTTP error response
+DomainEvent serialization
+Webhook request
+Audit record
+log capture
+repr
+~~~
+
+Do not assume one lower-level privacy helper automatically protects every custom output in your application.
+
+## 62. Test application authorization yourself
+
+PyCRMKit does not provide universal RBAC.
+
+Your application should test:
+
+~~~text
+unauthenticated caller rejected
+authenticated unauthorized caller rejected
+authorized caller reaches command
+actor_id derived from authenticated principal
+~~~
+
+## 63. Test configuration failures
+
+Useful negative tests include:
+
+~~~text
+missing database URL
+invalid webhook destination
+incomplete provider credential pair
+unsupported dependency profile
+bad CRM factory wiring
+~~~
+
+Failing early is part of production quality.
+
+## 64. Test the migration command production runs
+
+If deployment executes:
+
+~~~text
+pycrmkit-migrate upgrade head
+~~~
+
+qualify that exact CLI path.
+
+Do not rely only on an internal Alembic call when production uses the CLI.
+
+## 65. Test application restart
+
+Restart-style tests catch:
+
+~~~text
+wrong configuration source
+process-local state leakage
+startup assumptions
+global singleton leakage
+non-persisted dependency state
+~~~
+
+Open a fresh application composition against the same database and read prior state.
+
+## 66. Use a clean-environment installation smoke
+
+A high-value release check is:
+
+~~~text
+build artifact
+      |
+new environment
+      |
+install artifact
+      |
+run smoke
+~~~
+
+## 67. Avoid repository checkout masking
+
+Potential masking sources include:
+
+~~~text
+PYTHONPATH
+editable install
+current working directory imports
+unpackaged templates
+unpackaged migrations
+~~~
+
+Artifact tests should isolate themselves from the checkout when possible.
+
+## 68. Coverage is a signal, not the goal
+
+Coverage can reveal missing paths.
+
+It cannot by itself prove migration safety, transaction atomicity, concurrency, security or artifact correctness.
+
+## 69. Organize CI by confidence layers
+
+A practical PR pipeline:
+
+~~~text
+lint / typing
+      |
+unit + Memory tests
+      |
+adapter contracts
+      |
+HTTP integration
+      |
+security
+      |
+PostgreSQL + migrations
+      |
+artifact smoke
+~~~
+
+A release pipeline can add:
+
+~~~text
+compatibility matrix
+production E2E
+performance regression
+release evidence
+~~~
+
+## 70. Fail cheap checks early
+
+A long PostgreSQL job should not be the first signal when lint or fast tests already fail.
+
+Parallel jobs are useful, but responsibilities should stay explicit.
+
+## 71. Keep production E2E small
+
+E2E should prove composition, not every business edge case.
+
+Good E2E evidence includes:
+
+~~~text
+deployment wiring
+database connectivity
+migrations
+HTTP transport
+representative workflow
+restart durability
+~~~
+
+## 72. Production qualification aggregates evidence
+
+PyCRMKit stable release qualification combines:
+
+~~~text
+public API governance
+cross-layer scenarios
+persistence and migrations
+integration adapters
+security and privacy
+performance
+compatibility
+packaging
+release evidence
+~~~
+
+A mature application release process benefits from the same mindset.
+
+## 73. Illustrative application pyramid
+
+For a FastAPI and PostgreSQL application:
+
+~~~text
+many fast tests
+  domain / application / Memory
+
+fewer integration tests
+  schemas / routers / SQLAlchemy SQLite
+
+small PostgreSQL set
+  constraints / transactions / migrations
+
+very small API PostgreSQL E2E
+  cross-layer journeys
+
+one or more installed-artifact smokes
+~~~
+
+The exact counts are application-specific. The important property is the shape.
+
+## 74. Django application pyramid
+
+A Django and DRF application can layer:
+
+~~~text
+domain / Memory
+      |
+Django repository tests
+      |
+Django migration checks
+      |
+DRF API tests
+      |
+PostgreSQL Django E2E
+      |
+installed artifact or container smoke
+~~~
+
+## 75. Do not copy the whole PyCRMKit test suite
+
+PyCRMKit already tests its own framework contracts.
+
+Your application should focus on:
+
+~~~text
+your composition
+your custom services
+your authorization
+your configuration
+your schema ownership
+your routes
+your deployment artifact
+your critical workflows
+~~~
+
+Maintain only the boundary tests needed to prove the upstream behavior your application depends on.
+
+## 76. Version support should be intentional
+
+Your application CI should exercise the PyCRMKit and dependency versions it claims to support.
+
+Accidental dependency upgrades should not be your compatibility strategy.
+
+## 77. Keep test data synthetic
+
+Use clearly synthetic email addresses, tokens and identifiers.
+
+This reduces the risk of real customer data entering Git, CI logs, fixtures or test artifacts.
+
+## 78. Use dedicated test databases
+
+Never point automated schema-reset or migration qualification at shared development or production databases.
+
+## 79. Use ephemeral CI credentials
+
+Service-container credentials can be simple test values.
+
+Never reuse production database secrets in CI fixtures.
+
+## 80. Migrate before E2E
+
+The order should be:
+
+~~~text
+database ready
+      |
+migrate
+      |
+migration or drift check
+      |
+application E2E
+~~~
+
+If migrations fail, the application journey should not continue.
+
+## 81. Test success and rollback
+
+Persistence qualification should verify both commit and failure behavior.
+
+Atomicity is not proven by success-only tests.
+
+## 82. Test concurrency where the database is authoritative
+
+For uniqueness rules, application pre-checks are insufficient.
+
+A real PostgreSQL race test can prove one write succeeds while the conflicting write surfaces the expected stable error.
+
+## 83. Restart verification strengthens durability evidence
+
+Use:
+
+~~~text
+runtime A writes
+      |
+runtime A closes
+      |
+runtime B opens
+      |
+runtime B reads
+~~~
+
+This is stronger than reading through the same Session.
+
+## 84. Security tests are regression tests
+
+Once an invariant exists, encode it.
+
+Examples:
+
+~~~text
+secret absent from repr
+PII absent from event
+external_id absent from event
+raw request input absent from validation response
+private webhook destination rejected
+~~~
+
+## 85. Deployment authorization tests sit above PyCRMKit
+
+If the application uses OAuth, JWT or API keys, test:
+
+~~~text
+request
+      |
+authenticate
+      |
+authorize
+      |
+derive actor_id
+      |
+call CRM
+~~~
+
+## 86. Observability contracts can also be tested
+
+If operators depend on structured logs or metrics, test field names and privacy boundaries.
+
+The next chapter focuses on observability and debugging.
+
+## 87. Practical local loop
+
+A typical developer loop can be:
+
+~~~text
+fast unit/application tests
+      |
+lint / typing
+      |
+selected HTTP integration
+~~~
+
+Run PostgreSQL and migrations before merging high-risk persistence changes.
+
+## 88. Practical CI loop
+
+For pull requests:
+
+~~~text
+fast tests
+lint
+typing
+docs/build
+security
+adapter integration
+PostgreSQL
+migrations
+HTTP E2E
+~~~
+
+For releases:
+
+~~~text
+installed artifact
+compatibility matrix
+performance regression
+production journey
+release evidence
+~~~
+
+## 89. Example commands
+
+Fast application tests:
+
+~~~bash
+pytest tests/unit tests/application -q
+~~~
+
+Live PostgreSQL:
+
+~~~bash
+PYCRMKIT_TEST_POSTGRES_URL=postgresql+psycopg://... pytest -m postgresql -q
+~~~
+
+Security:
+
+~~~bash
+pytest tests/security -q
+~~~
+
+These are patterns for a consuming repository; use its own directory structure.
+
+## 90. Common mistakes
+
+### Running everything against PostgreSQL
+
+This makes feedback unnecessarily slow.
+
+### Running everything only against Memory
+
+This misses persistence and migration reality.
+
+### Treating create_all as migration proof
+
+It does not prove the deployment migration chain.
+
+### Testing SQLAlchemy only through SQLite
+
+SQLite cannot prove PostgreSQL-specific behavior.
+
+### Writing many E2E tests for domain edge cases
+
+Move those cases into faster layers.
+
+### Testing private implementation details
+
+Prefer public facade and repository behavior.
+
+### Sharing one CRM across tests
+
+This creates state leakage.
+
+### Using real sleeps
+
+Prefer FixedClock.
+
+### Parsing human error messages
+
+Assert stable codes.
+
+### Forgetting rollback tests
+
+Atomicity requires failure-path evidence.
+
+### Forgetting restart durability
+
+One Session is weak persistence evidence.
+
+### Testing source only
+
+Packaging failures can still escape.
+
+### Letting PYTHONPATH mask missing assets
+
+Use clean artifact tests.
+
+### Treating coverage as production confidence
+
+Coverage is only one signal.
+
+### Treating benchmark ceilings as SLAs
+
+They are regression guardrails.
+
+### Assuming PyCRMKit tests application authorization
+
+Authorization belongs to the embedding application.
+
+## Production-readiness testing checklist
+
+Before production, a PyCRMKit application should be able to answer yes to questions like:
+
+~~~text
+Can critical business workflows run with Memory?               ✅
+Are stable error codes asserted?                               ✅
+Are time-dependent tests deterministic?                        ✅
+Are custom adapters contract-tested?                           ✅
+Does live PostgreSQL qualification exist?                      ✅
+Are migrations applied and drift-checked?                      ✅
+Is rollback behavior tested?                                   ✅
+Are broad HTTP tests fast and Memory-backed?                   ✅
+Does a smaller database-backed HTTP E2E exist?                 ✅
+Does restart durability get tested?                            ✅
+Are security/privacy invariants regression-tested?             ✅
+Is the actual deployable artifact smoke-tested?                ✅
+Are claimed version combinations exercised?                    ✅
+Are performance regressions guarded?                           ✅
+~~~
+
+## What you learned
+
+You can now explain:
+
+- why Memory is the default backend for many application tests;
+- what Memory cannot prove;
+- how FixedClock and explicit context improve determinism;
+- why public facade behavior is a strong test surface;
+- how repository contracts prevent adapter drift;
+- why SQLite and PostgreSQL serve different roles;
+- how to isolate live PostgreSQL tests;
+- why migration tests differ from repository tests;
+- how to test HTTP broadly with Memory and narrowly with PostgreSQL;
+- how restart tests prove durability;
+- why security tests should be dedicated regressions;
+- why installed-artifact tests matter;
+- how compatibility, performance and qualification gates fit together;
+- how to design a practical test pyramid for a PyCRMKit application.
+
+## LEVEL 7 in progress
+
+Production Applications now begins:
+
+~~~text
+33 Testing PyCRMKit Applications ✅
+34 Observability & Debugging      ← NEXT
+35 Performance
+36 Application Architecture
+37 Production Deployment
+38 Complete FastAPI Application
+39 Complete Django Application
+40 Zero-to-Hero Final Project
+~~~
+
+## Next
+
+The next chapter is **34 - Observability & Debugging**.
+
+The next architecture is:
+
+~~~text
+application request / job
+      |
+      +--> actor_id
+      +--> correlation_id
+      |
+      v
+CRM command
+      |
+      +--> structured application logs
+      +--> Audit
+      +--> Domain Events
+      +--> stable error codes
+      +--> persistence diagnostics
+      |
+      v
+operator investigation
+~~~
+
+The next learning question is:
+
+> How should a production application built on PyCRMKit use correlation IDs, stable error codes, Audit, Domain Events and privacy-safe structured logs to debug failures without dumping sensitive CRM payloads?
