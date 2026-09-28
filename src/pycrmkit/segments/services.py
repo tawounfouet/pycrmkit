@@ -24,7 +24,6 @@ from pycrmkit.segments.repository import (
     SegmentQueryExecutor,
     SegmentRepository,
 )
-from pycrmkit.segments.schema import default_query_schemas
 
 
 @dataclass(slots=True)
@@ -65,7 +64,7 @@ class SegmentService:
                 context={"entity_kind": entity_kind},
             )
         if query is not None:
-            default_query_schemas().get(entity_kind).validate(query)
+            self.query_executor.validate(entity_kind, query)
 
         now = self.clock.now()
         segment = Segment(
@@ -111,11 +110,12 @@ class SegmentService:
         page: OffsetPageRequest | None = None,
     ) -> Page[EntityReference]:
         kind = entity_kind.strip().casefold()
-        default_query_schemas().get(kind).validate(expression)
+        self.query_executor.validate(kind, expression)
         return self.query_executor.execute(
             kind,
             expression,
             page or OffsetPageRequest(),
+            at=self.clock.now(),
         )
 
     def evaluate(
@@ -131,6 +131,7 @@ class SegmentService:
                 segment.entity_kind,
                 segment.query,
                 request,
+                at=self.clock.now(),
             )
         stored = self.memberships.list(segment.id, request)
         return Page(
@@ -144,7 +145,11 @@ class SegmentService:
         segment = self.repository.get(segment_id)
         if segment.mode is SegmentMode.DYNAMIC:
             assert segment.query is not None
-            return self.query_executor.count(segment.entity_kind, segment.query)
+            return self.query_executor.count(
+                segment.entity_kind,
+                segment.query,
+                at=self.clock.now(),
+            )
         return self.memberships.count(segment.id)
 
     def add_member(
@@ -186,6 +191,7 @@ class SegmentService:
                 segment.entity_kind,
                 segment.query,
                 OffsetPageRequest(limit=OffsetPageRequest.MAX_LIMIT),
+                at=self.clock.now(),
             )
             if entity in page.items:
                 return True
@@ -205,6 +211,7 @@ class SegmentService:
                     limit=OffsetPageRequest.MAX_LIMIT,
                     offset=offset,
                 ),
+                at=self.clock.now(),
             )
             if entity in page.items:
                 return True
