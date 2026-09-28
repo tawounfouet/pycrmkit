@@ -43,6 +43,7 @@ nav:
       - 29 Transactions & Unit of Work: guides/29_transactions_and_unit_of_work.md
       - 30 Context Events and Audit: guides/30_context_events_and_audit.md
       - 31 Error Handling: guides/31_error_handling.md
+      - 32 Security and Privacy: guides/32_security_and_privacy.md
   - Facade:
       - CRM: facade/index.md
   - Core:
