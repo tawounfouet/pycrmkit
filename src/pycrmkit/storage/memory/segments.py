@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import date, datetime
+from datetime import datetime
 from functools import cmp_to_key
 from typing import Any, cast
 
@@ -284,7 +284,7 @@ class MemorySegmentQueryExecutor:
             field = schema.field(expression.field)
             actual = self._field_value(entity, field.key)
             if field.key == "tag":
-                return self._tag_predicate(tuple(actual or ()), predicate)
+                return self._tag_predicate(tuple(actual or ()), expression)
             return self._predicate(field, actual, expression, at)
         if isinstance(expression, And):
             return all(
