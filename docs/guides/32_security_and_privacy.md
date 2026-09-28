@@ -527,3 +527,218 @@ Merge runs transactionally so rejected operations do not leave partial state.
 Full DedupProvenance can itself contain CRM evidence and must be treated as CRM data.
 
 Persisted merge audit is intentionally minimized to identifiers, score, decision, signal names, conflict descriptors, statistics and policy rather than matched email/phone/custom-identifier values.
+
+
+## 26. Authorization remains application-owned
+
+Security-safe lifecycle semantics do not answer whether a caller is authorized.
+
+FastAPI and DRF actor/correlation context does not prove identity or permission.
+
+The embedding application must authenticate and authorize before invoking sensitive commands.
+
+After authorization, it can bind the authenticated actor ID into CRMContext for traceability.
+
+## 27. Layered model
+
+The intended model is:
+
+~~~text
+application authentication / authorization
+      |
+      v
+PyCRMKit validation / lifecycle / transaction rules
+      |
+      v
+privacy-minimized errors / events / audit / repr
+      |
+      v
+database / backup / network / secret-store controls
+~~~
+
+No one layer replaces the others.
+
+## 28. Dedicated Security & Privacy qualification
+
+The workflow is:
+
+~~~text
+.github/workflows/security-privacy.yml
+~~~
+
+It first runs:
+
+~~~text
+pytest tests/security -q
+~~~
+
+against the source checkout.
+
+Then it builds the distribution and creates a clean virtual environment.
+
+The same suite is run against the installed wheel with PYTHONPATH empty.
+
+This proves the hardening behavior is actually packaged for consumers.
+
+## 29. Current security-regression coverage
+
+The current suite verifies:
+
+~~~text
+recursive sensitive-error redaction
+secret-safe repr
+PII-free default diagnostics
+Contact event/audit minimization
+External Identity event minimization
+webhook HMAC integrity
+webhook replay-age rejection
+secret rotation and audit privacy
+unsafe webhook URL rejection
+absence of generic hard-delete facade methods
+archived Contact mutation rejection
+merge provenance requirement
+blocking-conflict merge rejection
+~~~
+
+## 30. Practical application guidance
+
+Load production credentials through application configuration or the application's secret-management system.
+
+Do not commit production credentials to source control.
+
+Use dummy values in tests.
+
+Keep actor_id and correlation_id non-secret.
+
+Prefer logs such as:
+
+~~~text
+operation=contact.update
+contact_id=...
+correlation_id=...
+fields=["display_name", "source"]
+result=success
+~~~
+
+instead of full CRM aggregate dumps.
+
+Use error.as_dict or the HTTP error bridges at public boundaries.
+
+Treat raw error.context as potentially sensitive.
+
+Protect databases and backups containing CRM PII, webhook signing secrets, delivery payloads, External Identities and communication metadata.
+
+Enable private-network webhook delivery only when intentional.
+
+Use replay-age verification for internet-facing webhook receivers.
+
+Use the public secret-rotation API so persistence and audit semantics remain consistent.
+
+## Common mistakes
+
+### Assuming safe repr means encryption
+
+repr suppression only reduces diagnostic exposure.
+
+### Assuming public redaction modifies raw error.context
+
+It does not.
+
+### Logging raw error.context after relying on as_dict privacy
+
+Raw context can still be sensitive.
+
+### Putting secrets into error.message
+
+Context redaction does not sanitize arbitrary message prose.
+
+### Copying full Contact payloads into Audit
+
+Prefer minimized field/evidence metadata.
+
+### Copying external_id into events unnecessarily
+
+The V1 event contract intentionally omits it.
+
+### Treating webhook HMAC as business authorization
+
+HMAC verifies shared-secret possession and message integrity, not user permissions.
+
+### Verifying HMAC without freshness checking on internet receivers
+
+A previously valid request can otherwise be replayed.
+
+### Allowing arbitrary redirects
+
+The built-in stdlib transport deliberately refuses redirects.
+
+### Opting into private webhook networks without considering SSRF exposure
+
+The opt-in changes the network trust model.
+
+### Storing production secrets in source control
+
+repr/redaction cannot undo that disclosure.
+
+### Treating actor_id as authenticated identity
+
+Authentication and authorization must happen in the embedding application.
+
+### Adding generic hard-delete methods for convenience
+
+The stable public API intentionally uses lifecycle operations.
+
+### Merging without trustworthy provenance
+
+The default merge contract is conservative by design.
+
+### Treating security regression tests as penetration-test certification
+
+They qualify documented invariants, not external certification.
+
+## Testing security and privacy
+
+Application/security tests should cover:
+
+~~~text
+public error redaction
+raw versus public error context
+no validation echo of customer values
+secret-safe repr
+event payload minimization
+audit minimization
+HMAC tamper detection
+replay-age boundaries
+unsafe webhook URLs
+private destination policy
+secret rotation
+destructive-action boundary
+archived mutation rejection
+merge provenance/conflict safeguards
+installed-wheel hardening
+~~~
+
+## What you learned
+
+You can now explain:
+
+- the V1 security/privacy scope;
+- application-owned authentication and authorization;
+- primary CRM data versus secondary copies;
+- recursive error redaction;
+- raw error-context sensitivity;
+- secret-safe repr;
+- SMTP and Resend credential handling;
+- event and audit minimization;
+- External Identity event privacy;
+- webhook secret persistence scope;
+- secret generation and rotation;
+- HMAC-SHA256 signing;
+- replay-age validation;
+- webhook URL validation;
+- private-network blocking;
+- redirect refusal;
+- conservative destructive operations;
+- merge provenance safeguards;
+- database/operator responsibility;
+- source and installed-wheel security qualification.
