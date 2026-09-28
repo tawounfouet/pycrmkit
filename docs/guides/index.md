@@ -63,6 +63,7 @@ example application.
 28. [Django](27_django.md) — integrate Django ORM persistence, adapter-specific migrations, explicit transactions, ambient savepoints, admin operations and PostgreSQL qualification without making ORM models the domain.
 29. [Django REST Framework](28_django_rest_framework.md) — expose the bounded Django CRM surface through explicit serializers, facade-backed ViewSets, offset pagination, request context and privacy-safe error mapping.
 30. [Transactions & Unit of Work](29_transactions_and_unit_of_work.md) — unify explicit commit, rollback, multi-repository atomicity and post-commit events across Memory snapshots, SQLAlchemy Sessions and Django atomic/savepoint boundaries.
+31. [Context, Events & Audit](30_context_events_and_audit.md) — propagate actor, correlation and causation through immutable Domain Events, privacy-conscious Audit records, transactional Timeline projections and post-commit subscribers.
 
 ## LEVEL 1 complete
 
@@ -86,7 +87,7 @@ External Identities, Importing Data, Deduplication, Contact Merge and Exporting 
 
 ## LEVEL 6 in progress
 
-Memory, SQLAlchemy and Django now share an explicit transaction model at the application boundary while retaining their adapter-specific mechanisms: snapshots, Sessions and atomic/savepoint participation. Context, Events & Audit is next.
+Memory, SQLAlchemy and Django now share an explicit transaction model, while CRMContext, Domain Events, Audit and Timeline carry trace metadata across committed changes without coupling the domain to HTTP or a framework. Error Handling is next.
 
 ## Full Zero-to-Hero roadmap
 
@@ -125,7 +126,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 27 | Django | Published |
 | 6 | 28 | Django REST Framework | Published |
 | 6 | 29 | Transactions & Unit of Work | Published |
-| 6 | 30 | Context, Events & Audit | Planned |
+| 6 | 30 | Context, Events & Audit | Published |
 | 6 | 31 | Error Handling | Planned |
 | 6 | 32 | Security & Privacy | Planned |
 | 7 | 33 | Testing PyCRMKit Applications | Planned |
