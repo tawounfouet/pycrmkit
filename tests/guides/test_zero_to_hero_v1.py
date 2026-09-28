@@ -127,10 +127,10 @@ from pycrmkit.importers import (
 )
 from pycrmkit.integrations.fastapi import (
     ContactCreateRequest,
-    ErrorResponse,
     ContactEmailSchema,
     ContactUpdateRequest,
     CRMDependency,
+    ErrorResponse,
     create_crm_router,
     install_error_handlers,
     status_code_for_error,
