@@ -17,7 +17,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from pycrmkit import CRM, CRMContext, __version__
+from pycrmkit import CRM, CRMConfig, CRMContext, __version__
 from pycrmkit.activities import (
     ActivityDirection,
     ActivityParticipant,
@@ -5201,3 +5201,145 @@ assert published == [committed_event]
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_zero_to_hero_context_events_audit_timeline_trace_example() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 23, 0, tzinfo=UTC))
+    crm = CRM.memory(
+        clock=clock,
+        webhook_auto_delivery=False,
+    )
+    captured: list[DomainEvent] = []
+    for event_type in (
+        "contact.created",
+        "task.created",
+        "task.completed",
+    ):
+        crm.events.subscribe(event_type, captured.append)
+
+    root_crm = crm.with_context(
+        actor_id="guide-agent",
+        correlation_id="guide-trace-30",
+    )
+    contact = root_crm.contacts.create(
+        first_name="Ada",
+        last_name="Lovelace",
+    )
+    root = captured[0]
+
+    contact_ref = EntityReference("contact", contact.id)
+    task = crm.with_event(root).tasks.create(
+        title="Follow up",
+        references=(contact_ref,),
+    )
+    task_created = captured[1]
+
+    clock.advance(timedelta(minutes=5))
+    crm.with_event(task_created).tasks.complete(task.id)
+    task_completed = captured[2]
+
+    assert root.actor_id == "guide-agent"
+    assert root.correlation_id == "guide-trace-30"
+    assert root.causation_id is None
+
+    assert task_created.actor_id == "guide-agent"
+    assert task_created.correlation_id == "guide-trace-30"
+    assert task_created.causation_id == root.id
+
+    assert task_completed.actor_id == "guide-agent"
+    assert task_completed.correlation_id == "guide-trace-30"
+    assert task_completed.causation_id == task_created.id
+
+    serialized = EventSerializer(default_event_registry()).dumps(task_completed)
+    restored = EventSerializer(default_event_registry()).loads(serialized)
+    assert restored.causation_id == task_created.id
+    assert restored.correlation_id == "guide-trace-30"
+
+    audit = crm.audit.by_correlation("guide-trace-30")
+    assert {entry.action for entry in audit.items} == {
+        "contact.created",
+        "task.created",
+        "task.completed",
+    }
+    assert all(entry.actor_id == "guide-agent" for entry in audit.items)
+    assert all(entry.correlation_id == "guide-trace-30" for entry in audit.items)
+    assert all(not hasattr(entry, "causation_id") for entry in audit.items)
+    assert all("Ada" not in repr(entry.changes) for entry in audit.items)
+    assert all("Lovelace" not in repr(entry.changes) for entry in audit.items)
+
+    timeline = crm.timeline.for_contact(contact.id)
+    assert [str(entry.event_type) for entry in timeline.items] == [
+        "task.completed",
+        "task.created",
+    ]
+    assert all(entry.actor_id == "guide-agent" for entry in timeline.items)
+    assert all(entry.correlation_id == "guide-trace-30" for entry in timeline.items)
+    assert all(not hasattr(entry, "causation_id") for entry in timeline.items)
+    assert timeline.items[0].source_event_id == task_completed.id
+    assert timeline.items[1].source_event_id == task_created.id
+    assert timeline.items[0].id.value == task_completed.id.value
+
+
+def test_zero_to_hero_context_fallback_and_partial_override_example() -> None:
+    now = datetime(2026, 9, 28, 23, 15, tzinfo=UTC)
+    parent = DomainEvent.create(
+        id_factory=UUID4Factory(),
+        clock=FixedClock(now),
+        type="contact.created",
+        aggregate_type="contact",
+        aggregate_id="contact-30",
+        actor_id="worker-30",
+    )
+
+    child_context = CRMContext.from_event(parent)
+
+    assert child_context.actor_id == "worker-30"
+    assert child_context.correlation_id == str(parent.id)
+    assert child_context.causation_id == parent.id
+
+    crm = CRM.memory(
+        context=CRMContext(
+            actor_id="system",
+            correlation_id="base-trace",
+        ),
+        webhook_auto_delivery=False,
+    )
+
+    actor_override = crm.with_context(actor_id="api-user")
+    assert actor_override.context.actor_id == "api-user"
+    assert actor_override.context.correlation_id == "base-trace"
+
+    cleared = actor_override.with_context(correlation_id=None)
+    assert cleared.context.actor_id == "api-user"
+    assert cleared.context.correlation_id is None
+
+    event_scoped = crm.with_event(parent)
+    assert event_scoped.context == child_context
+
+
+def test_zero_to_hero_timeline_is_independent_of_event_and_audit_switches() -> None:
+    clock = FixedClock(datetime(2026, 9, 28, 23, 30, tzinfo=UTC))
+    crm = CRM.memory(
+        config=CRMConfig(
+            events_enabled=False,
+            audit_enabled=False,
+        ),
+        clock=clock,
+        webhook_auto_delivery=False,
+    )
+    published: list[DomainEvent] = []
+    crm.events.subscribe("task.created", published.append)
+
+    contact = crm.contacts.create(display_name="Timeline only")
+    task = crm.tasks.create(
+        title="Still projected",
+        references=(EntityReference("contact", contact.id),),
+    )
+
+    assert published == []
+    assert crm.audit.for_entity("task", task.id).total == 0
+
+    timeline = crm.timeline.for_contact(contact.id)
+    assert timeline.total == 1
+    assert str(timeline.items[0].event_type) == "task.created"
+    assert timeline.items[0].entity.id == task.id
