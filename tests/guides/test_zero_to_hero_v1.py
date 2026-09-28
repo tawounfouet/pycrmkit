@@ -159,6 +159,7 @@ from pycrmkit.pipelines import (
     StageOutcome,
     StageTransition,
 )
+from pycrmkit.providers.email import SMTPConfig
 from pycrmkit.relationships import (
     RelationshipEndpoint,
     RelationshipEntityKind,
@@ -198,10 +199,15 @@ from pycrmkit.tasks import (
 )
 from pycrmkit.timeline import TimelineEntryKind, TimelineProjector
 from pycrmkit.webhooks import (
+    StdlibWebhookTransport,
     WebhookDeliveryState,
     WebhookRequest,
     WebhookResponse,
     WebhookRetryPolicy,
+    WebhookSubscription,
+    WebhookSubscriptionId,
+    WebhookTransportError,
+    normalize_webhook_url,
     sign_webhook_payload,
     verify_webhook_signature,
 )
@@ -5514,3 +5520,208 @@ assert "submitted" not in str(request_response.data)
     )
 
     assert result.returncode == 0, result.stderr
+
+
+def test_zero_to_hero_security_privacy_diagnostics_and_repr_example() -> None:
+    error = ValidationError(
+        "invalid customer input",
+        code="security.guide",
+        context={
+            "contact_id": "contact-32",
+            "email": "ada.private@example.com",
+            "nested": {
+                "api_key": "rk_live_do_not_expose",
+                "phone": "+33612345678",
+                "safe": "kept",
+            },
+        },
+    )
+
+    assert error.context["email"] == "ada.private@example.com"
+    public = error.as_dict()
+    assert public["context"] == {
+        "contact_id": "contact-32",
+        "email": "[REDACTED]",
+        "nested": {
+            "api_key": "[REDACTED]",
+            "phone": "[REDACTED]",
+            "safe": "kept",
+        },
+    }
+
+    smtp = SMTPConfig(
+        host="smtp.example.com",
+        username="mailer",
+        password="smtp-guide-secret",
+    )
+    assert "smtp-guide-secret" not in repr(smtp)
+
+    webhook_secret = "0123456789abcdef0123456789abcdef"
+    webhook_url = "https://hooks.example.com/customer?opaque=value"
+    subscription = WebhookSubscription(
+        id=WebhookSubscriptionId(UUID(int=3201)),
+        created_at=datetime(2026, 9, 28, 9, 0, tzinfo=UTC),
+        updated_at=datetime(2026, 9, 28, 9, 0, tzinfo=UTC),
+        url=webhook_url,
+        event_types=("contact.created",),  # type: ignore[arg-type]
+        signing_secret=webhook_secret,
+    )
+    subscription_repr = repr(subscription)
+    assert webhook_secret not in subscription_repr
+    assert webhook_url not in subscription_repr
+
+    request = WebhookRequest(
+        url=webhook_url,
+        body=b'{"email":"ada.private@example.com"}',
+        headers={
+            "Authorization": "Bearer guide-secret",
+            "X-PyCRMKit-Signature": "v1=deadbeef",
+        },
+    )
+    request_repr = repr(request)
+    assert webhook_url not in request_repr
+    assert "ada.private@example.com" not in request_repr
+    assert "Bearer guide-secret" not in request_repr
+
+
+def test_zero_to_hero_security_privacy_event_and_audit_minimization_example() -> None:
+    crm = CRM.memory(webhook_auto_delivery=False)
+    contact_events: list[DomainEvent] = []
+    identity_events: list[DomainEvent] = []
+    crm.events.subscribe("contact.created", contact_events.append)
+    crm.events.subscribe("external_identity.attached", identity_events.append)
+
+    email = "ada.private@example.com"
+    phone = "+33612345678"
+    street = "42 Confidential Street"
+    private_note = "never-copy-this"
+
+    contact = crm.contacts.create(
+        first_name="Ada",
+        last_name="Lovelace",
+        emails=(ContactEmail(email, is_primary=True),),
+        phones=(ContactPhone(phone, is_primary=True),),
+        addresses=(Address(street, "Paris", postal_code="75001"),),
+        metadata={"private_note": private_note},
+    )
+
+    encoded = EventSerializer(default_event_registry()).dumps(contact_events[0])
+    for sensitive in (email, phone, street, private_note):
+        assert sensitive not in encoded
+
+    audit = crm.audit.for_entity("contact", contact.id)
+    assert audit.total == 1
+    audit_text = repr(audit.items[0].changes)
+    for sensitive in (email, phone, street, private_note):
+        assert sensitive not in audit_text
+
+    external_id = "customer-secret-000032"
+    crm.external_identities.attach(
+        contact,
+        system="legacy_crm",
+        external_id=external_id,
+    )
+
+    assert len(identity_events) == 1
+    assert dict(identity_events[0].payload) == {"system": "legacy_crm"}
+    assert external_id not in repr(identity_events[0].payload)
+
+
+def test_zero_to_hero_security_privacy_webhook_and_lifecycle_safeguards_example() -> None:
+    now = datetime(2026, 9, 28, 9, 30, tzinfo=UTC)
+    timestamp = int(now.timestamp())
+    secret = "0123456789abcdef0123456789abcdef"
+    payload = b'{"type":"contact.created"}'
+    signature = sign_webhook_payload(secret, timestamp, payload)
+
+    assert verify_webhook_signature(secret, timestamp, payload, signature)
+    assert verify_webhook_signature(
+        secret,
+        timestamp,
+        payload,
+        signature,
+        current_timestamp=timestamp + 300,
+        tolerance_seconds=300,
+    )
+    assert not verify_webhook_signature(
+        secret,
+        timestamp,
+        payload,
+        signature,
+        current_timestamp=timestamp + 301,
+        tolerance_seconds=300,
+    )
+    assert not verify_webhook_signature(
+        secret,
+        timestamp,
+        payload + b"tampered",
+        signature,
+    )
+
+    with pytest.raises(ValidationError):
+        normalize_webhook_url("https://user:password@example.com/hook")
+    with pytest.raises(ValidationError):
+        normalize_webhook_url("https://example.com/hook\r\nX-Injected: yes")
+
+    transport = StdlibWebhookTransport()
+    with pytest.raises(WebhookTransportError) as destination_error:
+        transport.send(
+            WebhookRequest(
+                url="http://127.0.0.1/hook",
+                body=b"{}",
+                headers={},
+            )
+        )
+    assert destination_error.value.code == "webhook.transport.destination_forbidden"
+
+    crm = CRM.memory(
+        clock=FixedClock(now),
+        webhook_auto_delivery=False,
+    ).with_context(
+        actor_id="security-guide",
+        correlation_id="security-guide-32",
+    )
+
+    old_secret = "0123456789abcdef0123456789abcdef"
+    new_secret = "fedcba9876543210fedcba9876543210"
+    subscription = crm.webhooks.register(
+        url="https://hooks.example.com/security",
+        events=("contact.created",),
+        signing_secret=old_secret,
+    )
+    rotated = crm.webhooks.rotate_secret(
+        subscription.id,
+        signing_secret=new_secret,
+    )
+    assert rotated.signing_secret == new_secret
+
+    rotation_audit = crm.audit.by_correlation("security-guide-32")
+    rotation_text = repr(tuple(entry.changes for entry in rotation_audit.items))
+    assert old_secret not in rotation_text
+    assert new_secret not in rotation_text
+    assert any(
+        entry.action == "webhook.subscription.secret_rotated"
+        for entry in rotation_audit.items
+    )
+
+    for namespace in (
+        crm.contacts,
+        crm.organizations,
+        crm.relationships,
+        crm.activities,
+        crm.tasks,
+        crm.external_identities,
+        crm.webhooks,
+    ):
+        assert not hasattr(namespace, "delete")
+        assert not hasattr(namespace, "purge")
+        assert not hasattr(namespace, "hard_delete")
+
+    contact = crm.contacts.create(display_name="Archive Safeguard")
+    crm.contacts.archive(contact.id)
+    with pytest.raises(InvalidStateError) as archived_error:
+        crm.contacts.update(
+            contact.id,
+            ContactUpdate(display_name="Should not change"),
+        )
+    assert archived_error.value.code == "contact.archived"

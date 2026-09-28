@@ -65,6 +65,7 @@ example application.
 30. [Transactions & Unit of Work](29_transactions_and_unit_of_work.md) — unify explicit commit, rollback, multi-repository atomicity and post-commit events across Memory snapshots, SQLAlchemy Sessions and Django atomic/savepoint boundaries.
 31. [Context, Events & Audit](30_context_events_and_audit.md) — propagate actor, correlation and causation through immutable Domain Events, privacy-conscious Audit records, transactional Timeline projections and post-commit subscribers.
 32. [Error Handling](31_error_handling.md) — normalize domain, persistence and integration failures through stable codes, privacy-safe context, backend translation and predictable FastAPI/DRF HTTP contracts.
+33. [Security & Privacy](32_security_and_privacy.md) — harden sensitive diagnostics, secret-bearing representations, event/audit payloads, webhook integrity and destinations, destructive operations and merge safeguards.
 
 ## LEVEL 1 complete
 
@@ -86,9 +87,9 @@ Email & Communications, Domain Events and Webhooks now form the complete Communi
 
 External Identities, Importing Data, Deduplication, Contact Merge and Exporting Data now form the complete Data Operations layer: provider identity, ingestion, evidence-based duplicate detection, transactional reconciliation and portable outbound exchange.
 
-## LEVEL 6 in progress
+## LEVEL 6 complete
 
-Memory, SQLAlchemy and Django share explicit transaction semantics; context/events/audit preserve traceability; and Error Handling now stabilizes domain, repository and integration failures across persistence and HTTP adapters. Security & Privacy is next.
+Memory, SQLAlchemy/PostgreSQL, migrations, FastAPI, Django/DRF, transaction semantics, context/events/audit, stable errors and security/privacy hardening now form the complete Persistence & Integrations learning layer. LEVEL 7 begins with Testing PyCRMKit Applications.
 
 ## Full Zero-to-Hero roadmap
 
@@ -129,7 +130,7 @@ added in learning order and their examples are validated against the stable V1 A
 | 6 | 29 | Transactions & Unit of Work | Published |
 | 6 | 30 | Context, Events & Audit | Published |
 | 6 | 31 | Error Handling | Published |
-| 6 | 32 | Security & Privacy | Planned |
+| 6 | 32 | Security & Privacy | Published |
 | 7 | 33 | Testing PyCRMKit Applications | Planned |
 | 7 | 34 | Observability & Debugging | Planned |
 | 7 | 35 | Performance | Planned |
