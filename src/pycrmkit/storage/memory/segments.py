@@ -284,7 +284,8 @@ class MemorySegmentQueryExecutor:
             field = schema.field(expression.field)
             actual = self._field_value(entity, field.key)
             if field.key == "tag":
-                return self._tag_predicate(tuple(actual or ()), expression)
+                tags = cast(tuple[str, ...], actual or ())
+                return self._tag_predicate(tags, expression)
             return self._predicate(field, actual, expression, at)
         if isinstance(expression, And):
             return all(
@@ -487,9 +488,14 @@ class MemorySegmentQueryExecutor:
             return result if null_first else -result
         left_value = field.normalize_value(left)
         right_value = field.normalize_value(right)
-        result = (cast(Any, left_value) > cast(Any, right_value)) - (
-            cast(Any, left_value) < cast(Any, right_value)
-        )
+        left_any = cast(Any, left_value)
+        right_any = cast(Any, right_value)
+        if left_any < right_any:
+            result = -1
+        elif left_any > right_any:
+            result = 1
+        else:
+            result = 0
         return result if direction is SortDirection.ASC else -result
 
 
