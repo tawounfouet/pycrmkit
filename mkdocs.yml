@@ -84,6 +84,9 @@ nav:
   - Custom Fields:
       - Overview: custom-fields/index.md
       - Repository Contract: custom-fields/repository-contract.md
+  - Segmentation:
+      - Overview: segments/index.md
+      - Repository Contract: segments/repository-contract.md
   - Communication:
       - Domain Foundation: communication/index.md
       - Email Provider Protocol: communication/email-provider.md
@@ -182,6 +185,7 @@ nav:
       - 1.0.0b3 Compatibility Matrix: releases/1.0.0b3.md
       - 1.0.0rc1 Full Production Qualification: releases/1.0.0rc1.md
       - 1.0.0 Production Stable: releases/1.0.0.md
+      - 1.1.0a1 Query Expressions & Segment Foundations: releases/1.1.0a1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
