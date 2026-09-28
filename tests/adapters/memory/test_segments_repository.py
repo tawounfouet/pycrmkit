@@ -98,6 +98,7 @@ def test_dynamic_query_evaluates_canonical_contact_state() -> None:
         "contact",
         Predicate("source", QueryOperator.EQ, "linkedin"),
         OffsetPageRequest(),
+        at=NOW,
     )
 
     assert page.items == (EntityReference("contact", linkedin.id),)
