@@ -187,8 +187,8 @@ class SavedQueriesAPI:
         return uow
 
     @staticmethod
-    def _changed_fields(changes: SavedQueryRevision) -> list[str]:
-        return [
+    def _changed_fields(changes: SavedQueryRevision) -> tuple[str, ...]:
+        return tuple(
             name
             for name in (
                 "name",
@@ -199,7 +199,7 @@ class SavedQueriesAPI:
                 "metadata",
             )
             if not isinstance(getattr(changes, name), UnsetType)
-        ]
+        )
 
 
 __all__ = ["SavedQueriesAPI"]
