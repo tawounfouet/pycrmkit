@@ -6,7 +6,7 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING, Final
+from typing import Final
 
 from pycrmkit.core.entities import TimestampedEntity
 from pycrmkit.core.ids import EntityId, UUIDId
@@ -15,9 +15,6 @@ from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import InvalidStateError, ValidationError
 from pycrmkit.segments.enums import SegmentMode, SegmentStatus
 from pycrmkit.segments.expressions import QueryExpression
-
-if TYPE_CHECKING:
-    from pycrmkit.saved_queries import SavedQueryId
 
 _SEGMENT_KEY = re.compile(r"^[a-z0-9][a-z0-9._-]{0,119}$")
 SEGMENTABLE_ENTITY_KINDS: Final[frozenset[str]] = frozenset(
@@ -79,7 +76,7 @@ class Segment(TimestampedEntity[SegmentId]):
     description: str | None = None
     status: SegmentStatus = SegmentStatus.ACTIVE
     query: QueryExpression | None = None
-    saved_query_id: SavedQueryId | None = None
+    saved_query_id: UUIDId | None = None
     saved_query_revision: int | None = None
     owner_id: EntityId | None = None
     revision: int = 1
