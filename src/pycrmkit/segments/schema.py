@@ -13,6 +13,7 @@ from uuid import UUID
 from pycrmkit.core.ids import UUIDId
 from pycrmkit.core.time import as_utc
 from pycrmkit.core.value_objects import ValueObject
+from pycrmkit.custom_fields import CustomFieldDefinition, CustomFieldType
 from pycrmkit.exceptions import NotFoundError, ValidationError
 from pycrmkit.segments.enums import QueryFieldType, QueryOperator
 from pycrmkit.segments.expressions import (
@@ -299,6 +300,40 @@ def iter_predicates(expression: QueryExpression) -> tuple[Predicate, ...]:
     )
 
 
+def query_field_from_custom_definition(
+    definition: CustomFieldDefinition,
+) -> QueryField | None:
+    """Map supported scalar Custom Fields into portable query fields."""
+
+    mapping = {
+        CustomFieldType.STRING: QueryFieldType.STRING,
+        CustomFieldType.TEXT: QueryFieldType.STRING,
+        CustomFieldType.INTEGER: QueryFieldType.INTEGER,
+        CustomFieldType.DECIMAL: QueryFieldType.DECIMAL,
+        CustomFieldType.BOOLEAN: QueryFieldType.BOOLEAN,
+        CustomFieldType.DATE: QueryFieldType.DATE,
+        CustomFieldType.DATETIME: QueryFieldType.DATETIME,
+        CustomFieldType.EMAIL: QueryFieldType.STRING,
+        CustomFieldType.PHONE: QueryFieldType.STRING,
+        CustomFieldType.URL: QueryFieldType.STRING,
+        CustomFieldType.ENUM: QueryFieldType.ENUM,
+    }
+    field_type = mapping.get(definition.field_type)
+    if field_type is None or not definition.active:
+        return None
+    enum_values = (
+        tuple(option.code for option in definition.options)
+        if definition.field_type is CustomFieldType.ENUM
+        else ()
+    )
+    return QueryField(
+        key=f"custom.{definition.key}",
+        type=field_type,
+        nullable=True,
+        enum_values=enum_values,
+    )
+
+
 def _field(
     key: str,
     type: QueryFieldType,
@@ -316,6 +351,7 @@ def default_query_schemas() -> QuerySchemaRegistry:
         _field("id", QueryFieldType.ID),
         _field("created_at", QueryFieldType.DATETIME),
         _field("updated_at", QueryFieldType.DATETIME),
+        _field("tag", QueryFieldType.STRING, nullable=True),
     )
     contact = QuerySchema(
         "contact",
@@ -402,4 +438,5 @@ __all__ = [
     "QuerySchemaRegistry",
     "default_query_schemas",
     "iter_predicates",
+    "query_field_from_custom_definition",
 ]
