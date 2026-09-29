@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 
 import pytest
 from sqlalchemy.orm import Session
@@ -10,12 +11,19 @@ from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import DuplicateError
 from pycrmkit.segments import (
+    And,
     Predicate,
     QueryOperator,
     Segment,
     SegmentId,
     SegmentMember,
     SegmentMode,
+)
+from pycrmkit.storage.sqlalchemy.models import (
+    CustomFieldDefinitionModel,
+    CustomFieldValueModel,
+    TagAssignmentModel,
+    TagModel,
 )
 from pycrmkit.storage.sqlalchemy.repositories import (
     SQLAlchemyContactRepository,
@@ -102,4 +110,110 @@ def test_sqlalchemy_query_executor_filters_canonical_contact_state(
     )
 
     assert result.items == (EntityReference("contact", linkedin.id),)
+    assert result.total == 1
+
+
+def test_sqlalchemy_query_executor_compiles_tag_and_custom_field_predicates(
+    session: Session,
+) -> None:
+    contacts = SQLAlchemyContactRepository(session)
+    ada = Contact(
+        id=ContactId.parse("00000000-0000-0000-0000-000000000131"),
+        created_at=NOW,
+        updated_at=NOW,
+        display_name="Ada",
+    )
+    grace = Contact(
+        id=ContactId.parse("00000000-0000-0000-0000-000000000132"),
+        created_at=NOW,
+        updated_at=NOW,
+        display_name="Grace",
+    )
+    contacts.save(ada)
+    contacts.save(grace)
+
+    definition_id = "00000000-0000-0000-0000-000000000141"
+    session.add(
+        CustomFieldDefinitionModel(
+            id=definition_id,
+            schema_version=1,
+            key="annual_budget",
+            label="Annual Budget",
+            field_type="decimal",
+            applies_to_json=["contact"],
+            required=False,
+            description=None,
+            options_json=[],
+            reference_kinds_json=[],
+            active=True,
+            metadata_json={},
+            created_at=NOW,
+            updated_at=NOW,
+        )
+    )
+    session.add_all(
+        [
+            CustomFieldValueModel(
+                id="00000000-0000-0000-0000-000000000151",
+                definition_id=definition_id,
+                entity_kind="contact",
+                entity_id=str(ada.id),
+                schema_version=1,
+                value_json={"type": "decimal", "value": "150000"},
+                created_at=NOW,
+                updated_at=NOW,
+            ),
+            CustomFieldValueModel(
+                id="00000000-0000-0000-0000-000000000152",
+                definition_id=definition_id,
+                entity_kind="contact",
+                entity_id=str(grace.id),
+                schema_version=1,
+                value_json={"type": "decimal", "value": "50000"},
+                created_at=NOW,
+                updated_at=NOW,
+            ),
+        ]
+    )
+
+    tag_id = "00000000-0000-0000-0000-000000000161"
+    session.add(
+        TagModel(
+            id=tag_id,
+            name="VIP",
+            normalized_name="vip",
+            metadata_json={},
+            created_at=NOW,
+            updated_at=NOW,
+        )
+    )
+    session.add(
+        TagAssignmentModel(
+            id="00000000-0000-0000-0000-000000000162",
+            tag_id=tag_id,
+            entity_kind="contact",
+            entity_id=str(ada.id),
+            created_at=NOW,
+            updated_at=NOW,
+        )
+    )
+    session.flush()
+
+    result = SQLAlchemySegmentQueryExecutor(session).execute(
+        "contact",
+        And(
+            (
+                Predicate(
+                    "custom.annual_budget",
+                    QueryOperator.GTE,
+                    Decimal("100000"),
+                ),
+                Predicate("tag", QueryOperator.EQ, "vip"),
+            )
+        ),
+        OffsetPageRequest(),
+        at=NOW,
+    )
+
+    assert result.items == (EntityReference("contact", ada.id),)
     assert result.total == 1
