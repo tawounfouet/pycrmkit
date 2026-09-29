@@ -6,6 +6,25 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.1.0a3] - 2026-09-29
+
+### Added
+- Added portable `TaskType` with `general`, `call` and `email`; existing persisted Tasks migrate to `general`.
+- Added derived sales work queues: `crm.tasks.overdue()`, `today()`, `upcoming()` and `unscheduled()`, with adapter-side filtering and deterministic ordering.
+- Added timezone-aware local-day projections using IANA `zoneinfo` identifiers while preserving the V1 strict overdue rule `due_at < now`.
+- Added `BusinessCalendar`, working weekdays/windows, explicit holidays/date overrides, business-day arithmetic, DST-aware due-time resolution and a runtime calendar registry exposed through `crm.calendars`.
+- Added Alembic revision `0004` for additive `task_type` persistence and legacy-row backfill.
+
+### Compatibility
+- Existing Task positional field order is preserved; all new Task/TaskUpdate/TaskQuery fields are appended or keyword-only at facade boundaries.
+- Existing Task event names and payloads remain unchanged.
+- The frozen V1 package/facade compatibility checks now require V1 symbols and methods as a subset, allowing additive 1.x APIs without weakening V1 availability.
+- V1 migration artifacts remain required inside installed distributions while later migrations may be added.
+
+### Deferred
+- Full Cadence/Sequence execution remains outside the mandatory 1.1 scope.
+- SQLAlchemy/PostgreSQL persistence for Segments and Saved Queries is the next milestone, `1.1.0b1`.
+
 ## [1.1.0a2] - 2026-09-29
 
 ### Added
