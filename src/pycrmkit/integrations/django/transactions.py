@@ -17,6 +17,12 @@ from pycrmkit.integrations.django.repositories import (
     DjangoOrganizationRepository,
     DjangoRelationshipRepository,
 )
+from pycrmkit.integrations.django.segmentation import (
+    DjangoSavedQueryRepository,
+    DjangoSegmentMembershipRepository,
+    DjangoSegmentQueryExecutor,
+    DjangoSegmentRepository,
+)
 
 
 class _RollbackSignal(Exception):
@@ -45,6 +51,10 @@ class DjangoTransactionBridge:
         self._external_identities: DjangoExternalIdentityRepository | None = None
         self._organizations: DjangoOrganizationRepository | None = None
         self._relationships: DjangoRelationshipRepository | None = None
+        self._segments: DjangoSegmentRepository | None = None
+        self._saved_queries: DjangoSavedQueryRepository | None = None
+        self._segment_memberships: DjangoSegmentMembershipRepository | None = None
+        self._segment_query_executor: DjangoSegmentQueryExecutor | None = None
 
     @property
     def contacts(self) -> DjangoContactRepository:
@@ -69,6 +79,30 @@ class DjangoTransactionBridge:
         self._ensure_writable()
         assert self._relationships is not None
         return self._relationships
+
+    @property
+    def segments(self) -> DjangoSegmentRepository:
+        self._ensure_writable()
+        assert self._segments is not None
+        return self._segments
+
+    @property
+    def saved_queries(self) -> DjangoSavedQueryRepository:
+        self._ensure_writable()
+        assert self._saved_queries is not None
+        return self._saved_queries
+
+    @property
+    def segment_memberships(self) -> DjangoSegmentMembershipRepository:
+        self._ensure_writable()
+        assert self._segment_memberships is not None
+        return self._segment_memberships
+
+    @property
+    def segment_query_executor(self) -> DjangoSegmentQueryExecutor:
+        self._ensure_writable()
+        assert self._segment_query_executor is not None
+        return self._segment_query_executor
 
     @property
     def pending_events(self) -> tuple[DomainEvent, ...]:
@@ -201,12 +235,20 @@ class DjangoTransactionBridge:
         self._external_identities = DjangoExternalIdentityRepository()
         self._organizations = DjangoOrganizationRepository()
         self._relationships = DjangoRelationshipRepository()
+        self._segments = DjangoSegmentRepository()
+        self._saved_queries = DjangoSavedQueryRepository()
+        self._segment_memberships = DjangoSegmentMembershipRepository()
+        self._segment_query_executor = DjangoSegmentQueryExecutor()
 
     def _unbind_repositories(self) -> None:
         self._contacts = None
         self._external_identities = None
         self._organizations = None
         self._relationships = None
+        self._segments = None
+        self._saved_queries = None
+        self._segment_memberships = None
+        self._segment_query_executor = None
 
     def _ensure_writable(self) -> None:
         if not self._active:
