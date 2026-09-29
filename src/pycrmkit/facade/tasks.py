@@ -82,7 +82,6 @@ class TasksAPI:
                 },
                 payload={
                     "status": task.status.value,
-                    "type": task.type.value,
                     "priority": task.priority.name.lower(),
                 },
             )
