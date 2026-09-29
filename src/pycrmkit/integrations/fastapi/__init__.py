@@ -17,17 +17,6 @@ from pycrmkit.integrations.fastapi.pagination import (
     pagination_params,
 )
 from pycrmkit.integrations.fastapi.router import create_crm_router
-from pycrmkit.integrations.fastapi.segmentation_schemas import (
-    SavedQueryCreateRequest,
-    SavedQueryResponse,
-    SavedQueryUpdateRequest,
-    SegmentCreateRequest,
-    SegmentMembersRequest,
-    SegmentResponse,
-    SegmentSnapshotCreateRequest,
-    SegmentSnapshotRequest,
-    SortExpressionSchema,
-)
 from pycrmkit.integrations.fastapi.schemas import (
     ActivityCreateRequest,
     ActivityParticipantSchema,
@@ -60,6 +49,17 @@ from pycrmkit.integrations.fastapi.schemas import (
     TaskResponse,
     TaskUpdateRequest,
     TimelineEntryResponse,
+)
+from pycrmkit.integrations.fastapi.segmentation_schemas import (
+    SavedQueryCreateRequest,
+    SavedQueryResponse,
+    SavedQueryUpdateRequest,
+    SegmentCreateRequest,
+    SegmentMembersRequest,
+    SegmentResponse,
+    SegmentSnapshotCreateRequest,
+    SegmentSnapshotRequest,
+    SortExpressionSchema,
 )
 
 __all__ = [
