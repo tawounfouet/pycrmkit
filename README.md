@@ -141,8 +141,8 @@ pytest
 1.1.0a3 Sales Task Ergonomics & Business Calendar                                 ✓
 1.1.0b1 SQLAlchemy/PostgreSQL Segmentation                                         ✓
 1.1.0b2 Django + Snapshot + Bulk Membership                                         ✓
-1.1.0b3 Data Operations + API Integration                                            ◀ current
-1.1.0rc1 Segmentation Production Qualification
+1.1.0b3 Data Operations + API Integration                                            ✓
+1.1.0rc1 Segmentation Production Qualification                                          ◀ current
 1.1.0  Segmentation & Sales Task Foundation
 ```
 
