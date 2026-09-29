@@ -6,7 +6,17 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, cast
 
-from sqlalchemy import Numeric, and_, cast as sql_cast, exists, false, func, not_, or_, select
+from sqlalchemy import (
+    Numeric,
+    and_,
+    cast as sql_cast,
+    exists,
+    false,
+    func,
+    not_,
+    or_,
+    select,
+)
 from sqlalchemy.orm import Session
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
