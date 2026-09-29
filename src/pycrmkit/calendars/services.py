@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, time
 
 from pycrmkit.calendars.entities import BusinessCalendar
@@ -15,7 +15,7 @@ class BusinessCalendarService:
     """Resolve relative business-day requests into canonical due instants."""
 
     registry: BusinessCalendarRegistry
-    clock: Clock = SystemClock()
+    clock: Clock = field(default_factory=SystemClock)
 
     def due_in_business_days(
         self,
