@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory, UUIDId
@@ -17,7 +17,7 @@ from pycrmkit.segments.entities import (
     SegmentMember,
 )
 from pycrmkit.segments.enums import SegmentMode
-from pycrmkit.segments.expressions import QueryExpression
+from pycrmkit.segments.expressions import QueryExpression, expression_to_dict
 from pycrmkit.segments.queries import SegmentQuery
 from pycrmkit.segments.repository import (
     SegmentMembershipRepository,
@@ -35,6 +35,8 @@ class SegmentService:
     query_executor: SegmentQueryExecutor
     id_factory: IDFactory = field(default_factory=UUID4Factory)
     clock: Clock = field(default_factory=SystemClock)
+
+    MAX_BULK_MEMBERS = 1000
 
     def create(
         self,
@@ -55,8 +57,8 @@ class SegmentService:
         mode = SegmentMode(mode)
         if mode is SegmentMode.SNAPSHOT:
             raise InvalidStateError(
-                "snapshot creation is deferred to the snapshot milestone",
-                code="segment.snapshot.creation_deferred",
+                "snapshot segments must be materialized atomically",
+                code="segment.snapshot.dedicated_creation_required",
             )
         entity_kind = entity_kind.strip().casefold()
         if entity_kind not in SEGMENTABLE_ENTITY_KINDS:
@@ -87,8 +89,86 @@ class SegmentService:
         self.repository.save(segment)
         return segment
 
+    def create_snapshot(
+        self,
+        *,
+        key: str,
+        name: str,
+        entity_kind: str,
+        expression: QueryExpression,
+        description: str | None = None,
+        owner_id: EntityId | None = None,
+        metadata: Mapping[str, object] | None = None,
+    ) -> Segment:
+        """Freeze one query result into an immutable Snapshot Segment."""
+
+        kind = entity_kind.strip().casefold()
+        if kind not in SEGMENTABLE_ENTITY_KINDS:
+            raise ValidationError(
+                "unsupported segment entity kind",
+                code="segment.entity_kind.unsupported",
+                context={"entity_kind": kind},
+            )
+        self.query_executor.validate(kind, expression)
+        snapshot_metadata = dict(metadata or {})
+        snapshot_metadata.setdefault(
+            "snapshot_source",
+            {
+                "kind": "expression",
+                "expression": expression_to_dict(expression),
+            },
+        )
+        snapshot = self._new_snapshot(
+            key=key,
+            name=name,
+            entity_kind=kind,
+            description=description,
+            owner_id=owner_id,
+            metadata=snapshot_metadata,
+        )
+        self._materialize_expression(snapshot, expression)
+        return snapshot
+
+    def snapshot(
+        self,
+        source_segment_id: SegmentId,
+        *,
+        key: str,
+        name: str,
+        description: str | None = None,
+        owner_id: EntityId | None = None,
+        metadata: Mapping[str, object] | None = None,
+    ) -> Segment:
+        """Freeze the current membership of an existing Segment."""
+
+        source = self.repository.get(source_segment_id)
+        snapshot_metadata = dict(metadata or {})
+        snapshot_metadata.setdefault(
+            "snapshot_source",
+            {
+                "kind": "segment",
+                "segment_id": str(source.id),
+                "segment_revision": source.revision,
+            },
+        )
+        snapshot = self._new_snapshot(
+            key=key,
+            name=name,
+            entity_kind=source.entity_kind,
+            description=description,
+            owner_id=owner_id,
+            metadata=snapshot_metadata,
+        )
+        if source.mode is SegmentMode.DYNAMIC:
+            assert source.query is not None
+            self._materialize_expression(snapshot, source.query)
+        else:
+            self._copy_stored_members(source, snapshot)
+        return snapshot
+
     def get(self, segment_id: SegmentId) -> Segment:
         return self.repository.get(segment_id)
+
 
     def list(
         self,
@@ -178,11 +258,57 @@ class SegmentService:
         )
         return self.memberships.add(member)
 
+    def add_members(
+        self,
+        segment_id: SegmentId,
+        entities: Iterable[EntityReference],
+        *,
+        source: str = "manual",
+        actor_id: str | None = None,
+        metadata: Mapping[str, object] | None = None,
+    ) -> tuple[SegmentMember, ...]:
+        """Add one bounded membership batch atomically."""
+
+        segment = self.repository.get(segment_id)
+        segment.ensure_membership_writable()
+        references = tuple(entities)
+        self._validate_bulk(references)
+        for entity in references:
+            self._validate_member(segment, entity)
+        now = self.clock.now()
+        values = tuple(
+            SegmentMember(
+                segment_id=segment.id,
+                entity=entity,
+                added_at=now,
+                source=source,
+                actor_id=actor_id,
+                metadata=dict(metadata or {}),
+            )
+            for entity in references
+        )
+        return self.memberships.add_many(values)
+
     def remove_member(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         segment = self.repository.get(segment_id)
         segment.ensure_membership_writable()
         self._validate_member_kind(segment, entity)
         return self.memberships.remove(segment.id, entity)
+
+    def remove_members(
+        self,
+        segment_id: SegmentId,
+        entities: Iterable[EntityReference],
+    ) -> int:
+        """Remove one bounded membership batch idempotently."""
+
+        segment = self.repository.get(segment_id)
+        segment.ensure_membership_writable()
+        references = tuple(dict.fromkeys(entities))
+        self._validate_bulk(references)
+        for entity in references:
+            self._validate_member_kind(segment, entity)
+        return self.memberships.remove_many(segment.id, references)
 
     def contains(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         segment = self.repository.get(segment_id)
@@ -222,6 +348,113 @@ class SegmentService:
             if not page.has_next:
                 return False
             offset += len(page.items)
+
+    def _new_snapshot(
+        self,
+        *,
+        key: str,
+        name: str,
+        entity_kind: str,
+        description: str | None,
+        owner_id: EntityId | None,
+        metadata: Mapping[str, object],
+    ) -> Segment:
+        now = self.clock.now()
+        snapshot = Segment(
+            id=self.id_factory.new(SegmentId),
+            created_at=now,
+            updated_at=now,
+            key=key,
+            name=name,
+            entity_kind=entity_kind,
+            mode=SegmentMode.SNAPSHOT,
+            description=description,
+            owner_id=owner_id,
+            metadata=dict(metadata),
+        )
+        self.repository.save(snapshot)
+        return snapshot
+
+    def _materialize_expression(
+        self,
+        snapshot: Segment,
+        expression: QueryExpression,
+    ) -> None:
+        offset = 0
+        captured_at = self.clock.now()
+        while True:
+            page = self.query_executor.execute(
+                snapshot.entity_kind,
+                expression,
+                OffsetPageRequest(
+                    limit=OffsetPageRequest.MAX_LIMIT,
+                    offset=offset,
+                ),
+                at=captured_at,
+            )
+            if page.items:
+                members = tuple(
+                    SegmentMember(
+                        segment_id=snapshot.id,
+                        entity=entity,
+                        added_at=captured_at,
+                        source="snapshot",
+                        metadata={},
+                    )
+                    for entity in page.items
+                )
+                self.memberships.add_many(members)
+            if not page.has_next:
+                return
+            offset += len(page.items)
+
+    def _copy_stored_members(
+        self,
+        source: Segment,
+        snapshot: Segment,
+    ) -> None:
+        offset = 0
+        captured_at = self.clock.now()
+        while True:
+            page = self.memberships.list(
+                source.id,
+                OffsetPageRequest(
+                    limit=OffsetPageRequest.MAX_LIMIT,
+                    offset=offset,
+                ),
+            )
+            if page.items:
+                self.memberships.add_many(
+                    tuple(
+                        SegmentMember(
+                            segment_id=snapshot.id,
+                            entity=member.entity,
+                            added_at=captured_at,
+                            source="snapshot",
+                            metadata={},
+                        )
+                        for member in page.items
+                    )
+                )
+            if not page.has_next:
+                return
+            offset += len(page.items)
+
+    def _validate_bulk(
+        self,
+        entities: tuple[EntityReference, ...],
+    ) -> None:
+        if len(entities) > self.MAX_BULK_MEMBERS:
+            raise ValidationError(
+                "segment membership batch exceeds the configured limit",
+                code="segment.member.bulk_limit",
+                context={"max_members": self.MAX_BULK_MEMBERS},
+            )
+        if len(entities) != len(set(entities)):
+            raise ValidationError(
+                "segment membership batch contains duplicate references",
+                code="segment.member.batch_duplicate",
+            )
 
     def _validate_member(self, segment: Segment, entity: EntityReference) -> None:
         self._validate_member_kind(segment, entity)

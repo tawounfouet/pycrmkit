@@ -1,4 +1,4 @@
-"""Django ORM persistence models for the initial PyCRMKit adapter.
+"""Django ORM persistence models for the PyCRMKit adapter.
 
 These are persistence representations, not domain entities. Their schema is
 managed by the adapter-specific Django migrations shipped with PyCRMKit.
@@ -152,7 +152,6 @@ class OrganizationAddressModel(models.Model):
         ordering = ("position", "id")
 
 
-
 class ExternalIdentityModel(_TimestampedModel):
     id = models.CharField(max_length=36, primary_key=True)
     system = models.CharField(max_length=128)
@@ -207,6 +206,94 @@ class RelationshipModel(_TimestampedModel):
         ]
 
 
+class SegmentModel(_TimestampedModel):
+    id = models.CharField(max_length=36, primary_key=True)
+    key = models.CharField(max_length=120, unique=True)
+    name = models.CharField(max_length=200)
+    entity_kind = models.CharField(max_length=64, db_index=True)
+    mode = models.CharField(max_length=32, db_index=True)
+    description = models.CharField(max_length=2000, null=True)
+    status = models.CharField(max_length=32, db_index=True)
+    query_json = models.JSONField(db_column="query", null=True)
+    saved_query_id = models.CharField(max_length=36, null=True, db_index=True)
+    saved_query_revision = models.PositiveIntegerField(null=True)
+    owner_id = models.CharField(max_length=36, null=True, db_index=True)
+    revision = models.PositiveIntegerField(default=1)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+    archived_at = models.DateTimeField(null=True, db_index=True)
+
+    class Meta:
+        db_table = "pycrmkit_segments"
+        ordering = ("created_at", "id")
+
+
+class SegmentMemberModel(models.Model):
+    segment = models.ForeignKey(
+        SegmentModel,
+        db_column="segment_id",
+        on_delete=models.CASCADE,
+        related_name="member_rows",
+    )
+    entity_kind = models.CharField(max_length=64)
+    entity_id = models.CharField(max_length=36)
+    added_at = models.DateTimeField()
+    source = models.CharField(max_length=120)
+    actor_id = models.CharField(max_length=255, null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_segment_members"
+        ordering = ("added_at", "entity_kind", "entity_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("segment", "entity_kind", "entity_id"),
+                name="uq_dj_segment_members_target",
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=("entity_kind", "entity_id"),
+                name="ix_dj_segment_members_entity",
+            )
+        ]
+
+
+class SavedQueryModel(_TimestampedModel):
+    row_id = models.BigAutoField(primary_key=True)
+    query_id = models.CharField(max_length=36, db_column="id")
+    revision = models.PositiveIntegerField()
+    key = models.CharField(max_length=120, db_index=True)
+    name = models.CharField(max_length=200)
+    entity_kind = models.CharField(max_length=64, db_index=True)
+    expression_json = models.JSONField(db_column="expression")
+    ordering_json = models.JSONField(db_column="ordering", default=list)
+    owner_id = models.CharField(max_length=36, null=True, db_index=True)
+    visibility = models.CharField(max_length=32, db_index=True)
+    status = models.CharField(max_length=32, db_index=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+    archived_at = models.DateTimeField(null=True, db_index=True)
+
+    class Meta:
+        db_table = "pycrmkit_saved_queries"
+        ordering = ("query_id", "revision")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("query_id", "revision"),
+                name="uq_dj_saved_queries_id_revision",
+            ),
+            models.UniqueConstraint(
+                fields=("key", "revision"),
+                name="uq_dj_saved_queries_key_revision",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=("query_id", "revision"),
+                name="ix_dj_saved_query_rev",
+            )
+        ]
+
+
 __all__ = [
     "ContactAddressModel",
     "ContactEmailModel",
@@ -217,4 +304,7 @@ __all__ = [
     "OrganizationDomainModel",
     "OrganizationModel",
     "RelationshipModel",
+    "SavedQueryModel",
+    "SegmentMemberModel",
+    "SegmentModel",
 ]

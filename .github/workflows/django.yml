@@ -93,10 +93,13 @@ jobs:
 
           call_command("migrate", "pycrmkit_crm", verbosity=0, interactive=False)
 
-          assert __version__ == "1.1.0b1"
+          assert __version__ == "1.1.0b2"
           assert apps.get_app_config("pycrmkit_crm").name == "pycrmkit.integrations.django"
           assert ContactModel._meta.db_table == "pycrmkit_contacts"
-          assert ("pycrmkit_crm", "0001_initial") in MigrationRecorder(connection).applied_migrations()
+          applied = MigrationRecorder(connection).applied_migrations()
+          assert ("pycrmkit_crm", "0001_initial") in applied
+          assert ("pycrmkit_crm", "0002_external_identity") in applied
+          assert ("pycrmkit_crm", "0003_segmentation") in applied
 
           now = datetime(2026, 9, 26, 20, 30, tzinfo=UTC)
           contact = Contact(

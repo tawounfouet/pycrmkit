@@ -19,6 +19,7 @@ from pycrmkit.segments import (
     QueryOperator,
     RelativeTimeUnit,
     RelativeTimeValue,
+    SegmentMode,
     SortDirection,
     SortExpression,
 )
@@ -156,5 +157,60 @@ def test_sqlalchemy_relative_time_ordering_and_saved_query_revision_binding() ->
         )
         assert segment.saved_query_revision == 1
         assert set(crm.segments.evaluate(segment.id).items) == set(original.items)
+    finally:
+        engine.dispose()
+
+
+def test_sqlalchemy_snapshot_and_bulk_membership_share_portable_semantics() -> None:
+    crm, engine = _crm(FixedClock(NOW))
+    try:
+        contacts = tuple(
+            crm.contacts.create(
+                display_name=f"Contact {index}",
+                source="LinkedIn" if index < 2 else "Other",
+            )
+            for index in range(3)
+        )
+        references = tuple(
+            EntityReference("contact", contact.id)
+            for contact in contacts
+        )
+        static = crm.segments.create_static(
+            key="sql-bulk",
+            name="SQL Bulk",
+            entity_kind="contact",
+        )
+
+        assert len(crm.segments.add_members(static.id, references)) == 3
+        assert crm.segments.remove_members(static.id, references[2:]) == 1
+        assert crm.segments.count(static.id) == 2
+
+        dynamic = crm.segments.create_dynamic(
+            key="sql-live-linkedin",
+            name="SQL Live LinkedIn",
+            entity_kind="contact",
+            query=Predicate(
+                "source",
+                QueryOperator.EQ,
+                "linkedin",
+            ),
+        )
+        snapshot = crm.segments.snapshot(
+            dynamic.id,
+            key="sql-linkedin-snapshot",
+            name="SQL LinkedIn Snapshot",
+        )
+        later = crm.contacts.create(
+            display_name="Later",
+            source="LinkedIn",
+        )
+
+        assert snapshot.mode is SegmentMode.SNAPSHOT
+        assert set(crm.segments.evaluate(snapshot.id).items) == set(
+            references[:2]
+        )
+        assert EntityReference("contact", later.id) in set(
+            crm.segments.evaluate(dynamic.id).items
+        )
     finally:
         engine.dispose()

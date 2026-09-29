@@ -40,8 +40,21 @@ class SegmentMembershipRepository(Protocol):
     def add(self, member: SegmentMember) -> SegmentMember:
         """Persist one unique membership."""
 
+    def add_many(
+        self,
+        members: tuple[SegmentMember, ...],
+    ) -> tuple[SegmentMember, ...]:
+        """Persist one bounded batch atomically or raise on any conflict."""
+
     def remove(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         """Remove one membership idempotently."""
+
+    def remove_many(
+        self,
+        segment_id: SegmentId,
+        entities: tuple[EntityReference, ...],
+    ) -> int:
+        """Remove an exact batch idempotently and return the deleted count."""
 
     def contains(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         """Return whether the exact membership exists."""

@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 
-EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.1.0b1")
+EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.1.0b2")
 
 
 def _setup_django() -> None:
@@ -186,9 +186,10 @@ def verify(state_path: Path) -> None:
     assert admin.site.is_registered(ContactModel)
     assert admin.site.is_registered(OrganizationModel)
     assert admin.site.is_registered(RelationshipModel)
-    assert ("pycrmkit_crm", "0001_initial") in MigrationRecorder(
-        connection
-    ).applied_migrations()
+    applied = MigrationRecorder(connection).applied_migrations()
+    assert ("pycrmkit_crm", "0001_initial") in applied
+    assert ("pycrmkit_crm", "0002_external_identity") in applied
+    assert ("pycrmkit_crm", "0003_segmentation") in applied
 
     assert ContactModel.objects.filter(pk=state["contact_id"]).exists()
     assert OrganizationModel.objects.filter(pk=state["organization_id"]).exists()

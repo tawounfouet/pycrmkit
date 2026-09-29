@@ -4872,7 +4872,11 @@ assert DjangoContactRepository().find(discarded.id) is None
 applied = MigrationRecorder.Migration.objects.filter(
     app="pycrmkit_crm"
 ).values_list("name", flat=True)
-assert set(applied) >= {"0001_initial", "0002_external_identity"}
+assert set(applied) >= {
+    "0001_initial",
+    "0002_external_identity",
+    "0003_segmentation",
+}
 """
     result = subprocess.run(
         [sys.executable, "-c", script],

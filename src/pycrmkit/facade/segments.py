@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 
 from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
+from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.exceptions import IntegrationError
 from pycrmkit.facade._runtime import CRMRuntime
 from pycrmkit.saved_queries import SavedQueryId, SavedQueryUnitOfWork
@@ -52,18 +53,7 @@ class SegmentsAPI:
                 owner_id=owner_id,
                 metadata=metadata,
             )
-            self._runtime.record_change(
-                uow,
-                event_type="segment.created",
-                aggregate_type="segment",
-                aggregate_id=segment.id,
-                changes={"fields": ["key", "name", "entity_kind", "mode"]},
-                payload={
-                    "key": segment.key,
-                    "entity_kind": segment.entity_kind,
-                    "mode": segment.mode.value,
-                },
-            )
+            self._record_created(uow, segment)
             uow.commit()
             return segment
 
@@ -108,6 +98,87 @@ class SegmentsAPI:
             owner_id=owner_id,
             metadata=metadata,
         )
+
+    def create_snapshot(
+        self,
+        *,
+        key: str,
+        name: str,
+        entity_kind: str,
+        expression: QueryExpression,
+        description: str | None = None,
+        owner_id: EntityId | None = None,
+        metadata: Mapping[str, object] | None = None,
+    ) -> Segment:
+        """Freeze a query result into an immutable Snapshot Segment."""
+
+        with self._runtime.uow_factory() as uow:
+            service = self._service(self._capabilities(uow))
+            segment = service.create_snapshot(
+                key=key,
+                name=name,
+                entity_kind=entity_kind,
+                expression=expression,
+                description=description,
+                owner_id=owner_id,
+                metadata=metadata,
+            )
+            count = service.count(segment.id)
+            self._record_created(uow, segment)
+            self._runtime.record_change(
+                uow,
+                event_type="segment.snapshot_created",
+                aggregate_type="segment",
+                aggregate_id=segment.id,
+                changes={"fields": ["members"]},
+                payload={
+                    "entity_kind": segment.entity_kind,
+                    "member_count": count,
+                    "source_kind": "expression",
+                },
+            )
+            uow.commit()
+            return segment
+
+    def snapshot(
+        self,
+        source_segment_id: SegmentId,
+        *,
+        key: str,
+        name: str,
+        description: str | None = None,
+        owner_id: EntityId | None = None,
+        metadata: Mapping[str, object] | None = None,
+    ) -> Segment:
+        """Freeze the current membership of another Segment."""
+
+        with self._runtime.uow_factory() as uow:
+            service = self._service(self._capabilities(uow))
+            segment = service.snapshot(
+                source_segment_id,
+                key=key,
+                name=name,
+                description=description,
+                owner_id=owner_id,
+                metadata=metadata,
+            )
+            count = service.count(segment.id)
+            self._record_created(uow, segment)
+            self._runtime.record_change(
+                uow,
+                event_type="segment.snapshot_created",
+                aggregate_type="segment",
+                aggregate_id=segment.id,
+                changes={"fields": ["members"]},
+                payload={
+                    "entity_kind": segment.entity_kind,
+                    "member_count": count,
+                    "source_kind": "segment",
+                    "source_segment_id": str(source_segment_id),
+                },
+            )
+            uow.commit()
+            return segment
 
     def create_dynamic_from_saved_query(
         self,
@@ -248,6 +319,40 @@ class SegmentsAPI:
             uow.commit()
             return member
 
+    def add_members(
+        self,
+        segment_id: SegmentId,
+        entities: Iterable[EntityReference],
+        *,
+        source: str = "manual",
+        metadata: Mapping[str, object] | None = None,
+    ) -> tuple[SegmentMember, ...]:
+        """Add one bounded membership batch in a single transaction."""
+
+        with self._runtime.uow_factory() as uow:
+            service = self._service(self._capabilities(uow))
+            members = service.add_members(
+                segment_id,
+                entities,
+                source=source,
+                actor_id=self._runtime.context.actor_id,
+                metadata=metadata,
+            )
+            if members:
+                self._runtime.record_change(
+                    uow,
+                    event_type="segment.members_added",
+                    aggregate_type="segment",
+                    aggregate_id=segment_id,
+                    changes={"fields": ["members"]},
+                    payload={
+                        "member_count": len(members),
+                        "source": source,
+                    },
+                )
+            uow.commit()
+            return members
+
     def remove_member(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         with self._runtime.uow_factory() as uow:
             removed = self._service(self._capabilities(uow)).remove_member(
@@ -269,9 +374,47 @@ class SegmentsAPI:
             uow.commit()
             return removed
 
+    def remove_members(
+        self,
+        segment_id: SegmentId,
+        entities: Iterable[EntityReference],
+    ) -> int:
+        """Remove one bounded membership batch in a single transaction."""
+
+        with self._runtime.uow_factory() as uow:
+            removed = self._service(self._capabilities(uow)).remove_members(
+                segment_id,
+                entities,
+            )
+            if removed:
+                self._runtime.record_change(
+                    uow,
+                    event_type="segment.members_removed",
+                    aggregate_type="segment",
+                    aggregate_id=segment_id,
+                    changes={"fields": ["members"]},
+                    payload={"member_count": removed},
+                )
+            uow.commit()
+            return removed
+
     def contains(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         with self._runtime.uow_factory() as uow:
             return self._service(self._capabilities(uow)).contains(segment_id, entity)
+
+    def _record_created(self, uow: UnitOfWork, segment: Segment) -> None:
+        self._runtime.record_change(
+            uow,
+            event_type="segment.created",
+            aggregate_type="segment",
+            aggregate_id=segment.id,
+            changes={"fields": ["key", "name", "entity_kind", "mode"]},
+            payload={
+                "key": segment.key,
+                "entity_kind": segment.entity_kind,
+                "mode": segment.mode.value,
+            },
+        )
 
     def _service(self, capabilities: SegmentUnitOfWork) -> SegmentService:
         return SegmentService(
