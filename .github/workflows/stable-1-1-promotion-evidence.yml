@@ -49,11 +49,8 @@ jobs:
           echo "----- RC11 SHA256 BEGIN -----"
           cat /tmp/SHA256SUMS-v1.1.0rc1.txt
           echo "----- RC11 SHA256 END -----"
-      - name: Verify frozen RC checksums when present
-        run: |
-          if test -f release/SHA256SUMS-v1.1.0rc1.txt; then
-            diff -u release/SHA256SUMS-v1.1.0rc1.txt /tmp/SHA256SUMS-v1.1.0rc1.txt
-          fi
+      - name: Verify frozen RC checksums
+        run: diff -u release/SHA256SUMS-v1.1.0rc1.txt /tmp/SHA256SUMS-v1.1.0rc1.txt
       - name: Installed RC wheel smoke
         run: |
           cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
@@ -108,11 +105,13 @@ jobs:
           echo "----- STABLE11 SHA256 BEGIN -----"
           cat /tmp/SHA256SUMS-v1.1.0.txt
           echo "----- STABLE11 SHA256 END -----"
-      - name: Verify frozen stable checksums when present
+      - name: Verify frozen stable checksums
+        run: diff -u release/SHA256SUMS-v1.1.0.txt /tmp/SHA256SUMS-v1.1.0.txt
+      - name: Stable promotion contract
         run: |
-          if test -f release/SHA256SUMS-v1.1.0.txt; then
-            diff -u release/SHA256SUMS-v1.1.0.txt /tmp/SHA256SUMS-v1.1.0.txt
-          fi
+          python -m pip install -e ".[dev]"
+          python scripts/v1_1_stable_release_gate.py
+          python -m pytest tests/qualification/test_v1_1_stable_release_gate.py -q
       - name: Installed stable wheel smoke
         run: |
           cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
