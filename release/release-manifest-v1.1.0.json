@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "project": "pycrmkit",
+  "version": "1.1.0",
+  "release_kind": "stable",
+  "promotion_status": "candidate",
+  "source_candidate": "1.1.0rc1",
+  "source_candidate_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
+  "artifact_build": "pep517-setuptools",
+  "artifacts": [
+    {
+      "filename": "pycrmkit-1.1.0-py3-none-any.whl",
+      "type": "wheel",
+      "sha256": "68f03cce76b184fa6733207643324b8d9eef745cc40d9dc419705694e521e880"
+    },
+    {
+      "filename": "pycrmkit-1.1.0.tar.gz",
+      "type": "sdist",
+      "sha256": "6647e6bc9728916ea100c3739b4e25413a424c5bb664f732d20d244922bfc5a6"
+    }
+  ],
+  "checksum_algorithm": "sha256",
+  "checksum_status": "frozen",
+  "supported_python": ["3.11", "3.12", "3.13"],
+  "sqlalchemy_migration_head": "0005",
+  "django_migration_head": "0003_segmentation",
+  "publication": {
+    "tag": "v1.1.0",
+    "github_prerelease": false,
+    "pypi_publish": false
+  },
+  "reproducibility": {
+    "required": true,
+    "source_date_epoch": 1790689552,
+    "sdist_normalizer": "scripts/normalize_release_sdist.py",
+    "policy": "double-build-byte-comparison-before-merge"
+  },
+  "deterministic_evidence_workflow_run": 36579264275
+}
