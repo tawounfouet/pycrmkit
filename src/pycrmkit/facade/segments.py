@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping
 from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
+from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.exceptions import IntegrationError
 from pycrmkit.facade._runtime import CRMRuntime
 from pycrmkit.saved_queries import SavedQueryId, SavedQueryUnitOfWork
@@ -401,7 +402,7 @@ class SegmentsAPI:
         with self._runtime.uow_factory() as uow:
             return self._service(self._capabilities(uow)).contains(segment_id, entity)
 
-    def _record_created(self, uow: object, segment: Segment) -> None:
+    def _record_created(self, uow: UnitOfWork, segment: Segment) -> None:
         self._runtime.record_change(
             uow,
             event_type="segment.created",
