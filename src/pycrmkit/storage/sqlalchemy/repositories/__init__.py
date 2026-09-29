@@ -33,6 +33,16 @@ from pycrmkit.storage.sqlalchemy.repositories.pipelines import (
 from pycrmkit.storage.sqlalchemy.repositories.relationships import (
     SQLAlchemyRelationshipRepository,
 )
+from pycrmkit.storage.sqlalchemy.repositories.saved_queries import (
+    SQLAlchemySavedQueryRepository,
+)
+from pycrmkit.storage.sqlalchemy.repositories.segment_queries import (
+    SQLAlchemySegmentQueryExecutor,
+)
+from pycrmkit.storage.sqlalchemy.repositories.segments import (
+    SQLAlchemySegmentMembershipRepository,
+    SQLAlchemySegmentRepository,
+)
 from pycrmkit.storage.sqlalchemy.repositories.tags import (
     SQLAlchemyTagRepository,
 )
@@ -59,6 +69,10 @@ __all__ = [
     "SQLAlchemyOrganizationRepository",
     "SQLAlchemyPipelineRepository",
     "SQLAlchemyRelationshipRepository",
+    "SQLAlchemySavedQueryRepository",
+    "SQLAlchemySegmentMembershipRepository",
+    "SQLAlchemySegmentQueryExecutor",
+    "SQLAlchemySegmentRepository",
     "SQLAlchemyTagRepository",
     "SQLAlchemyTaskRepository",
     "SQLAlchemyTimelineRepository",
