@@ -115,12 +115,19 @@
     "segment.snapshot_created"
   ],
   "http_contract": {
-    "fastapi_prefixes": ["/segments", "/saved-queries"],
-    "drf_prefixes": ["segments", "saved-queries"]
+    "fastapi_prefixes": [
+      "/segments",
+      "/saved-queries"
+    ],
+    "drf_prefixes": [
+      "segments",
+      "saved-queries"
+    ]
   },
   "scope_boundary": [
     "no new aggregate after rc1",
     "no new public API after rc1",
     "only blocking correctness, security, compatibility, packaging or performance fixes before stable"
-  ]
+  ],
+  "promoted_release": "1.1.0"
 }
