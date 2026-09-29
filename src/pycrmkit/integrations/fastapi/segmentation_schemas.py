@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Self
+from typing import Any, Self, cast
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -182,7 +182,7 @@ class SavedQueryUpdateRequest(SegmentationAPIModel):
     def to_domain(self) -> SavedQueryRevision:
         fields = self.model_fields_set
         return SavedQueryRevision(
-            name=self.name if "name" in fields else UNSET,
+            name=cast(str, self.name) if "name" in fields else UNSET,
             expression=(
                 expression_from_dict(dict(self.expression or {}))
                 if "expression" in fields
@@ -201,7 +201,7 @@ class SavedQueryUpdateRequest(SegmentationAPIModel):
             if "owner_id" in fields
             else UNSET,
             visibility=(
-                self.visibility
+                cast(SavedQueryVisibility, self.visibility)
                 if "visibility" in fields
                 else UNSET
             ),
