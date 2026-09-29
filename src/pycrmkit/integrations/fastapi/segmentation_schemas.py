@@ -19,10 +19,10 @@ from pycrmkit.saved_queries import (
 )
 from pycrmkit.segments import (
     NullOrder,
+    QueryExpression,
     Segment,
     SegmentMode,
     SegmentStatus,
-    QueryExpression,
     SortDirection,
     SortExpression,
     expression_from_dict,
