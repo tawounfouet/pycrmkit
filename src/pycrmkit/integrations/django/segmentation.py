@@ -641,7 +641,7 @@ class DjangoSegmentQueryExecutor:
 
     def exists(self, entity: EntityReference) -> bool:
         model = self._model(entity.kind)
-        return model.objects.filter(pk=str(entity.id)).exists()
+        return bool(model.objects.filter(pk=str(entity.id)).exists())
 
     def _schema(self, entity_kind: str) -> QuerySchema:
         kind = entity_kind.strip().casefold()
