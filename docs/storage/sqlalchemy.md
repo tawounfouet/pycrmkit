@@ -183,7 +183,7 @@ alembic current
 alembic check
 ```
 
-The current prerelease head is revision `0003 — external identities`.
+The current development head is revision `0005 — Segmentation persistence`.
 
 `Base.metadata.create_all(...)` remains useful for tests and local
 experimentation, but it is no longer the production schema lifecycle.
@@ -247,3 +247,19 @@ wheel.
 without changing the migration head or persistence semantics.
 
 The next milestone is **`0.7.0 — FastAPI Integration`**.
+
+
+## 1.1 Segmentation persistence
+
+From `1.1.0b1`, the SQLAlchemy adapter also persists Segments, static
+memberships and SavedQuery revision history.
+
+~~~text
+0004 task_type
+  ↓
+0005 segmentation_persistence
+~~~
+
+`SQLAlchemySegmentQueryExecutor` compiles the provider-neutral query AST into
+database-side SQL. The ORM remains an adapter implementation detail; the public
+facade and domain contracts remain unchanged.
