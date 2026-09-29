@@ -5,7 +5,7 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **1.0.0 — Production Stable**.  
-Current development version: **1.1.0b3 — Segmentation Data Operations & API Integration**.  
+Current development version: **1.1.0rc1 — Segmentation Production Qualification**.  
 Qualified V1 release candidate lineage: **1.0.0rc1 — Full Production Qualification**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
