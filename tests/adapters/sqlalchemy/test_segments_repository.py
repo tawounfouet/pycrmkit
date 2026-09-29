@@ -187,6 +187,9 @@ def test_sqlalchemy_query_executor_compiles_tag_and_custom_field_predicates(
             updated_at=NOW,
         )
     )
+    # Flush the owning Tag before its assignment. The persistence models do not
+    # expose ORM relationships, so the test makes the FK insertion order explicit.
+    session.flush()
     session.add(
         TagAssignmentModel(
             id="00000000-0000-0000-0000-000000000162",
