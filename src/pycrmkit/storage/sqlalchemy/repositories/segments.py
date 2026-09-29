@@ -16,7 +16,6 @@ from pycrmkit.segments import (
     SegmentStatus,
     normalize_segment_key,
 )
-from pycrmkit.storage.sqlalchemy.mappers import entity_reference
 from pycrmkit.storage.sqlalchemy.models.segmentation import (
     SegmentMemberModel,
     SegmentModel,
@@ -24,6 +23,7 @@ from pycrmkit.storage.sqlalchemy.models.segmentation import (
 from pycrmkit.storage.sqlalchemy.repositories._helpers import page_models
 from pycrmkit.storage.sqlalchemy.segmentation_codec import (
     segment_from_model,
+    segment_member_from_model,
     segment_member_to_model,
     segment_to_model,
 )
@@ -210,17 +210,7 @@ class SQLAlchemySegmentMembershipRepository:
         ).all()
         return Page(
             items=tuple(
-                SegmentMember(
-                    segment_id=SegmentId.parse(model.segment_id),
-                    entity=entity_reference(
-                        model.entity_kind,
-                        model.entity_id,
-                    ),
-                    added_at=model.added_at,
-                    source=model.source,
-                    actor_id=model.actor_id,
-                    metadata=dict(model.metadata_json or {}),
-                )
+                segment_member_from_model(model)
                 for model in models
             ),
             limit=page.limit,
