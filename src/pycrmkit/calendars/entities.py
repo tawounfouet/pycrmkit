@@ -79,7 +79,7 @@ class BusinessCalendar:
         object.__setattr__(self, "working_weekdays", weekdays)
 
         windows = tuple(sorted(self.working_windows))
-        for previous, current in zip(windows, windows[1:]):
+        for previous, current in zip(windows, windows[1:], strict=False):
             if current.start < previous.end:
                 raise ValidationError(
                     "working windows cannot overlap",
