@@ -8,7 +8,7 @@ from examples.production_qualification.scenario import run_scenario
 def test_v1_cross_layer_production_qualification() -> None:
     summary = run_scenario()
 
-    assert summary["version"] == "1.1.0rc1"
+    assert summary["version"] == "1.1.0"
     assert summary["qualification"] == "1.0.0-rc02-cross-layer-e2e"
 
     headless = summary["headless_customer_journey"]
