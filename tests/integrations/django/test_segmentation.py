@@ -11,7 +11,7 @@ from pycrmkit.core import FixedClock
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.events import InProcessEventBus
-from pycrmkit.exceptions import InvalidStateError
+from pycrmkit.exceptions import InvalidStateError, ValidationError
 from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
 from pycrmkit.saved_queries import SavedQueryRevision
 from pycrmkit.segments import Predicate, QueryOperator, SegmentMode
@@ -166,7 +166,7 @@ def test_django_query_executor_rejects_unowned_query_state() -> None:
     crm = _crm()
     crm.contacts.create(display_name="Ada")
 
-    with pytest.raises(Exception) as error:
+    with pytest.raises(ValidationError) as error:
         crm.segments.create_dynamic(
             key="tagged",
             name="Tagged",
@@ -178,6 +178,4 @@ def test_django_query_executor_rejects_unowned_query_state() -> None:
             ),
         )
 
-    assert getattr(error.value, "code", None) == (
-        "segment.query.django.unsupported_field"
-    )
+    assert error.value.code == "segment.query.django.unsupported_field"
