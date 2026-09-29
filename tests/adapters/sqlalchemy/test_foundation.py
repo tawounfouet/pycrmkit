@@ -29,6 +29,9 @@ def test_sqlalchemy_metadata_exposes_core_persistence_inventory() -> None:
         "pycrmkit_communication_records",
         "pycrmkit_webhook_subscriptions",
         "pycrmkit_webhook_deliveries",
+        "pycrmkit_segments",
+        "pycrmkit_segment_members",
+        "pycrmkit_saved_queries",
     }
 
     assert expected <= set(Base.metadata.tables)
