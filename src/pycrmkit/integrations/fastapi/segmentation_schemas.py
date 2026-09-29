@@ -9,6 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from pycrmkit.core.ids import EntityId
+from pycrmkit.integrations.fastapi.schemas import EntityReferenceSchema
 from pycrmkit.saved_queries import (
     UNSET,
     SavedQuery,
@@ -21,6 +22,7 @@ from pycrmkit.segments import (
     Segment,
     SegmentMode,
     SegmentStatus,
+    QueryExpression,
     SortDirection,
     SortExpression,
     expression_from_dict,
@@ -63,7 +65,7 @@ class SegmentCreateRequest(SegmentationAPIModel):
     owner_id: UUID | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
-    def expression_domain(self):
+    def expression_domain(self) -> QueryExpression | None:
         return (
             expression_from_dict(dict(self.expression))
             if self.expression is not None
@@ -142,7 +144,7 @@ class SegmentResponse(SegmentationAPIModel):
 
 
 class SegmentMembersRequest(SegmentationAPIModel):
-    members: list[dict[str, Any]] = Field(
+    members: list[EntityReferenceSchema] = Field(
         min_length=1,
         max_length=1000,
     )
