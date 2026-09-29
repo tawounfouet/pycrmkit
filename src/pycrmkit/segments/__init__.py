@@ -1,5 +1,12 @@
 """Segmentation domain and portable query-expression model."""
 
+from pycrmkit.segments.data_operations import (
+    SegmentDataOperationsAPI,
+    SegmentMembershipPersister,
+    SegmentMembershipValidator,
+    import_segment_members,
+    iter_segment_membership_records,
+)
 from pycrmkit.segments.entities import (
     SEGMENTABLE_ENTITY_KINDS,
     Segment,
@@ -52,6 +59,9 @@ __all__ = [
     "QUERY_EXPRESSION_SCHEMA_VERSION",
     "SUPPORTED_QUERY_EXPRESSION_SCHEMA_VERSIONS",
     "SEGMENTABLE_ENTITY_KINDS",
+    "SegmentDataOperationsAPI",
+    "SegmentMembershipPersister",
+    "SegmentMembershipValidator",
     "And",
     "Not",
     "NullOrder",
