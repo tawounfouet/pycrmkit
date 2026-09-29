@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from pycrmkit.core.ids import EntityId, UUIDId
-from pycrmkit.core.references import EntityReference
 from pycrmkit.saved_queries import (
     SavedQuery,
     SavedQueryId,
@@ -24,6 +23,7 @@ from pycrmkit.segments import (
     expression_from_dict,
     expression_to_dict,
 )
+from pycrmkit.storage.sqlalchemy.mappers import entity_reference
 from pycrmkit.storage.sqlalchemy.models.segmentation import (
     SavedQueryModel,
     SegmentMemberModel,
@@ -124,9 +124,9 @@ def segment_member_to_model(member: SegmentMember) -> SegmentMemberModel:
 def segment_member_from_model(model: SegmentMemberModel) -> SegmentMember:
     return SegmentMember(
         segment_id=SegmentId.parse(model.segment_id),
-        entity=EntityReference(
+        entity=entity_reference(
             model.entity_kind,
-            UUIDId.parse(model.entity_id),
+            model.entity_id,
         ),
         added_at=_required_aware(model.added_at),
         source=model.source,
