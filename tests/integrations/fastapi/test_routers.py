@@ -26,6 +26,9 @@ def test_composite_router_exposes_all_v0_7_b1_surfaces() -> None:
     assert client.get("/crm/activities").status_code == 200
     assert client.get("/crm/tasks").status_code == 200
 
+    assert client.get("/crm/segments").status_code == 200
+    assert client.get("/crm/saved-queries").status_code == 200
+
     # Command-oriented surfaces exist even though GET is intentionally absent.
     assert client.post("/crm/leads", json={}).status_code == 422
     assert client.post("/crm/opportunities", json={}).status_code == 422
