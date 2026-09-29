@@ -9,7 +9,13 @@ from datetime import datetime
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import ValidationError
-from pycrmkit.tasks.entities import TaskPriority, TaskStatus, TaskType, parse_priority
+from pycrmkit.tasks.entities import (
+    TaskPriority,
+    TaskStatus,
+    TaskType,
+    parse_priority,
+    parse_task_type,
+)
 
 
 class TaskOrdering(StrEnum):
@@ -44,7 +50,7 @@ class TaskQuery:
         if self.status is not None:
             object.__setattr__(self, "status", TaskStatus(self.status))
         if self.type is not None:
-            object.__setattr__(self, "type", TaskType(self.type))
+            object.__setattr__(self, "type", parse_task_type(self.type))
         if self.priority is not None:
             object.__setattr__(self, "priority", parse_priority(self.priority))
         if self.owner_id is not None:
