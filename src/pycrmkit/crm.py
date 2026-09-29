@@ -93,7 +93,11 @@ class CRM:
         self._webhook_retry_policy = webhook_retry_policy or WebhookRetryPolicy()
         self._webhook_timeout_seconds = webhook_timeout_seconds
         self._webhook_auto_delivery = webhook_auto_delivery
-        self._calendar_registry = calendar_registry or InMemoryBusinessCalendarRegistry()
+        self._calendar_registry = (
+            calendar_registry
+            if calendar_registry is not None
+            else InMemoryBusinessCalendarRegistry()
+        )
         self.activities = ActivitiesAPI(runtime)
         self.email = EmailAPI(runtime, provider=email_provider, sender=email_sender, renderer=template_renderer)
         self.contacts = ContactsAPI(runtime)
