@@ -91,5 +91,7 @@ __all__ = [
     "default_query_schemas",
     "expression_from_dict",
     "expression_to_dict",
+    "import_segment_members",
+    "iter_segment_membership_records",
     "normalize_segment_key",
 ]
