@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.1.0rc1] - 2026-09-29
+
+### Qualification
+- Added the executable PyCRMKit 1.1 public API freeze for Segmentation and Saved Queries while preserving the V1 baseline contract.
+- Added the PV1-LOT-007 production qualification manifest covering Memory, SQLAlchemy/PostgreSQL, Django/DRF, FastAPI/OpenAPI, Data Operations, security, performance and built artifacts.
+- Added the dedicated `Segmentation Production Qualification` zero-blocker workflow.
+
+### Changed
+- Advanced the development version from `1.1.0b3` to `1.1.0rc1`.
+- Aligned installed-wheel, compatibility, Django/DRF and production qualification smokes with the release candidate.
+
+### Scope
+- No new Segmentation capability is introduced after `1.1.0b3`; this candidate freezes and qualifies the accumulated 1.1 behavior.
+- A blocking fix after RC publication requires `1.1.0rc2` and a renewed qualification cycle.
+
+### Next
+- `1.1.0 — Segmentation & Sales Task Foundation`, after zero-blocker qualification.
+
+
 All notable changes to PyCRMKit will be documented in this file.
 
 The project follows Semantic Versioning semantics and PEP 440 version syntax.

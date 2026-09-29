@@ -23,7 +23,7 @@ jobs:
         run: python -m pip install -e ".[dev]"
 
       - name: Source public API freeze candidate
-        run: python -m pytest tests/compatibility/test_public_api_v1_candidate.py -q
+        run: python -m pytest tests/compatibility/test_public_api_v1_candidate.py tests/compatibility/test_public_api_v1_1_candidate.py -q
 
       - name: Build release artifacts
         run: python -m build

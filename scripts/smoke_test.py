@@ -49,6 +49,7 @@ from pycrmkit.leads import LeadStatus
 from pycrmkit.opportunities import OpportunityStatus
 from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
 from pycrmkit.providers.email import SMTPConfig
+from pycrmkit.segments import Predicate, QueryOperator
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 from pycrmkit.webhooks import (
     WebhookDeliveryState,
@@ -70,8 +71,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "1.1.0b3":
-        raise SystemExit(f"Expected PyCRMKit 1.1.0b3, got {version!r}")
+    if version != "1.1.0rc1":
+        raise SystemExit(f"Expected PyCRMKit 1.1.0rc1, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
@@ -489,7 +490,30 @@ def main() -> None:
     if disabled.enabled:
         raise SystemExit("Webhook disable smoke failed")
 
-    print(f"PyCRMKit {version}: Merge beta + stable regression smoke OK")
+    segmentation_crm = pycrmkit.CRM.memory(clock=clock)
+    segment_contact = segmentation_crm.contacts.create(
+        display_name="Segmentation Installed Smoke",
+        source="LinkedIn",
+    )
+    segment = segmentation_crm.segments.create_dynamic(
+        key="installed-linkedin",
+        name="Installed LinkedIn",
+        entity_kind="contact",
+        query=Predicate("source", QueryOperator.EQ, "linkedin"),
+    )
+    population = segmentation_crm.segments.evaluate(segment.id)
+    if population.items != (EntityReference("contact", segment_contact.id),):
+        raise SystemExit("Segmentation installed-wheel dynamic evaluation smoke failed")
+
+    snapshot = segmentation_crm.segments.snapshot(
+        segment.id,
+        key="installed-linkedin-snapshot",
+        name="Installed LinkedIn Snapshot",
+    )
+    if segmentation_crm.segments.count(snapshot.id) != 1:
+        raise SystemExit("Segmentation installed-wheel Snapshot smoke failed")
+
+    print(f"PyCRMKit {version}: V1 + Segmentation RC regression smoke OK")
 
 
 if __name__ == "__main__":

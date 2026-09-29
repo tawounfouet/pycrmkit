@@ -137,6 +137,7 @@ nav:
       - 0.4 Public API: api/0.4-public-api.md
       - 0.5 Public API: api/0.5-public-api.md
       - 1.0 Public API Freeze Candidate: api/1.0-public-api-candidate.md
+      - 1.1 Public API Freeze Candidate: api/1.1-public-api-candidate.md
   - Releases:
       - 0.1.0 CRM Core Stable: releases/0.1.0.md
       - 0.2.0rc1 Activity & Timeline RC: releases/0.2.0rc1.md
@@ -195,6 +196,7 @@ nav:
       - 1.1.0b1 SQLAlchemy/PostgreSQL Segmentation: releases/1.1.0b1.md
       - 1.1.0b2 Django + Snapshot + Bulk Membership: releases/1.1.0b2.md
       - 1.1.0b3 Data Operations + API Integration: releases/1.1.0b3.md
+      - 1.1.0rc1 Segmentation Production Qualification: releases/1.1.0rc1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

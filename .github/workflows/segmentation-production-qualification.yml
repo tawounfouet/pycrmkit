@@ -1,0 +1,114 @@
+name: Segmentation Production Qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  contract-and-memory:
+    name: SEG-RC / Contract + Memory
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: >-
+          python -m pytest
+          tests/compatibility/test_public_api_v1_candidate.py
+          tests/compatibility/test_public_api_v1_1_candidate.py
+          tests/qualification/test_segmentation_release_gate_v1_1.py
+          tests/unit/segments
+          tests/unit/saved_queries
+          tests/unit/facade
+          tests/smoke
+          -q
+
+  sqlalchemy-postgresql:
+    name: SEG-RC / SQLAlchemy + PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_seg_rc
+          POSTGRES_USER: pycrmkit
+          POSTGRES_PASSWORD: pycrmkit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_seg_rc"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_seg_rc
+      PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_seg_rc
+      PYCRMKIT_SQLALCHEMY_TEST_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_seg_rc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,postgresql,migrations]"
+      - run: python -m pytest tests/e2e/test_segmentation_sqlalchemy_end_to_end.py -q
+      - run: python -m pytest tests/adapters/sqlalchemy -q
+      - run: python -m pytest -m postgresql tests/adapters/postgresql tests/migrations -q
+
+  fastapi:
+    name: SEG-RC / FastAPI + OpenAPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,fastapi]"
+      - run: python -m pytest tests/integrations/fastapi -m "not postgresql" -q
+
+  django-drf:
+    name: SEG-RC / Django + DRF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev,django,drf]"
+      - run: python -m pytest tests/integrations/django -q
+      - run: python -m pytest tests/integrations/drf -q
+
+  release-quality:
+    name: SEG-RC / Security + Performance + Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip "build>=1.2" "twine>=6"
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest tests/security tests/performance -q
+      - run: ruff check .
+      - run: mypy src/pycrmkit
+      - run: mkdocs build --strict
+      - run: python -m build
+      - run: python -m twine check dist/*
+
+  zero-blockers:
+    name: SEG-RC / ZERO BLOCKERS
+    needs: [contract-and-memory, sqlalchemy-postgresql, fastapi, django-drf, release-quality]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "PyCRMKit 1.1.0rc1 segmentation production qualification - ZERO BLOCKERS"

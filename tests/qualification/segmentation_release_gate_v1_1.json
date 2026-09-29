@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "target_release": "1.1.0rc1",
+  "baseline_release": "1.1.0b3",
+  "lot": "PV1-LOT-007",
+  "name": "Segmentation Production Qualification",
+  "status": "qualified",
+  "promotion_ready": true,
+  "required_gates": [
+    {
+      "id": "SEG-RC-01",
+      "name": "V1 + V1.1 public contract freeze",
+      "evidence": [
+        "tests/compatibility/public_api_v1_candidate.json",
+        "tests/compatibility/test_public_api_v1_candidate.py",
+        "tests/compatibility/public_api_v1_1_candidate.json",
+        "tests/compatibility/test_public_api_v1_1_candidate.py"
+      ]
+    },
+    {
+      "id": "SEG-RC-02",
+      "name": "Memory and domain semantics",
+      "evidence": [
+        "tests/unit/segments",
+        "tests/unit/saved_queries",
+        "tests/unit/facade"
+      ]
+    },
+    {
+      "id": "SEG-RC-03",
+      "name": "SQLAlchemy/PostgreSQL persistence",
+      "evidence": [
+        "tests/e2e/test_segmentation_sqlalchemy_end_to_end.py",
+        "tests/adapters/sqlalchemy",
+        "tests/adapters/postgresql",
+        "tests/migrations"
+      ]
+    },
+    {
+      "id": "SEG-RC-04",
+      "name": "Django/DRF integration",
+      "evidence": [
+        "tests/integrations/django/test_segmentation.py",
+        "tests/integrations/drf"
+      ]
+    },
+    {
+      "id": "SEG-RC-05",
+      "name": "FastAPI/OpenAPI integration",
+      "evidence": [
+        "tests/integrations/fastapi"
+      ]
+    },
+    {
+      "id": "SEG-RC-06",
+      "name": "Data Operations and installed artifacts",
+      "evidence": [
+        "tests/e2e/test_data_operations_rc.py",
+        ".github/workflows/production-installed-artifact.yml"
+      ]
+    },
+    {
+      "id": "SEG-RC-07",
+      "name": "Security, performance and zero-blocker convergence",
+      "evidence": [
+        "tests/security",
+        "tests/performance",
+        ".github/workflows/segmentation-production-qualification.yml"
+      ]
+    }
+  ],
+  "promotion_rule": {
+    "blocking_failures_allowed": 0,
+    "stable_target_after_success": "1.1.0",
+    "next_candidate_on_blocking_fix": "1.1.0rc2",
+    "new_feature_scope_allowed": false
+  }
+}
