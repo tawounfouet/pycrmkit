@@ -12,8 +12,9 @@ from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.tasks.dto import TaskUpdate, UnsetType
-from pycrmkit.tasks.entities import Task, TaskId, TaskPriority, parse_priority
-from pycrmkit.tasks.queries import TaskQuery
+from pycrmkit.tasks.entities import Task, TaskId, TaskPriority, TaskType, parse_priority
+from pycrmkit.tasks.queries import TaskOrdering, TaskQuery
+from pycrmkit.tasks.scheduling import local_day_bounds, upcoming_bounds
 from pycrmkit.tasks.repository import TaskRepository
 
 T = TypeVar("T")
@@ -31,6 +32,7 @@ class TaskService:
         self,
         *,
         title: str,
+        type: TaskType | str = TaskType.GENERAL,
         description: str | None = None,
         priority: TaskPriority | str | int = TaskPriority.NORMAL,
         due_at: datetime | None = None,
@@ -47,6 +49,7 @@ class TaskService:
             created_at=now,
             updated_at=now,
             title=title,
+            type=TaskType(type),
             priority=parse_priority(priority),
             description=description,
             due_at=due_at,
@@ -75,6 +78,11 @@ class TaskService:
             created_at=current.created_at,
             updated_at=self.clock.now(),
             title=self._value(changes.title, current.title),
+            type=(
+                current.type
+                if isinstance(changes.type, UnsetType)
+                else TaskType(changes.type)
+            ),
             status=current.status,
             priority=priority,
             description=self._value(changes.description, current.description),
@@ -123,6 +131,96 @@ class TaskService:
     ) -> Page[Task]:
         return self.repository.list(
             query or TaskQuery(),
+            page or OffsetPageRequest(),
+        )
+
+    def overdue(
+        self,
+        *,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        return self.repository.list(
+            TaskQuery(
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                overdue_at=self.clock.now(),
+                ordering=TaskOrdering.DUE_PRIORITY_CREATED,
+            ),
+            page or OffsetPageRequest(),
+        )
+
+    def today(
+        self,
+        *,
+        timezone: str,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        start, end = local_day_bounds(self.clock.now(), timezone=timezone)
+        return self.repository.list(
+            TaskQuery(
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                due_from=start,
+                due_until=end,
+                unresolved_only=True,
+                ordering=TaskOrdering.DUE_PRIORITY_CREATED,
+            ),
+            page or OffsetPageRequest(),
+        )
+
+    def upcoming(
+        self,
+        *,
+        timezone: str,
+        days: int | None = None,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        start, end = upcoming_bounds(
+            self.clock.now(),
+            timezone=timezone,
+            days=days,
+        )
+        return self.repository.list(
+            TaskQuery(
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                due_from=start,
+                due_until=end,
+                unresolved_only=True,
+                ordering=TaskOrdering.DUE_PRIORITY,
+            ),
+            page or OffsetPageRequest(),
+        )
+
+    def unscheduled(
+        self,
+        *,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        return self.repository.list(
+            TaskQuery(
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                unresolved_only=True,
+                unscheduled_only=True,
+                ordering=TaskOrdering.PRIORITY_CREATED,
+            ),
             page or OffsetPageRequest(),
         )
 
