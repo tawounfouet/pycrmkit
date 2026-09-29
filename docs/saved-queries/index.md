@@ -141,4 +141,8 @@ The adapter preserves exact expression serialization, ordering rules, visibility
 archive state and revision history. Dynamic Segments keep the same exact-revision
 binding semantics across Memory and SQLAlchemy.
 
-Django persistence remains scheduled for `1.1.0b2`.
+From **1.1.0b2**, the Django adapter also persists SavedQuery revision history
+and executes portable Contact/Organization queries through the Django ORM.
+
+The current Django bridge intentionally rejects fields whose backing state is
+not yet owned by that adapter, including Tag and Custom Field predicates.
