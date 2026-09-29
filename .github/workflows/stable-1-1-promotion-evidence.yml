@@ -50,7 +50,12 @@ jobs:
           cat /tmp/SHA256SUMS-v1.1.0rc1.txt
           echo "----- RC11 SHA256 END -----"
       - name: Verify frozen RC checksums
-        run: diff -u release/SHA256SUMS-v1.1.0rc1.txt /tmp/SHA256SUMS-v1.1.0rc1.txt
+        run: |
+          cat > /tmp/SHA256SUMS-v1.1.0rc1-frozen.txt <<'EOF'
+          5ec484585c4b18adad9347cd3e2c90efb005455b1a5504c89a4e55a049c3e0e8  pycrmkit-1.1.0rc1-py3-none-any.whl
+          df17457be5a0fd2ce4a146905c12b43611116309cd4e00f00bfabe4c8e2cb1aa  pycrmkit-1.1.0rc1.tar.gz
+          EOF
+          diff -u /tmp/SHA256SUMS-v1.1.0rc1-frozen.txt /tmp/SHA256SUMS-v1.1.0rc1.txt
       - name: Installed RC wheel smoke
         run: |
           cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
