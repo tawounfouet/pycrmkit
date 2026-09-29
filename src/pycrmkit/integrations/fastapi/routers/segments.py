@@ -37,10 +37,7 @@ from pycrmkit.segments import (
 
 
 def _members(request: SegmentMembersRequest):
-    return tuple(
-        EntityReferenceSchema.model_validate(item).to_domain()
-        for item in request.members
-    )
+    return tuple(item.to_domain() for item in request.members)
 
 
 def create_segments_router(dependency: CRMDependency) -> APIRouter:
