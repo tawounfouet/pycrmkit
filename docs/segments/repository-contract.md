@@ -29,13 +29,19 @@ Responsibilities:
 
 ~~~text
 add
+add_many
 remove
+remove_many
 contains
 list
 count
 ~~~
 
-It stores only explicit memberships such as Static Segments. Dynamic membership is derived through `SegmentQueryExecutor`.
+It stores only explicit memberships such as Static and Snapshot Segments. Dynamic membership is derived through `SegmentQueryExecutor`.
+
+Bulk operations are bounded and transactional. `add_many` validates the whole
+batch before persistence; `remove_many` is idempotent and returns the number of
+deleted memberships.
 
 ## SegmentQueryExecutor
 
@@ -49,7 +55,9 @@ exists
 
 The executor consumes the same portable `QueryExpression` contract regardless of backend.
 
-The Memory implementation is the 1.1.0a1 semantic reference. SQLAlchemy/PostgreSQL compilation is intentionally deferred to 1.1.0b1.
+Memory remains the semantic reference. SQLAlchemy/PostgreSQL implements the
+same contracts from 1.1.0b1, and Django implements the Contact/Organization
+Segmentation capability from 1.1.0b2.
 
 ## Unit of Work capability
 
@@ -64,3 +72,21 @@ segment_query_executor
 This lets 1.1.0a1 add the Memory implementation without falsely claiming that existing SQLAlchemy/Django Unit-of-Work adapters already persist Segments.
 
 Unsupported adapters fail explicitly rather than silently falling back to in-memory behavior.
+
+
+## Snapshot semantics
+
+A Snapshot Segment is immutable stored membership captured from either a
+portable query expression or an existing Segment.
+
+~~~text
+live population
+    ↓ evaluate once at captured_at
+Snapshot Segment
+    ↓
+stored immutable memberships
+~~~
+
+Snapshot creation and membership materialization occur in one Unit of Work.
+Changing the source Dynamic Segment or underlying CRM records never rewrites the
+Snapshot.
