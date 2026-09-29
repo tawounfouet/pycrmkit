@@ -38,6 +38,9 @@ from pycrmkit.integrations.django.models import (  # noqa: E402
     ExternalIdentityModel,
     OrganizationModel,
     RelationshipModel,
+    SavedQueryModel,
+    SegmentMemberModel,
+    SegmentModel,
 )
 
 
@@ -65,6 +68,9 @@ def django_schema() -> Iterator[None]:
 def clean_django_rows(django_schema: None) -> None:
     """Keep reusable contract and transaction cases isolated."""
 
+    SegmentMemberModel.objects.all().delete()
+    SegmentModel.objects.all().delete()
+    SavedQueryModel.objects.all().delete()
     ExternalIdentityModel.objects.all().delete()
     RelationshipModel.objects.all().delete()
     ContactModel.objects.all().delete()
