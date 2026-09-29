@@ -803,14 +803,16 @@ class DjangoSegmentQueryExecutor:
             name = names.get(rule.field, rule.field)
             expression = F(name)
             if rule.direction is SortDirection.ASC:
-                order = expression.asc(
-                    nulls_first=rule.null_order is NullOrder.FIRST,
-                    nulls_last=rule.null_order is NullOrder.LAST,
+                order = (
+                    expression.asc(nulls_first=True)
+                    if rule.null_order is NullOrder.FIRST
+                    else expression.asc(nulls_last=True)
                 )
             else:
-                order = expression.desc(
-                    nulls_first=rule.null_order is NullOrder.FIRST,
-                    nulls_last=rule.null_order is NullOrder.LAST,
+                order = (
+                    expression.desc(nulls_first=True)
+                    if rule.null_order is NullOrder.FIRST
+                    else expression.desc(nulls_last=True)
                 )
             values.append(order)
         values.append(F("id").asc())
