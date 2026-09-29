@@ -27,6 +27,7 @@ Status is deliberately excluded from `TaskUpdate`. Applications must use explici
 ```text
 TaskId
 title
+type
 status
 priority
 description
@@ -43,6 +44,16 @@ cancelled_at
 created_at
 updated_at
 ```
+
+Since **1.1.0a3**, `TaskType` is explicit and portable:
+
+~~~text
+general
+call
+email
+~~~
+
+Existing V1 Tasks migrate to `general`; follow-up intent remains source/metadata rather than a mutually-exclusive type.
 
 Priorities are ordered:
 
@@ -77,7 +88,7 @@ item = crm.tasks.complete(item.id)
 
 Available facade operations:
 
-```text
+~~~text
 create
 get
 update
@@ -86,7 +97,15 @@ complete
 cancel
 reopen
 list
-```
+
+overdue
+today
+upcoming
+unscheduled
+~~~
+
+The four sales work-queue methods are derived projections. They do not persist
+`is_today` or `is_overdue` flags.
 
 ## Queries
 
@@ -123,3 +142,31 @@ task.reopened
 ```
 
 Audit entries are committed atomically with task state. The facade records changed field names rather than copying task titles/descriptions into audit metadata by default.
+
+
+## Sales work queues — 1.1.0a3
+
+~~~python
+crm.tasks.overdue(assignee_id="seller-7")
+
+crm.tasks.today(
+    assignee_id="seller-7",
+    timezone="Europe/Paris",
+)
+
+crm.tasks.upcoming(
+    assignee_id="seller-7",
+    timezone="Europe/Paris",
+    days=7,
+)
+
+crm.tasks.unscheduled(assignee_id="seller-7")
+~~~
+
+`today()` is based on local calendar-day boundaries in the supplied IANA
+timezone. `upcoming()` begins at the next local midnight. `overdue()`
+preserves the V1 rule `due_at < now`, and terminal Tasks are excluded from
+operational queues.
+
+Business-day scheduling is handled separately by `crm.calendars`; Task
+`due_at` remains the canonical timezone-aware instant.
