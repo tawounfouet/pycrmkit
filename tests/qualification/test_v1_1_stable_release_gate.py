@@ -29,8 +29,8 @@ def test_1_1_stable_gate_promotes_only_the_qualified_rc() -> None:
     assert result["sqlalchemy_migration_head"] == "0005"
     assert result["django_migration_head"] == "0003_segmentation"
     assert result["candidate_qualified"] is True
-    assert GATE["status"] == "candidate"
-    assert GATE["promotion_ready"] is False
+    assert GATE["status"] == "qualified"
+    assert GATE["promotion_ready"] is True
 
 
 def test_1_1_stable_policy_forbids_functional_delta() -> None:
