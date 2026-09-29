@@ -12,6 +12,10 @@ from pycrmkit.integrations.fastapi.routers.organizations import (
 from pycrmkit.integrations.fastapi.routers.relationships import (
     create_relationships_router,
 )
+from pycrmkit.integrations.fastapi.routers.saved_queries import (
+    create_saved_queries_router,
+)
+from pycrmkit.integrations.fastapi.routers.segments import create_segments_router
 from pycrmkit.integrations.fastapi.routers.tasks import create_tasks_router
 from pycrmkit.integrations.fastapi.routers.timeline import create_timeline_router
 
@@ -22,6 +26,8 @@ __all__ = [
     "create_opportunities_router",
     "create_organizations_router",
     "create_relationships_router",
+    "create_saved_queries_router",
+    "create_segments_router",
     "create_tasks_router",
     "create_timeline_router",
 ]
