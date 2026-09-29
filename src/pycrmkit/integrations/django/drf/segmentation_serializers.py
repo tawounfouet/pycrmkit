@@ -143,7 +143,7 @@ class SegmentSnapshotSerializer(_SerializerBase):
 
 class SegmentMembersSerializer(_SerializerBase):
     members = EntityReferenceSerializer(many=True)
-    source = serializers.CharField(
+    source = serializers.CharField(  # type: ignore[assignment]
         max_length=120,
         required=False,
         default="api",
