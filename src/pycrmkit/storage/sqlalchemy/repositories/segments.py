@@ -57,11 +57,10 @@ class SQLAlchemySegmentRepository:
         return None if model is None else segment_from_model(model)
 
     def save(self, segment: Segment) -> None:
-        with self.session.no_autoflush:
-            by_key = self.session.scalar(
-                select(SegmentModel).where(SegmentModel.key == segment.key)
-            )
-            current = self.session.get(SegmentModel, str(segment.id))
+        by_key = self.session.scalar(
+            select(SegmentModel).where(SegmentModel.key == segment.key)
+        )
+        current = self.session.get(SegmentModel, str(segment.id))
 
         if by_key is not None and by_key.id != str(segment.id):
             raise DuplicateError(
