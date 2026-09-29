@@ -10,7 +10,7 @@ from pycrmkit.exceptions import NotFoundError
 from pycrmkit.storage.sqlalchemy.mappers import task_from_model, task_to_model
 from pycrmkit.storage.sqlalchemy.models.task import TaskModel, TaskReferenceModel
 from pycrmkit.storage.sqlalchemy.repositories._helpers import page_models
-from pycrmkit.tasks import Task, TaskId, TaskQuery, TaskStatus
+from pycrmkit.tasks import Task, TaskId, TaskOrdering, TaskQuery, TaskStatus
 
 
 class SQLAlchemyTaskRepository:
@@ -66,6 +66,14 @@ class SQLAlchemyTaskRepository:
             statement = statement.where(
                 TaskModel.status == query.status.value
             )
+        if query.unresolved_only:
+            statement = statement.where(
+                TaskModel.status.in_(
+                    [TaskStatus.OPEN.value, TaskStatus.IN_PROGRESS.value]
+                )
+            )
+        if query.type is not None:
+            statement = statement.where(TaskModel.task_type == query.type.value)
         if query.priority is not None:
             statement = statement.where(
                 TaskModel.priority == int(query.priority)
@@ -119,12 +127,35 @@ class SQLAlchemyTaskRepository:
                 TaskModel.due_at.is_not(None),
                 TaskModel.due_at < query.overdue_at,
             )
-        statement = statement.order_by(
-            TaskModel.due_at.is_(None).asc(),
-            TaskModel.due_at.asc(),
-            TaskModel.created_at.desc(),
-            TaskModel.id.asc(),
-        )
+        if query.unscheduled_only:
+            statement = statement.where(TaskModel.due_at.is_(None))
+
+        if query.ordering is TaskOrdering.DUE_PRIORITY_CREATED:
+            statement = statement.order_by(
+                TaskModel.due_at.asc(),
+                TaskModel.priority.desc(),
+                TaskModel.created_at.asc(),
+                TaskModel.id.asc(),
+            )
+        elif query.ordering is TaskOrdering.DUE_PRIORITY:
+            statement = statement.order_by(
+                TaskModel.due_at.asc(),
+                TaskModel.priority.desc(),
+                TaskModel.id.asc(),
+            )
+        elif query.ordering is TaskOrdering.PRIORITY_CREATED:
+            statement = statement.order_by(
+                TaskModel.priority.desc(),
+                TaskModel.created_at.asc(),
+                TaskModel.id.asc(),
+            )
+        else:
+            statement = statement.order_by(
+                TaskModel.due_at.is_(None).asc(),
+                TaskModel.due_at.asc(),
+                TaskModel.created_at.desc(),
+                TaskModel.id.asc(),
+            )
         return page_models(
             self.session,
             statement,
