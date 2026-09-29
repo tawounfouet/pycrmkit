@@ -401,7 +401,7 @@ class SavedQueryViewSet(CRMViewSet):
 
     @action(detail=True, methods=["post"])
     def archive(self, request: Request, pk: str | None = None) -> Response:
-        raw = request.data.get("expected_revision")
+        raw = cast(dict[str, Any], request.data).get("expected_revision")
         expected = int(raw) if raw is not None else None
         query = self.get_crm(request).saved_queries.archive(
             SavedQueryId(_uuid_pk(pk)),
