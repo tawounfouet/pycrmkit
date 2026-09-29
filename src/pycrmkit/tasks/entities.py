@@ -26,6 +26,27 @@ class TaskType(StrEnum):
     EMAIL = "email"
 
 
+def parse_task_type(value: TaskType | str) -> TaskType:
+    """Parse one stable TaskType value."""
+
+    if isinstance(value, TaskType):
+        return value
+    if isinstance(value, str):
+        try:
+            return TaskType(value.strip().casefold())
+        except ValueError as exc:
+            raise ValidationError(
+                "unknown task type",
+                code="task.type.invalid",
+                context={"type": value},
+            ) from exc
+    raise ValidationError(
+        "unknown task type",
+        code="task.type.invalid",
+        context={"type": value},
+    )
+
+
 class TaskStatus(StrEnum):
     """Current lifecycle state for a CRM task."""
 
@@ -165,14 +186,7 @@ class Task(TimestampedEntity[TaskId]):
             field_name="title",
             max_length=300,
         )
-        try:
-            self.type = TaskType(self.type)
-        except ValueError as exc:
-            raise ValidationError(
-                "unknown task type",
-                code="task.type.invalid",
-                context={"type": str(self.type)},
-            ) from exc
+        self.type = parse_task_type(self.type)
         self.status = TaskStatus(self.status)
         self.priority = parse_priority(self.priority)
         self.description = _normalize_description(self.description)
