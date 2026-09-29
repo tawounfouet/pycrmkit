@@ -128,6 +128,17 @@ A stable entity ID is used as final tie-breaker.
 
 ## Persistence status
 
-In **1.1.0a2**, Memory remains the semantic reference implementation.
+From **1.1.0b1**, SavedQuery revision history is persisted by the official
+SQLAlchemy/PostgreSQL adapter.
 
-SQLAlchemy/PostgreSQL and Django persistence for Segmentation/SavedQuery remain scheduled for later 1.1 beta milestones.
+Each revision is immutable and stored under the composite identity:
+
+~~~text
+(saved_query_id, revision)
+~~~
+
+The adapter preserves exact expression serialization, ordering rules, visibility,
+archive state and revision history. Dynamic Segments keep the same exact-revision
+binding semantics across Memory and SQLAlchemy.
+
+Django persistence remains scheduled for `1.1.0b2`.
