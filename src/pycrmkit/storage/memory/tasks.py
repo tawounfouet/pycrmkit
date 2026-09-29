@@ -8,7 +8,7 @@ from datetime import MAXYEAR, UTC, datetime
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.exceptions import NotFoundError
 from pycrmkit.storage.memory._state import _MemoryState
-from pycrmkit.tasks import Task, TaskId, TaskQuery, TaskRepository
+from pycrmkit.tasks import Task, TaskId, TaskOrdering, TaskQuery, TaskRepository, TaskStatus
 
 
 class MemoryTaskRepository(TaskRepository):
@@ -42,6 +42,14 @@ class MemoryTaskRepository(TaskRepository):
         tasks = list(self._state.tasks.values())
         if query.status is not None:
             tasks = [item for item in tasks if item.status is query.status]
+        if query.unresolved_only:
+            tasks = [
+                item
+                for item in tasks
+                if item.status in {TaskStatus.OPEN, TaskStatus.IN_PROGRESS}
+            ]
+        if query.type is not None:
+            tasks = [item for item in tasks if item.type is query.type]
         if query.priority is not None:
             tasks = [item for item in tasks if item.priority is query.priority]
         if query.owner_id is not None:
@@ -72,11 +80,27 @@ class MemoryTaskRepository(TaskRepository):
             ]
         if query.overdue_at is not None:
             tasks = [item for item in tasks if item.is_overdue(query.overdue_at)]
+        if query.unscheduled_only:
+            tasks = [item for item in tasks if item.due_at is None]
 
         undated = datetime(MAXYEAR, 12, 31, 23, 59, 59, 999999, tzinfo=UTC)
-        tasks.sort(key=lambda item: item.id)
-        tasks.sort(key=lambda item: item.created_at, reverse=True)
-        tasks.sort(key=lambda item: item.due_at or undated)
+        if query.ordering is TaskOrdering.DUE_PRIORITY_CREATED:
+            tasks.sort(key=lambda item: item.id)
+            tasks.sort(key=lambda item: item.created_at)
+            tasks.sort(key=lambda item: int(item.priority), reverse=True)
+            tasks.sort(key=lambda item: item.due_at or undated)
+        elif query.ordering is TaskOrdering.DUE_PRIORITY:
+            tasks.sort(key=lambda item: item.id)
+            tasks.sort(key=lambda item: int(item.priority), reverse=True)
+            tasks.sort(key=lambda item: item.due_at or undated)
+        elif query.ordering is TaskOrdering.PRIORITY_CREATED:
+            tasks.sort(key=lambda item: item.id)
+            tasks.sort(key=lambda item: item.created_at)
+            tasks.sort(key=lambda item: int(item.priority), reverse=True)
+        else:
+            tasks.sort(key=lambda item: item.id)
+            tasks.sort(key=lambda item: item.created_at, reverse=True)
+            tasks.sort(key=lambda item: item.due_at or undated)
         total = len(tasks)
         selected = tasks[page.offset : page.offset + page.limit]
         return Page(
