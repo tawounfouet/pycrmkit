@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
 from datetime import datetime
+from enum import StrEnum
 
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import as_utc
