@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, cast
 
@@ -101,9 +101,11 @@ class SQLAlchemySegmentQueryExecutor:
         statement = statement.order_by(
             *self._ordering(model, entity_kind, schema, ordering)
         )
-        identifiers = self.session.scalars(
-            statement.offset(page.offset).limit(page.limit)
-        ).all()
+        identifiers: list[str] = list(
+            self.session.scalars(
+                statement.offset(page.offset).limit(page.limit)
+            ).all()
+        )
         return Page(
             items=tuple(
                 entity_reference(entity_kind, str(identifier))
@@ -465,7 +467,7 @@ class SQLAlchemySegmentQueryExecutor:
             if field.type is QueryFieldType.DATETIME:
                 return cast(datetime, normalized).isoformat()
             if field.type is QueryFieldType.DATE:
-                return normalized.isoformat()  # type: ignore[union-attr]
+                return cast(date, normalized).isoformat()
             if field.type is QueryFieldType.DECIMAL:
                 return cast(Decimal, normalized)
         return normalized
