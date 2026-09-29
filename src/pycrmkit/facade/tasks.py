@@ -13,8 +13,8 @@ from pycrmkit.tasks import (
     TaskId,
     TaskPriority,
     TaskQuery,
-    TaskType,
     TaskService,
+    TaskType,
     TaskUpdate,
 )
 
