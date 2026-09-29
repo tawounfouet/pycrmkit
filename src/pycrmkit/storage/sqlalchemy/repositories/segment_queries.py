@@ -140,7 +140,7 @@ class SQLAlchemySegmentQueryExecutor:
             or 0
         )
 
-    def sa.exists(self, entity: EntityReference) -> bool:
+    def exists(self, entity: EntityReference) -> bool:
         model = self._entity_model(entity.kind)
         return (
             self.session.scalar(
