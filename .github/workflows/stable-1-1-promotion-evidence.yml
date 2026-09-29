@@ -110,19 +110,19 @@ jobs:
           echo "----- STABLE11 SHA256 BEGIN -----"
           cat /tmp/SHA256SUMS-v1.1.0.txt
           echo "----- STABLE11 SHA256 END -----"
-      - name: Verify frozen stable checksums after qualification
+      - name: Verify frozen stable checksums after final freeze
         run: |
           status="$(python - <<'PY'
           import json
           from pathlib import Path
-          gate = json.loads(Path("tests/qualification/stable_release_gate_v1_1.json").read_text())
-          print(gate["status"])
+          manifest = json.loads(Path("release/release-manifest-v1.1.0.json").read_text())
+          print(manifest["checksum_status"])
           PY
           )"
-          if [ "$status" = "qualified" ]; then
+          if [ "$status" = "frozen" ]; then
             diff -u release/SHA256SUMS-v1.1.0.txt /tmp/SHA256SUMS-v1.1.0.txt
           else
-            echo "Stable gate is $status; reproducibility proven, final checksum freeze deferred."
+            echo "Stable checksum status is $status; reproducibility proven, final checksum freeze deferred."
           fi
       - name: Stable promotion contract
         run: |
