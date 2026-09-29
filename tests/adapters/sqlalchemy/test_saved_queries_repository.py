@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.saved_queries import (
     SavedQuery,
     SavedQueryId,
@@ -64,8 +65,5 @@ def test_sqlalchemy_saved_query_preserves_revision_history(
     assert repository.list_revisions(query_id) == (first, second)
     assert repository.search(
         SavedQueryQuery(),
-        page=__import__(
-            "pycrmkit.core.pagination",
-            fromlist=["OffsetPageRequest"],
-        ).OffsetPageRequest(),
+        page=OffsetPageRequest(),
     ).items == (second,)
