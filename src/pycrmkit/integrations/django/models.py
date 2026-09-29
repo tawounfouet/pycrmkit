@@ -259,6 +259,7 @@ class SegmentMemberModel(models.Model):
 
 
 class SavedQueryModel(_TimestampedModel):
+    row_id = models.BigAutoField(primary_key=True)
     query_id = models.CharField(max_length=36, db_column="id")
     revision = models.PositiveIntegerField()
     key = models.CharField(max_length=120, db_index=True)
