@@ -216,14 +216,22 @@ class SQLAlchemySegmentMembershipRepository:
         ]
         deleted = 0
         for entity_kind, entity_id in identifiers:
-            result = self.session.execute(
-                delete(SegmentMemberModel).where(
-                    SegmentMemberModel.segment_id == str(segment_id),
-                    SegmentMemberModel.entity_kind == entity_kind,
-                    SegmentMemberModel.entity_id == entity_id,
-                )
+            predicate = (
+                SegmentMemberModel.segment_id == str(segment_id),
+                SegmentMemberModel.entity_kind == entity_kind,
+                SegmentMemberModel.entity_id == entity_id,
             )
-            deleted += int(result.rowcount or 0)
+            deleted += int(
+                self.session.scalar(
+                    select(func.count())
+                    .select_from(SegmentMemberModel)
+                    .where(*predicate)
+                )
+                or 0
+            )
+            self.session.execute(
+                delete(SegmentMemberModel).where(*predicate)
+            )
         return deleted
 
     def contains(
