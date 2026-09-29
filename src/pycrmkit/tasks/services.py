@@ -12,7 +12,14 @@ from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.tasks.dto import TaskUpdate, UnsetType
-from pycrmkit.tasks.entities import Task, TaskId, TaskPriority, TaskType, parse_priority
+from pycrmkit.tasks.entities import (
+    Task,
+    TaskId,
+    TaskPriority,
+    TaskType,
+    parse_priority,
+    parse_task_type,
+)
 from pycrmkit.tasks.queries import TaskOrdering, TaskQuery
 from pycrmkit.tasks.scheduling import local_day_bounds, upcoming_bounds
 from pycrmkit.tasks.repository import TaskRepository
@@ -49,7 +56,7 @@ class TaskService:
             created_at=now,
             updated_at=now,
             title=title,
-            type=TaskType(type),
+            type=parse_task_type(type),
             priority=parse_priority(priority),
             description=description,
             due_at=due_at,
@@ -81,7 +88,7 @@ class TaskService:
             type=(
                 current.type
                 if isinstance(changes.type, UnsetType)
-                else TaskType(changes.type)
+                else parse_task_type(changes.type)
             ),
             status=current.status,
             priority=priority,
