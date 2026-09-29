@@ -4,8 +4,8 @@
   "baseline_release": "1.1.0b3",
   "lot": "PV1-LOT-007",
   "name": "Segmentation Production Qualification",
-  "status": "candidate",
-  "promotion_ready": false,
+  "status": "qualified",
+  "promotion_ready": true,
   "required_gates": [
     {
       "id": "SEG-RC-01",
