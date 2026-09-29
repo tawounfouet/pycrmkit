@@ -129,24 +129,42 @@ Do not use:
 Predicate("source", QueryOperator.EQ, None)
 ~~~
 
-## Persistence status in 1.1.0a1
+## Persistence status in 1.1.0b1
 
-The Memory adapter is the semantic reference implementation.
+Memory remains the semantic reference implementation, and **SQLAlchemy/PostgreSQL
+is now an official Segmentation adapter**.
 
-SQLAlchemy/PostgreSQL and Django Segmentation persistence are intentionally not included in this alpha. Calling `crm.segments` with an adapter that does not yet implement the Segmentation capability raises:
+The SQLAlchemy capability persists:
 
 ~~~text
-segment.persistence.unsupported
+Segment
+SegmentMember
+SavedQuery revisions
 ~~~
 
-Those adapters are delivered by later 1.1 beta milestones.
+and compiles the portable query AST into database-side predicates for:
 
-## Next milestone
+~~~text
+Contact
+Organization
+Lead
+Opportunity
+Tags
+supported scalar Custom Fields
+relative-time expressions
+deterministic ordering
+~~~
 
-`1.1.0a2` adds:
+The same `crm.segments` and `crm.saved_queries` facade is used with Memory or
+SQLAlchemy; domain code does not receive SQLAlchemy expressions or ORM models.
 
-- Saved Queries;
-- Custom Field filters;
-- Tag filters;
-- relative-time expressions;
-- reusable query revisions.
+Migration `0005` creates:
+
+~~~text
+pycrmkit_segments
+pycrmkit_segment_members
+pycrmkit_saved_queries
+~~~
+
+Django Segmentation persistence and Snapshot creation remain scheduled for
+`1.1.0b2`.

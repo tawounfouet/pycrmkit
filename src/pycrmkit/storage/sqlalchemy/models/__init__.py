@@ -40,6 +40,11 @@ from pycrmkit.storage.sqlalchemy.models.pipeline import (
     PipelineTransitionModel,
 )
 from pycrmkit.storage.sqlalchemy.models.relationship import RelationshipModel
+from pycrmkit.storage.sqlalchemy.models.segmentation import (
+    SavedQueryModel,
+    SegmentMemberModel,
+    SegmentModel,
+)
 from pycrmkit.storage.sqlalchemy.models.tag import TagAssignmentModel, TagModel
 from pycrmkit.storage.sqlalchemy.models.task import TaskModel, TaskReferenceModel
 from pycrmkit.storage.sqlalchemy.models.timeline import (
@@ -82,6 +87,9 @@ __all__ = [
     "PipelineStageModel",
     "PipelineTransitionModel",
     "RelationshipModel",
+    "SavedQueryModel",
+    "SegmentMemberModel",
+    "SegmentModel",
     "TagAssignmentModel",
     "TagModel",
     "TaskModel",

@@ -6,6 +6,27 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.1.0b1] - 2026-09-29
+
+### Added
+- Added SQLAlchemy persistence for Segment definitions, stored Segment memberships and append-only SavedQuery revisions.
+- Added `SQLAlchemySegmentQueryExecutor`, compiling the portable Segmentation AST into database-side predicates for Contact, Organization, Lead and Opportunity.
+- Added SQL-backed Tag, supported scalar Custom Field, relative-time and deterministic ordering semantics for Segment/SavedQuery execution.
+- Added SQLAlchemy Unit of Work capabilities for `segments`, `segment_memberships`, `segment_query_executor` and `saved_queries`.
+- Added Alembic revision `0005_segmentation_persistence` with the `pycrmkit_segments`, `pycrmkit_segment_members` and `pycrmkit_saved_queries` tables.
+- Added SQLAlchemy and cross-facade Segmentation/SavedQuery qualification tests, including execution through PostgreSQL compatibility jobs.
+
+### Compatibility
+- The public query-expression model remains provider-neutral; SQLAlchemy expressions are not exposed through domain or facade APIs.
+- Memory remains the semantic reference implementation and SQLAlchemy/PostgreSQL now implements the same Segmentation capability contracts.
+- Existing V1 and 1.1 alpha APIs remain additive compatibility baselines.
+- Existing migration history remains immutable; `0005` is appended after `0004`.
+
+### Deferred
+- Django Segmentation persistence, Snapshot Segments and bulk membership remain scheduled for `1.1.0b2`.
+- Data Operations/API integration remains scheduled for `1.1.0b3`.
+- Full Segmentation production qualification remains scheduled for `1.1.0rc1`.
+
 ## [1.1.0a3] - 2026-09-29
 
 ### Added

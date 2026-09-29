@@ -26,6 +26,10 @@ from pycrmkit.storage.sqlalchemy.repositories import (
     SQLAlchemyOrganizationRepository,
     SQLAlchemyPipelineRepository,
     SQLAlchemyRelationshipRepository,
+    SQLAlchemySavedQueryRepository,
+    SQLAlchemySegmentMembershipRepository,
+    SQLAlchemySegmentQueryExecutor,
+    SQLAlchemySegmentRepository,
     SQLAlchemyTagRepository,
     SQLAlchemyTaskRepository,
     SQLAlchemyTimelineRepository,
@@ -68,6 +72,10 @@ class SQLAlchemyUnitOfWork:
         self._organizations: SQLAlchemyOrganizationRepository | None = None
         self._relationships: SQLAlchemyRelationshipRepository | None = None
         self._tasks: SQLAlchemyTaskRepository | None = None
+        self._segments: SQLAlchemySegmentRepository | None = None
+        self._saved_queries: SQLAlchemySavedQueryRepository | None = None
+        self._segment_memberships: SQLAlchemySegmentMembershipRepository | None = None
+        self._segment_query_executor: SQLAlchemySegmentQueryExecutor | None = None
         self._timeline: SQLAlchemyTimelineRepository | None = None
         self._tags: SQLAlchemyTagRepository | None = None
         self._custom_fields: SQLAlchemyCustomFieldRepository | None = None
@@ -129,6 +137,30 @@ class SQLAlchemyUnitOfWork:
         self._ensure_active()
         assert self._tasks is not None
         return self._tasks
+
+    @property
+    def segments(self) -> SQLAlchemySegmentRepository:
+        self._ensure_active()
+        assert self._segments is not None
+        return self._segments
+
+    @property
+    def saved_queries(self) -> SQLAlchemySavedQueryRepository:
+        self._ensure_active()
+        assert self._saved_queries is not None
+        return self._saved_queries
+
+    @property
+    def segment_memberships(self) -> SQLAlchemySegmentMembershipRepository:
+        self._ensure_active()
+        assert self._segment_memberships is not None
+        return self._segment_memberships
+
+    @property
+    def segment_query_executor(self) -> SQLAlchemySegmentQueryExecutor:
+        self._ensure_active()
+        assert self._segment_query_executor is not None
+        return self._segment_query_executor
 
     @property
     def timeline(self) -> SQLAlchemyTimelineRepository:
@@ -274,6 +306,10 @@ class SQLAlchemyUnitOfWork:
         self._organizations = SQLAlchemyOrganizationRepository(session)
         self._relationships = SQLAlchemyRelationshipRepository(session)
         self._tasks = SQLAlchemyTaskRepository(session)
+        self._segments = SQLAlchemySegmentRepository(session)
+        self._saved_queries = SQLAlchemySavedQueryRepository(session)
+        self._segment_memberships = SQLAlchemySegmentMembershipRepository(session)
+        self._segment_query_executor = SQLAlchemySegmentQueryExecutor(session)
         self._timeline = SQLAlchemyTimelineRepository(session)
         self._tags = SQLAlchemyTagRepository(session)
         self._custom_fields = SQLAlchemyCustomFieldRepository(session)
@@ -292,6 +328,10 @@ class SQLAlchemyUnitOfWork:
         self._organizations = None
         self._relationships = None
         self._tasks = None
+        self._segments = None
+        self._saved_queries = None
+        self._segment_memberships = None
+        self._segment_query_executor = None
         self._timeline = None
         self._tags = None
         self._custom_fields = None

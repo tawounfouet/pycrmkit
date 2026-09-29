@@ -192,6 +192,7 @@ nav:
       - 1.1.0a1 Query Expressions & Segment Foundations: releases/1.1.0a1.md
       - 1.1.0a2 Saved Queries & Advanced Segment Semantics: releases/1.1.0a2.md
       - 1.1.0a3 Sales Task Ergonomics & Business Calendar: releases/1.1.0a3.md
+      - 1.1.0b1 SQLAlchemy/PostgreSQL Segmentation: releases/1.1.0b1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
