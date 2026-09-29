@@ -179,7 +179,7 @@ class Migration(migrations.Migration):
             model_name="savedquerymodel",
             index=models.Index(
                 fields=["query_id", "revision"],
-                name="ix_dj_saved_queries_id_revision",
+                name="ix_dj_saved_query_rev",
             ),
         ),
         migrations.AddConstraint(
