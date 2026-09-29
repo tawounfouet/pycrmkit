@@ -21,8 +21,8 @@ from pycrmkit.tasks.entities import (
     parse_task_type,
 )
 from pycrmkit.tasks.queries import TaskOrdering, TaskQuery
-from pycrmkit.tasks.scheduling import local_day_bounds, upcoming_bounds
 from pycrmkit.tasks.repository import TaskRepository
+from pycrmkit.tasks.scheduling import local_day_bounds, upcoming_bounds
 
 T = TypeVar("T")
 
