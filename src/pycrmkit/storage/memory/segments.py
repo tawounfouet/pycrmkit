@@ -133,8 +133,44 @@ class MemorySegmentMembershipRepository:
         self._state.segment_members[key] = deepcopy(member)
         return deepcopy(member)
 
+    def add_many(
+        self,
+        members: tuple[SegmentMember, ...],
+    ) -> tuple[SegmentMember, ...]:
+        keys = [(member.segment_id, member.entity) for member in members]
+        if len(keys) != len(set(keys)):
+            raise DuplicateError(
+                "Segment membership batch contains duplicates",
+                code="segment.member.batch_duplicate",
+            )
+        for member, key in zip(members, keys, strict=True):
+            if key in self._state.segment_members:
+                raise DuplicateError(
+                    "Segment membership already exists",
+                    code="segment.member.duplicate",
+                    context={
+                        "segment_id": str(member.segment_id),
+                        "entity_kind": member.entity.kind,
+                        "entity_id": str(member.entity.id),
+                    },
+                )
+        for member, key in zip(members, keys, strict=True):
+            self._state.segment_members[key] = deepcopy(member)
+        return tuple(deepcopy(members))
+
     def remove(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         return self._state.segment_members.pop((segment_id, entity), None) is not None
+
+    def remove_many(
+        self,
+        segment_id: SegmentId,
+        entities: tuple[EntityReference, ...],
+    ) -> int:
+        unique = tuple(dict.fromkeys(entities))
+        return sum(
+            self._state.segment_members.pop((segment_id, entity), None) is not None
+            for entity in unique
+        )
 
     def contains(self, segment_id: SegmentId, entity: EntityReference) -> bool:
         return (segment_id, entity) in self._state.segment_members
