@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime, time
 
-from pycrmkit.calendars.entities import BusinessCalendar
 from pycrmkit.calendars.registry import BusinessCalendarRegistry
 from pycrmkit.core.time import Clock, SystemClock
 
