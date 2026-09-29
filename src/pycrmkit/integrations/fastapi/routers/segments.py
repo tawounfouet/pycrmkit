@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, status
 
 from pycrmkit import CRM
 from pycrmkit.core.ids import EntityId
+from pycrmkit.core.references import EntityReference
 from pycrmkit.integrations.fastapi.dependencies import CRMDependency
 from pycrmkit.integrations.fastapi.errors import (
     CREATE_ERROR_RESPONSES,
@@ -36,7 +37,7 @@ from pycrmkit.segments import (
 )
 
 
-def _members(request: SegmentMembersRequest):
+def _members(request: SegmentMembersRequest) -> tuple[EntityReference, ...]:
     return tuple(item.to_domain() for item in request.members)
 
 
