@@ -10,7 +10,14 @@ from pycrmkit.exceptions import NotFoundError
 from pycrmkit.storage.sqlalchemy.mappers import task_from_model, task_to_model
 from pycrmkit.storage.sqlalchemy.models.task import TaskModel, TaskReferenceModel
 from pycrmkit.storage.sqlalchemy.repositories._helpers import page_models
-from pycrmkit.tasks import Task, TaskId, TaskOrdering, TaskQuery, TaskStatus
+from pycrmkit.tasks import (
+    Task,
+    TaskId,
+    TaskOrdering,
+    TaskQuery,
+    TaskStatus,
+    parse_task_type,
+)
 
 
 class SQLAlchemyTaskRepository:
@@ -73,7 +80,9 @@ class SQLAlchemyTaskRepository:
                 )
             )
         if query.type is not None:
-            statement = statement.where(TaskModel.task_type == query.type.value)
+            statement = statement.where(
+                TaskModel.task_type == parse_task_type(query.type).value
+            )
         if query.priority is not None:
             statement = statement.where(
                 TaskModel.priority == int(query.priority)
