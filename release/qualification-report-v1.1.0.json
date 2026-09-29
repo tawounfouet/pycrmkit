@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "release": "1.1.0",
+  "source_candidate": "1.1.0rc1",
+  "source_candidate_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
+  "status": "candidate",
+  "promotion_ready": false,
+  "qualification_date": "2026-09-29",
+  "blocking_failures": null,
+  "functional_delta_from_rc1": "none",
+  "sqlalchemy_migration_head": "0005",
+  "django_migration_head": "0003_segmentation",
+  "source_candidate_evidence": {
+    "status": "qualified",
+    "promotion_ready": true,
+    "byte_reproducible": true
+  },
+  "artifact_evidence": {
+    "wheel_sha256": "68f03cce76b184fa6733207643324b8d9eef745cc40d9dc419705694e521e880",
+    "sdist_sha256": "6647e6bc9728916ea100c3739b4e25413a424c5bb664f732d20d244922bfc5a6",
+    "deterministic_evidence_workflow_run": 36579264275,
+    "source_date_epoch": 1790689552,
+    "byte_reproducible": true,
+    "isolated_wheel_smoke": "passed"
+  }
+}
