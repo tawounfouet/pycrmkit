@@ -27,7 +27,6 @@ class TaskUpdate:
     """Editable Task fields; lifecycle status changes use explicit transitions."""
 
     title: str | UnsetType = UNSET
-    type: TaskType | str | UnsetType = UNSET
     description: str | None | UnsetType = UNSET
     priority: TaskPriority | str | int | UnsetType = UNSET
     due_at: datetime | None | UnsetType = UNSET
@@ -37,3 +36,4 @@ class TaskUpdate:
     source: str | None | UnsetType = UNSET
     external_id: str | None | UnsetType = UNSET
     metadata: dict[str, object] | UnsetType = UNSET
+    type: TaskType | str | UnsetType = UNSET
