@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from pycrmkit.calendars import BusinessCalendarRegistry, InMemoryBusinessCalendarRegistry
 from pycrmkit.communication import CommunicationAddress, EmailProvider, TemplateRenderer
 from pycrmkit.config import CRMConfig, CRMContext
 from pycrmkit.core.events import EventId
@@ -14,6 +15,7 @@ from pycrmkit.events import DomainEvent, EventRegistry, InProcessEventBus, defau
 from pycrmkit.facade._runtime import CRMRuntime
 from pycrmkit.facade.activities import ActivitiesAPI
 from pycrmkit.facade.audit import AuditAPI
+from pycrmkit.facade.calendars import CalendarsAPI
 from pycrmkit.facade.contacts import ContactsAPI
 from pycrmkit.facade.custom_fields import CustomFieldsAPI
 from pycrmkit.facade.email import EmailAPI
@@ -66,6 +68,7 @@ class CRM:
         webhook_retry_policy: WebhookRetryPolicy | None = None,
         webhook_timeout_seconds: float = 10.0,
         webhook_auto_delivery: bool = True,
+        calendar_registry: BusinessCalendarRegistry | None = None,
         _webhook_bridge: WebhookEventBridge | None = None,
     ) -> None:
         effective_config = config or CRMConfig()
@@ -90,6 +93,11 @@ class CRM:
         self._webhook_retry_policy = webhook_retry_policy or WebhookRetryPolicy()
         self._webhook_timeout_seconds = webhook_timeout_seconds
         self._webhook_auto_delivery = webhook_auto_delivery
+        self._calendar_registry = (
+            calendar_registry
+            if calendar_registry is not None
+            else InMemoryBusinessCalendarRegistry()
+        )
         self.activities = ActivitiesAPI(runtime)
         self.email = EmailAPI(runtime, provider=email_provider, sender=email_sender, renderer=template_renderer)
         self.contacts = ContactsAPI(runtime)
@@ -107,6 +115,10 @@ class CRM:
         self.external_identities = ExternalIdentitiesAPI(runtime)
         self.events = EventsAPI(event_bus)
         self.audit = AuditAPI(runtime)
+        self.calendars = CalendarsAPI(
+            self._calendar_registry,
+            clock=runtime.clock,
+        )
         self.webhooks = WebhooksAPI(
             runtime,
             registry=self._event_registry,
@@ -140,6 +152,7 @@ class CRM:
         webhook_retry_policy: WebhookRetryPolicy | None = None,
         webhook_timeout_seconds: float = 10.0,
         webhook_auto_delivery: bool = True,
+        calendar_registry: BusinessCalendarRegistry | None = None,
     ) -> CRM:
         """Create an isolated, fully wired in-memory CRM instance."""
         store = MemoryStore()
@@ -163,6 +176,7 @@ class CRM:
             webhook_retry_policy=webhook_retry_policy,
             webhook_timeout_seconds=webhook_timeout_seconds,
             webhook_auto_delivery=webhook_auto_delivery,
+            calendar_registry=calendar_registry,
         )
 
     @property
@@ -192,6 +206,7 @@ class CRM:
             webhook_retry_policy=self._webhook_retry_policy,
             webhook_timeout_seconds=self._webhook_timeout_seconds,
             webhook_auto_delivery=self._webhook_auto_delivery,
+            calendar_registry=self._calendar_registry,
             _webhook_bridge=self._webhook_bridge,
         )
 
@@ -232,5 +247,6 @@ class CRM:
             webhook_retry_policy=self._webhook_retry_policy,
             webhook_timeout_seconds=self._webhook_timeout_seconds,
             webhook_auto_delivery=self._webhook_auto_delivery,
+            calendar_registry=self._calendar_registry,
             _webhook_bridge=self._webhook_bridge,
         )

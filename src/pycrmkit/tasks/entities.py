@@ -18,6 +18,35 @@ class TaskId(UUIDId):
     """Strongly typed identifier for a CRM Task."""
 
 
+class TaskType(StrEnum):
+    """Portable intent of one CRM action item."""
+
+    GENERAL = "general"
+    CALL = "call"
+    EMAIL = "email"
+
+
+def parse_task_type(value: TaskType | str) -> TaskType:
+    """Parse one stable TaskType value."""
+
+    if isinstance(value, TaskType):
+        return value
+    if isinstance(value, str):
+        try:
+            return TaskType(value.strip().casefold())
+        except ValueError as exc:
+            raise ValidationError(
+                "unknown task type",
+                code="task.type.invalid",
+                context={"type": value},
+            ) from exc
+    raise ValidationError(
+        "unknown task type",
+        code="task.type.invalid",
+        context={"type": value},
+    )
+
+
 class TaskStatus(StrEnum):
     """Current lifecycle state for a CRM task."""
 
@@ -148,6 +177,7 @@ class Task(TimestampedEntity[TaskId]):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     cancelled_at: datetime | None = None
+    type: TaskType = TaskType.GENERAL
 
     def __post_init__(self) -> None:
         TimestampedEntity.__post_init__(self)
@@ -156,6 +186,7 @@ class Task(TimestampedEntity[TaskId]):
             field_name="title",
             max_length=300,
         )
+        self.type = parse_task_type(self.type)
         self.status = TaskStatus(self.status)
         self.priority = parse_priority(self.priority)
         self.description = _normalize_description(self.description)

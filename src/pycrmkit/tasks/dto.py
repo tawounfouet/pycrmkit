@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Final
 
 from pycrmkit.core.references import EntityReference
-from pycrmkit.tasks.entities import TaskPriority
+from pycrmkit.tasks.entities import TaskPriority, TaskType
 
 
 class UnsetType:
@@ -36,3 +36,4 @@ class TaskUpdate:
     source: str | None | UnsetType = UNSET
     external_id: str | None | UnsetType = UNSET
     metadata: dict[str, object] | UnsetType = UNSET
+    type: TaskType | str | UnsetType = UNSET

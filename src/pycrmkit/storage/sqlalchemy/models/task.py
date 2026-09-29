@@ -15,6 +15,13 @@ class TaskModel(TimestampedModelMixin, Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     title: Mapped[str] = mapped_column(String(511), nullable=False)
+    task_type: Mapped[str] = mapped_column(
+        String(32),
+        nullable=False,
+        default="general",
+        server_default="general",
+        index=True,
+    )
     status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     priority: Mapped[int] = mapped_column(nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text)

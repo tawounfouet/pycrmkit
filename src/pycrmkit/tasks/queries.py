@@ -4,11 +4,27 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import as_utc
 from pycrmkit.exceptions import ValidationError
-from pycrmkit.tasks.entities import TaskPriority, TaskStatus, parse_priority
+from pycrmkit.tasks.entities import (
+    TaskPriority,
+    TaskStatus,
+    TaskType,
+    parse_priority,
+    parse_task_type,
+)
+
+
+class TaskOrdering(StrEnum):
+    """Deterministic ordering contracts for raw lists and sales work queues."""
+
+    DEFAULT = "default"
+    DUE_PRIORITY_CREATED = "due_priority_created"
+    DUE_PRIORITY = "due_priority"
+    PRIORITY_CREATED = "priority_created"
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,10 +41,16 @@ class TaskQuery:
     due_from: datetime | None = None
     due_until: datetime | None = None
     overdue_at: datetime | None = None
+    type: TaskType | str | None = None
+    unresolved_only: bool = False
+    unscheduled_only: bool = False
+    ordering: TaskOrdering = TaskOrdering.DEFAULT
 
     def __post_init__(self) -> None:
         if self.status is not None:
             object.__setattr__(self, "status", TaskStatus(self.status))
+        if self.type is not None:
+            object.__setattr__(self, "type", parse_task_type(self.type))
         if self.priority is not None:
             object.__setattr__(self, "priority", parse_priority(self.priority))
         if self.owner_id is not None:
@@ -61,6 +83,7 @@ class TaskQuery:
             object.__setattr__(self, "due_until", as_utc(self.due_until))
         if self.overdue_at is not None:
             object.__setattr__(self, "overdue_at", as_utc(self.overdue_at))
+        object.__setattr__(self, "ordering", TaskOrdering(self.ordering))
         if (
             self.due_from is not None
             and self.due_until is not None
@@ -70,3 +93,6 @@ class TaskQuery:
                 "due_until must be later than due_from",
                 code="task.query.invalid_due_interval",
             )
+
+
+__all__ = ["TaskOrdering", "TaskQuery"]

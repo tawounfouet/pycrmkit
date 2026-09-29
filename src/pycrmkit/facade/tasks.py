@@ -14,6 +14,7 @@ from pycrmkit.tasks import (
     TaskPriority,
     TaskQuery,
     TaskService,
+    TaskType,
     TaskUpdate,
 )
 
@@ -28,6 +29,7 @@ class TasksAPI:
         self,
         *,
         title: str,
+        type: TaskType | str = TaskType.GENERAL,
         description: str | None = None,
         priority: TaskPriority | str | int = TaskPriority.NORMAL,
         due_at: datetime | None = None,
@@ -45,6 +47,7 @@ class TasksAPI:
                 clock=self._runtime.clock,
             ).create(
                 title=title,
+                type=type,
                 description=description,
                 priority=priority,
                 due_at=due_at,
@@ -64,6 +67,7 @@ class TasksAPI:
                     "fields": present_fields(
                         {
                             "title": title,
+                            "type": type,
                             "description": description,
                             "priority": priority,
                             "due_at": due_at,
@@ -103,6 +107,7 @@ class TasksAPI:
                 changes={"fields": revision_fields(changes)},
                 payload={
                     "status": task.status.value,
+                    "type": task.type.value,
                     "priority": task.priority.name.lower(),
                 },
             )
@@ -128,6 +133,88 @@ class TasksAPI:
     ) -> Page[Task]:
         with self._runtime.uow_factory() as uow:
             return TaskService(uow.tasks).list(query, page)
+
+    def overdue(
+        self,
+        *,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        with self._runtime.uow_factory() as uow:
+            return TaskService(
+                uow.tasks,
+                clock=self._runtime.clock,
+            ).overdue(
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                page=page,
+            )
+
+    def today(
+        self,
+        *,
+        timezone: str,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        with self._runtime.uow_factory() as uow:
+            return TaskService(
+                uow.tasks,
+                clock=self._runtime.clock,
+            ).today(
+                timezone=timezone,
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                page=page,
+            )
+
+    def upcoming(
+        self,
+        *,
+        timezone: str,
+        days: int | None = None,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        with self._runtime.uow_factory() as uow:
+            return TaskService(
+                uow.tasks,
+                clock=self._runtime.clock,
+            ).upcoming(
+                timezone=timezone,
+                days=days,
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                page=page,
+            )
+
+    def unscheduled(
+        self,
+        *,
+        assignee_id: str | None = None,
+        owner_id: str | None = None,
+        type: TaskType | str | None = None,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[Task]:
+        with self._runtime.uow_factory() as uow:
+            return TaskService(
+                uow.tasks,
+                clock=self._runtime.clock,
+            ).unscheduled(
+                assignee_id=assignee_id,
+                owner_id=owner_id,
+                type=type,
+                page=page,
+            )
 
     def _transition(self, task_id: TaskId, action: str) -> Task:
         with self._runtime.uow_factory() as uow:

@@ -38,10 +38,10 @@ def test_v1_root_exports_remain_compatible_after_v1() -> None:
     assert pycrmkit.__all__ == MANIFEST["root_exports"]
 
 
-def test_bounded_context_package_exports_match_manifest() -> None:
+def test_v1_bounded_context_exports_remain_available_after_v1() -> None:
     for module_name, expected in MANIFEST["module_exports"].items():
         module = importlib.import_module(module_name)
-        assert list(module.__all__) == expected, module_name
+        assert set(expected).issubset(module.__all__), module_name
 
 
 def test_public_exception_hierarchy_exports_match_manifest() -> None:
@@ -87,7 +87,7 @@ def test_crm_facade_namespaces_and_methods_match_candidate() -> None:
 
     for namespace, expected_methods in MANIFEST["facade"]["namespaces"].items():
         api = getattr(crm, namespace)
-        assert _public_callables(api) == expected_methods, namespace
+        assert set(expected_methods).issubset(_public_callables(api)), namespace
 
 
 def test_configuration_shape_is_candidate_frozen() -> None:

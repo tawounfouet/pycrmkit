@@ -119,7 +119,7 @@ from pycrmkit.storage.sqlalchemy.models.webhook import (
     WebhookSubscriptionModel,
 )
 from pycrmkit.tags import Tag, TagAssignment, TagAssignmentId, TagId, TagName
-from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskStatus
+from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskStatus, TaskType
 from pycrmkit.timeline import TimelineEntry, TimelineEntryId, TimelineEntryKind
 from pycrmkit.webhooks import (
     WebhookDelivery,
@@ -628,6 +628,7 @@ def task_to_model(task: Task, model: TaskModel | None = None) -> TaskModel:
         updated_at=task.updated_at,
     )
     target.title = task.title
+    target.task_type = task.type.value
     target.status = task.status.value
     target.priority = int(task.priority)
     target.description = task.description
@@ -654,6 +655,7 @@ def task_from_model(
         created_at=aware(model.created_at),
         updated_at=aware(model.updated_at),
         title=model.title,
+        type=TaskType(model.task_type),
         status=TaskStatus(model.status),
         priority=TaskPriority(model.priority),
         description=model.description,

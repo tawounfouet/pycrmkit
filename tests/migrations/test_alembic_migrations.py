@@ -58,7 +58,7 @@ def test_upgrade_empty_database_to_head_matches_metadata(
 ) -> None:
     command.upgrade(_config(), "head")
 
-    assert _current_revision(migration_engine) == "0003"
+    assert _current_revision(migration_engine) == "0004"
     assert _application_tables(migration_engine) == set(Base.metadata.tables)
     assert _schema_diffs(migration_engine) == []
 
@@ -74,7 +74,7 @@ def test_baseline_downgrade_to_base_is_destructive_and_reversible(
     assert _current_revision(migration_engine) is None
 
     command.upgrade(config, "head")
-    assert _current_revision(migration_engine) == "0003"
+    assert _current_revision(migration_engine) == "0004"
     assert _schema_diffs(migration_engine) == []
 
 
@@ -99,11 +99,54 @@ def test_previous_060b3_schema_upgrades_to_head_without_data_loss(
         uow.commit()
 
     command.upgrade(config, "head")
-    assert _current_revision(migration_engine) == "0003"
+    assert _current_revision(migration_engine) == "0004"
     assert _schema_diffs(migration_engine) == []
 
     with SQLAlchemyUnitOfWork(factory) as uow:
         assert uow.contacts.get(contact.id) == contact
+
+
+def test_task_type_migration_backfills_existing_tasks_as_general(
+    migration_engine: Engine,
+) -> None:
+    config = _config()
+    command.upgrade(config, "0003")
+
+    task_id = "00000000-0000-4000-8000-000000009941"
+    with migration_engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                INSERT INTO pycrmkit_tasks (
+                    id, title, status, priority, description, due_at,
+                    owner_id, assignee_id, source, external_id, metadata,
+                    started_at, completed_at, cancelled_at, created_at, updated_at
+                ) VALUES (
+                    :id, :title, 'open', 20, NULL, NULL,
+                    NULL, NULL, NULL, NULL, CAST('{}' AS JSON),
+                    NULL, NULL, NULL, :created_at, :updated_at
+                )
+                """
+            ),
+            {
+                "id": task_id,
+                "title": "Legacy task",
+                "created_at": NOW,
+                "updated_at": NOW,
+            },
+        )
+
+    command.upgrade(config, "head")
+
+    with migration_engine.connect() as connection:
+        task_type = connection.scalar(
+            text(
+                "SELECT task_type FROM pycrmkit_tasks WHERE id = :id"
+            ),
+            {"id": task_id},
+        )
+
+    assert task_type == "general"
 
 
 def test_head_removes_non_contractual_cross_aggregate_foreign_keys(
@@ -167,4 +210,4 @@ def test_migration_version_table_tracks_head(
             text("SELECT version_num FROM alembic_version")
         ).scalars().all()
 
-    assert rows == ["0003"]
+    assert rows == ["0004"]

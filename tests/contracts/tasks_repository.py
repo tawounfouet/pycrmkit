@@ -70,6 +70,7 @@ class TaskRepositoryContract:
         page = repository.list(
             TaskQuery(
                 status=TaskStatus.OPEN,
+                type=task.type,
                 priority=TaskPriority.HIGH,
                 assignee_id="seller-1",
             ),

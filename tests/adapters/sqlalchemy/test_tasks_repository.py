@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from pycrmkit.contacts import ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.storage.sqlalchemy.repositories import SQLAlchemyTaskRepository
-from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskRepository
+from pycrmkit.tasks import Task, TaskId, TaskPriority, TaskRepository, TaskType
 
 from ...contracts.tasks_repository import TaskRepositoryContract
 
@@ -45,6 +45,7 @@ def task(related_reference) -> Task:
         created_at=NOW,
         updated_at=NOW,
         title="Overdue renewal",
+        type=TaskType.CALL,
         priority=TaskPriority.HIGH,
         due_at=NOW - timedelta(days=1),
         assignee_id="seller-1",

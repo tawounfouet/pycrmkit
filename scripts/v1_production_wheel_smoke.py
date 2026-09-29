@@ -136,9 +136,9 @@ def _assert_distribution_provenance() -> None:
         for child in versions.iterdir()
         if child.name.endswith(".py") and child.name != "__init__.py"
     }
-    if packaged_migrations != EXPECTED_MIGRATIONS:
+    if not EXPECTED_MIGRATIONS.issubset(packaged_migrations):
         raise SystemExit(
-            "Packaged Alembic revisions differ from V1 contract: "
+            "Packaged Alembic revisions no longer contain the V1 baseline: "
             f"{sorted(packaged_migrations)}"
         )
 
