@@ -17,6 +17,9 @@ TABLES = {
     "pycrmkit_organization_addresses",
     "pycrmkit_relationships",
     "pycrmkit_external_identities",
+    "pycrmkit_segments",
+    "pycrmkit_segment_members",
+    "pycrmkit_saved_queries",
 }
 
 
@@ -31,6 +34,11 @@ def test_initial_migration_is_discoverable_and_applied() -> None:
     assert (
         "pycrmkit_crm",
         "0002_external_identity",
+    ) in MigrationRecorder(connection).applied_migrations()
+    assert ("pycrmkit_crm", "0003_segmentation") in loader.graph.nodes
+    assert (
+        "pycrmkit_crm",
+        "0003_segmentation",
     ) in MigrationRecorder(connection).applied_migrations()
 
 
