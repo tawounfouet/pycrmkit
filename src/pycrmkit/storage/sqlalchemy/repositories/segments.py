@@ -143,6 +143,46 @@ class SQLAlchemySegmentMembershipRepository:
         self.session.add(segment_member_to_model(member))
         return member
 
+    def add_many(
+        self,
+        members: tuple[SegmentMember, ...],
+    ) -> tuple[SegmentMember, ...]:
+        keys = [
+            (str(member.segment_id), member.entity.kind, str(member.entity.id))
+            for member in members
+        ]
+        if len(keys) != len(set(keys)):
+            raise DuplicateError(
+                "Segment membership batch contains duplicates",
+                code="segment.member.batch_duplicate",
+            )
+        for member, (segment_id, entity_kind, entity_id) in zip(
+            members,
+            keys,
+            strict=True,
+        ):
+            existing = self.session.scalar(
+                select(SegmentMemberModel.id).where(
+                    SegmentMemberModel.segment_id == segment_id,
+                    SegmentMemberModel.entity_kind == entity_kind,
+                    SegmentMemberModel.entity_id == entity_id,
+                )
+            )
+            if existing is not None:
+                raise DuplicateError(
+                    "Segment membership already exists",
+                    code="segment.member.duplicate",
+                    context={
+                        "segment_id": segment_id,
+                        "entity_kind": entity_kind,
+                        "entity_id": entity_id,
+                    },
+                )
+        self.session.add_all(
+            [segment_member_to_model(member) for member in members]
+        )
+        return members
+
     def remove(
         self,
         segment_id: SegmentId,
@@ -165,6 +205,30 @@ class SQLAlchemySegmentMembershipRepository:
             )
         )
         return True
+
+    def remove_many(
+        self,
+        segment_id: SegmentId,
+        entities: tuple[EntityReference, ...],
+    ) -> int:
+        unique = tuple(dict.fromkeys(entities))
+        if not unique:
+            return 0
+        identifiers = [
+            (entity.kind, str(entity.id))
+            for entity in unique
+        ]
+        deleted = 0
+        for entity_kind, entity_id in identifiers:
+            result = self.session.execute(
+                delete(SegmentMemberModel).where(
+                    SegmentMemberModel.segment_id == str(segment_id),
+                    SegmentMemberModel.entity_kind == entity_kind,
+                    SegmentMemberModel.entity_id == entity_id,
+                )
+            )
+            deleted += int(result.rowcount or 0)
+        return deleted
 
     def contains(
         self,
