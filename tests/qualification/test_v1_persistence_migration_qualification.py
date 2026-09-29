@@ -113,14 +113,14 @@ def _provenance(duplicate_id: ContactId) -> DedupProvenance:
     )
 
 
-def test_previous_stable_head_to_v1_candidate_is_noop_and_preserves_fixture(
+def test_v1_fixture_survives_current_1x_migration_head(
     production_engine: Engine,
 ) -> None:
     database_url = os.environ[DATABASE_ENV]
     config = _alembic_config(database_url)
     factory = _session_factory(production_engine)
 
-    assert _current_revision(production_engine) == "0003"
+    assert _current_revision(production_engine) == "0004"
     assert _schema_diffs(production_engine) == []
 
     fixture = Contact(
@@ -136,10 +136,10 @@ def test_previous_stable_head_to_v1_candidate_is_noop_and_preserves_fixture(
         uow.contacts.save(fixture)
         uow.commit()
 
-    # V1 RC introduces no persistence schema delta over the 0.9.0 stable head.
+    # Later 1.x migrations must preserve V1 fixture data while evolving schema.
     command.upgrade(config, "head")
 
-    assert _current_revision(production_engine) == "0003"
+    assert _current_revision(production_engine) == "0004"
     assert _schema_diffs(production_engine) == []
     with SQLAlchemyUnitOfWork(factory) as uow:
         assert uow.contacts.get(fixture.id) == fixture
