@@ -81,6 +81,20 @@ class SortExpressionSerializer(_SerializerBase):
         )
 
 
+class SegmentFilterSerializer(_SerializerBase):
+    status = serializers.ChoiceField(
+        choices=[item.value for item in SegmentStatus],
+        required=False,
+    )
+    mode = serializers.ChoiceField(
+        choices=[item.value for item in SegmentMode],
+        required=False,
+    )
+    entity_kind = serializers.CharField(max_length=64, required=False)
+    owner_id = serializers.UUIDField(required=False)
+    include_archived = serializers.BooleanField(required=False, default=False)
+
+
 class SegmentCreateSerializer(_SerializerBase):
     key = serializers.CharField(max_length=120)
     name = serializers.CharField(max_length=200)
@@ -167,6 +181,20 @@ class SegmentResponseSerializer(_SerializerBase):
     revision = serializers.IntegerField()
     metadata = serializers.JSONField()
     archived_at = serializers.DateTimeField(allow_null=True)
+
+
+class SavedQueryFilterSerializer(_SerializerBase):
+    status = serializers.ChoiceField(
+        choices=[item.value for item in SavedQueryStatus],
+        required=False,
+    )
+    visibility = serializers.ChoiceField(
+        choices=[item.value for item in SavedQueryVisibility],
+        required=False,
+    )
+    entity_kind = serializers.CharField(max_length=64, required=False)
+    owner_id = serializers.UUIDField(required=False)
+    include_archived = serializers.BooleanField(required=False, default=False)
 
 
 class SavedQueryCreateSerializer(_SerializerBase):
@@ -335,9 +363,11 @@ def saved_query_payload(value: SavedQuery) -> dict[str, Any]:
 __all__ = [
     "EntityReferenceSerializer",
     "SavedQueryCreateSerializer",
+    "SavedQueryFilterSerializer",
     "SavedQueryResponseSerializer",
     "SavedQueryUpdateSerializer",
     "SegmentCreateSerializer",
+    "SegmentFilterSerializer",
     "SegmentMembersSerializer",
     "SegmentResponseSerializer",
     "SegmentSnapshotCreateSerializer",
