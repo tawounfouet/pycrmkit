@@ -310,11 +310,7 @@ class DjangoSegmentMembershipRepository:
                 "Segment membership batch contains duplicates",
                 code="segment.member.batch_duplicate",
             )
-        for member, (segment_id, entity_kind, entity_id) in zip(
-            members,
-            keys,
-            strict=True,
-        ):
+        for segment_id, entity_kind, entity_id in keys:
             if SegmentMemberModel.objects.filter(
                 segment_id=segment_id,
                 entity_kind=entity_kind,
