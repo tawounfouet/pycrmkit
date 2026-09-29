@@ -62,3 +62,24 @@ def test_openapi_keeps_sales_command_surface_typed() -> None:
         "$ref"
     ].endswith("/OpportunityResponse")
     assert {"404", "409", "422", "500"}.issubset(convert["responses"])
+
+
+def test_openapi_documents_segmentation_routes() -> None:
+    schema = _schema()
+    paths = schema["paths"]
+
+    assert "/crm/segments" in paths
+    assert "/crm/segments/{segment_id}/members" in paths
+    assert "/crm/segments/{segment_id}/snapshot" in paths
+    assert "/crm/saved-queries" in paths
+    assert "/crm/saved-queries/{query_id}/execute" in paths
+
+    create_segment = paths["/crm/segments"]["post"]
+    assert create_segment["responses"]["201"]["content"]["application/json"][
+        "schema"
+    ]["$ref"].endswith("/SegmentResponse")
+
+    create_saved_query = paths["/crm/saved-queries"]["post"]
+    assert create_saved_query["responses"]["201"]["content"][
+        "application/json"
+    ]["schema"]["$ref"].endswith("/SavedQueryResponse")

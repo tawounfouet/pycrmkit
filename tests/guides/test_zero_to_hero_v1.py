@@ -4928,6 +4928,8 @@ assert {prefix for prefix, _, _ in router.registry} == {
     "contacts",
     "organizations",
     "relationships",
+    "segments",
+    "saved-queries",
 }
 
 patch = ContactUpdateSerializer(

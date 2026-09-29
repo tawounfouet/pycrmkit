@@ -13,6 +13,18 @@ from pycrmkit.integrations.django.drf.errors import (
     status_code_for_error,
 )
 from pycrmkit.integrations.django.drf.routers import create_drf_router
+from pycrmkit.integrations.django.drf.segmentation_serializers import (
+    SavedQueryCreateSerializer,
+    SavedQueryResponseSerializer,
+    SavedQueryUpdateSerializer,
+    SegmentCreateSerializer,
+    SegmentMembersSerializer,
+    SegmentResponseSerializer,
+)
+from pycrmkit.integrations.django.drf.segmentation_views import (
+    SavedQueryViewSet,
+    SegmentViewSet,
+)
 from pycrmkit.integrations.django.drf.serializers import (
     ContactCreateSerializer,
     ContactResponseSerializer,
@@ -44,6 +56,14 @@ __all__ = [
     "RelationshipResponseSerializer",
     "RelationshipUpdateSerializer",
     "RelationshipViewSet",
+    "SavedQueryCreateSerializer",
+    "SavedQueryResponseSerializer",
+    "SavedQueryUpdateSerializer",
+    "SavedQueryViewSet",
+    "SegmentCreateSerializer",
+    "SegmentMembersSerializer",
+    "SegmentResponseSerializer",
+    "SegmentViewSet",
     "create_drf_router",
     "pycrmkit_exception_handler",
     "status_code_for_error",

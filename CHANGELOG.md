@@ -6,6 +6,25 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.1.0b3] - 2026-09-29
+
+### Added
+- Added provider-neutral Segment membership import integration over the existing ImportPipeline contracts.
+- Added portable Segment population export records compatible with CSV, JSON and JSONL exporters.
+- Added FastAPI Segments and Saved Queries routers to the composite CRM HTTP surface.
+- Added DRF Segment and SavedQuery ViewSets/serializers to the reusable Django router.
+- Added HTTP qualification for dynamic evaluation, Snapshot creation and bounded bulk membership mutations.
+- Added Data Operations qualification for validation reporting and stable Snapshot export semantics.
+
+### Architecture
+- Segment import/export integration remains format-neutral and facade-backed.
+- Dynamic population exports remain explicitly live; reproducible exports use Snapshot Segments.
+- FastAPI and DRF transports call only the public CRM facade and do not access persistence implementations directly.
+- Existing V1 HTTP routes and persistence contracts remain backward compatible.
+
+### Next
+- `1.1.0rc1 — Segmentation Production Qualification`.
+
 ## [1.1.0b2] - 2026-09-29
 
 ### Added

@@ -224,3 +224,18 @@ persisted aggregate families.
 ## Next
 
 The roadmap continues with **`0.9.0a1 — External Identities`**.
+
+
+## V1.1 beta extension — Segmentation
+
+From **1.1.0b3**, `create_drf_router()` also registers:
+
+~~~text
+segments
+saved-queries
+~~~
+
+The ViewSets call only `crm.segments` and `crm.saved_queries`. Segment
+evaluation, Snapshot creation, bulk membership and SavedQuery revision
+operations therefore keep the same domain and adapter semantics as non-HTTP
+consumers.

@@ -50,6 +50,17 @@ from pycrmkit.integrations.fastapi.schemas import (
     TaskUpdateRequest,
     TimelineEntryResponse,
 )
+from pycrmkit.integrations.fastapi.segmentation_schemas import (
+    SavedQueryCreateRequest,
+    SavedQueryResponse,
+    SavedQueryUpdateRequest,
+    SegmentCreateRequest,
+    SegmentMembersRequest,
+    SegmentResponse,
+    SegmentSnapshotCreateRequest,
+    SegmentSnapshotRequest,
+    SortExpressionSchema,
+)
 
 __all__ = [
     "ActivityCreateRequest",
@@ -87,6 +98,15 @@ __all__ = [
     "RelationshipEndpointSchema",
     "RelationshipResponse",
     "RelationshipUpdateRequest",
+    "SavedQueryCreateRequest",
+    "SavedQueryResponse",
+    "SavedQueryUpdateRequest",
+    "SegmentCreateRequest",
+    "SegmentMembersRequest",
+    "SegmentResponse",
+    "SegmentSnapshotCreateRequest",
+    "SegmentSnapshotRequest",
+    "SortExpressionSchema",
     "TaskCreateRequest",
     "TaskPriorityName",
     "TaskResponse",

@@ -10,6 +10,8 @@ from pycrmkit.integrations.fastapi.routers import (
     create_opportunities_router,
     create_organizations_router,
     create_relationships_router,
+    create_saved_queries_router,
+    create_segments_router,
     create_tasks_router,
     create_timeline_router,
 )
@@ -32,6 +34,8 @@ def create_crm_router(factory: CRMFactory) -> APIRouter:
     router.include_router(create_tasks_router(dependency))
     router.include_router(create_leads_router(dependency))
     router.include_router(create_opportunities_router(dependency))
+    router.include_router(create_segments_router(dependency))
+    router.include_router(create_saved_queries_router(dependency))
     router.include_router(create_timeline_router(dependency))
     return router
 

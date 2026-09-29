@@ -238,3 +238,54 @@ Organization
 Django does not silently emulate missing Tag, Custom Field, Lead or Opportunity
 state. Queries requiring state not owned by the current Django persistence
 bridge fail explicitly.
+
+
+## Data Operations — 1.1.0b3
+
+Static Segment membership can now be imported through the existing
+provider-neutral Import Framework:
+
+~~~python
+from pycrmkit.importers import CSVReader
+from pycrmkit.segments import import_segment_members
+
+report = import_segment_members(
+    crm.segments,
+    segment.id,
+    CSVReader("members.csv"),
+)
+~~~
+
+Canonical membership records use:
+
+~~~text
+entity_id      required UUID
+entity_kind    optional when equal to the target Segment kind
+~~~
+
+All domain invariants remain authoritative during persistence: the target
+Segment must be writable, the entity kind must match, and the referenced CRM
+entity must exist.
+
+Population export stays format-neutral:
+
+~~~python
+from pycrmkit.exporters import JSONLExporter
+from pycrmkit.segments import iter_segment_membership_records
+
+JSONLExporter("members.jsonl").write(
+    iter_segment_membership_records(
+        crm.segments,
+        segment.id,
+    )
+)
+~~~
+
+The same records can be sent to CSV or JSON exporters. Dynamic exports are live;
+create a Snapshot first when reproducibility is required.
+
+## HTTP APIs — 1.1.0b3
+
+The optional FastAPI and DRF composite routers now expose Segment and SavedQuery
+operations through the public CRM facade. No transport layer receives
+repository, Session, QuerySet or ORM-model access.
