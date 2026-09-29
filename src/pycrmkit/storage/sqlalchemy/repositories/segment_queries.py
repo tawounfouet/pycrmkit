@@ -6,17 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, cast
 
-from sqlalchemy import (
-    Numeric,
-    and_,
-    cast as sql_cast,
-    exists,
-    false,
-    func,
-    not_,
-    or_,
-    select,
-)
+import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from pycrmkit.core.pagination import OffsetPageRequest, Page
@@ -101,13 +91,13 @@ class SQLAlchemySegmentQueryExecutor:
             at,
         )
         count_statement = (
-            select(func.count())
+            sa.select(sa.func.count())
             .select_from(model)
             .where(predicate)
         )
         total = int(self.session.scalar(count_statement) or 0)
 
-        statement = select(model.id).where(predicate)
+        statement = sa.select(model.id).where(predicate)
         statement = statement.order_by(
             *self._ordering(model, entity_kind, schema, ordering)
         )
@@ -143,18 +133,18 @@ class SQLAlchemySegmentQueryExecutor:
         )
         return int(
             self.session.scalar(
-                select(func.count())
+                sa.select(sa.func.count())
                 .select_from(model)
                 .where(predicate)
             )
             or 0
         )
 
-    def exists(self, entity: EntityReference) -> bool:
+    def sa.exists(self, entity: EntityReference) -> bool:
         model = self._entity_model(entity.kind)
         return (
             self.session.scalar(
-                select(model.id)
+                sa.select(model.id)
                 .where(model.id == str(entity.id))
                 .limit(1)
             )
@@ -254,7 +244,7 @@ class SQLAlchemySegmentQueryExecutor:
                 at,
             )
         if isinstance(expression, And):
-            return and_(
+            return sa.and_(
                 *(
                     self._compile_expression(
                         model,
@@ -267,7 +257,7 @@ class SQLAlchemySegmentQueryExecutor:
                 )
             )
         if isinstance(expression, Or):
-            return or_(
+            return sa.or_(
                 *(
                     self._compile_expression(
                         model,
@@ -280,7 +270,7 @@ class SQLAlchemySegmentQueryExecutor:
                 )
             )
         if isinstance(expression, Not):
-            return not_(
+            return sa.not_(
                 self._compile_expression(
                     model,
                     entity_kind,
@@ -324,7 +314,7 @@ class SQLAlchemySegmentQueryExecutor:
         )
         # Portable query semantics are two-valued: non-null comparisons against
         # an absent value are false, so NOT(predicate) becomes true for nulls.
-        return func.coalesce(condition, false())
+        return sa.func.coalesce(condition, sa.false())
 
     def _tag_predicate(
         self,
@@ -333,7 +323,7 @@ class SQLAlchemySegmentQueryExecutor:
         predicate: Predicate,
     ) -> Any:
         base = (
-            select(TagAssignmentModel.id)
+            sa.select(TagAssignmentModel.id)
             .join(TagModel, TagModel.id == TagAssignmentModel.tag_id)
             .where(
                 TagAssignmentModel.entity_kind == entity_kind,
@@ -341,9 +331,9 @@ class SQLAlchemySegmentQueryExecutor:
             )
         )
         if predicate.operator is QueryOperator.IS_NULL:
-            return ~exists(base)
+            return ~sa.exists(base)
         if predicate.operator is QueryOperator.IS_NOT_NULL:
-            return exists(base)
+            return sa.exists(base)
 
         raw = predicate.value
         assert raw is not None
@@ -361,21 +351,21 @@ class SQLAlchemySegmentQueryExecutor:
         if operator in {QueryOperator.IN, QueryOperator.NOT_IN}:
             assert isinstance(raw, tuple)
             values = tuple(normalize(item) for item in raw)
-            matched = exists(base.where(TagModel.normalized_name.in_(values)))
+            matched = sa.exists(base.where(TagModel.normalized_name.in_(values)))
             return matched if operator is QueryOperator.IN else ~matched
 
         value = normalize(raw)
         name = TagModel.normalized_name
         if operator is QueryOperator.EQ:
-            matched = exists(base.where(name == value))
+            matched = sa.exists(base.where(name == value))
         elif operator is QueryOperator.NE:
-            return ~exists(base.where(name == value))
+            return ~sa.exists(base.where(name == value))
         elif operator is QueryOperator.CONTAINS:
-            matched = exists(base.where(name.contains(value, autoescape=True)))
+            matched = sa.exists(base.where(name.contains(value, autoescape=True)))
         elif operator is QueryOperator.STARTS_WITH:
-            matched = exists(base.where(name.startswith(value, autoescape=True)))
+            matched = sa.exists(base.where(name.startswith(value, autoescape=True)))
         elif operator is QueryOperator.ENDS_WITH:
-            matched = exists(base.where(name.endswith(value, autoescape=True)))
+            matched = sa.exists(base.where(name.endswith(value, autoescape=True)))
         else:
             raise ValidationError(
                 "operator is not supported for tag filtering",
@@ -406,16 +396,16 @@ class SQLAlchemySegmentQueryExecutor:
         raw_json_value = CustomFieldValueModel.value_json["value"]
         value_type = CustomFieldValueModel.value_json["type"].as_string()
         scalar = self._custom_scalar(raw_json_value, field)
-        base = select(CustomFieldValueModel.id).where(
+        base = sa.select(CustomFieldValueModel.id).where(
             CustomFieldValueModel.definition_id == str(definition.id),
             CustomFieldValueModel.entity_kind == entity_kind,
             CustomFieldValueModel.entity_id == model.id,
         )
 
         if predicate.operator is QueryOperator.IS_NULL:
-            return ~exists(base.where(value_type != "none"))
+            return ~sa.exists(base.where(value_type != "none"))
         if predicate.operator is QueryOperator.IS_NOT_NULL:
-            return exists(base.where(value_type != "none"))
+            return sa.exists(base.where(value_type != "none"))
 
         value = self._resolved_value(field, predicate.value, at)
         condition = self._comparison(
@@ -423,7 +413,7 @@ class SQLAlchemySegmentQueryExecutor:
             predicate.operator,
             value,
         )
-        return exists(base.where(func.coalesce(condition, false())))
+        return sa.exists(base.where(sa.func.coalesce(condition, sa.false())))
 
     @staticmethod
     def _custom_scalar(raw_json_value: Any, field: QueryField) -> Any:
@@ -432,13 +422,13 @@ class SQLAlchemySegmentQueryExecutor:
         if field.type is QueryFieldType.BOOLEAN:
             return raw_json_value.as_boolean()
         if field.type is QueryFieldType.DECIMAL:
-            return sql_cast(raw_json_value.as_string(), Numeric(38, 12))
+            return sa.cast(raw_json_value.as_string(), sa.Numeric(38, 12))
         return raw_json_value.as_string()
 
     @staticmethod
     def _normalized_sql_value(column: Any, field: QueryField) -> Any:
         if field.type in {QueryFieldType.STRING, QueryFieldType.ENUM}:
-            return func.lower(column)
+            return sa.func.lower(column)
         return column
 
     @staticmethod
@@ -549,7 +539,7 @@ class SQLAlchemySegmentQueryExecutor:
                 raw = CustomFieldValueModel.value_json["value"]
                 scalar = self._custom_scalar(raw, field)
                 column = (
-                    select(self._normalized_sql_value(scalar, field))
+                    sa.select(self._normalized_sql_value(scalar, field))
                     .where(
                         CustomFieldValueModel.definition_id
                         == str(definition.id),
