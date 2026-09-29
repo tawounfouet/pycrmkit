@@ -18,6 +18,14 @@ class TaskId(UUIDId):
     """Strongly typed identifier for a CRM Task."""
 
 
+class TaskType(StrEnum):
+    """Portable intent of one CRM action item."""
+
+    GENERAL = "general"
+    CALL = "call"
+    EMAIL = "email"
+
+
 class TaskStatus(StrEnum):
     """Current lifecycle state for a CRM task."""
 
@@ -135,6 +143,7 @@ class Task(TimestampedEntity[TaskId]):
     """Action item linked to CRM actors and domain entities."""
 
     title: str
+    type: TaskType = TaskType.GENERAL
     status: TaskStatus = TaskStatus.OPEN
     priority: TaskPriority = TaskPriority.NORMAL
     description: str | None = None
@@ -156,6 +165,14 @@ class Task(TimestampedEntity[TaskId]):
             field_name="title",
             max_length=300,
         )
+        try:
+            self.type = TaskType(self.type)
+        except ValueError as exc:
+            raise ValidationError(
+                "unknown task type",
+                code="task.type.invalid",
+                context={"type": str(self.type)},
+            ) from exc
         self.status = TaskStatus(self.status)
         self.priority = parse_priority(self.priority)
         self.description = _normalize_description(self.description)
