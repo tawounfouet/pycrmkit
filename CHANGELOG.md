@@ -6,6 +6,33 @@ The project follows Semantic Versioning semantics and PEP 440 version syntax.
 
 ## [Unreleased]
 
+## [1.1.0b2] - 2026-09-29
+
+### Added
+- Added immutable Snapshot Segments materialized from a portable expression or the current membership of an existing Segment.
+- Added bounded transactional `add_many` / `remove_many` membership contracts and `crm.segments.add_members(...)` / `remove_members(...)` facade methods.
+- Added `segment.snapshot_created`, `segment.members_added` and `segment.members_removed` event contracts.
+- Added Django persistence models/repositories for Segment definitions, stored memberships and SavedQuery revisions.
+- Added Django ORM execution for portable Contact/Organization Segment expressions and deterministic ordering.
+- Added packaged Django migration `0003_segmentation`.
+- Added cross-adapter Snapshot/Bulk qualification for Memory, SQLAlchemy and Django.
+
+### Semantics
+- Snapshot membership is immutable after capture and does not change when source CRM state changes.
+- Snapshot materialization occurs atomically inside the caller's Unit of Work.
+- Bulk add rejects duplicate input references and is limited to 1000 members per call.
+- Bulk remove is idempotent and returns the number of deleted memberships.
+- The Django query executor rejects entity kinds/fields whose backing state is not owned by the current Django persistence bridge rather than returning incomplete results.
+
+### Compatibility
+- Existing Static/Dynamic Segment APIs remain unchanged.
+- Memory remains the semantic reference implementation.
+- SQLAlchemy/PostgreSQL Segmentation from `1.1.0b1` remains supported.
+- Django remains optional and framework-specific persistence objects stay outside the public domain model.
+
+### Next
+- `1.1.0b3 — Data Operations + API Integration`.
+
 ## [1.1.0b1] - 2026-09-29
 
 ### Added
