@@ -3,7 +3,7 @@
   "project": "pycrmkit",
   "version": "1.1.0",
   "release_kind": "stable",
-  "promotion_status": "candidate",
+  "promotion_status": "qualified",
   "source_candidate": "1.1.0rc1",
   "source_candidate_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
   "artifact_build": "pep517-setuptools",
@@ -20,8 +20,12 @@
     }
   ],
   "checksum_algorithm": "sha256",
-  "checksum_status": "frozen",
-  "supported_python": ["3.11", "3.12", "3.13"],
+  "checksum_status": "pending-final-freeze",
+  "supported_python": [
+    "3.11",
+    "3.12",
+    "3.13"
+  ],
   "sqlalchemy_migration_head": "0005",
   "django_migration_head": "0003_segmentation",
   "publication": {
