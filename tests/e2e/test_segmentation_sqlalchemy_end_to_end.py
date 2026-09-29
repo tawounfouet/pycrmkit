@@ -151,8 +151,8 @@ def test_sqlalchemy_relative_time_ordering_and_saved_query_revision_binding() ->
             EntityReference("contact", beta.id),
         )
         assert latest.items == (
-            EntityReference("contact", beta.id),
             EntityReference("contact", alpha.id),
+            EntityReference("contact", beta.id),
         )
         assert segment.saved_query_revision == 1
         assert crm.segments.evaluate(segment.id).items == original.items
