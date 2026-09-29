@@ -144,3 +144,42 @@ def test_0_5_webhook_delivery_surface() -> None:
         "attempts",
     ):
         assert hasattr(crm.webhooks, name)
+
+
+def test_1_1_segmentation_facade_surface() -> None:
+    crm = CRM.memory()
+    for name in (
+        "create",
+        "create_static",
+        "create_dynamic",
+        "create_snapshot",
+        "snapshot",
+        "create_dynamic_from_saved_query",
+        "get",
+        "list",
+        "archive",
+        "preview",
+        "evaluate",
+        "count",
+        "add_member",
+        "add_members",
+        "remove_member",
+        "remove_members",
+        "contains",
+    ):
+        assert hasattr(crm.segments, name)
+
+
+def test_1_1_saved_query_facade_surface() -> None:
+    crm = CRM.memory()
+    for name in (
+        "create",
+        "get",
+        "list",
+        "revisions",
+        "update",
+        "archive",
+        "execute",
+        "preview",
+    ):
+        assert hasattr(crm.saved_queries, name)
