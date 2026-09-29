@@ -354,3 +354,51 @@ The project roadmap now advances to **`0.9.0a2 — Import Framework`**.
 ## Next milestone
 
 The next delivery is **`0.8.0 — Django Integration Stable`**.
+
+
+## V1.1 beta extension — Segmentation
+
+**1.1.0b2** adds Django persistence capabilities for the Segmentation domain:
+
+~~~text
+DjangoTransactionBridge
+├── segments
+├── segment_memberships
+├── segment_query_executor
+└── saved_queries
+~~~
+
+The packaged Django migration history now continues:
+
+~~~text
+0001_initial
+    ↓
+0002_external_identity
+    ↓
+0003_segmentation
+~~~
+
+The new persistence representations are:
+
+~~~text
+SegmentModel
+SegmentMemberModel
+SavedQueryModel
+~~~
+
+The Django query executor compiles provider-neutral `QueryExpression` objects
+into Django ORM predicates. It currently evaluates the aggregate families
+persisted by this Django bridge:
+
+~~~text
+Contact
+Organization
+~~~
+
+Lead, Opportunity, Tag and Custom Field query state is not silently simulated.
+A query that requires persistence state not owned by the Django bridge fails
+with an explicit adapter capability error.
+
+Snapshot materialization and bulk Static membership use the same
+`crm.segments` facade as Memory and SQLAlchemy/PostgreSQL. No Django ORM model
+leaks into the domain API.
