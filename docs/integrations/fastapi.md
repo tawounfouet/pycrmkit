@@ -365,3 +365,21 @@ stable public integration contracts. Backward-compatible fixes belong in patch
 releases.
 
 The next planned integration milestone is **`0.8.0a1 — Django Application Bridge`**.
+
+
+## V1.1 beta extension — Segmentation
+
+From **1.1.0b3**, the composite router also exposes Segments and Saved Queries:
+
+~~~text
+/segments
+/saved-queries
+~~~
+
+These routes are facade-backed and preserve the existing transport boundary.
+They expose portable query-expression JSON, Segment population evaluation,
+Snapshot creation, bounded bulk membership mutation, SavedQuery revision
+history and SavedQuery execution.
+
+The HTTP layer does not expose SQLAlchemy expressions, Django QuerySets,
+repositories or Unit-of-Work objects.
