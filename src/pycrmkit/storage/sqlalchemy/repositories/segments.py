@@ -156,11 +156,7 @@ class SQLAlchemySegmentMembershipRepository:
                 "Segment membership batch contains duplicates",
                 code="segment.member.batch_duplicate",
             )
-        for member, (segment_id, entity_kind, entity_id) in zip(
-            members,
-            keys,
-            strict=True,
-        ):
+        for segment_id, entity_kind, entity_id in keys:
             existing = self.session.scalar(
                 select(SegmentMemberModel.id).where(
                     SegmentMemberModel.segment_id == segment_id,
