@@ -6,6 +6,8 @@ from pycrmkit import CRM
 from pycrmkit.exporters import CSVExporter, JSONLExporter
 from pycrmkit.importers import IterableReader
 from pycrmkit.segments import (
+    Predicate,
+    QueryOperator,
     import_segment_members,
     iter_segment_membership_records,
 )
@@ -66,15 +68,9 @@ def test_dynamic_export_is_live_while_snapshot_export_is_stable() -> None:
         key="linkedin",
         name="LinkedIn",
         entity_kind="contact",
-        query=__import__(
-            "pycrmkit.segments",
-            fromlist=["Predicate"],
-        ).Predicate(
+        query=Predicate(
             "source",
-            __import__(
-                "pycrmkit.segments",
-                fromlist=["QueryOperator"],
-            ).QueryOperator.EQ,
+            QueryOperator.EQ,
             "linkedin",
         ),
     )
