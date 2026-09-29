@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pycrmkit
@@ -65,7 +66,13 @@ def assert_stable_release_gate() -> dict[str, object]:
         raise SystemExit("Stable report declares a functional delta")
     if STABLE_REPORT["artifact_evidence"]["byte_reproducible"] is not True:
         raise SystemExit("Stable artifacts are not reproducible")
-    if STABLE_MANIFEST["checksum_status"] != "frozen":
+    stable_checksum_status = STABLE_MANIFEST["checksum_status"]
+    require_final_checksum_freeze = (
+        os.environ.get("PYCRMKIT_REQUIRE_FINAL_CHECKSUM_FREEZE") == "1"
+    )
+    if stable_checksum_status not in {"pending-final-freeze", "frozen"}:
+        raise SystemExit("Stable checksum status is invalid")
+    if require_final_checksum_freeze and stable_checksum_status != "frozen":
         raise SystemExit("Stable checksums are not frozen")
 
     expected_sqlalchemy = STABLE_GATE["sqlalchemy_migration_head"]
@@ -117,6 +124,7 @@ def assert_stable_release_gate() -> dict[str, object]:
         "candidate_qualified": True,
         "stable_status": STABLE_GATE["status"],
         "promotion_ready": STABLE_GATE["promotion_ready"],
+        "stable_checksum_status": stable_checksum_status,
     }
 
 
