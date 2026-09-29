@@ -3,10 +3,10 @@
   "release": "1.1.0",
   "source_candidate": "1.1.0rc1",
   "source_candidate_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
-  "status": "candidate",
-  "promotion_ready": false,
+  "status": "qualified",
+  "promotion_ready": true,
   "qualification_date": "2026-09-29",
-  "blocking_failures": null,
+  "blocking_failures": 0,
   "functional_delta_from_rc1": "none",
   "sqlalchemy_migration_head": "0005",
   "django_migration_head": "0003_segmentation",
@@ -21,6 +21,9 @@
     "deterministic_evidence_workflow_run": 36579264275,
     "source_date_epoch": 1790689552,
     "byte_reproducible": true,
-    "isolated_wheel_smoke": "passed"
-  }
+    "isolated_wheel_smoke": "passed",
+    "checksum_status": "pending-final-freeze"
+  },
+  "full_ci_workflows_green": 26,
+  "qualified_candidate_head": "10ab76c3ac564e95a366831f4f16582cc4dd5247"
 }
