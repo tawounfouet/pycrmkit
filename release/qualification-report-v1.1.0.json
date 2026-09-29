@@ -16,13 +16,13 @@
     "byte_reproducible": true
   },
   "artifact_evidence": {
-    "wheel_sha256": "68f03cce76b184fa6733207643324b8d9eef745cc40d9dc419705694e521e880",
-    "sdist_sha256": "6647e6bc9728916ea100c3739b4e25413a424c5bb664f732d20d244922bfc5a6",
-    "deterministic_evidence_workflow_run": 36579264275,
+    "wheel_sha256": "b21de3ac150952bd8b69f9b8c8bfe7d2e84f12405b97c2dd6fbc42b68907843f",
+    "sdist_sha256": "dafae893c2a75740ddae094fb80a366519e4eac716126c8f4b122009bb33c3c1",
+    "deterministic_evidence_workflow_run": 36647911958,
     "source_date_epoch": 1790689552,
     "byte_reproducible": true,
     "isolated_wheel_smoke": "passed",
-    "checksum_status": "pending-final-freeze"
+    "checksum_status": "frozen"
   },
   "full_ci_workflows_green": 26,
   "qualified_candidate_head": "10ab76c3ac564e95a366831f4f16582cc4dd5247"
