@@ -80,14 +80,13 @@ class SQLAlchemySavedQueryRepository:
         return None if model is None else saved_query_from_model(model)
 
     def save(self, query: SavedQuery) -> None:
-        with self.session.no_autoflush:
-            existing_by_key = self.find_by_key(query.key)
-            current = self.session.scalar(
-                select(SavedQueryModel)
-                .where(SavedQueryModel.id == str(query.id))
-                .order_by(SavedQueryModel.revision.desc())
-                .limit(1)
-            )
+        existing_by_key = self.find_by_key(query.key)
+        current = self.session.scalar(
+            select(SavedQueryModel)
+            .where(SavedQueryModel.id == str(query.id))
+            .order_by(SavedQueryModel.revision.desc())
+            .limit(1)
+        )
 
         if (
             existing_by_key is not None
