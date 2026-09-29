@@ -394,6 +394,7 @@ class SQLAlchemySegmentQueryExecutor:
             )
 
         raw_json_value = CustomFieldValueModel.value_json["value"]
+        value_type = CustomFieldValueModel.value_json["type"].as_string()
         scalar = self._custom_scalar(raw_json_value, field)
         base = select(CustomFieldValueModel.id).where(
             CustomFieldValueModel.definition_id == str(definition.id),
@@ -402,9 +403,9 @@ class SQLAlchemySegmentQueryExecutor:
         )
 
         if predicate.operator is QueryOperator.IS_NULL:
-            return ~exists(base.where(scalar.is_not(None)))
+            return ~exists(base.where(value_type != "none"))
         if predicate.operator is QueryOperator.IS_NOT_NULL:
-            return exists(base.where(scalar.is_not(None)))
+            return exists(base.where(value_type != "none"))
 
         value = self._resolved_value(field, predicate.value, at)
         condition = self._comparison(
