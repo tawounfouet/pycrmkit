@@ -49,6 +49,7 @@ from pycrmkit.leads import LeadStatus
 from pycrmkit.opportunities import OpportunityStatus
 from pycrmkit.pipelines import InvalidStageTransition, Stage, StageTransition
 from pycrmkit.providers.email import SMTPConfig
+from pycrmkit.segments import Predicate, QueryOperator
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 from pycrmkit.webhooks import (
     WebhookDeliveryState,
