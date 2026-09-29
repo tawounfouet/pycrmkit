@@ -127,7 +127,18 @@ jobs:
       - name: Stable promotion contract
         run: |
           python -m pip install -e ".[dev]"
-          python scripts/v1_1_stable_release_gate.py
+          checksum_status="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("release/release-manifest-v1.1.0.json").read_text())
+          print(manifest["checksum_status"])
+          PY
+          )"
+          if [ "$checksum_status" = "frozen" ]; then
+            PYCRMKIT_REQUIRE_FINAL_CHECKSUM_FREEZE=1 python scripts/v1_1_stable_release_gate.py
+          else
+            python scripts/v1_1_stable_release_gate.py
+          fi
           python -m pytest tests/qualification/test_v1_1_stable_release_gate.py -q
       - name: Installed stable wheel smoke
         run: |
