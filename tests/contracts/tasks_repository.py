@@ -6,7 +6,14 @@ import pytest
 
 from pycrmkit.core import OffsetPageRequest
 from pycrmkit.exceptions import NotFoundError
-from pycrmkit.tasks import Task, TaskPriority, TaskQuery, TaskRepository, TaskStatus
+from pycrmkit.tasks import (
+    Task,
+    TaskPriority,
+    TaskQuery,
+    TaskRepository,
+    TaskStatus,
+    TaskType,
+)
 
 
 class TaskRepositoryContract:
@@ -70,6 +77,7 @@ class TaskRepositoryContract:
         page = repository.list(
             TaskQuery(
                 status=TaskStatus.OPEN,
+                type=TaskType.CALL,
                 priority=TaskPriority.HIGH,
                 assignee_id="seller-1",
             ),
