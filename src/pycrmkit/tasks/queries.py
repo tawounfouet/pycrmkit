@@ -26,7 +26,6 @@ class TaskQuery:
     """Portable task filtering independent from ORM/query implementations."""
 
     status: TaskStatus | None = None
-    type: TaskType | str | None = None
     priority: TaskPriority | str | int | None = None
     owner_id: str | None = None
     assignee_id: str | None = None
@@ -36,6 +35,7 @@ class TaskQuery:
     due_from: datetime | None = None
     due_until: datetime | None = None
     overdue_at: datetime | None = None
+    type: TaskType | str | None = None
     unresolved_only: bool = False
     unscheduled_only: bool = False
     ordering: TaskOrdering = TaskOrdering.DEFAULT
