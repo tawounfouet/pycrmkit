@@ -445,13 +445,28 @@ class SQLAlchemySegmentQueryExecutor:
                 if field.type is QueryFieldType.DATE
                 else resolved
             )
-        normalized = field.normalize_value(value)
-        if field.type is QueryFieldType.DATETIME and field.key.startswith("custom."):
-            return cast(datetime, normalized).isoformat()
-        if field.type is QueryFieldType.DATE and field.key.startswith("custom."):
-            return normalized.isoformat()  # type: ignore[union-attr]
-        if field.type is QueryFieldType.DECIMAL and field.key.startswith("custom."):
-            return cast(Decimal, normalized)
+        if isinstance(value, tuple):
+            return tuple(
+                SQLAlchemySegmentQueryExecutor._sql_literal(
+                    field,
+                    field.normalize_value(item),
+                )
+                for item in value
+            )
+        return SQLAlchemySegmentQueryExecutor._sql_literal(
+            field,
+            field.normalize_value(value),
+        )
+
+    @staticmethod
+    def _sql_literal(field: QueryField, normalized: object) -> object:
+        if field.key.startswith("custom."):
+            if field.type is QueryFieldType.DATETIME:
+                return cast(datetime, normalized).isoformat()
+            if field.type is QueryFieldType.DATE:
+                return normalized.isoformat()  # type: ignore[union-attr]
+            if field.type is QueryFieldType.DECIMAL:
+                return cast(Decimal, normalized)
         return normalized
 
     @staticmethod
