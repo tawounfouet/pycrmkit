@@ -164,7 +164,6 @@ class Task(TimestampedEntity[TaskId]):
     """Action item linked to CRM actors and domain entities."""
 
     title: str
-    type: TaskType = TaskType.GENERAL
     status: TaskStatus = TaskStatus.OPEN
     priority: TaskPriority = TaskPriority.NORMAL
     description: str | None = None
@@ -178,6 +177,7 @@ class Task(TimestampedEntity[TaskId]):
     started_at: datetime | None = None
     completed_at: datetime | None = None
     cancelled_at: datetime | None = None
+    type: TaskType = TaskType.GENERAL
 
     def __post_init__(self) -> None:
         TimestampedEntity.__post_init__(self)
