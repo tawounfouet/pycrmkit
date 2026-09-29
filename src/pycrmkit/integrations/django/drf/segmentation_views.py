@@ -39,10 +39,13 @@ from pycrmkit.saved_queries import (
     SavedQueryVisibility,
 )
 from pycrmkit.segments import (
+    NullOrder,
     SegmentId,
     SegmentMode,
     SegmentQuery,
     SegmentStatus,
+    SortDirection,
+    SortExpression,
     expression_from_dict,
 )
 
@@ -327,11 +330,6 @@ class SavedQueryViewSet(CRMViewSet):
         serializer.is_valid(raise_exception=True)
         data = _validated(serializer)
         owner_id = data.get("owner_id")
-        ordering = tuple(
-            SortExpressionSerializer(data=item)
-            for item in []
-        )
-        del ordering
         query = self.get_crm(request).saved_queries.create(
             key=cast(str, data["key"]),
             name=cast(str, data["name"]),
@@ -417,8 +415,7 @@ class SavedQueryViewSet(CRMViewSet):
 
     @action(detail=True, methods=["get"])
     def revisions(self, request: Request, pk: str | None = None) -> Response:
-        del request
-        values = self.get_crm(self.request).saved_queries.revisions(
+        values = self.get_crm(request).saved_queries.revisions(
             SavedQueryId(_uuid_pk(pk))
         )
         return Response(
@@ -458,9 +455,7 @@ class SavedQueryViewSet(CRMViewSet):
         return Response(page_payload(result, items))
 
 
-def _sort_expression(data: dict[str, Any]):
-    from pycrmkit.segments import NullOrder, SortDirection, SortExpression
-
+def _sort_expression(data: dict[str, Any]) -> SortExpression:
     return SortExpression(
         cast(str, data["field"]),
         SortDirection(cast(str, data["direction"])),
