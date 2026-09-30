@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0] - 2026-09-29
+
+### Stable Promotion
+- Promoted the fully qualified `1.1.0rc1` Segmentation contract to `1.1.0` stable.
+- Preserved the exact public Segmentation and SavedQuery freeze from the release candidate.
+- Preserved SQLAlchemy/Alembic migration head `0005` and Django migration `0003_segmentation`.
+- Added frozen, reproducible SHA-256 evidence for both the source RC and stable wheel/sdist distributions.
+
+### Scope
+- Functional delta from `1.1.0rc1`: **none**.
+- No new aggregate, public API, event schema, persistence table, migration or adapter capability is introduced by the stable promotion.
+
+### Qualification
+- The stable promotion is governed by `stable_release_gate_v1_1.json`.
+- Promotion requires zero blocking failures and byte-reproducible release artifacts.
+
 ## [1.1.0rc1] - 2026-09-29
 
 ### Qualification

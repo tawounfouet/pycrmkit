@@ -74,5 +74,6 @@
     "stable_target_after_success": "1.1.0",
     "next_candidate_on_blocking_fix": "1.1.0rc2",
     "new_feature_scope_allowed": false
-  }
+  },
+  "promoted_release": "1.1.0"
 }

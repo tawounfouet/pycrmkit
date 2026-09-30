@@ -16,7 +16,10 @@ def test_segmentation_rc_targets_the_expected_release() -> None:
     assert MANIFEST["lot"] == "PV1-LOT-007"
     assert MANIFEST["target_release"] == "1.1.0rc1"
     assert MANIFEST["baseline_release"] == "1.1.0b3"
-    assert pycrmkit.__version__ == MANIFEST["target_release"]
+    assert pycrmkit.__version__ in {
+        MANIFEST["target_release"],
+        MANIFEST["promoted_release"],
+    }
     assert MANIFEST["status"] == "qualified"
     assert MANIFEST["promotion_ready"] is True
 

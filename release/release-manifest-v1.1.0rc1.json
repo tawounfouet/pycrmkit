@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "project": "pycrmkit",
+  "version": "1.1.0rc1",
+  "release_kind": "release-candidate",
+  "qualified_code_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
+  "artifact_build": "pep517-setuptools",
+  "artifacts": [
+    {
+      "filename": "pycrmkit-1.1.0rc1-py3-none-any.whl",
+      "type": "wheel",
+      "sha256": "5ec484585c4b18adad9347cd3e2c90efb005455b1a5504c89a4e55a049c3e0e8"
+    },
+    {
+      "filename": "pycrmkit-1.1.0rc1.tar.gz",
+      "type": "sdist",
+      "sha256": "df17457be5a0fd2ce4a146905c12b43611116309cd4e00f00bfabe4c8e2cb1aa"
+    }
+  ],
+  "checksum_algorithm": "sha256",
+  "checksum_status": "frozen",
+  "supported_python": ["3.11", "3.12", "3.13"],
+  "sqlalchemy_migration_head": "0005",
+  "django_migration_head": "0003_segmentation",
+  "publication": {
+    "tag": "v1.1.0rc1",
+    "github_prerelease": true,
+    "pypi_publish": false
+  },
+  "reproducibility": {
+    "required": true,
+    "verification_workflow": ".github/workflows/stable-1-1-promotion-evidence.yml",
+    "source_date_epoch": 1790689552,
+    "sdist_normalizer": "scripts/normalize_release_sdist.py",
+    "policy": "double-build-byte-comparison"
+  },
+  "deterministic_evidence_workflow_run": 36579264275
+}

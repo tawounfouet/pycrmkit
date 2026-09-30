@@ -1,0 +1,156 @@
+name: 1.1 Stable Promotion Evidence
+
+on:
+  push:
+    branches:
+      - "release/1.1.0-stable-promotion"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rc-evidence:
+    name: 1.1.0rc1 reproducibility
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_DATE_EPOCH: "1790689552"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: d703f264a60304d505159f2fd42fc50bdf78e927
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip "build>=1.2" "twine>=6"
+      - name: Assert qualified RC source
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import pycrmkit
+          assert pycrmkit.__version__ == "1.1.0rc1"
+          print(pycrmkit.__version__)
+          PY
+      - name: Build RC twice and compare byte-for-byte
+        run: |
+          rm -rf dist build
+          python -m build
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.1.0rc1.tar.gz
+          python -m twine check dist/*
+          sha256sum dist/pycrmkit-1.1.0rc1-py3-none-any.whl dist/pycrmkit-1.1.0rc1.tar.gz \
+            | sed 's#  dist/#  #' | tee /tmp/SHA256SUMS-v1.1.0rc1-first.txt
+          rm -rf dist build
+          python -m build
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.1.0rc1.tar.gz
+          python -m twine check dist/*
+          sha256sum dist/pycrmkit-1.1.0rc1-py3-none-any.whl dist/pycrmkit-1.1.0rc1.tar.gz \
+            | sed 's#  dist/#  #' | tee /tmp/SHA256SUMS-v1.1.0rc1.txt
+          diff -u /tmp/SHA256SUMS-v1.1.0rc1-first.txt /tmp/SHA256SUMS-v1.1.0rc1.txt
+          echo "----- RC11 SHA256 BEGIN -----"
+          cat /tmp/SHA256SUMS-v1.1.0rc1.txt
+          echo "----- RC11 SHA256 END -----"
+      - name: Verify frozen RC checksums
+        run: |
+          cat > /tmp/SHA256SUMS-v1.1.0rc1-frozen.txt <<'EOF'
+          5ec484585c4b18adad9347cd3e2c90efb005455b1a5504c89a4e55a049c3e0e8  pycrmkit-1.1.0rc1-py3-none-any.whl
+          df17457be5a0fd2ce4a146905c12b43611116309cd4e00f00bfabe4c8e2cb1aa  pycrmkit-1.1.0rc1.tar.gz
+          EOF
+          diff -u /tmp/SHA256SUMS-v1.1.0rc1-frozen.txt /tmp/SHA256SUMS-v1.1.0rc1.txt
+      - name: Installed RC wheel smoke
+        run: |
+          cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
+          python -m venv /tmp/pycrmkit-11-rc-wheel
+          /tmp/pycrmkit-11-rc-wheel/bin/python -m pip install --upgrade pip
+          /tmp/pycrmkit-11-rc-wheel/bin/python -m pip install --no-deps "$GITHUB_WORKSPACE/dist/pycrmkit-1.1.0rc1-py3-none-any.whl"
+          cd /tmp
+          PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+            PYCRMKIT_EXPECTED_VERSION="1.1.0rc1" PYCRMKIT_EXPECT_CORE_ONLY=1 \
+            /tmp/pycrmkit-11-rc-wheel/bin/python /tmp/v1_production_wheel_smoke.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pycrmkit-v1.1.0rc1-reproducible-artifacts
+          path: dist/*
+
+  stable-evidence:
+    name: 1.1.0 stable reproducibility
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_DATE_EPOCH: "1790689552"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip "build>=1.2" "twine>=6"
+      - name: Assert stable version
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import pycrmkit
+          assert pycrmkit.__version__ == "1.1.0"
+          print(pycrmkit.__version__)
+          PY
+      - name: Build stable twice and compare byte-for-byte
+        run: |
+          rm -rf dist build
+          python -m build
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.1.0.tar.gz
+          python -m twine check dist/*
+          sha256sum dist/pycrmkit-1.1.0-py3-none-any.whl dist/pycrmkit-1.1.0.tar.gz \
+            | sed 's#  dist/#  #' | tee /tmp/SHA256SUMS-v1.1.0-first.txt
+          rm -rf dist build
+          python -m build
+          python scripts/normalize_release_sdist.py dist/pycrmkit-1.1.0.tar.gz
+          python -m twine check dist/*
+          sha256sum dist/pycrmkit-1.1.0-py3-none-any.whl dist/pycrmkit-1.1.0.tar.gz \
+            | sed 's#  dist/#  #' | tee /tmp/SHA256SUMS-v1.1.0.txt
+          diff -u /tmp/SHA256SUMS-v1.1.0-first.txt /tmp/SHA256SUMS-v1.1.0.txt
+          echo "----- STABLE11 SHA256 BEGIN -----"
+          cat /tmp/SHA256SUMS-v1.1.0.txt
+          echo "----- STABLE11 SHA256 END -----"
+      - name: Verify frozen stable checksums after final freeze
+        run: |
+          status="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("release/release-manifest-v1.1.0.json").read_text())
+          print(manifest["checksum_status"])
+          PY
+          )"
+          if [ "$status" = "frozen" ]; then
+            diff -u release/SHA256SUMS-v1.1.0.txt /tmp/SHA256SUMS-v1.1.0.txt
+          else
+            echo "Stable checksum status is $status; reproducibility proven, final checksum freeze deferred."
+          fi
+      - name: Stable promotion contract
+        run: |
+          python -m pip install -e ".[dev]"
+          checksum_status="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("release/release-manifest-v1.1.0.json").read_text())
+          print(manifest["checksum_status"])
+          PY
+          )"
+          if [ "$checksum_status" = "frozen" ]; then
+            PYCRMKIT_REQUIRE_FINAL_CHECKSUM_FREEZE=1 python scripts/v1_1_stable_release_gate.py
+          else
+            python scripts/v1_1_stable_release_gate.py
+          fi
+          python -m pytest tests/qualification/test_v1_1_stable_release_gate.py -q
+      - name: Installed stable wheel smoke
+        run: |
+          cp scripts/v1_production_wheel_smoke.py /tmp/v1_production_wheel_smoke.py
+          python -m venv /tmp/pycrmkit-11-stable-wheel
+          /tmp/pycrmkit-11-stable-wheel/bin/python -m pip install --upgrade pip
+          /tmp/pycrmkit-11-stable-wheel/bin/python -m pip install --no-deps "$GITHUB_WORKSPACE/dist/pycrmkit-1.1.0-py3-none-any.whl"
+          cd /tmp
+          PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+            PYCRMKIT_EXPECTED_VERSION="1.1.0" PYCRMKIT_EXPECT_CORE_ONLY=1 \
+            /tmp/pycrmkit-11-stable-wheel/bin/python /tmp/v1_production_wheel_smoke.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pycrmkit-v1.1.0-stable-reproducible-artifacts
+          path: dist/*

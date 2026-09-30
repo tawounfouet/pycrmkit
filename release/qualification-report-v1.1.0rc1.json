@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "release": "1.1.0rc1",
+  "baseline_release": "1.1.0b3",
+  "source_candidate_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
+  "qualified_pr_head_commit": "90e4059f67ed12db3d96001356155f4c55c3dd9e",
+  "status": "qualified",
+  "promotion_ready": true,
+  "qualification_date": "2026-09-29",
+  "blocking_failures": 0,
+  "qualification_manifest": "tests/qualification/segmentation_release_gate_v1_1.json",
+  "qualification_workflows_green": 25,
+  "artifact_evidence": {
+    "wheel_sha256": "5ec484585c4b18adad9347cd3e2c90efb005455b1a5504c89a4e55a049c3e0e8",
+    "sdist_sha256": "df17457be5a0fd2ce4a146905c12b43611116309cd4e00f00bfabe4c8e2cb1aa",
+    "deterministic_evidence_workflow_run": 36579264275,
+    "source_date_epoch": 1790689552,
+    "byte_reproducible": true,
+    "isolated_wheel_smoke": "passed"
+  },
+  "sqlalchemy_migration_head": "0005",
+  "django_migration_head": "0003_segmentation",
+  "next_milestone": "1.1.0 — Segmentation & Sales Task Foundation"
+}

@@ -197,6 +197,7 @@ nav:
       - 1.1.0b2 Django + Snapshot + Bulk Membership: releases/1.1.0b2.md
       - 1.1.0b3 Data Operations + API Integration: releases/1.1.0b3.md
       - 1.1.0rc1 Segmentation Production Qualification: releases/1.1.0rc1.md
+      - 1.1.0 Segmentation & Sales Task Foundation: releases/1.1.0.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

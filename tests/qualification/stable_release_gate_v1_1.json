@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "source_candidate": "1.1.0rc1",
+  "source_candidate_commit": "d703f264a60304d505159f2fd42fc50bdf78e927",
+  "target_release": "1.1.0",
+  "status": "qualified",
+  "promotion_ready": true,
+  "blocking_failures_allowed": 0,
+  "functional_delta": "none",
+  "sqlalchemy_migration_head": "0005",
+  "django_migration_head": "0003_segmentation",
+  "required_candidate_evidence": [
+    "release/qualification-report-v1.1.0rc1.json",
+    "release/release-manifest-v1.1.0rc1.json",
+    "release/SHA256SUMS-v1.1.0rc1.txt"
+  ],
+  "required_stable_evidence": [
+    "release/qualification-report-v1.1.0.json",
+    "release/release-manifest-v1.1.0.json",
+    "release/SHA256SUMS-v1.1.0.txt"
+  ],
+  "policy": {
+    "candidate_must_be_qualified": true,
+    "candidate_blocking_failures_must_equal": 0,
+    "new_features_allowed": false,
+    "new_public_api_allowed": false,
+    "persistence_schema_change_allowed": false,
+    "migration_change_allowed": false,
+    "stable_artifacts_must_be_reproducible": true
+  }
+}

@@ -1,0 +1,2 @@
+b21de3ac150952bd8b69f9b8c8bfe7d2e84f12405b97c2dd6fbc42b68907843f  pycrmkit-1.1.0-py3-none-any.whl
+dafae893c2a75740ddae094fb80a366519e4eac716126c8f4b122009bb33c3c1  pycrmkit-1.1.0.tar.gz
