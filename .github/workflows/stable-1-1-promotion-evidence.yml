@@ -78,6 +78,8 @@ jobs:
       SOURCE_DATE_EPOCH: "1790689552"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: e546fbf8a82dcdfcf4cc1173c217dee652893acc
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
