@@ -123,6 +123,11 @@ class EventRegistry:
 BUILTIN_EVENT_TYPES: tuple[str, ...] = (
     "activity.created",
     "activity.updated",
+    "campaign.activated",
+    "campaign.archived",
+    "campaign.completed",
+    "campaign.created",
+    "campaign.updated",
     "contact.archived",
     "contact.created",
     "contact.updated",
