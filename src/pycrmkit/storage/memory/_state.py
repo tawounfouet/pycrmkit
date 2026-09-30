@@ -9,6 +9,7 @@ from threading import RLock
 from pycrmkit.activities.entities import Activity, ActivityId
 from pycrmkit.audit.entries import AuditEntry, AuditEntryId
 from pycrmkit.campaigns import Campaign, CampaignId
+from pycrmkit.campaigns.audience import CampaignMember, CampaignSegmentSource
 from pycrmkit.communication import (
     CommunicationIntent,
     CommunicationIntentId,
@@ -62,6 +63,15 @@ class _MemoryState:
         default_factory=dict
     )
     campaigns: dict[CampaignId, Campaign] = field(default_factory=dict)
+    campaign_members: dict[
+        tuple[CampaignId, EntityReference], CampaignMember
+    ] = field(default_factory=dict)
+    campaign_segment_sources: dict[
+        tuple[CampaignId, SegmentId], CampaignSegmentSource
+    ] = field(default_factory=dict)
+    campaign_segment_members: dict[
+        tuple[CampaignId, SegmentId], tuple[EntityReference, ...]
+    ] = field(default_factory=dict)
     contacts: dict[ContactId, Contact] = field(default_factory=dict)
     leads: dict[LeadId, Lead] = field(default_factory=dict)
     opportunities: dict[OpportunityId, Opportunity] = field(default_factory=dict)
