@@ -276,6 +276,6 @@ jobs:
           for module in modules:
               importlib.import_module(module)
 
-          assert pycrmkit.__version__ == "1.2.0a1"
+          assert pycrmkit.__version__ == "1.2.0a2"
           print("qualified:", os.environ["IMPORTS"])
           PY
