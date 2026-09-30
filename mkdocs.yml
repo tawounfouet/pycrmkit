@@ -201,6 +201,7 @@ nav:
       - 1.1.0rc1 Segmentation Production Qualification: releases/1.1.0rc1.md
       - 1.1.0 Segmentation & Sales Task Foundation: releases/1.1.0.md
       - 1.2.0a1 Campaign Foundations & Metadata: releases/1.2.0a1.md
+      - 1.2.0a2 Campaign Membership & Segment Sources: releases/1.2.0a2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

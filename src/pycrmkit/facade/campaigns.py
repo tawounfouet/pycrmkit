@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import datetime
 
 from pycrmkit.campaigns import (
     Campaign,
+    CampaignAudienceService,
+    CampaignAudienceUnitOfWork,
     CampaignId,
+    CampaignMember,
     CampaignQuery,
+    CampaignSegmentSource,
     CampaignService,
     CampaignUnitOfWork,
     CampaignUpdate,
@@ -16,8 +20,10 @@ from pycrmkit.campaigns import (
 )
 from pycrmkit.core.ids import EntityId
 from pycrmkit.core.pagination import OffsetPageRequest, Page
+from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import IntegrationError
 from pycrmkit.facade._runtime import CRMRuntime
+from pycrmkit.segments import SegmentId, SegmentUnitOfWork
 
 
 class CampaignsAPI:
@@ -149,6 +155,227 @@ class CampaignsAPI:
             expected_revision=expected_revision,
         )
 
+    def add_member(
+        self,
+        campaign_id: CampaignId,
+        entity: EntityReference,
+        *,
+        source: str = "manual",
+        metadata: Mapping[str, object] | None = None,
+    ) -> CampaignMember:
+        with self._runtime.uow_factory() as uow:
+            member = self._audience_service(uow).add_member(
+                campaign_id,
+                entity,
+                source=source,
+                actor_id=self._runtime.context.actor_id,
+                metadata=metadata,
+            )
+            self._runtime.record_change(
+                uow,
+                event_type="campaign.member_added",
+                aggregate_type="campaign",
+                aggregate_id=campaign_id,
+                changes={"fields": ["members"]},
+                payload={
+                    "entity_kind": entity.kind,
+                    "entity_id": str(entity.id),
+                    "source": member.source,
+                },
+            )
+            uow.commit()
+            return member
+
+    def add_members(
+        self,
+        campaign_id: CampaignId,
+        entities: Iterable[EntityReference],
+        *,
+        source: str = "manual",
+        metadata: Mapping[str, object] | None = None,
+    ) -> tuple[CampaignMember, ...]:
+        with self._runtime.uow_factory() as uow:
+            members = self._audience_service(uow).add_members(
+                campaign_id,
+                entities,
+                source=source,
+                actor_id=self._runtime.context.actor_id,
+                metadata=metadata,
+            )
+            if members:
+                self._runtime.record_change(
+                    uow,
+                    event_type="campaign.members_added",
+                    aggregate_type="campaign",
+                    aggregate_id=campaign_id,
+                    changes={"fields": ["members"]},
+                    payload={
+                        "member_count": len(members),
+                        "source": source,
+                    },
+                )
+            uow.commit()
+            return members
+
+    def remove_member(
+        self,
+        campaign_id: CampaignId,
+        entity: EntityReference,
+    ) -> bool:
+        with self._runtime.uow_factory() as uow:
+            removed = self._audience_service(uow).remove_member(campaign_id, entity)
+            if removed:
+                self._runtime.record_change(
+                    uow,
+                    event_type="campaign.member_removed",
+                    aggregate_type="campaign",
+                    aggregate_id=campaign_id,
+                    changes={"fields": ["members"]},
+                    payload={
+                        "entity_kind": entity.kind,
+                        "entity_id": str(entity.id),
+                    },
+                )
+            uow.commit()
+            return removed
+
+    def remove_members(
+        self,
+        campaign_id: CampaignId,
+        entities: Iterable[EntityReference],
+    ) -> int:
+        with self._runtime.uow_factory() as uow:
+            removed = self._audience_service(uow).remove_members(
+                campaign_id,
+                entities,
+            )
+            if removed:
+                self._runtime.record_change(
+                    uow,
+                    event_type="campaign.members_removed",
+                    aggregate_type="campaign",
+                    aggregate_id=campaign_id,
+                    changes={"fields": ["members"]},
+                    payload={"member_count": removed},
+                )
+            uow.commit()
+            return removed
+
+    def members(
+        self,
+        campaign_id: CampaignId,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[CampaignMember]:
+        with self._runtime.uow_factory() as uow:
+            return self._audience_service(uow).members(campaign_id, page)
+
+    def audience(
+        self,
+        campaign_id: CampaignId,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[EntityReference]:
+        with self._runtime.uow_factory() as uow:
+            return self._audience_service(uow).audience(campaign_id, page)
+
+    def audience_count(self, campaign_id: CampaignId) -> int:
+        with self._runtime.uow_factory() as uow:
+            return self._audience_service(uow).audience_count(campaign_id)
+
+    def contains(
+        self,
+        campaign_id: CampaignId,
+        entity: EntityReference,
+    ) -> bool:
+        with self._runtime.uow_factory() as uow:
+            return self._audience_service(uow).contains(campaign_id, entity)
+
+    def attach_segment_source(
+        self,
+        campaign_id: CampaignId,
+        segment_id: SegmentId,
+        *,
+        metadata: Mapping[str, object] | None = None,
+    ) -> CampaignSegmentSource:
+        with self._runtime.uow_factory() as uow:
+            source = self._audience_service(uow).attach_segment_source(
+                campaign_id,
+                segment_id,
+                actor_id=self._runtime.context.actor_id,
+                metadata=metadata,
+            )
+            self._runtime.record_change(
+                uow,
+                event_type="campaign.segment_source_attached",
+                aggregate_type="campaign",
+                aggregate_id=campaign_id,
+                changes={"fields": ["segment_sources", "audience"]},
+                payload={
+                    "segment_id": str(segment_id),
+                    "segment_revision": source.segment_revision,
+                    "member_count": source.member_count,
+                    "entity_kind": source.entity_kind,
+                },
+            )
+            uow.commit()
+            return source
+
+    def refresh_segment_source(
+        self,
+        campaign_id: CampaignId,
+        segment_id: SegmentId,
+    ) -> CampaignSegmentSource:
+        with self._runtime.uow_factory() as uow:
+            source = self._audience_service(uow).refresh_segment_source(
+                campaign_id,
+                segment_id,
+                actor_id=self._runtime.context.actor_id,
+            )
+            self._runtime.record_change(
+                uow,
+                event_type="campaign.segment_source_refreshed",
+                aggregate_type="campaign",
+                aggregate_id=campaign_id,
+                changes={"fields": ["segment_sources", "audience"]},
+                payload={
+                    "segment_id": str(segment_id),
+                    "segment_revision": source.segment_revision,
+                    "member_count": source.member_count,
+                    "entity_kind": source.entity_kind,
+                },
+            )
+            uow.commit()
+            return source
+
+    def detach_segment_source(
+        self,
+        campaign_id: CampaignId,
+        segment_id: SegmentId,
+    ) -> bool:
+        with self._runtime.uow_factory() as uow:
+            removed = self._audience_service(uow).detach_segment_source(
+                campaign_id,
+                segment_id,
+            )
+            if removed:
+                self._runtime.record_change(
+                    uow,
+                    event_type="campaign.segment_source_detached",
+                    aggregate_type="campaign",
+                    aggregate_id=campaign_id,
+                    changes={"fields": ["segment_sources", "audience"]},
+                    payload={"segment_id": str(segment_id)},
+                )
+            uow.commit()
+            return removed
+
+    def segment_sources(
+        self,
+        campaign_id: CampaignId,
+        page: OffsetPageRequest | None = None,
+    ) -> Page[CampaignSegmentSource]:
+        with self._runtime.uow_factory() as uow:
+            return self._audience_service(uow).segment_sources(campaign_id, page)
+
     def _transition(
         self,
         campaign_id: CampaignId,
@@ -196,6 +423,31 @@ class CampaignsAPI:
         return CampaignService(
             capabilities.campaigns,
             id_factory=self._runtime.id_factory,
+            clock=self._runtime.clock,
+        )
+
+    def _audience_service(self, uow: object) -> CampaignAudienceService:
+        if not isinstance(uow, CampaignUnitOfWork):
+            raise IntegrationError(
+                "Campaigns are not available for this persistence adapter yet",
+                code="campaign.persistence.unsupported",
+            )
+        if not isinstance(uow, CampaignAudienceUnitOfWork):
+            raise IntegrationError(
+                "Campaign audiences are not available for this persistence adapter yet",
+                code="campaign.audience.persistence.unsupported",
+            )
+        if not isinstance(uow, SegmentUnitOfWork):
+            raise IntegrationError(
+                "Campaign Segment sources require Segmentation persistence support",
+                code="campaign.segment_source.persistence.unsupported",
+            )
+        return CampaignAudienceService(
+            uow.campaigns,
+            uow.campaign_audience,
+            uow.segments,
+            uow.segment_memberships,
+            uow.segment_query_executor,
             clock=self._runtime.clock,
         )
 

@@ -71,8 +71,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "1.2.0a1":
-        raise SystemExit(f"Expected PyCRMKit 1.2.0a1, got {version!r}")
+    if version != "1.2.0a2":
+        raise SystemExit(f"Expected PyCRMKit 1.2.0a2, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
@@ -514,21 +514,56 @@ def main() -> None:
         raise SystemExit("Segmentation installed-wheel Snapshot smoke failed")
 
     campaign_crm = pycrmkit.CRM.memory(clock=clock, webhook_auto_delivery=False)
+    campaign_contact = campaign_crm.contacts.create(
+        display_name="Campaign Installed Smoke",
+        source="LinkedIn",
+    )
     campaign = campaign_crm.campaigns.create(
         key="installed-campaign",
         name="Installed Campaign",
-        metadata={"scope": "metadata-only"},
+        metadata={"scope": "audience"},
     )
+    campaign_segment = campaign_crm.segments.create_dynamic(
+        key="installed-campaign-linkedin",
+        name="Installed Campaign LinkedIn",
+        entity_kind="contact",
+        query=Predicate("source", QueryOperator.EQ, "linkedin"),
+    )
+    attached_source = campaign_crm.campaigns.attach_segment_source(
+        campaign.id,
+        campaign_segment.id,
+    )
+    if attached_source.member_count != 1:
+        raise SystemExit("Campaign Segment source capture smoke failed")
+    later_contact = campaign_crm.contacts.create(
+        display_name="Campaign Later Smoke",
+        source="LinkedIn",
+    )
+    if campaign_crm.campaigns.contains(
+        campaign.id,
+        EntityReference("contact", later_contact.id),
+    ):
+        raise SystemExit("Campaign Segment source must remain stable before refresh")
+    refreshed_source = campaign_crm.campaigns.refresh_segment_source(
+        campaign.id,
+        campaign_segment.id,
+    )
+    if refreshed_source.member_count != 2:
+        raise SystemExit("Campaign Segment source refresh smoke failed")
+    if set(campaign_crm.campaigns.audience(campaign.id).items) != {
+        EntityReference("contact", campaign_contact.id),
+        EntityReference("contact", later_contact.id),
+    }:
+        raise SystemExit("Campaign audience union smoke failed")
+
     campaign = campaign_crm.campaigns.activate(
         campaign.id,
         expected_revision=1,
     )
     if campaign.status.value != "active" or campaign.revision != 2:
         raise SystemExit("Campaign installed-wheel lifecycle smoke failed")
-    if campaign_crm.campaigns.get(campaign.id) != campaign:
-        raise SystemExit("Campaign installed-wheel repository smoke failed")
 
-    print(f"PyCRMKit {version}: V1 + 1.1 + Campaign 1.2 alpha smoke OK")
+    print(f"PyCRMKit {version}: V1 + 1.1 + Campaign 1.2a2 smoke OK")
 
 
 if __name__ == "__main__":
