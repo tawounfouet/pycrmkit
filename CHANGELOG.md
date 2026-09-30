@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0a1] - 2026-09-30
+
+### Added
+- Added the first-class Campaign metadata bounded context with typed Campaign IDs, normalized stable keys, lifecycle status, optional schedule/owner metadata, optimistic revisions and extensible metadata.
+- Added `CampaignRepository`, `CampaignUnitOfWork` and the Memory reference adapter with deterministic pagination, unique-key protection and status/owner filtering.
+- Added the `crm.campaigns` facade with create/get/list/update/activate/complete/archive operations.
+- Added public Campaign lifecycle events: `campaign.created`, `campaign.updated`, `campaign.activated`, `campaign.completed` and `campaign.archived`.
+- Added source and installed-wheel Campaign smoke coverage.
+
+### Compatibility
+- PyCRMKit 1.1 remains the stable baseline; 1.2.0a1 is additive.
+- Historical 1.1 API/release qualification evidence is decoupled from the current package version so future minor releases can replay it without false version failures.
+
+### Boundary
+- Campaign membership, Segment sources, attribution references and communication linkage remain deferred to later 1.2 milestones.
+- Email design, advertising management, bulk marketing delivery, journey/cadence execution and advanced attribution modelling remain outside PyCRMKit core.
+
+### Next
+- `1.2.0a2 — Campaign Membership & Segment Sources`.
+
 ## [1.1.0] - 2026-09-29
 
 ### Stable Promotion

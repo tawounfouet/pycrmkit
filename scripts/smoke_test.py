@@ -71,8 +71,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "1.1.0":
-        raise SystemExit(f"Expected PyCRMKit 1.1.0, got {version!r}")
+    if version != "1.2.0a1":
+        raise SystemExit(f"Expected PyCRMKit 1.2.0a1, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
@@ -513,7 +513,22 @@ def main() -> None:
     if segmentation_crm.segments.count(snapshot.id) != 1:
         raise SystemExit("Segmentation installed-wheel Snapshot smoke failed")
 
-    print(f"PyCRMKit {version}: V1 + Segmentation RC regression smoke OK")
+    campaign_crm = pycrmkit.CRM.memory(clock=clock, webhook_auto_delivery=False)
+    campaign = campaign_crm.campaigns.create(
+        key="installed-campaign",
+        name="Installed Campaign",
+        metadata={"scope": "metadata-only"},
+    )
+    campaign = campaign_crm.campaigns.activate(
+        campaign.id,
+        expected_revision=1,
+    )
+    if campaign.status.value != "active" or campaign.revision != 2:
+        raise SystemExit("Campaign installed-wheel lifecycle smoke failed")
+    if campaign_crm.campaigns.get(campaign.id) != campaign:
+        raise SystemExit("Campaign installed-wheel repository smoke failed")
+
+    print(f"PyCRMKit {version}: V1 + 1.1 + Campaign 1.2 alpha smoke OK")
 
 
 if __name__ == "__main__":

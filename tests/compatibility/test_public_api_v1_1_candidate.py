@@ -6,7 +6,6 @@ import importlib
 import json
 from pathlib import Path
 
-import pycrmkit
 from pycrmkit import CRM
 from pycrmkit.events import BUILTIN_EVENT_TYPES
 
@@ -25,10 +24,7 @@ def _public_callables(value: object) -> list[str]:
 def test_v1_1_candidate_version_is_frozen() -> None:
     assert MANIFEST["target_release"] == "1.1.0rc1"
     assert MANIFEST["baseline_release"] == "1.1.0b3"
-    assert pycrmkit.__version__ in {
-        MANIFEST["target_release"],
-        MANIFEST["promoted_release"],
-    }
+    assert MANIFEST["promoted_release"] == "1.1.0"
 
 
 def test_v1_1_module_exports_are_exactly_frozen() -> None:

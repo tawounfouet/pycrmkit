@@ -16,14 +16,13 @@ GATE = json.loads(
 
 
 def test_1_1_stable_gate_promotes_only_the_qualified_rc() -> None:
-    result = assert_stable_release_gate()
+    result = assert_stable_release_gate(require_runtime_version=False)
 
     assert result["source_candidate"] == "1.1.0rc1"
     assert result["source_candidate_commit"] == (
         "d703f264a60304d505159f2fd42fc50bdf78e927"
     )
     assert result["target_release"] == "1.1.0"
-    assert result["package_version"] == "1.1.0"
     assert result["functional_delta"] == "none"
     assert result["blocking_failures_allowed"] == 0
     assert result["sqlalchemy_migration_head"] == "0005"

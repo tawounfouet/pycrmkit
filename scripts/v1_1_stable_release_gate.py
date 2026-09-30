@@ -34,8 +34,8 @@ STABLE_MANIFEST = json.loads(
 )
 
 
-def assert_stable_release_gate() -> dict[str, object]:
-    if pycrmkit.__version__ != "1.1.0":
+def assert_stable_release_gate(*, require_runtime_version: bool = True) -> dict[str, object]:
+    if require_runtime_version and pycrmkit.__version__ != "1.1.0":
         raise SystemExit("Stable gate must execute against PyCRMKit 1.1.0")
 
     if STABLE_GATE["source_candidate"] != "1.1.0rc1":
