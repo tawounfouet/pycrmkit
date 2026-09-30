@@ -36,7 +36,7 @@ def _normalized_text(
     return normalized
 
 
-def _optional_external_ref(value: str | None) -> str | None:
+def normalize_campaign_external_ref(value: str | None) -> str | None:
     if value is None:
         return None
     normalized = unicodedata.normalize("NFKC", value).strip()
@@ -79,7 +79,11 @@ class CampaignAttributionReference:
             ),
         )
         object.__setattr__(self, "recorded_at", as_utc(self.recorded_at))
-        object.__setattr__(self, "external_ref", _optional_external_ref(self.external_ref))
+        object.__setattr__(
+            self,
+            "external_ref",
+            normalize_campaign_external_ref(self.external_ref),
+        )
         object.__setattr__(self, "metadata", dict(self.metadata))
 
 
@@ -108,4 +112,8 @@ class CampaignCommunicationLink:
         object.__setattr__(self, "metadata", dict(self.metadata))
 
 
-__all__ = ["CampaignAttributionReference", "CampaignCommunicationLink"]
+__all__ = [
+    "CampaignAttributionReference",
+    "CampaignCommunicationLink",
+    "normalize_campaign_external_ref",
+]
