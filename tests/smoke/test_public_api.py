@@ -183,3 +183,17 @@ def test_1_1_saved_query_facade_surface() -> None:
         "preview",
     ):
         assert hasattr(crm.saved_queries, name)
+
+
+def test_1_2_campaign_facade_surface() -> None:
+    crm = CRM.memory()
+    for name in (
+        "create",
+        "get",
+        "list",
+        "update",
+        "activate",
+        "complete",
+        "archive",
+    ):
+        assert hasattr(crm.campaigns, name)
