@@ -207,5 +207,12 @@ def test_1_2_campaign_facade_surface() -> None:
         "refresh_segment_source",
         "detach_segment_source",
         "segment_sources",
+        "add_attribution",
+        "remove_attribution",
+        "attributions",
+        "link_communication",
+        "unlink_communication",
+        "communication_links",
+        "communications",
     ):
         assert hasattr(crm.campaigns, name)
