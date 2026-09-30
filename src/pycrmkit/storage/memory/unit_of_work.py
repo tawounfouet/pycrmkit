@@ -12,6 +12,7 @@ from pycrmkit.exceptions import InvalidStateError
 from pycrmkit.storage.memory._state import MemoryStore, _MemoryState
 from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
+from pycrmkit.storage.memory.campaigns import MemoryCampaignRepository
 from pycrmkit.storage.memory.communication import MemoryCommunicationRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
 from pycrmkit.storage.memory.custom_fields import MemoryCustomFieldRepository
@@ -56,6 +57,7 @@ class MemoryUnitOfWork:
         self._working: _MemoryState | None = None
         self._activities: MemoryActivityRepository | None = None
         self._communications: MemoryCommunicationRepository | None = None
+        self._campaigns: MemoryCampaignRepository | None = None
         self._contacts: MemoryContactRepository | None = None
         self._leads: MemoryLeadRepository | None = None
         self._opportunities: MemoryOpportunityRepository | None = None
@@ -87,6 +89,12 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._communications is not None
         return self._communications
+
+    @property
+    def campaigns(self) -> MemoryCampaignRepository:
+        self._ensure_active()
+        assert self._campaigns is not None
+        return self._campaigns
 
     @property
     def contacts(self) -> MemoryContactRepository:
@@ -276,6 +284,7 @@ class MemoryUnitOfWork:
     def _bind_repositories(self, state: _MemoryState) -> None:
         self._activities = MemoryActivityRepository(state)
         self._communications = MemoryCommunicationRepository(state)
+        self._campaigns = MemoryCampaignRepository(state)
         self._contacts = MemoryContactRepository(state)
         self._leads = MemoryLeadRepository(state)
         self._opportunities = MemoryOpportunityRepository(state)
