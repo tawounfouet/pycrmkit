@@ -9,7 +9,6 @@ from typing import TypeVar
 
 from pycrmkit.campaigns.dto import CampaignUpdate, UnsetType
 from pycrmkit.campaigns.entities import Campaign, CampaignId
-from pycrmkit.campaigns.enums import CampaignStatus
 from pycrmkit.campaigns.queries import CampaignQuery
 from pycrmkit.campaigns.repository import CampaignRepository
 from pycrmkit.core.ids import EntityId, IDFactory, UUID4Factory
