@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 import pytest
 
 from pycrmkit import CRM
-from pycrmkit.core import FixedClock
 from pycrmkit.contacts import ContactId
+from pycrmkit.core import FixedClock
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import InvalidStateError, ValidationError
 from pycrmkit.segments import Predicate, QueryOperator
