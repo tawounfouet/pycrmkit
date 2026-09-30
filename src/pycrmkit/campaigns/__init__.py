@@ -1,6 +1,6 @@
 """Campaign metadata domain."""
 
-from pycrmkit.campaigns.dto import CampaignUpdate, UNSET, UnsetType
+from pycrmkit.campaigns.dto import UNSET, CampaignUpdate, UnsetType
 from pycrmkit.campaigns.entities import Campaign, CampaignId, normalize_campaign_key
 from pycrmkit.campaigns.enums import CampaignStatus
 from pycrmkit.campaigns.queries import CampaignQuery
