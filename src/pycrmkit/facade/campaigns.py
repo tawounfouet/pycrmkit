@@ -160,8 +160,23 @@ class CampaignsAPI:
         with self._runtime.uow_factory() as uow:
             before = self._capabilities(uow).campaigns.get(campaign_id)
             service = self._service(self._capabilities(uow))
-            method = getattr(service, transition)
-            campaign = method(campaign_id, expected_revision=expected_revision)
+            if transition == "activate":
+                campaign = service.activate(
+                    campaign_id,
+                    expected_revision=expected_revision,
+                )
+            elif transition == "complete":
+                campaign = service.complete(
+                    campaign_id,
+                    expected_revision=expected_revision,
+                )
+            elif transition == "archive":
+                campaign = service.archive(
+                    campaign_id,
+                    expected_revision=expected_revision,
+                )
+            else:
+                raise AssertionError(f"unsupported Campaign transition: {transition}")
             if campaign.revision != before.revision:
                 self._runtime.record_change(
                     uow,
