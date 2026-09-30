@@ -6,6 +6,14 @@ from pycrmkit.campaigns.audience_services import CampaignAudienceService
 from pycrmkit.campaigns.audience_unit_of_work import CampaignAudienceUnitOfWork
 from pycrmkit.campaigns.dto import UNSET, CampaignUpdate, UnsetType
 from pycrmkit.campaigns.entities import Campaign, CampaignId, normalize_campaign_key
+from pycrmkit.campaigns.linkage import (
+    CampaignAttributionReference,
+    CampaignCommunicationLink,
+    normalize_campaign_external_ref,
+)
+from pycrmkit.campaigns.linkage_repository import CampaignLinkageRepository
+from pycrmkit.campaigns.linkage_services import CampaignLinkageService
+from pycrmkit.campaigns.linkage_unit_of_work import CampaignLinkageUnitOfWork
 from pycrmkit.campaigns.enums import CampaignStatus
 from pycrmkit.campaigns.queries import CampaignQuery
 from pycrmkit.campaigns.repository import CampaignRepository
@@ -17,7 +25,12 @@ __all__ = [
     "CampaignAudienceRepository",
     "CampaignAudienceService",
     "CampaignAudienceUnitOfWork",
+    "CampaignAttributionReference",
+    "CampaignCommunicationLink",
     "CampaignId",
+    "CampaignLinkageRepository",
+    "CampaignLinkageService",
+    "CampaignLinkageUnitOfWork",
     "CampaignMember",
     "CampaignQuery",
     "CampaignRepository",
@@ -28,5 +41,6 @@ __all__ = [
     "CampaignUpdate",
     "UNSET",
     "UnsetType",
+    "normalize_campaign_external_ref",
     "normalize_campaign_key",
 ]
