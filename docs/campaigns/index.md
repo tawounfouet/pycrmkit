@@ -156,3 +156,35 @@ crm.campaigns.contains(campaign.id, reference)
 ~~~
 
 The Memory adapter is the semantic reference for these contracts in 1.2.0a2.
+
+
+## Attribution & communication linkage — 1.2.0a3
+
+Campaign attribution remains reference-oriented rather than analytical.
+
+~~~python
+crm.campaigns.add_attribution(
+    campaign.id,
+    EntityReference("contact", contact.id),
+    source="linkedin organic",
+    external_ref="utm-2026-q4",
+)
+~~~
+
+This records provenance only. PyCRMKit does not infer attribution weights,
+conversion credit or first/last-touch semantics in this release.
+
+Campaigns may also reference communications that already exist in the CRM:
+
+~~~python
+crm.campaigns.link_communication(
+    campaign.id,
+    communication.id,
+    role="follow-up",
+)
+
+records = crm.campaigns.communications(campaign.id)
+~~~
+
+Communication linkage never sends or queues a message. Delivery remains owned
+by the Communication domain and provider adapters.
