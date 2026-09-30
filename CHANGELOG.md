@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.2.0a2] - 2026-09-30
+
+### Added
+- Added explicit Campaign audience membership through `CampaignMember`, including bounded bulk add/remove operations, existence validation and deterministic pagination.
+- Added `CampaignSegmentSource` provenance with Segment identity/revision, entity kind, attachment/capture timestamps and captured member count.
+- Added explicit Segment-source attach, refresh and detach operations.
+- Added de-duplicated final Campaign audience queries across direct members and materialized Segment populations.
+- Added Campaign audience lifecycle events for direct membership and Segment-source mutations.
+- Added Memory persistence for Campaign members, Segment source metadata and captured Segment populations.
+- Added installed-wheel qualification for stable Segment capture and explicit refresh semantics.
+
+### Semantics
+- Segment sources are materialized at attach/refresh time rather than evaluated live on every Campaign audience read.
+- Later Segment population changes do not affect an existing Campaign audience until `refresh_segment_source(...)` is called.
+- Direct membership and Segment-derived membership are de-duplicated in `audience()`.
+
+### Compatibility
+- The 1.2.0a1 Campaign Metadata surface remains unchanged and available.
+- PyCRMKit 1.1 remains the stable compatibility baseline.
+
+### Next
+- `1.2.0a3 — Attribution & Communication Linkage`.
+
 ## [1.2.0a1] - 2026-09-30
 
 ### Added
