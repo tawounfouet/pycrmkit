@@ -408,6 +408,30 @@ def main() -> None:
         raise SystemExit("Communication callback state smoke failed")
     if email_crm.email.delivery_history(record.id).total != 3:
         raise SystemExit("Communication delivery-history smoke failed")
+    linkage_campaign = email_crm.campaigns.create(
+        key="installed-linkage",
+        name="Installed Linkage",
+    )
+    attribution = email_crm.campaigns.add_attribution(
+        linkage_campaign.id,
+        email_ref,
+        source="installed-smoke",
+        external_ref="touch-001",
+    )
+    if attribution.source != "installed-smoke":
+        raise SystemExit("Campaign attribution installed smoke failed")
+    communication_link = email_crm.campaigns.link_communication(
+        linkage_campaign.id,
+        current.id,
+        role="follow-up",
+    )
+    if communication_link.communication_id != current.id:
+        raise SystemExit("Campaign communication linkage installed smoke failed")
+    if email_crm.campaigns.communications(linkage_campaign.id).items != (current,):
+        raise SystemExit("Campaign linked communication read smoke failed")
+    if email_crm.email.delivery_history(current.id).total != 3:
+        raise SystemExit("Campaign linkage must not mutate communication delivery history")
+
     communication_timeline = email_crm.timeline.for_contact(email_contact.id)
     timeline_events = [str(item.event_type) for item in communication_timeline.items]
     if set(timeline_events) != {
@@ -563,7 +587,7 @@ def main() -> None:
     if campaign.status.value != "active" or campaign.revision != 2:
         raise SystemExit("Campaign installed-wheel lifecycle smoke failed")
 
-    print(f"PyCRMKit {version}: V1 + 1.1 + Campaign 1.2a2 smoke OK")
+    print(f"PyCRMKit {version}: V1 + 1.1 + Campaign 1.2a3 smoke OK")
 
 
 if __name__ == "__main__":
