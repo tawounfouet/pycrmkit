@@ -15,8 +15,8 @@ from pycrmkit.events import DomainEvent, EventRegistry, InProcessEventBus, defau
 from pycrmkit.facade._runtime import CRMRuntime
 from pycrmkit.facade.activities import ActivitiesAPI
 from pycrmkit.facade.audit import AuditAPI
-from pycrmkit.facade.campaigns import CampaignsAPI
 from pycrmkit.facade.calendars import CalendarsAPI
+from pycrmkit.facade.campaigns import CampaignsAPI
 from pycrmkit.facade.contacts import ContactsAPI
 from pycrmkit.facade.custom_fields import CustomFieldsAPI
 from pycrmkit.facade.email import EmailAPI
