@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0a3] - 2026-09-30
+
+### Added
+- Added lightweight `CampaignAttributionReference` records linking Campaigns to existing Contact, Organization, Lead or Opportunity entities with normalized source labels and optional external references.
+- Added `CampaignCommunicationLink` records linking Campaigns to existing `CommunicationRecord` objects without triggering delivery behavior.
+- Added `crm.campaigns.add_attribution/remove_attribution/attributions`.
+- Added `crm.campaigns.link_communication/unlink_communication/communication_links/communications`.
+- Added Memory persistence and public events for attribution and communication linkage.
+- Added source and installed-wheel qualification for the new linkage surface.
+
+### Boundary
+- Attribution is reference/provenance only: no weighting, scoring, multi-touch, first-touch or last-touch model is introduced.
+- Communication linkage never sends, queues, renders or retries communications.
+- Email design, advertising management and large-scale marketing delivery remain out of scope.
+
+### Next
+- `1.2.0b1 — SQLAlchemy/PostgreSQL Campaign Persistence`.
+
 ## [1.2.0a2] - 2026-09-30
 
 ### Added

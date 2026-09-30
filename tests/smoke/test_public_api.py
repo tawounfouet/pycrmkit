@@ -8,7 +8,7 @@ def test_shallow_public_imports() -> None:
     assert CRM.__name__ == "CRM"
     assert CRMConfig.__name__ == "CRMConfig"
     assert CRMContext.__name__ == "CRMContext"
-    assert __version__ == "1.2.0a2"
+    assert __version__ == "1.2.0a3"
 
 
 def test_root_public_exports_remain_0_1_compatible() -> None:
@@ -207,5 +207,12 @@ def test_1_2_campaign_facade_surface() -> None:
         "refresh_segment_source",
         "detach_segment_source",
         "segment_sources",
+        "add_attribution",
+        "remove_attribution",
+        "attributions",
+        "link_communication",
+        "unlink_communication",
+        "communication_links",
+        "communications",
     ):
         assert hasattr(crm.campaigns, name)

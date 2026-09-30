@@ -13,6 +13,7 @@ from pycrmkit.storage.memory._state import MemoryStore, _MemoryState
 from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.campaign_audience import MemoryCampaignAudienceRepository
+from pycrmkit.storage.memory.campaign_linkage import MemoryCampaignLinkageRepository
 from pycrmkit.storage.memory.campaigns import MemoryCampaignRepository
 from pycrmkit.storage.memory.communication import MemoryCommunicationRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
@@ -60,6 +61,7 @@ class MemoryUnitOfWork:
         self._communications: MemoryCommunicationRepository | None = None
         self._campaigns: MemoryCampaignRepository | None = None
         self._campaign_audience: MemoryCampaignAudienceRepository | None = None
+        self._campaign_linkage: MemoryCampaignLinkageRepository | None = None
         self._contacts: MemoryContactRepository | None = None
         self._leads: MemoryLeadRepository | None = None
         self._opportunities: MemoryOpportunityRepository | None = None
@@ -103,6 +105,12 @@ class MemoryUnitOfWork:
         self._ensure_active()
         assert self._campaign_audience is not None
         return self._campaign_audience
+
+    @property
+    def campaign_linkage(self) -> MemoryCampaignLinkageRepository:
+        self._ensure_active()
+        assert self._campaign_linkage is not None
+        return self._campaign_linkage
 
     @property
     def contacts(self) -> MemoryContactRepository:
@@ -294,6 +302,7 @@ class MemoryUnitOfWork:
         self._communications = MemoryCommunicationRepository(state)
         self._campaigns = MemoryCampaignRepository(state)
         self._campaign_audience = MemoryCampaignAudienceRepository(state)
+        self._campaign_linkage = MemoryCampaignLinkageRepository(state)
         self._contacts = MemoryContactRepository(state)
         self._leads = MemoryLeadRepository(state)
         self._opportunities = MemoryOpportunityRepository(state)

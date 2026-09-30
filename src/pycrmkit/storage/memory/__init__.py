@@ -4,6 +4,7 @@ from pycrmkit.storage.memory._state import MemoryStore
 from pycrmkit.storage.memory.activities import MemoryActivityRepository
 from pycrmkit.storage.memory.audit import MemoryAuditRepository
 from pycrmkit.storage.memory.campaign_audience import MemoryCampaignAudienceRepository
+from pycrmkit.storage.memory.campaign_linkage import MemoryCampaignLinkageRepository
 from pycrmkit.storage.memory.campaigns import MemoryCampaignRepository
 from pycrmkit.storage.memory.communication import MemoryCommunicationRepository
 from pycrmkit.storage.memory.contacts import MemoryContactRepository
@@ -31,6 +32,7 @@ __all__ = [
     "MemoryActivityRepository",
     "MemoryAuditRepository",
     "MemoryCampaignAudienceRepository",
+    "MemoryCampaignLinkageRepository",
     "MemoryCampaignRepository",
     "MemoryCommunicationRepository",
     "MemoryContactRepository",

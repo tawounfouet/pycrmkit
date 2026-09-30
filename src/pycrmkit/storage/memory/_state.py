@@ -10,6 +10,7 @@ from pycrmkit.activities.entities import Activity, ActivityId
 from pycrmkit.audit.entries import AuditEntry, AuditEntryId
 from pycrmkit.campaigns import Campaign, CampaignId
 from pycrmkit.campaigns.audience import CampaignMember, CampaignSegmentSource
+from pycrmkit.campaigns.linkage import CampaignAttributionReference, CampaignCommunicationLink
 from pycrmkit.communication import (
     CommunicationIntent,
     CommunicationIntentId,
@@ -71,6 +72,14 @@ class _MemoryState:
     ] = field(default_factory=dict)
     campaign_segment_members: dict[
         tuple[CampaignId, SegmentId], tuple[EntityReference, ...]
+    ] = field(default_factory=dict)
+    campaign_attributions: dict[
+        tuple[CampaignId, EntityReference, str, str | None],
+        CampaignAttributionReference,
+    ] = field(default_factory=dict)
+    campaign_communication_links: dict[
+        tuple[CampaignId, CommunicationRecordId],
+        CampaignCommunicationLink,
     ] = field(default_factory=dict)
     contacts: dict[ContactId, Contact] = field(default_factory=dict)
     leads: dict[LeadId, Lead] = field(default_factory=dict)
