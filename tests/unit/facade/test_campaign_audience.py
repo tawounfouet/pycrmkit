@@ -144,3 +144,35 @@ def test_campaign_audience_events_are_public_and_post_commit() -> None:
     crm.campaigns.detach_segment_source(campaign.id, segment.id)
 
     assert emitted == list(event_types)
+
+
+def test_campaign_direct_bulk_membership_is_atomic_and_bounded() -> None:
+    crm = CRM.memory(clock=FixedClock(NOW), webhook_auto_delivery=False)
+    contacts = tuple(
+        crm.contacts.create(display_name=f"Contact {index}")
+        for index in range(3)
+    )
+    references = tuple(
+        EntityReference("contact", contact.id)
+        for contact in contacts
+    )
+    campaign = crm.campaigns.create(key="bulk-audience", name="Bulk Audience")
+
+    added = crm.campaigns.add_members(
+        campaign.id,
+        references,
+        source="import",
+    )
+
+    assert tuple(member.entity for member in added) == references
+    assert crm.campaigns.audience_count(campaign.id) == 3
+    assert crm.campaigns.remove_members(campaign.id, references[:2]) == 2
+    assert crm.campaigns.audience(campaign.id).items == (references[2],)
+
+    with pytest.raises(ValidationError) as duplicate:
+        crm.campaigns.add_members(
+            campaign.id,
+            (references[0], references[0]),
+        )
+
+    assert duplicate.value.code == "campaign.member.batch_duplicate"
