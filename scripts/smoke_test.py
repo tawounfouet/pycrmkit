@@ -71,8 +71,8 @@ SALES_EVENTS = (
 
 def main() -> None:
     version = pycrmkit.__version__
-    if version != "1.2.0a1":
-        raise SystemExit(f"Expected PyCRMKit 1.2.0a1, got {version!r}")
+    if version != "1.2.0a2":
+        raise SystemExit(f"Expected PyCRMKit 1.2.0a2, got {version!r}")
 
     class SmokeImportPersister:
         def persist(self, row: ImportRow) -> PersistResult:
