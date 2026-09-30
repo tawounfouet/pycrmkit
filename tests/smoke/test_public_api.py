@@ -195,5 +195,17 @@ def test_1_2_campaign_facade_surface() -> None:
         "activate",
         "complete",
         "archive",
+        "add_member",
+        "add_members",
+        "remove_member",
+        "remove_members",
+        "members",
+        "audience",
+        "audience_count",
+        "contains",
+        "attach_segment_source",
+        "refresh_segment_source",
+        "detach_segment_source",
+        "segment_sources",
     ):
         assert hasattr(crm.campaigns, name)
