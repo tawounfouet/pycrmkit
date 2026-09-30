@@ -6,6 +6,7 @@ import pytest
 
 from pycrmkit import CRM
 from pycrmkit.core import FixedClock
+from pycrmkit.contacts import ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import InvalidStateError, ValidationError
 from pycrmkit.segments import Predicate, QueryOperator
@@ -94,9 +95,9 @@ def test_segment_and_direct_membership_are_deduplicated_and_detachable() -> None
 def test_campaign_membership_validates_existing_entities_and_archive_state() -> None:
     crm = CRM.memory(clock=FixedClock(NOW), webhook_auto_delivery=False)
     campaign = crm.campaigns.create(key="guardrails", name="Guardrails")
-    missing = EntityReference.parse(
+    missing = EntityReference(
         "contact",
-        "00000000-0000-0000-0000-000000009999",
+        ContactId.parse("00000000-0000-0000-0000-000000009999"),
     )
 
     with pytest.raises(ValidationError) as missing_error:
