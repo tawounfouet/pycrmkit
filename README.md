@@ -146,8 +146,8 @@ pytest
 1.1.0  Segmentation & Sales Task Foundation                                               ✓ stable
 1.2.0a1 Campaign Foundations & Metadata                                                     ✓
 1.2.0a2 Campaign Membership & Segment Sources                                                ✓
-1.2.0a3 Attribution & Communication Linkage                                                   ◀ current
-1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence
+1.2.0a3 Attribution & Communication Linkage                                                   ✓
+1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence                                             ◀ current
 1.2.0b2 Django Campaign Persistence
 1.2.0b3 HTTP + Data Operations Integration
 1.2.0rc1 Campaign Production Qualification
