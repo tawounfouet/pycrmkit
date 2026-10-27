@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 from sqlalchemy import select, update
+from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session
 
 from pycrmkit.campaigns import (
@@ -83,8 +86,10 @@ class SQLAlchemyCampaignRepository:
                 actual=campaign.revision,
             )
 
-        result = self.session.execute(
-            update(CampaignModel)
+        result = cast(
+            CursorResult[Any],
+            self.session.execute(
+                update(CampaignModel)
             .where(
                 CampaignModel.id == str(campaign.id),
                 CampaignModel.revision == current_revision,
@@ -107,7 +112,8 @@ class SQLAlchemyCampaignRepository:
                 created_at=campaign.created_at,
                 updated_at=campaign.updated_at,
             )
-            .execution_options(synchronize_session=False)
+                .execution_options(synchronize_session=False)
+            ),
         )
         if result.rowcount != 1:
             self.session.expire(current)

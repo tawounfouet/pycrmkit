@@ -110,7 +110,6 @@ def test_campaign_repository_search_matches_memory_filter_order_and_pagination(
         name="Archived",
         created_at=NOW + timedelta(minutes=2),
         owner_id=owner,
-        revision=2,
         status=CampaignStatus.ARCHIVED,
         archived_at=archived_at,
     )
