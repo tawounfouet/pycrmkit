@@ -8,6 +8,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from pycrmkit.campaigns import (
+    Campaign,
     CampaignId,
     CampaignMember,
     CampaignSegmentSource,
@@ -19,12 +20,26 @@ from pycrmkit.exceptions import DuplicateError, NotFoundError
 from pycrmkit.segments import SegmentId
 from pycrmkit.storage.sqlalchemy.repositories import (
     SQLAlchemyCampaignAudienceRepository,
+    SQLAlchemyCampaignRepository,
 )
 
 NOW = datetime(2026, 9, 30, 11, tzinfo=UTC)
 CAMPAIGN_ID = CampaignId.parse(
     "00000000-0000-0000-0000-000000000501"
 )
+
+
+def _seed_campaign(session: Session) -> None:
+    SQLAlchemyCampaignRepository(session).save(
+        Campaign(
+            id=CAMPAIGN_ID,
+            created_at=NOW,
+            updated_at=NOW,
+            key="audience-test",
+            name="Audience Test",
+        )
+    )
+    session.flush()
 
 
 def _contact(suffix: int) -> EntityReference:
@@ -76,6 +91,7 @@ def _segment_source(
 def test_direct_members_match_memory_duplicate_batch_remove_and_ordering(
     session: Session,
 ) -> None:
+    _seed_campaign(session)
     repository = SQLAlchemyCampaignAudienceRepository(session)
     first = _member(_contact(511), added_at=NOW + timedelta(minutes=1))
     second = _member(_contact(510), added_at=NOW)
@@ -114,6 +130,7 @@ def test_direct_members_match_memory_duplicate_batch_remove_and_ordering(
 def test_segment_capture_validates_duplicate_count_and_kind_before_mutation(
     session: Session,
 ) -> None:
+    _seed_campaign(session)
     repository = SQLAlchemyCampaignAudienceRepository(session)
     contact = _contact(531)
     source = _segment_source(532, member_count=2)
@@ -143,6 +160,7 @@ def test_segment_capture_validates_duplicate_count_and_kind_before_mutation(
 def test_segment_source_add_replace_list_and_remove_are_atomic_at_repository_boundary(
     session: Session,
 ) -> None:
+    _seed_campaign(session)
     repository = SQLAlchemyCampaignAudienceRepository(session)
     first_member = _contact(541)
     second_member = _contact(542)
@@ -193,6 +211,7 @@ def test_segment_source_add_replace_list_and_remove_are_atomic_at_repository_bou
 def test_segment_sources_are_ordered_by_attached_at_then_segment_id(
     session: Session,
 ) -> None:
+    _seed_campaign(session)
     repository = SQLAlchemyCampaignAudienceRepository(session)
     later = _segment_source(
         552,
@@ -218,6 +237,7 @@ def test_segment_sources_are_ordered_by_attached_at_then_segment_id(
 def test_final_audience_is_deduplicated_union_with_exact_count_contains_and_paging(
     session: Session,
 ) -> None:
+    _seed_campaign(session)
     repository = SQLAlchemyCampaignAudienceRepository(session)
     shared = _contact(561)
     direct_only = _contact(563)

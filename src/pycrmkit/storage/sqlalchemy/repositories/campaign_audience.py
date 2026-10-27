@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy import delete, exists, func, or_, select
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.selectable import Subquery
 
 from pycrmkit.campaigns import (
     CampaignId,
@@ -371,7 +372,7 @@ class SQLAlchemyCampaignAudienceRepository:
         )
 
     @staticmethod
-    def _audience_relation(campaign_id: CampaignId):
+    def _audience_relation(campaign_id: CampaignId) -> Subquery:
         direct = select(
             CampaignMemberModel.entity_kind.label("entity_kind"),
             CampaignMemberModel.entity_id.label("entity_id"),
