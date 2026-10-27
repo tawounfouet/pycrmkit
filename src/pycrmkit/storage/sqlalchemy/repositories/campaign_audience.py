@@ -18,7 +18,6 @@ from pycrmkit.segments import SegmentId
 from pycrmkit.storage.sqlalchemy.campaign_codec import (
     campaign_member_from_model,
     campaign_member_to_model,
-    campaign_segment_member_from_model,
     campaign_segment_member_to_model,
     campaign_segment_source_from_model,
     campaign_segment_source_to_model,
