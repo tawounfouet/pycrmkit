@@ -12,6 +12,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from pycrmkit.audit import AuditEntry, AuditEntryId
+from pycrmkit.campaigns import (
+    CampaignAudienceUnitOfWork,
+    CampaignLinkageUnitOfWork,
+    CampaignUnitOfWork,
+)
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.core.events import EventId, EventType
 from pycrmkit.core.pagination import OffsetPageRequest
@@ -101,6 +106,9 @@ def test_all_repositories_share_one_session(
     with SQLAlchemyUnitOfWork(session_factory) as uow:
         repositories = (
             uow.activities,
+            uow.campaigns,
+            uow.campaign_audience,
+            uow.campaign_linkage,
             uow.communications,
             uow.contacts,
             uow.leads,
@@ -350,3 +358,24 @@ def test_contact_merge_foundation_coordinates_related_state_atomically(
         assert archived.archived_at == NOW
         assert uow.tags.list_for_entity(duplicate_ref, OffsetPageRequest()).total == 0
         assert uow.tags.list_for_entity(survivor_ref, OffsetPageRequest()).items == (tag,)
+
+
+
+def test_campaign_uow_capabilities_are_available_only_while_active(
+    session_factory: sessionmaker[Session],
+) -> None:
+    uow = SQLAlchemyUnitOfWork(session_factory)
+
+    with pytest.raises(InvalidStateError):
+        _ = uow.campaigns
+    with pytest.raises(InvalidStateError):
+        _ = uow.campaign_audience
+    with pytest.raises(InvalidStateError):
+        _ = uow.campaign_linkage
+
+    with uow:
+        assert isinstance(uow, CampaignUnitOfWork)
+        assert isinstance(uow, CampaignAudienceUnitOfWork)
+        assert isinstance(uow, CampaignLinkageUnitOfWork)
+        assert uow.campaigns.session is uow.campaign_audience.session
+        assert uow.campaigns.session is uow.campaign_linkage.session
