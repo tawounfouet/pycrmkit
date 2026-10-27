@@ -71,3 +71,79 @@ def upgrade() -> None:
     )
 
 
+    op.create_table(
+        "pycrmkit_campaign_segment_sources",
+        sa.Column("campaign_id", sa.String(length=36), nullable=False),
+        sa.Column("segment_id", sa.String(length=36), nullable=False),
+        sa.Column("segment_revision", sa.Integer(), nullable=False),
+        sa.Column("entity_kind", sa.String(length=64), nullable=False),
+        sa.Column("attached_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("captured_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("member_count", sa.Integer(), nullable=False),
+        sa.Column("actor_id", sa.String(length=255), nullable=True),
+        sa.Column("metadata", sa.JSON(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["campaign_id"],
+            ["pycrmkit_campaigns.id"],
+            name=op.f(
+                "fk_pycrmkit_campaign_segment_sources_campaign_id_pycrmkit_campaigns"
+            ),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint(
+            "campaign_id",
+            "segment_id",
+            name=op.f("pk_pycrmkit_campaign_segment_sources"),
+        ),
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_segment_sources_segment_id",
+        "pycrmkit_campaign_segment_sources",
+        ["segment_id"],
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_segment_sources_campaign_attached",
+        "pycrmkit_campaign_segment_sources",
+        ["campaign_id", "attached_at"],
+    )
+
+    op.create_table(
+        "pycrmkit_campaign_segment_members",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("campaign_id", sa.String(length=36), nullable=False),
+        sa.Column("segment_id", sa.String(length=36), nullable=False),
+        sa.Column("entity_kind", sa.String(length=64), nullable=False),
+        sa.Column("entity_id", sa.String(length=36), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["campaign_id", "segment_id"],
+            [
+                "pycrmkit_campaign_segment_sources.campaign_id",
+                "pycrmkit_campaign_segment_sources.segment_id",
+            ],
+            name="fk_pycrmkit_campaign_segment_members_source",
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint(
+            "id",
+            name=op.f("pk_pycrmkit_campaign_segment_members"),
+        ),
+        sa.UniqueConstraint(
+            "campaign_id",
+            "segment_id",
+            "entity_kind",
+            "entity_id",
+            name="uq_pycrmkit_campaign_segment_members_target",
+        ),
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_segment_members_source",
+        "pycrmkit_campaign_segment_members",
+        ["campaign_id", "segment_id"],
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_segment_members_entity",
+        "pycrmkit_campaign_segment_members",
+        ["entity_kind", "entity_id"],
+    )
+
+
