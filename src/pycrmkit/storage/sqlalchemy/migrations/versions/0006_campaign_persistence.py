@@ -147,3 +147,107 @@ def upgrade() -> None:
     )
 
 
+    op.create_table(
+        "pycrmkit_campaign_attributions",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("campaign_id", sa.String(length=36), nullable=False),
+        sa.Column("target_kind", sa.String(length=64), nullable=False),
+        sa.Column("target_id", sa.String(length=36), nullable=False),
+        sa.Column("source", sa.String(length=120), nullable=False),
+        sa.Column("external_ref", sa.String(length=512), nullable=False),
+        sa.Column("recorded_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("actor_id", sa.String(length=255), nullable=True),
+        sa.Column("metadata", sa.JSON(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["campaign_id"],
+            ["pycrmkit_campaigns.id"],
+            name=op.f(
+                "fk_pycrmkit_campaign_attributions_campaign_id_pycrmkit_campaigns"
+            ),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint(
+            "id",
+            name=op.f("pk_pycrmkit_campaign_attributions"),
+        ),
+        sa.UniqueConstraint(
+            "campaign_id",
+            "target_kind",
+            "target_id",
+            "source",
+            "external_ref",
+            name="uq_pycrmkit_campaign_attributions_reference",
+        ),
+    )
+    op.create_index(
+        op.f("ix_pycrmkit_campaign_attributions_campaign_id"),
+        "pycrmkit_campaign_attributions",
+        ["campaign_id"],
+    )
+    op.create_index(
+        op.f("ix_pycrmkit_campaign_attributions_source"),
+        "pycrmkit_campaign_attributions",
+        ["source"],
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_attributions_target",
+        "pycrmkit_campaign_attributions",
+        ["target_kind", "target_id"],
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_attributions_campaign_recorded",
+        "pycrmkit_campaign_attributions",
+        ["campaign_id", "recorded_at"],
+    )
+
+    op.create_table(
+        "pycrmkit_campaign_communication_links",
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("campaign_id", sa.String(length=36), nullable=False),
+        sa.Column("communication_id", sa.String(length=36), nullable=False),
+        sa.Column("linked_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("role", sa.String(length=120), nullable=False),
+        sa.Column("actor_id", sa.String(length=255), nullable=True),
+        sa.Column("metadata", sa.JSON(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["campaign_id"],
+            ["pycrmkit_campaigns.id"],
+            name=op.f(
+                "fk_pycrmkit_campaign_communication_links_campaign_id_pycrmkit_campaigns"
+            ),
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint(
+            "id",
+            name=op.f("pk_pycrmkit_campaign_communication_links"),
+        ),
+        sa.UniqueConstraint(
+            "campaign_id",
+            "communication_id",
+            name="uq_pycrmkit_campaign_communication_links_record",
+        ),
+    )
+    op.create_index(
+        op.f("ix_pycrmkit_campaign_communication_links_campaign_id"),
+        "pycrmkit_campaign_communication_links",
+        ["campaign_id"],
+    )
+    op.create_index(
+        op.f("ix_pycrmkit_campaign_communication_links_communication_id"),
+        "pycrmkit_campaign_communication_links",
+        ["communication_id"],
+    )
+    op.create_index(
+        "ix_pycrmkit_campaign_communication_links_campaign_linked",
+        "pycrmkit_campaign_communication_links",
+        ["campaign_id", "linked_at"],
+    )
+
+
+def downgrade() -> None:
+    op.drop_table("pycrmkit_campaign_communication_links")
+    op.drop_table("pycrmkit_campaign_attributions")
+    op.drop_table("pycrmkit_campaign_segment_members")
+    op.drop_table("pycrmkit_campaign_segment_sources")
+    op.drop_table("pycrmkit_campaign_members")
+    op.drop_table("pycrmkit_campaigns")
