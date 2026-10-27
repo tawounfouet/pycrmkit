@@ -24,6 +24,7 @@ jobs:
           --health-retries 10
     env:
       PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_migrations
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit:pycrmkit@localhost:5432/pycrmkit_migrations
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,7 +33,7 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[migrations,dev]"
-      - run: pytest -m postgresql tests/migrations -q
+      - run: pytest -m postgresql tests/migrations tests/qualification/test_campaign_migration_qualification.py -q
       - name: Direct Alembic CLI lifecycle
         shell: bash
         run: |
