@@ -6,6 +6,14 @@ from pycrmkit.storage.sqlalchemy.models.activity import (
     ActivityReferenceModel,
 )
 from pycrmkit.storage.sqlalchemy.models.audit import AuditEntryModel
+from pycrmkit.storage.sqlalchemy.models.campaign import (
+    CampaignAttributionModel,
+    CampaignCommunicationLinkModel,
+    CampaignMemberModel,
+    CampaignModel,
+    CampaignSegmentMemberModel,
+    CampaignSegmentSourceModel,
+)
 from pycrmkit.storage.sqlalchemy.models.communication import (
     CommunicationCounterpartyModel,
     CommunicationIntentModel,
@@ -63,6 +71,12 @@ __all__ = [
     "ActivityParticipantModel",
     "ActivityReferenceModel",
     "AuditEntryModel",
+    "CampaignAttributionModel",
+    "CampaignCommunicationLinkModel",
+    "CampaignMemberModel",
+    "CampaignModel",
+    "CampaignSegmentMemberModel",
+    "CampaignSegmentSourceModel",
     "CommunicationCounterpartyModel",
     "CommunicationIntentModel",
     "CommunicationIntentReferenceModel",
