@@ -58,7 +58,7 @@ def test_upgrade_empty_database_to_head_matches_metadata(
 ) -> None:
     command.upgrade(_config(), "head")
 
-    assert _current_revision(migration_engine) == "0005"
+    assert _current_revision(migration_engine) == "0006"
     assert _application_tables(migration_engine) == set(Base.metadata.tables)
     assert _schema_diffs(migration_engine) == []
 
@@ -74,7 +74,7 @@ def test_baseline_downgrade_to_base_is_destructive_and_reversible(
     assert _current_revision(migration_engine) is None
 
     command.upgrade(config, "head")
-    assert _current_revision(migration_engine) == "0005"
+    assert _current_revision(migration_engine) == "0006"
     assert _schema_diffs(migration_engine) == []
 
 
@@ -99,7 +99,7 @@ def test_previous_060b3_schema_upgrades_to_head_without_data_loss(
         uow.commit()
 
     command.upgrade(config, "head")
-    assert _current_revision(migration_engine) == "0005"
+    assert _current_revision(migration_engine) == "0006"
     assert _schema_diffs(migration_engine) == []
 
     with SQLAlchemyUnitOfWork(factory) as uow:
@@ -210,4 +210,33 @@ def test_migration_version_table_tracks_head(
             text("SELECT version_num FROM alembic_version")
         ).scalars().all()
 
-    assert rows == ["0005"]
+    assert rows == ["0006"]
+
+
+
+def test_0005_upgrades_to_0006_and_downgrades_without_touching_existing_tables(
+    migration_engine: Engine,
+) -> None:
+    config = _config()
+    command.upgrade(config, "0005")
+    before = _application_tables(migration_engine)
+    assert _current_revision(migration_engine) == "0005"
+    assert "pycrmkit_campaigns" not in before
+
+    command.upgrade(config, "0006")
+    after = _application_tables(migration_engine)
+    assert _current_revision(migration_engine) == "0006"
+    assert _schema_diffs(migration_engine) == []
+    assert before < after
+    assert {
+        "pycrmkit_campaigns",
+        "pycrmkit_campaign_members",
+        "pycrmkit_campaign_segment_sources",
+        "pycrmkit_campaign_segment_members",
+        "pycrmkit_campaign_attributions",
+        "pycrmkit_campaign_communication_links",
+    } <= after
+
+    command.downgrade(config, "0005")
+    assert _current_revision(migration_engine) == "0005"
+    assert _application_tables(migration_engine) == before
