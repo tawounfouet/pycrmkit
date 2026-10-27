@@ -183,7 +183,7 @@ alembic current
 alembic check
 ```
 
-The current development head is revision `0005 — Segmentation persistence`.
+The current development head is revision `0006 — Campaign persistence`.
 
 `Base.metadata.create_all(...)` remains useful for tests and local
 experimentation, but it is no longer the production schema lifecycle.
@@ -263,3 +263,42 @@ memberships and SavedQuery revision history.
 `SQLAlchemySegmentQueryExecutor` compiles the provider-neutral query AST into
 database-side SQL. The ORM remains an adapter implementation detail; the public
 facade and domain contracts remain unchanged.
+
+
+
+## 1.2 Campaign persistence
+
+From `1.2.0b1`, SQLAlchemy/PostgreSQL persists the complete Campaign surface
+without changing the public facade.
+
+~~~text
+0005 segmentation_persistence
+  ↓
+0006 campaign_persistence
+~~~
+
+Revision `0006` creates:
+
+~~~text
+pycrmkit_campaigns
+pycrmkit_campaign_members
+pycrmkit_campaign_segment_sources
+pycrmkit_campaign_segment_members
+pycrmkit_campaign_attributions
+pycrmkit_campaign_communication_links
+~~~
+
+The migration is additive and does not alter existing V1 or 1.1 tables.
+
+`SQLAlchemyUnitOfWork` exposes `campaigns`, `campaign_audience` and
+`campaign_linkage`, all bound to the same Session as Audit, Communication,
+Segmentation and the rest of the CRM persistence surface.
+
+Campaign revision changes use SQL compare-and-swap. Segment source captures
+remain transactionally atomic, and attribution references normalize an absent
+external reference to a non-null persistence representation so PostgreSQL
+uniqueness matches the Memory contract.
+
+Ownership foreign keys exist only inside the Campaign-owned table graph.
+Segment IDs, CommunicationRecord IDs and generic CRM entity references remain
+cross-aggregate references without database foreign keys.

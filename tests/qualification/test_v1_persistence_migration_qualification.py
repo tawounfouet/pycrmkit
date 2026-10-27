@@ -118,10 +118,12 @@ def test_v1_fixture_survives_current_1x_migration_head(
 ) -> None:
     database_url = os.environ[DATABASE_ENV]
     config = _alembic_config(database_url)
+
+    _reset_schema(production_engine)
+    command.upgrade(config, "0005")
     factory = _session_factory(production_engine)
 
     assert _current_revision(production_engine) == "0005"
-    assert _schema_diffs(production_engine) == []
 
     fixture = Contact(
         id=ContactId(UUID("00000000-0000-4000-8000-00000000a001")),
@@ -139,7 +141,7 @@ def test_v1_fixture_survives_current_1x_migration_head(
     # Later 1.x migrations must preserve V1 fixture data while evolving schema.
     command.upgrade(config, "head")
 
-    assert _current_revision(production_engine) == "0005"
+    assert _current_revision(production_engine) == "0006"
     assert _schema_diffs(production_engine) == []
     with SQLAlchemyUnitOfWork(factory) as uow:
         assert uow.contacts.get(fixture.id) == fixture

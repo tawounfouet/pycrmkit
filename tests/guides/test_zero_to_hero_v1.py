@@ -4600,20 +4600,23 @@ def test_zero_to_hero_migrations_packaged_history_example() -> None:
     script = ScriptDirectory.from_config(config)
 
     assert config.get_main_option("script_location") == SCRIPT_LOCATION
-    assert script.get_current_head() == "0005"
+    assert script.get_current_head() == "0006"
 
+    revision_0006 = script.get_revision("0006")
     revision_0005 = script.get_revision("0005")
     revision_0004 = script.get_revision("0004")
     revision_0003 = script.get_revision("0003")
     revision_0002 = script.get_revision("0002")
     revision_0001 = script.get_revision("0001")
 
+    assert revision_0006 is not None
     assert revision_0005 is not None
     assert revision_0004 is not None
     assert revision_0003 is not None
     assert revision_0002 is not None
     assert revision_0001 is not None
 
+    assert revision_0006.down_revision == "0005"
     assert revision_0005.down_revision == "0004"
     assert revision_0004.down_revision == "0003"
     assert revision_0003.down_revision == "0002"
@@ -4626,7 +4629,7 @@ def test_zero_to_hero_migrations_packaged_history_example() -> None:
             base="base",
             head="heads",
         )
-    ) == ("0005", "0004", "0003", "0002", "0001")
+    ) == ("0006", "0005", "0004", "0003", "0002", "0001")
 
 
 def test_zero_to_hero_migrations_explicit_database_url_example() -> None:

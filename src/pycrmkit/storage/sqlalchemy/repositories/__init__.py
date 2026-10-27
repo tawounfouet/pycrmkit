@@ -6,6 +6,15 @@ from pycrmkit.storage.sqlalchemy.repositories.activities import (
 from pycrmkit.storage.sqlalchemy.repositories.audit import (
     SQLAlchemyAuditRepository,
 )
+from pycrmkit.storage.sqlalchemy.repositories.campaign_audience import (
+    SQLAlchemyCampaignAudienceRepository,
+)
+from pycrmkit.storage.sqlalchemy.repositories.campaign_linkage import (
+    SQLAlchemyCampaignLinkageRepository,
+)
+from pycrmkit.storage.sqlalchemy.repositories.campaigns import (
+    SQLAlchemyCampaignRepository,
+)
 from pycrmkit.storage.sqlalchemy.repositories.communication import (
     SQLAlchemyCommunicationRepository,
 )
@@ -60,6 +69,9 @@ from pycrmkit.storage.sqlalchemy.repositories.webhooks import (
 __all__ = [
     "SQLAlchemyActivityRepository",
     "SQLAlchemyAuditRepository",
+    "SQLAlchemyCampaignAudienceRepository",
+    "SQLAlchemyCampaignLinkageRepository",
+    "SQLAlchemyCampaignRepository",
     "SQLAlchemyCommunicationRepository",
     "SQLAlchemyContactRepository",
     "SQLAlchemyCustomFieldRepository",

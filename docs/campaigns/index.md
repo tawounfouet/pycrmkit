@@ -66,11 +66,25 @@ Lifecycle mutations are revisioned and can use optimistic preconditions.
 
 ## Persistence boundary
 
-1.2.0a1 ships the semantic reference implementation through the Memory adapter.
+Memory remains the semantic reference implementation for Campaign behavior.
 
-SQLAlchemy/PostgreSQL and Django Campaign persistence are intentionally
-deferred to later 1.2 beta milestones. Unsupported adapters fail closed through
-the Campaign capability protocol.
+From **1.2.0b1**, the complete Campaign contract is also available through the
+SQLAlchemy/PostgreSQL adapter:
+
+~~~text
+Campaign
+├── metadata + lifecycle + revision
+├── direct members
+├── Segment source provenance
+├── captured Segment members
+├── attribution references
+└── communication links
+~~~
+
+All Campaign SQLAlchemy repositories participate in the existing
+`SQLAlchemyUnitOfWork`; repository methods do not commit independently.
+
+Django Campaign persistence remains deferred to `1.2.0b2`.
 
 ## Explicit boundary
 
@@ -188,3 +202,51 @@ records = crm.campaigns.communications(campaign.id)
 
 Communication linkage never sends or queues a message. Delivery remains owned
 by the Communication domain and provider adapters.
+
+
+
+## SQLAlchemy/PostgreSQL persistence — 1.2.0b1
+
+The public facade does not change when switching from Memory to SQLAlchemy.
+
+~~~text
+crm.campaigns
+      ↓
+Campaign services
+      ↓
+Campaign repository contracts
+      ↓
+SQLAlchemy Campaign adapters
+      ↓
+PostgreSQL
+~~~
+
+Persistence uses six Campaign-owned tables:
+
+~~~text
+pycrmkit_campaigns
+pycrmkit_campaign_members
+pycrmkit_campaign_segment_sources
+pycrmkit_campaign_segment_members
+pycrmkit_campaign_attributions
+pycrmkit_campaign_communication_links
+~~~
+
+Campaign updates use revision compare-and-swap so concurrent stale writers
+cannot silently overwrite a committed revision.
+
+Final audience queries are computed from a SQL `UNION` of direct members and
+captured Segment members. The adapter does not persist a denormalized
+"final audience" table.
+
+Alembic head for the SQLAlchemy adapter is now:
+
+~~~text
+0005_segmentation_persistence
+          ↓
+0006_campaign_persistence
+~~~
+
+Revision `0006` is additive and preserves existing 1.1 data. Cross-aggregate
+references to Segment, CommunicationRecord, Contact, Organization, Lead and
+Opportunity remain reference-only rather than database foreign keys.

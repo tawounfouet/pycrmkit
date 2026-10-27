@@ -17,6 +17,9 @@ from pycrmkit.storage.sqlalchemy.errors import translate_sqlalchemy_error
 from pycrmkit.storage.sqlalchemy.repositories import (
     SQLAlchemyActivityRepository,
     SQLAlchemyAuditRepository,
+    SQLAlchemyCampaignAudienceRepository,
+    SQLAlchemyCampaignLinkageRepository,
+    SQLAlchemyCampaignRepository,
     SQLAlchemyCommunicationRepository,
     SQLAlchemyContactRepository,
     SQLAlchemyCustomFieldRepository,
@@ -65,6 +68,9 @@ class SQLAlchemyUnitOfWork:
 
         self._activities: SQLAlchemyActivityRepository | None = None
         self._communications: SQLAlchemyCommunicationRepository | None = None
+        self._campaigns: SQLAlchemyCampaignRepository | None = None
+        self._campaign_audience: SQLAlchemyCampaignAudienceRepository | None = None
+        self._campaign_linkage: SQLAlchemyCampaignLinkageRepository | None = None
         self._contacts: SQLAlchemyContactRepository | None = None
         self._leads: SQLAlchemyLeadRepository | None = None
         self._opportunities: SQLAlchemyOpportunityRepository | None = None
@@ -89,6 +95,24 @@ class SQLAlchemyUnitOfWork:
         self._ensure_active()
         assert self._activities is not None
         return self._activities
+
+    @property
+    def campaigns(self) -> SQLAlchemyCampaignRepository:
+        self._ensure_active()
+        assert self._campaigns is not None
+        return self._campaigns
+
+    @property
+    def campaign_audience(self) -> SQLAlchemyCampaignAudienceRepository:
+        self._ensure_active()
+        assert self._campaign_audience is not None
+        return self._campaign_audience
+
+    @property
+    def campaign_linkage(self) -> SQLAlchemyCampaignLinkageRepository:
+        self._ensure_active()
+        assert self._campaign_linkage is not None
+        return self._campaign_linkage
 
     @property
     def communications(self) -> SQLAlchemyCommunicationRepository:
@@ -298,6 +322,9 @@ class SQLAlchemyUnitOfWork:
 
     def _bind_repositories(self, session: Session) -> None:
         self._activities = SQLAlchemyActivityRepository(session)
+        self._campaigns = SQLAlchemyCampaignRepository(session)
+        self._campaign_audience = SQLAlchemyCampaignAudienceRepository(session)
+        self._campaign_linkage = SQLAlchemyCampaignLinkageRepository(session)
         self._communications = SQLAlchemyCommunicationRepository(session)
         self._contacts = SQLAlchemyContactRepository(session)
         self._leads = SQLAlchemyLeadRepository(session)
@@ -320,6 +347,9 @@ class SQLAlchemyUnitOfWork:
 
     def _unbind_repositories(self) -> None:
         self._activities = None
+        self._campaigns = None
+        self._campaign_audience = None
+        self._campaign_linkage = None
         self._communications = None
         self._contacts = None
         self._leads = None
