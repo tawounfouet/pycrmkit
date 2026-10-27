@@ -9,6 +9,9 @@ from pycrmkit.storage.sqlalchemy.repositories.audit import (
 from pycrmkit.storage.sqlalchemy.repositories.campaign_audience import (
     SQLAlchemyCampaignAudienceRepository,
 )
+from pycrmkit.storage.sqlalchemy.repositories.campaign_linkage import (
+    SQLAlchemyCampaignLinkageRepository,
+)
 from pycrmkit.storage.sqlalchemy.repositories.campaigns import (
     SQLAlchemyCampaignRepository,
 )
@@ -67,6 +70,7 @@ __all__ = [
     "SQLAlchemyActivityRepository",
     "SQLAlchemyAuditRepository",
     "SQLAlchemyCampaignAudienceRepository",
+    "SQLAlchemyCampaignLinkageRepository",
     "SQLAlchemyCampaignRepository",
     "SQLAlchemyCommunicationRepository",
     "SQLAlchemyContactRepository",
