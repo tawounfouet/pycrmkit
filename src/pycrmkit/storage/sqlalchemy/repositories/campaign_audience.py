@@ -148,7 +148,9 @@ class SQLAlchemyCampaignAudienceRepository:
             )
 
         self._validate_capture(source, members)
-        self.session.add(campaign_segment_source_to_model(source))
+        source_model = campaign_segment_source_to_model(source)
+        self.session.add(source_model)
+        self.session.flush((source_model,))
         self.session.add_all(
             [
                 campaign_segment_member_to_model(
