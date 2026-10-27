@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.2.0b1] - 2026-10-27
+
+### Added
+- Added SQLAlchemy/PostgreSQL persistence for the complete Campaign contract introduced in `1.2.0a1` through `1.2.0a3`.
+- Added SQLAlchemy repositories for Campaign metadata/lifecycle, direct audience membership, materialized Segment sources, attribution references and communication links.
+- Added Campaign capabilities to `SQLAlchemyUnitOfWork` so the existing `crm.campaigns` facade runs unchanged against SQLAlchemy.
+- Added Alembic revision `0006_campaign_persistence` in both development and packaged migration trees.
+- Added mirrored Memory/SQLAlchemy Campaign repository contracts and live PostgreSQL concurrency, rollback, timezone and JSON qualification.
+
+### Persistence semantics
+- Campaign revision updates use an atomic SQL compare-and-swap and reject stale writers with `campaign.revision.conflict`.
+- Final audience is the SQL `UNION` of direct and captured Segment members, preserving de-duplication and exact count/pagination semantics.
+- Segment-source capture replacement remains atomic inside one Unit of Work transaction.
+- Attribution `external_ref=None` is persisted with a non-null normalized representation so PostgreSQL uniqueness matches the Memory logical key.
+- Cross-aggregate references to Segments, communications and CRM entities remain reference-only and do not gain database foreign keys.
+
+### Migrations
+- Current Alembic development head is now `0006`.
+- `0005 → 0006`, `0006 → 0005`, fresh-head upgrade and metadata-drift checks are qualified while preserving stable 1.1 data.
+- Historical 1.1 release manifests, migration-head evidence and frozen checksums remain unchanged.
+
+### Next
+- `1.2.0b2 — Django Campaign Persistence`.
+
 ## [1.2.0a3] - 2026-09-30
 
 ### Added
