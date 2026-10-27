@@ -15,7 +15,7 @@ from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, create_engine, inspect, text
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.storage.sqlalchemy import Base, SQLAlchemyUnitOfWork
