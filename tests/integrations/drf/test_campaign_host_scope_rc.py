@@ -8,12 +8,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from types import SimpleNamespace
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from django.test import override_settings
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from pycrmkit import CRM
+from pycrmkit.campaigns import CampaignId
 from pycrmkit.core.ids import EntityId
 from pycrmkit.integrations.campaign_security import (
     CampaignPrincipal,
@@ -123,7 +124,7 @@ def test_drf_denies_wrong_principal_resource_scope_before_factory() -> None:
             assert "Bob private" not in str(result.data)
             assert "total" not in result.data and "count" not in result.data
 
-    assert crm.campaigns.get(crm.campaigns.list().items[1].id).revision == 1
+    assert crm.campaigns.get(CampaignId(UUID(refs["bob"]))).revision == 1
 
 
 def test_drf_verified_actor_approved_tenant_scope() -> None:
