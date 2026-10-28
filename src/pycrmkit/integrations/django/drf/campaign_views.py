@@ -18,6 +18,9 @@ from rest_framework.response import Response
 
 from pycrmkit.campaigns import CampaignId, CampaignQuery, CampaignStatus
 from pycrmkit.core.ids import EntityId
+from pycrmkit.integrations.django.drf.campaign_audience_views import (
+    CampaignAudienceActions,
+)
 from pycrmkit.integrations.django.drf.campaign_security import get_campaign_crm
 from pycrmkit.integrations.django.drf.campaign_serializers import (
     CampaignCreateSerializer,
@@ -51,7 +54,7 @@ def _campaign_response(value: Any) -> Response:
     return Response(CampaignResponseSerializer(campaign_payload(value)).data)
 
 
-class CampaignViewSet(CRMViewSet):
+class CampaignViewSet(CampaignAudienceActions, CRMViewSet):
     """Campaign HTTP endpoints guarded by application-host authentication."""
 
     def handle_exception(self, exc: Exception) -> Response:
