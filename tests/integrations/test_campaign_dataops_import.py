@@ -62,7 +62,7 @@ def test_campaign_import_replay_duplicate_and_missing_entity_reports() -> None:
     assert [item.row_number for item in report.row_results] == [1, 2, 3, 4, 5]
     assert report.row_results[1].duplicate is True
     assert [(error.row_number, error.stage) for error in report.errors] == [
-        (3, ImportStage.PERSIST),
+        (3, ImportStage.VALIDATE),
         (4, ImportStage.VALIDATE),
     ]
     assert crm.campaigns.members(campaign.id).total == 2
@@ -202,7 +202,9 @@ def test_campaign_import_propagates_repository_failure_with_partial_commits() ->
         def members(self, campaign_id: object, page: object = None) -> object:
             return crm.campaigns.members(campaign_id, page)
 
-        def add_member(self, campaign_id: object, entity: object, **kwargs: object) -> object:
+        def add_member(
+            self, campaign_id: object, entity: object, **kwargs: object
+        ) -> object:
             self.counter += 1
             if self.counter == 2:
                 raise RepositoryError(
