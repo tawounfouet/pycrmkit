@@ -22,7 +22,9 @@ from pycrmkit.campaigns import (
     CampaignUpdate,
 )
 from pycrmkit.core.ids import EntityId
-from pycrmkit.core.references import EntityReference
+from pycrmkit.integrations.campaign_payload_validation import (
+    validate_campaign_metadata,
+)
 from pycrmkit.integrations.django.drf.segmentation_serializers import (
     EntityReferenceSerializer,
 )
@@ -45,6 +47,14 @@ class StrictCampaignSerializer(_SerializerBase):
                     {key: ["unknown field"] for key in sorted(extra)}
                 )
         return cast(dict[str, Any], super().to_internal_value(data))
+
+    def validate_metadata(self, value: Any) -> dict[str, Any]:
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("metadata must be a JSON object")
+        try:
+            return validate_campaign_metadata(value)
+        except ValueError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
 
 
 class AwareDateTimeField(serializers.DateTimeField):
