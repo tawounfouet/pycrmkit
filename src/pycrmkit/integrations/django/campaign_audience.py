@@ -12,7 +12,7 @@ from pycrmkit.exceptions import DuplicateError, NotFoundError
 from pycrmkit.integrations.django.campaign_codec import (
     campaign_member_from_model,
     campaign_member_to_model,
-    campaign_segment_member_from_model,
+    entity_reference,
     campaign_segment_member_to_model,
     campaign_segment_source_from_model,
     campaign_segment_source_to_model,
@@ -165,9 +165,7 @@ class DjangoCampaignAudienceRepository:
         page_rows = rows[page.offset : page.offset + page.limit]
         return Page(
             items=tuple(
-                campaign_segment_member_from_model(
-                    _ReferenceRow(kind, identifier)
-                )
+                entity_reference(kind, identifier)
                 for kind, identifier in page_rows
             ),
             limit=page.limit,
@@ -262,14 +260,6 @@ class DjangoCampaignAudienceRepository:
             raise ValueError(
                 "Campaign Segment capture contains an incompatible entity kind"
             )
-
-
-class _ReferenceRow:
-    """Minimal duck-typed row for the same reference hydration codec."""
-
-    def __init__(self, entity_kind: str, entity_id: str) -> None:
-        self.entity_kind = entity_kind
-        self.entity_id = entity_id
 
 
 __all__ = ["DjangoCampaignAudienceRepository"]
