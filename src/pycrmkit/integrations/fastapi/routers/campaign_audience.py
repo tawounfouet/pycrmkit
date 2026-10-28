@@ -35,8 +35,14 @@ _AUTH_ERRORS: dict[int | str, dict[str, Any]] = {
     401: {"description": "Authenticated Campaign principal required"},
     403: {"description": "Campaign permission denied"},
 }
-_LIST_ERRORS = {**LIST_ERROR_RESPONSES, **_AUTH_ERRORS}
-_MUTATION_ERRORS = {**MUTATION_ERROR_RESPONSES, **_AUTH_ERRORS}
+_LIST_ERRORS: dict[int | str, dict[str, Any]] = {
+    **LIST_ERROR_RESPONSES,
+    **_AUTH_ERRORS,
+}
+_MUTATION_ERRORS: dict[int | str, dict[str, Any]] = {
+    **MUTATION_ERROR_RESPONSES,
+    **_AUTH_ERRORS,
+}
 
 
 def create_campaign_audience_router(access: CampaignHTTPAccess) -> APIRouter:
