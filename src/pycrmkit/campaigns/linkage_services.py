@@ -130,10 +130,11 @@ class CampaignLinkageService:
         campaign_id: CampaignId,
         page: OffsetPageRequest | None = None,
     ) -> Page[CommunicationRecord]:
+        communications = self._require_communications()
         request = page or OffsetPageRequest()
         links = self.communication_links(campaign_id, request)
         records = tuple(
-            self._require_communications().get_record(link.communication_id)
+            communications.get_record(link.communication_id)
             for link in links.items
         )
         return Page(
