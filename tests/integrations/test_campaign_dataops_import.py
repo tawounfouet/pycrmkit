@@ -15,7 +15,7 @@ from pycrmkit.campaigns import (
     iter_campaign_audience_records,
 )
 from pycrmkit.core.references import EntityReference
-from pycrmkit.exceptions import RepositoryError, ValidationError
+from pycrmkit.exceptions import DuplicateError, RepositoryError, ValidationError
 from pycrmkit.importers import (
     CSVReader,
     FieldMapping,
@@ -250,3 +250,45 @@ def test_campaign_audience_export_excludes_snapshot_provenance() -> None:
         "entity_kind": "contact",
         "entity_id": str(person.id),
     }]
+
+
+def test_campaign_import_does_not_misreport_concurrent_unique_conflict() -> None:
+    crm = CRM.memory(webhook_auto_delivery=False)
+    contact = crm.contacts.create(display_name="Racer")
+    campaign = crm.campaigns.create(key="race-import", name="Race")
+
+    class RacingFacade:
+        def get(self, campaign_id: object) -> object:
+            return crm.campaigns.get(campaign_id)
+
+        def members(self, campaign_id: object, page: object = None) -> object:
+            return crm.campaigns.members(campaign_id, page)
+
+        def add_member(
+            self, campaign_id: object, entity: object, **kwargs: object
+        ) -> object:
+            raise DuplicateError(
+                "concurrent insert",
+                code="campaign.member.duplicate",
+            )
+
+    with pytest.raises(DuplicateError):
+        import_campaign_members(
+            RacingFacade(),
+            campaign.id,
+            IterableReader([_row(contact.id)]),
+        )
+    assert crm.campaigns.members(campaign.id).total == 0
+
+
+def test_campaign_import_invalid_json_fails_before_any_membership_write() -> None:
+    crm = CRM.memory(webhook_auto_delivery=False)
+    campaign = crm.campaigns.create(key="bad-json", name="Invalid JSON")
+    with pytest.raises(ValidationError) as raised:
+        import_campaign_members(
+            crm.campaigns,
+            campaign.id,
+            JSONReader(io.StringIO('[{"entity_id": "bad"}')),
+        )
+    assert raised.value.code == "import.json.syntax.invalid"
+    assert crm.campaigns.members(campaign.id).total == 0
