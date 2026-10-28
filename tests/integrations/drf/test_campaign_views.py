@@ -68,7 +68,7 @@ def _send(
 
 def test_drf_campaign_registration_remains_explicit() -> None:
     router = create_drf_router()
-    assert all(not "campaigns" in str(url.pattern) for url in router.urls)
+    assert all("campaigns" not in str(url.pattern) for url in router.urls)
 
     with override_settings(PYCRMKIT_CAMPAIGN_SECURITY=None):
         with pytest.raises(ImproperlyConfigured):
