@@ -3,11 +3,30 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from os import environ
+from urllib.parse import urlsplit
 
 import django
 import pytest
 from django.conf import settings
 from django.core.management import call_command
+
+postgres_url = environ.get("PYCRMKIT_DJANGO_TEST_DATABASE_URL")
+if postgres_url:
+    parsed = urlsplit(postgres_url)
+    test_database = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": parsed.path.lstrip("/"),
+        "USER": parsed.username or "",
+        "PASSWORD": parsed.password or "",
+        "HOST": parsed.hostname or "localhost",
+        "PORT": str(parsed.port or 5432),
+    }
+else:
+    test_database = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": ":memory:",
+    }
 
 if not settings.configured:
     settings.configure(
@@ -20,12 +39,7 @@ if not settings.configured:
             "django.contrib.messages",
             "pycrmkit.integrations.django.apps.PyCRMKitDjangoConfig",
         ],
-        DATABASES={
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": ":memory:",
-            }
-        },
+        DATABASES={"default": test_database},
         USE_TZ=True,
         TIME_ZONE="UTC",
         DEFAULT_AUTO_FIELD="django.db.models.BigAutoField",

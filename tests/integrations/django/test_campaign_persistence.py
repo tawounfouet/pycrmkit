@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
+from threading import Barrier
 from typing import cast
 from uuid import UUID
 
 import pytest
-from django.db import transaction
+from django.db import connection, connections, transaction
 
 from pycrmkit import CRM
 from pycrmkit.campaigns import (
@@ -210,3 +212,39 @@ def test_django_campaign_repositories_can_operate_in_one_outer_atomic() -> None:
 
     assert isinstance(DjangoCampaignAudienceRepository(), object)
     assert isinstance(DjangoCampaignLinkageRepository(), object)
+
+
+def test_postgresql_concurrent_campaign_revision_cas() -> None:
+    """Two writers of the same revision cannot both overwrite one aggregate."""
+    if connection.vendor != "postgresql":
+        pytest.skip("PostgreSQL concurrency qualification only")
+    original = _campaign(907)
+    DjangoCampaignRepository().save(original)
+    barrier = Barrier(2)
+
+    def update(name: str) -> str:
+        try:
+            repository = DjangoCampaignRepository()
+            current = repository.get(original.id)
+            candidate = Campaign(
+                id=current.id,
+                created_at=current.created_at,
+                updated_at=current.updated_at + timedelta(minutes=1),
+                key=current.key,
+                name=name,
+                revision=current.revision + 1,
+                metadata=dict(current.metadata),
+            )
+            barrier.wait(timeout=15)
+            try:
+                repository.save(candidate)
+                return "success"
+            except ConflictError:
+                return "conflict"
+        finally:
+            connections.close_all()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(update, ("writer-one", "writer-two")))
+    assert sorted(results) == ["conflict", "success"]
+    assert DjangoCampaignRepository().get(original.id).revision == 2

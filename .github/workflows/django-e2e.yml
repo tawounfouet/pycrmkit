@@ -50,6 +50,11 @@ jobs:
       - name: Verify migration/model state
         run: python examples/django/manage.py makemigrations pycrmkit_crm --check --dry-run
 
+      - name: Django Campaign repository and migration tests on live PostgreSQL
+        env:
+          PYCRMKIT_DJANGO_TEST_DATABASE_URL: ${{ env.PYCRMKIT_DATABASE_URL }}
+        run: pytest tests/integrations/django/test_campaign_models.py tests/integrations/django/test_campaign_persistence.py tests/integrations/django/test_migrations.py -q
+
       - name: Source checkout Django/PostgreSQL E2E
         run: |
           state="$(mktemp)"
