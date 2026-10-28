@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from rest_framework.exceptions import ValidationError
-
 from pycrmkit.campaigns import UNSET
 from pycrmkit.integrations.django.drf.campaign_serializers import (
     CampaignCreateSerializer,
