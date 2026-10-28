@@ -19,6 +19,7 @@ from pycrmkit.integrations.django.drf.campaign_security import (
     authenticated_drf_principal,
 )
 from pycrmkit.integrations.django.drf.campaign_views import CampaignViewSet
+from pycrmkit.integrations.django.drf.routers import create_drf_router
 from pycrmkit.segments import SegmentMode
 
 
@@ -228,3 +229,14 @@ def test_drf_campaign_audience_validates_bulk_and_segment_ids() -> None:
             base + "segment-sources/invalid-id/refresh/",
             pk=cid, segment_id="invalid-id",
         ).status_code == 422
+
+
+def test_drf_router_registers_nested_segment_source_actions() -> None:
+    with override_settings(PYCRMKIT_CAMPAIGN_SECURITY=_policy()):
+        router = create_drf_router(include_campaigns=True)
+        patterns = [str(item.pattern) for item in router.urls]
+    for suffix in ("refresh", "detach"):
+        assert any(
+            "segment-sources" in pattern and suffix in pattern
+            for pattern in patterns
+        )
