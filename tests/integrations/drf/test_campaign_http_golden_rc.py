@@ -28,6 +28,7 @@ from pycrmkit.integrations.django.drf.campaign_security import (
     authenticated_drf_principal,
 )
 from pycrmkit.integrations.django.drf.campaign_views import CampaignViewSet
+
 # DRF-only extras stay importable: FastAPI is required only when executing this suite.
 pytest.importorskip("fastapi.applications", reason="Cross-transport golden requires FastAPI")
 
