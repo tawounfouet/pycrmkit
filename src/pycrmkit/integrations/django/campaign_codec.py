@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
+from datetime import UTC, datetime
+from typing import overload
+
 from pycrmkit.campaigns import (
     Campaign,
     CampaignAttributionReference,
@@ -11,20 +15,16 @@ from pycrmkit.campaigns import (
     CampaignSegmentSource,
     CampaignStatus,
 )
-from pycrmkit.communication import CommunicationRecordId
 from copy import deepcopy
 from datetime import UTC, datetime
 from typing import overload
 
+
+
+from pycrmkit.communication import CommunicationRecordId
 from pycrmkit.contacts import ContactId
-from pycrmkit.leads import LeadId
-from pycrmkit.opportunities import OpportunityId
-from pycrmkit.organizations import OrganizationId
 from pycrmkit.core.ids import EntityId, UUIDId
-
 from pycrmkit.core.references import EntityReference
-from pycrmkit.segments import SegmentId
-
 from pycrmkit.integrations.django.models import (
     CampaignAttributionModel,
     CampaignCommunicationLinkModel,
@@ -33,6 +33,10 @@ from pycrmkit.integrations.django.models import (
     CampaignSegmentMemberModel,
     CampaignSegmentSourceModel,
 )
+from pycrmkit.leads import LeadId
+from pycrmkit.opportunities import OpportunityId
+from pycrmkit.organizations import OrganizationId
+from pycrmkit.segments import SegmentId
 
 
 
