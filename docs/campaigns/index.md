@@ -84,7 +84,7 @@ Campaign
 All Campaign SQLAlchemy repositories participate in the existing
 `SQLAlchemyUnitOfWork`; repository methods do not commit independently.
 
-Django Campaign persistence remains deferred to `1.2.0b2`.
+Django Campaign persistence was delivered in `1.2.0b2`; optional Campaign HTTP and DataOps are planned for `1.2.0b3`.
 
 ## Explicit boundary
 
@@ -101,8 +101,7 @@ advanced attribution modelling
 
 Those concerns remain outside PyCRMKit core.
 
-Campaign membership, Segment targeting, attribution references and
-communication linkage are later 1.2 milestones.
+Membership, captured Segment audience and communication linkage were delivered in earlier 1.2 milestones. Their optional HTTP and file DataOps integrations are part of the `1.2.0b3` beta candidate.
 
 
 ## Audience — 1.2.0a2
@@ -272,3 +271,35 @@ PostgreSQL-native `ON DELETE CASCADE`.
 
 See [Django Integration](../integrations/django.md) and
 [1.2.0b2 release notes](../releases/1.2.0b2.md).
+
+
+## Optional Campaign HTTP and Data Operations - 1.2.0b3
+
+The Campaign HTTP surface is **opt-in** and facade-backed in both
+FastAPI and Django REST Framework. It includes:
+
+- metadata creation, retrieval, bounded lists and PATCH; lifecycle transitions
+  use revision preconditions;
+- direct members and the deduplicated final audience/count;
+- captured Segment source attach, refresh, detach and provenance;
+- attribution references and **metadata-only** Communication links.
+
+No Campaign HTTP routes are registered by default. Hosts must configure
+a trusted authenticated principal and an action/resource/scope authorization
+policy before opting in. `X-Actor-ID` is not authentication for Campaign.
+There is no endpoint for the CommunicationRecord body or for uploading files.
+
+See [Campaign HTTP security](../integrations/1.2.0b3-campaign-security.md),
+[FastAPI](../integrations/fastapi.md) and
+[DRF](../integrations/drf.md).
+
+For Python data pipelines,
+[Campaign Data Operations](../data_operations/campaigns.md) provides bounded
+direct-member imports from CSV/JSON/JSONL and paginated exports of direct
+membership, deduplicated final audience, and captured Segment provenance.
+These functions use the same `crm.campaigns` facade across Memory, SQLAlchemy
+and Django. They do **not** promise atomic bulk import, exactly-once delivery,
+or snapshot-consistent exports during concurrent writes.
+
+[1.2.0b3 candidate notes](../releases/1.2.0b3.md) document the
+qualification status and release gates.

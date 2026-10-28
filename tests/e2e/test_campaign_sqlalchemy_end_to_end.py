@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import io
+import json
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta, timezone
@@ -12,6 +14,7 @@ import pytest
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from pycrmkit import CRM
 from pycrmkit.campaigns import (
     Campaign,
     CampaignAttributionReference,
@@ -19,6 +22,8 @@ from pycrmkit.campaigns import (
     CampaignId,
     CampaignMember,
     CampaignSegmentSource,
+    export_campaign_records,
+    import_campaign_members,
 )
 from pycrmkit.communication import CommunicationRecordId
 from pycrmkit.contacts import ContactId
@@ -27,6 +32,7 @@ from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.events import DomainEvent, InProcessEventBus
 from pycrmkit.exceptions import ConflictError, DuplicateError, NotFoundError
+from pycrmkit.importers import IterableReader
 from pycrmkit.segments import SegmentId
 from pycrmkit.storage.sqlalchemy import Base, SQLAlchemyUnitOfWork
 from pycrmkit.storage.sqlalchemy.models.campaign import CampaignSegmentMemberModel
@@ -312,3 +318,74 @@ def test_postgresql_campaign_timezone_and_json_round_trip(
     assert restored_link.linked_at.tzinfo is UTC
     assert restored.metadata == campaign.metadata
     assert restored_source.metadata == source.metadata
+
+
+def test_postgresql_campaign_dataops_direct_replay_and_export(
+    campaign_postgres_engine: Engine,
+) -> None:
+    """Qualify b3 direct-only imports against real PostgreSQL 17 transactions."""
+    factory = _factory(campaign_postgres_engine)
+    bus = InProcessEventBus()
+    crm = CRM(
+        uow_factory=lambda: SQLAlchemyUnitOfWork(
+            factory, event_publisher=bus
+        ),
+        event_bus=bus,
+        webhook_auto_delivery=False,
+    )
+    ada = crm.contacts.create(display_name="Postgres Ada")
+    grace = crm.contacts.create(display_name="Postgres Grace")
+    campaign = crm.campaigns.create(key="postgres-dataops", name="DataOps PG17")
+    segment = crm.segments.create_static(
+        key="pg-captured", name="Captured", entity_kind="contact"
+    )
+    crm.segments.add_member(
+        segment.id, EntityReference("contact", ada.id)
+    )
+    captured = crm.campaigns.attach_segment_source(campaign.id, segment.id)
+    assert captured.member_count == 1
+    assert crm.campaigns.members(campaign.id).total == 0
+
+    rows = [
+        {"entity_kind": "contact", "entity_id": str(ada.id)},
+        {"entity_kind": "contact", "entity_id": str(grace.id)},
+        {"entity_kind": "contact", "entity_id": str(ada.id)},
+    ]
+    imported = import_campaign_members(
+        crm.campaigns,
+        campaign.id,
+        IterableReader(rows),
+        source="postgres-b3",
+    )
+    assert imported.rows_created == 2
+    assert imported.duplicates == 1
+    assert crm.campaigns.members(campaign.id).total == 2
+    assert crm.campaigns.audience_count(campaign.id) == 2
+
+    replayed = import_campaign_members(
+        crm.campaigns,
+        campaign.id,
+        IterableReader(rows),
+        source="postgres-b3",
+    )
+    assert replayed.rows_created == 0
+    assert replayed.duplicates == 3
+    assert crm.campaigns.segment_sources(campaign.id).total == 1
+
+    csv_data = io.StringIO()
+    json_data = io.StringIO()
+    assert export_campaign_records(
+        crm.campaigns, campaign.id, csv_data,
+        kind="direct", format="csv", page_size=1
+    ) == 2
+    assert export_campaign_records(
+        crm.campaigns, campaign.id, json_data,
+        kind="direct", format="json", page_size=1
+    ) == 2
+    records = json.loads(json_data.getvalue())
+    assert {row["entity_id"] for row in records} == {
+        str(ada.id), str(grace.id)
+    }
+    assert all(row["source"] == "postgres-b3" for row in records)
+    assert "actor_id" not in json_data.getvalue()
+    assert "entity_kind,entity_id,source,added_at" in csv_data.getvalue()

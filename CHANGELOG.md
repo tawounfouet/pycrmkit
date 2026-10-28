@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0b3] - 2026-10-28 (candidate; not published)
+
+### Added
+- Added optional, explicitly secured Campaign HTTP routes for FastAPI and Django REST Framework: metadata/lifecycle, direct members, deduplicated audience/count, captured Segment sources, attribution and CommunicationRecord link metadata.
+- Added host-verified Campaign principal resolution and action/resource/scope authorization. An unsigned `X-Actor-ID` cannot authorize Campaign requests. Existing non-Campaign HTTP contracts are unchanged.
+- Added provider-neutral bounded Campaign direct-member CSV/JSON/JSONL import and paginated direct/audience/source CSV/JSON/JSONL export, with per-row reports, deduplication and explicit partial-write semantics.
+- Added real FastAPI/DRF response parity tests, PostgreSQL 17 SQLAlchemy and Django DataOps E2E, plus isolated wheel/sdist Campaign smoke.
+
+### Compatibility and boundaries
+- The core remains dependency-free; optional FastAPI, Django and DRF extras remain opt-in.
+- Existing frozen `ImportPipeline` dataclass shape and `ImportStage` enum are preserved; Campaign-specific row recovery lives in a separate runner.
+- No migration or storage schema changes in b3. Existing Django and Alembic schema ownership is unchanged.
+- No Campaign messaging/delivery, full CommunicationRecord content HTTP endpoint, HTTP file upload, atomic batch import or snapshot-consistent export under concurrent writes.
+
+### Release governance
+- The pre-version-bump implementation source SHA `5e68d7e3082b74c7293b9b9cccf4d3b0883dd003` passed 66 GitHub checks; **new candidate version-bearing SHA requires fresh complete CI**.
+- PR #101 remains draft until latest-head gates are green. No tag, artifacts, GitHub prerelease or PyPI publication has been made for b3.
+- Next: `1.2.0rc1 — Campaign Production Qualification`.
+
+
 ## [1.2.0b2] - 2026-10-28 (candidate; not yet published)
 
 ### Added

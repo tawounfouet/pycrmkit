@@ -4,6 +4,18 @@ from pycrmkit.campaigns.audience import CampaignMember, CampaignSegmentSource
 from pycrmkit.campaigns.audience_repository import CampaignAudienceRepository
 from pycrmkit.campaigns.audience_services import CampaignAudienceService
 from pycrmkit.campaigns.audience_unit_of_work import CampaignAudienceUnitOfWork
+from pycrmkit.campaigns.data_operations import (
+    MAX_CAMPAIGN_IMPORT_ROWS,
+    CampaignDataOperationsAPI,
+    CampaignMembershipDeduplicator,
+    CampaignMembershipPersister,
+    CampaignMembershipValidator,
+    export_campaign_records,
+    import_campaign_members,
+    iter_campaign_audience_records,
+    iter_campaign_direct_member_records,
+    iter_campaign_segment_source_records,
+)
 from pycrmkit.campaigns.dto import UNSET, CampaignUpdate, UnsetType
 from pycrmkit.campaigns.entities import Campaign, CampaignId, normalize_campaign_key
 from pycrmkit.campaigns.enums import CampaignStatus
@@ -25,6 +37,16 @@ from pycrmkit.campaigns.unit_of_work import CampaignUnitOfWork
 
 __all__ = [
     "Campaign",
+    "MAX_CAMPAIGN_IMPORT_ROWS",
+    "CampaignDataOperationsAPI",
+    "CampaignMembershipDeduplicator",
+    "CampaignMembershipPersister",
+    "CampaignMembershipValidator",
+    "export_campaign_records",
+    "import_campaign_members",
+    "iter_campaign_audience_records",
+    "iter_campaign_direct_member_records",
+    "iter_campaign_segment_source_records",
     "CampaignAudienceRepository",
     "CampaignAudienceService",
     "CampaignAudienceUnitOfWork",

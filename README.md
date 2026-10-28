@@ -5,7 +5,7 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **1.1.0 — Segmentation & Sales Task Foundation**.  
-Current development version: **1.2.0b2 — Django Campaign Persistence** (beta release candidate; not yet published).  
+Current development candidate: **1.2.0b3 — HTTP + Data Operations Integration** (beta; PR #101, not yet published).  
 Qualified 1.1 release candidate lineage: **1.1.0rc1 — Segmentation Production Qualification**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
@@ -168,3 +168,30 @@ python scripts/release_check.py
 ## License
 
 MIT © 2026 Thomas Awounfouet.
+
+
+## Campaign beta (1.2.0b3 - candidate, not published)
+
+The optional Campaign HTTP integration adds facade-backed FastAPI and Django
+REST Framework endpoints for Campaign metadata, members, captured Segment
+sources, deduplicated audience/count, attribution references and
+metadata-only CommunicationRecord links. **Campaign routes stay off by
+default** until the host injects verified authentication and per-action
+authorization. Untrusted `X-Actor-ID` headers cannot authorize Campaign
+access; existing generic routes retain their historical behavior.
+
+Campaign Python DataOps enables direct-membership imports via the existing
+CSV/JSON/JSONL readers and portable exports of direct members, audience or
+Segment-source provenance. It does not modify the frozen generic
+`ImportPipeline` API; imports are bounded and not globally atomic.
+
+Runnable core-only scenario:
+
+```bash
+python examples/data_operations/campaign_scenario.py
+```
+
+See [Campaign guide](docs/campaigns/index.md),
+[Campaign DataOps](docs/data_operations/campaigns.md),
+[HTTP security integration](docs/integrations/1.2.0b3-campaign-security.md)
+and [1.2.0b3 candidate notes](docs/releases/1.2.0b3.md).

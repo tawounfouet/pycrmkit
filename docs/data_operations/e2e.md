@@ -222,3 +222,20 @@ The next roadmap milestone is:
 ```text
 1.0.0a1 — Public API Freeze Candidate
 ```
+
+
+## Campaign beta DataOps - 1.2.0b3
+
+The next beta adds a **separate Campaign-specific** import/export scenario,
+without modifying the frozen generic `ImportPipeline` contract. It is
+executable as:
+
+```bash
+python examples/data_operations/campaign_scenario.py
+```
+
+The dedicated CI workflow runs the Campaign scenario in a source checkout and
+again in isolated installed wheel and sdist environments (with an empty
+`PYTHONPATH`). The three views - direct members, final audience, Segment
+source provenance - remain separate, and import replays do not mutate
+captured snapshots. See [Campaign DataOps](campaigns.md).

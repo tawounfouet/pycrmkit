@@ -239,3 +239,35 @@ The ViewSets call only `crm.segments` and `crm.saved_queries`. Segment
 evaluation, Snapshot creation, bulk membership and SavedQuery revision
 operations therefore keep the same domain and adapter semantics as non-HTTP
 consumers.
+
+
+## 1.2.0b3 Campaign HTTP (beta candidate, opt-in)
+
+The Django router preserves `create_drf_router()` by default; Campaign
+routes are only registered using `create_drf_router(include_campaigns=True)`
+with the explicit Django setting `PYCRMKIT_CAMPAIGN_SECURITY` set to a
+`CampaignSecurityBoundary` instance.
+
+```python
+from pycrmkit.integrations.campaign_security import CampaignSecurityBoundary
+from pycrmkit.integrations.django.drf.campaign_security import (
+    authenticated_drf_principal,
+)
+
+# host_campaign_policy must be implemented in the embedding application.
+PYCRMKIT_CAMPAIGN_SECURITY = CampaignSecurityBoundary(
+    resolve_principal=authenticated_drf_principal,
+    authorize=host_campaign_policy,
+)
+```
+
+The host must configure genuine DRF authentication and an authorization
+policy; a caller-provided `X-Actor-ID` **never** authenticates Campaign
+requests. Without an explicit policy, Campaign route assembly fails closed.
+
+DRF supports Campaign metadata/lifecycle, direct members, audience and count,
+materialized Segment sources, attribution references and metadata-only
+CommunicationRecord links. Unlike HTTP links, full CommunicationRecord content
+is not exposed. The domain facade and pagination contract are shared with
+FastAPI. See [Campaign security](1.2.0b3-campaign-security.md) and
+[release notes](../releases/1.2.0b3.md).

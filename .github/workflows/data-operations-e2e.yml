@@ -25,6 +25,9 @@ jobs:
       - name: Source checkout Data Operations E2E
         run: python examples/data_operations/scenario.py
 
+      - name: Source checkout Campaign DataOps smoke
+        run: python examples/data_operations/campaign_scenario.py
+
       - name: Build release artifacts
         run: python -m build
 
@@ -36,3 +39,21 @@ jobs:
           wheel="$(ls dist/pycrmkit-*.whl)"
           .venv-data-operations-wheel/bin/python -m pip install "${wheel}"
           PYTHONPATH="" .venv-data-operations-wheel/bin/python examples/data_operations/scenario.py
+
+      - name: Installed-wheel Campaign DataOps smoke
+        shell: bash
+        run: |
+          PYTHONPATH="" .venv-data-operations-wheel/bin/python examples/data_operations/campaign_scenario.py
+
+      - name: Install sdist in clean environment
+        shell: bash
+        run: |
+          python -m venv .venv-data-operations-sdist
+          .venv-data-operations-sdist/bin/python -m pip install --upgrade pip
+          sdist="$(ls dist/pycrmkit-*.tar.gz)"
+          .venv-data-operations-sdist/bin/python -m pip install "${sdist}"
+
+      - name: Installed-sdist Campaign DataOps smoke
+        shell: bash
+        run: |
+          PYTHONPATH="" .venv-data-operations-sdist/bin/python examples/data_operations/campaign_scenario.py
