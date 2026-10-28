@@ -29,8 +29,8 @@ from pycrmkit.campaigns import (
     CampaignUpdate,
 )
 from pycrmkit.core.ids import EntityId
-from pycrmkit.integrations.campaign_payload_validation import validate_campaign_metadata
 from pycrmkit.core.references import EntityReference
+from pycrmkit.integrations.campaign_payload_validation import validate_campaign_metadata
 from pycrmkit.integrations.fastapi.schemas import EntityReferenceSchema
 
 
