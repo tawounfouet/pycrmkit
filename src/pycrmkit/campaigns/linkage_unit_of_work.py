@@ -10,6 +10,27 @@ from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.segments import SegmentQueryExecutor
 
 
+
+@runtime_checkable
+class CampaignAttributionUnitOfWork(Protocol):
+    """Minimum capability for attribution and stored communication links.
+
+    Communication record validation requires a separate repository capability.
+    """
+
+    @property
+    def campaigns(self) -> CampaignRepository:
+        ...
+
+    @property
+    def campaign_linkage(self) -> CampaignLinkageRepository:
+        ...
+
+    @property
+    def segment_query_executor(self) -> SegmentQueryExecutor:
+        ...
+
+
 @runtime_checkable
 class CampaignLinkageUnitOfWork(Protocol):
     """Capabilities required for Campaign attribution and communication linkage."""
@@ -31,4 +52,4 @@ class CampaignLinkageUnitOfWork(Protocol):
         ...
 
 
-__all__ = ["CampaignLinkageUnitOfWork"]
+__all__ = ["CampaignAttributionUnitOfWork", "CampaignLinkageUnitOfWork"]
