@@ -8,12 +8,13 @@ It tests a host-owned authorization boundary, not built-in CRM tenancy/JWT.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 
 from pycrmkit import CRM
+from pycrmkit.campaigns import CampaignId
 from pycrmkit.core.ids import EntityId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.integrations.campaign_security import (
@@ -118,7 +119,7 @@ def test_fastapi_host_denials_never_construct_crm_or_leak_counts() -> None:
         assert "Bob contact private" not in response.text
         assert "count" not in response.json() and "total" not in response.json()
 
-    assert crm.campaigns.get(crm.campaigns.list().items[1].id).revision == 1
+    assert crm.campaigns.get(CampaignId(UUID(refs["bob"]))).revision == 1
 
 
 def test_fastapi_host_approved_owner_scope_and_object_read() -> None:
