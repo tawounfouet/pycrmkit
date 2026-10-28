@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from typing import Any
+
+from django.db.models import Q, QuerySet
 
 from pycrmkit.campaigns import CampaignId, CampaignMember, CampaignSegmentSource
 from pycrmkit.core.pagination import OffsetPageRequest, Page
@@ -12,10 +14,10 @@ from pycrmkit.exceptions import DuplicateError, NotFoundError
 from pycrmkit.integrations.django.campaign_codec import (
     campaign_member_from_model,
     campaign_member_to_model,
-    entity_reference,
     campaign_segment_member_to_model,
     campaign_segment_source_from_model,
     campaign_segment_source_to_model,
+    entity_reference,
 )
 from pycrmkit.integrations.django.campaign_repositories import _page
 from pycrmkit.integrations.django.models import (
@@ -74,7 +76,7 @@ class DjangoCampaignAudienceRepository:
             entity_kind=entity.kind,
             entity_id=str(entity.id),
         ).delete()
-        return deleted > 0
+        return int(deleted) > 0
 
     def remove_members(
         self, campaign_id: CampaignId, entities: tuple[EntityReference, ...]
@@ -174,7 +176,7 @@ class DjangoCampaignAudienceRepository:
         )
 
     def audience_count(self, campaign_id: CampaignId) -> int:
-        return self._audience_relation(campaign_id).count()
+        return int(self._audience_relation(campaign_id).count())
 
     def contains(
         self, campaign_id: CampaignId, entity: EntityReference
@@ -188,7 +190,7 @@ class DjangoCampaignAudienceRepository:
         ).exists()
 
     @staticmethod
-    def _audience_relation(campaign_id: CampaignId):
+    def _audience_relation(campaign_id: CampaignId) -> QuerySet[Any]:
         direct = CampaignMemberModel.objects.filter(
             campaign_id=str(campaign_id)
         ).order_by().values_list("entity_kind", "entity_id")
@@ -198,7 +200,9 @@ class DjangoCampaignAudienceRepository:
         return direct.union(captured).order_by("entity_kind", "entity_id")
 
     @staticmethod
-    def _source_queryset(campaign_id: CampaignId, segment_id: SegmentId):
+    def _source_queryset(
+        campaign_id: CampaignId, segment_id: SegmentId
+    ) -> QuerySet[CampaignSegmentSourceModel]:
         return CampaignSegmentSourceModel.objects.filter(
             campaign_id=str(campaign_id), segment_id=str(segment_id)
         )

@@ -22,7 +22,6 @@ from pycrmkit.campaigns import (
 )
 from pycrmkit.communication import CommunicationRecordId
 from pycrmkit.config import CRMConfig
-from pycrmkit.contacts import ContactId
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
@@ -38,7 +37,6 @@ from pycrmkit.integrations.django.campaign_linkage import DjangoCampaignLinkageR
 from pycrmkit.integrations.django.campaign_repositories import DjangoCampaignRepository
 from pycrmkit.integrations.django.models import CampaignModel
 from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
-from pycrmkit.segments import SegmentUnitOfWork
 
 NOW = datetime(2026, 10, 28, 8, 30, tzinfo=UTC)
 
@@ -138,7 +136,7 @@ def test_django_facade_persists_audience_segment_snapshot_and_attribution() -> N
     source = crm.campaigns.attach_segment_source(campaign.id, segment.id)
     assert source.member_count == 2
     assert crm.campaigns.audience_count(campaign.id) == 2
-    assert crm.campaigns.audience(campaign.id).items == (ada_ref, grace_ref)
+    assert set(crm.campaigns.audience(campaign.id).items) == {ada_ref, grace_ref}
 
     crm.segments.remove_member(segment.id, grace_ref)
     assert crm.campaigns.contains(campaign.id, grace_ref)

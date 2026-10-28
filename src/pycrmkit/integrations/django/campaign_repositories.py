@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import Any, TypeVar
+
 from django.db import IntegrityError, transaction
+from django.db.models import QuerySet
 
 from pycrmkit.campaigns import (
     Campaign,
@@ -20,7 +24,12 @@ from pycrmkit.integrations.django.campaign_codec import (
 from pycrmkit.integrations.django.models import CampaignModel
 
 
-def _page(queryset, page: OffsetPageRequest, mapper):
+_T = TypeVar("_T")
+
+
+def _page(
+    queryset: QuerySet[Any], page: OffsetPageRequest, mapper: Callable[[Any], _T]
+) -> Page[_T]:
     total = queryset.count()
     return Page(
         items=tuple(mapper(row) for row in queryset[page.offset : page.offset + page.limit]),

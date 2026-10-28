@@ -5,6 +5,7 @@ from __future__ import annotations
 import unicodedata
 
 from django.db import IntegrityError, transaction
+from django.db.models import QuerySet
 
 from pycrmkit.campaigns import (
     CampaignAttributionReference,
@@ -70,7 +71,7 @@ class DjangoCampaignLinkageRepository:
         deleted, _ = self._attribution_queryset(
             campaign_id, target, source, external_ref
         ).delete()
-        return deleted > 0
+        return int(deleted) > 0
 
     def list_attributions(
         self, campaign_id: CampaignId, page: OffsetPageRequest
@@ -119,7 +120,7 @@ class DjangoCampaignLinkageRepository:
         target: EntityReference,
         source: str,
         external_ref: str | None,
-    ):
+    ) -> QuerySet[CampaignAttributionModel]:
         return CampaignAttributionModel.objects.filter(
             campaign_id=str(campaign_id),
             target_kind=target.kind,
@@ -129,7 +130,9 @@ class DjangoCampaignLinkageRepository:
         )
 
     @staticmethod
-    def _link_queryset(campaign_id: CampaignId, communication_id: CommunicationRecordId):
+    def _link_queryset(
+        campaign_id: CampaignId, communication_id: CommunicationRecordId
+    ) -> QuerySet[CampaignCommunicationLinkModel]:
         return CampaignCommunicationLinkModel.objects.filter(
             campaign_id=str(campaign_id),
             communication_id=str(communication_id),
