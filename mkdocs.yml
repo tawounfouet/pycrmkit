@@ -113,6 +113,7 @@ nav:
       - FastAPI Integration: integrations/fastapi.md
       - Django Integration: integrations/django.md
       - DRF Integration: integrations/drf.md
+      - Campaign HTTP Security (1.2.0b3): integrations/1.2.0b3-campaign-security.md
   - External Identities:
       - Overview: external-identities/index.md
       - Repository Contract: external-identities/repository-contract.md
@@ -124,6 +125,7 @@ nav:
       - Merge: dedup/merge.md
   - Data Operations:
       - E2E Qualification: data_operations/e2e.md
+      - Campaign Import & Export (1.2.0b3): data_operations/campaigns.md
   - Security:
       - Security & Privacy Hardening: security/privacy-hardening.md
   - Performance:
@@ -205,6 +207,7 @@ nav:
       - 1.2.0a3 Attribution & Communication Linkage: releases/1.2.0a3.md
       - 1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence: releases/1.2.0b1.md
       - 1.2.0b2 Django Campaign Persistence: releases/1.2.0b2.md
+      - 1.2.0b3 HTTP & Data Operations Candidate: releases/1.2.0b3.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
