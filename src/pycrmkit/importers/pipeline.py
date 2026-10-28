@@ -42,7 +42,6 @@ class ImportPipeline:
     validator: ImportValidator = field(default_factory=AcceptAllValidator)
     deduplicator: ImportDeduplicator = field(default_factory=NoDuplicateDetector)
     retain_row_results: bool = True
-    recover_persist_error_codes: frozenset[str] = frozenset()
 
     def run(self) -> ImportReport:
         report = ImportReport(retain_row_results=self.retain_row_results)
@@ -88,17 +87,7 @@ class ImportPipeline:
                 )
                 continue
 
-            try:
-                persisted = self.persister.persist(row)
-            except ValidationError as error:
-                if error.code not in self.recover_persist_error_codes:
-                    raise
-                report.record_validation_failure(
-                    row_number=row.number,
-                    stage=ImportStage.PERSIST,
-                    issues=(_issue_from_error(error),),
-                )
-                continue
+            persisted = self.persister.persist(row)
             report.record_persisted(row_number=row.number, result=persisted)
 
         return report
