@@ -28,6 +28,14 @@ jobs:
       - name: Campaign 1.2 source API freeze
         run: python -m pytest tests/compatibility/test_public_api_v1_2_campaign_candidate.py -q
 
+      - name: Campaign RC1 HTTP and DRF golden freeze
+        run: >-
+          python -m pytest
+          tests/integrations/drf/test_campaign_public_freeze_rc.py
+          tests/integrations/drf/test_campaign_http_golden_rc.py
+          tests/integrations/fastapi/test_campaign_openapi_golden_rc.py
+          -q
+
       - name: Build release artifacts
         run: python -m build
 
