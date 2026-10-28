@@ -6,7 +6,7 @@ HTTP integrations and persistence adapters are intentionally absent here.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass, field
 from itertools import islice
 from typing import Literal, Protocol, TypeVar
@@ -24,11 +24,10 @@ from pycrmkit.importers import (
     DuplicateResult,
     IdentityMapper,
     ImportMapper,
-    ImportPipeline,
     ImportReader,
     ImportReport,
+    ImportStage,
     ImportRow,
-    IterableReader,
     PersistAction,
     PersistResult,
     ValidationIssue,
@@ -228,19 +227,55 @@ def import_campaign_members(
         )
     }
     dedupe = CampaignMembershipDeduplicator(existing)
-    pipeline = ImportPipeline(
-        reader=IterableReader(buffered),
-        mapper=mapper if mapper is not None else IdentityMapper(),
-        validator=CampaignMembershipValidator(),
-        deduplicator=dedupe,
-        persister=CampaignMembershipPersister(
-            campaigns, campaign_id, dedupe, source.strip()
-        ),
-        retain_row_results=retain_row_results,
-        recover_persist_error_codes=frozenset({"campaign.member.not_found"}),
+    persister = CampaignMembershipPersister(
+        campaigns, campaign_id, dedupe, source.strip()
     )
-    return pipeline.run()
-
+    effective_mapper = mapper if mapper is not None else IdentityMapper()
+    validator = CampaignMembershipValidator()
+    report = ImportReport(retain_row_results=retain_row_results)
+    for number, values in enumerate(buffered, start=1):
+        report.rows_read += 1
+        row = ImportRow(number, values)
+        try:
+            row = effective_mapper.map(row)
+        except ValidationError as error:
+            report.record_validation_failure(
+                row_number=number,
+                stage=ImportStage.MAP,
+                issues=(ValidationIssue(error.code, error.message),),
+            )
+            continue
+        issues = validator.validate(row)
+        if issues:
+            report.record_validation_failure(
+                row_number=number, stage=ImportStage.VALIDATE, issues=issues
+            )
+            continue
+        duplicate = dedupe.detect(row)
+        if duplicate.is_duplicate:
+            report.record_duplicate(
+                row_number=number,
+                existing_entity_id=duplicate.existing_entity_id,
+            )
+            continue
+        try:
+            result = persister.persist(row)
+        except ValidationError as error:
+            if error.code != "campaign.member.not_found":
+                raise
+            # The domain validates target existence inside its transaction.
+            # This known missing-entity condition is a row-level validation
+            # error, not a fabricated successful persistence outcome.
+            report.record_validation_failure(
+                row_number=number,
+                stage=ImportStage.VALIDATE,
+                issues=(ValidationIssue(
+                    error.code, error.message, field="entity_id"
+                ),),
+            )
+            continue
+        report.record_persisted(row_number=number, result=result)
+    return report
 
 def iter_campaign_direct_member_records(
     campaigns: CampaignDataOperationsAPI,
