@@ -12,7 +12,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
-_ACTOR_ID = re.compile(r"^[^\\x00-\\x1f\\x7f]{1,255}$")
+_ACTOR_ID = re.compile(r"^[^\x00-\x1f\x7f]{1,255}$")
 _CORRELATION_ID = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$")
 
 
