@@ -9,13 +9,17 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
+import pytest
 from django.test import override_settings
+
+# DRF-only extras must not require the separately optional FastAPI distribution.
+pytest.importorskip("fastapi.applications", reason="Cross-transport golden requires FastAPI")
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from rest_framework.test import APIRequestFactory, force_authenticate
