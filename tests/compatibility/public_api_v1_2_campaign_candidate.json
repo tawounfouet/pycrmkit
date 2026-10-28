@@ -1,0 +1,1215 @@
+{
+  "schema_version": 1,
+  "target_release": "1.2.0rc1",
+  "baseline_release": "1.2.0b3",
+  "promoted_release": "1.2.0",
+  "extends": [
+    "tests/compatibility/public_api_v1_candidate.json",
+    "tests/compatibility/public_api_v1_1_candidate.json"
+  ],
+  "classification": "campaign-public-api-freeze-candidate",
+  "module_exports": {
+    "pycrmkit.campaigns": [
+      "Campaign",
+      "MAX_CAMPAIGN_IMPORT_ROWS",
+      "CampaignDataOperationsAPI",
+      "CampaignMembershipDeduplicator",
+      "CampaignMembershipPersister",
+      "CampaignMembershipValidator",
+      "export_campaign_records",
+      "import_campaign_members",
+      "iter_campaign_audience_records",
+      "iter_campaign_direct_member_records",
+      "iter_campaign_segment_source_records",
+      "CampaignAudienceRepository",
+      "CampaignAudienceService",
+      "CampaignAudienceUnitOfWork",
+      "CampaignAttributionReference",
+      "CampaignAttributionUnitOfWork",
+      "CampaignCommunicationLink",
+      "CampaignId",
+      "CampaignLinkageRepository",
+      "CampaignLinkageService",
+      "CampaignLinkageUnitOfWork",
+      "CampaignMember",
+      "CampaignQuery",
+      "CampaignRepository",
+      "CampaignSegmentSource",
+      "CampaignService",
+      "CampaignStatus",
+      "CampaignUnitOfWork",
+      "CampaignUpdate",
+      "UNSET",
+      "UnsetType",
+      "normalize_campaign_external_ref",
+      "normalize_campaign_key"
+    ]
+  },
+  "facade_namespace": "campaigns",
+  "facade_signatures": {
+    "create": {
+      "parameters": [
+        {
+          "name": "key",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "<required>"
+        },
+        {
+          "name": "name",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "<required>"
+        },
+        {
+          "name": "description",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str | None",
+          "default": "None"
+        },
+        {
+          "name": "starts_at",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "datetime | None",
+          "default": "None"
+        },
+        {
+          "name": "ends_at",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "datetime | None",
+          "default": "None"
+        },
+        {
+          "name": "owner_id",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "EntityId | None",
+          "default": "None"
+        },
+        {
+          "name": "metadata",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "Mapping[str, object] | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Campaign"
+    },
+    "get": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        }
+      ],
+      "returns": "Campaign"
+    },
+    "list": {
+      "parameters": [
+        {
+          "name": "query",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignQuery | None",
+          "default": "None"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[Campaign]"
+    },
+    "update": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "changes",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignUpdate",
+          "default": "<required>"
+        },
+        {
+          "name": "expected_revision",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Campaign"
+    },
+    "activate": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "expected_revision",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Campaign"
+    },
+    "complete": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "expected_revision",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Campaign"
+    },
+    "archive": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "expected_revision",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Campaign"
+    },
+    "add_member": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "entity",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "EntityReference",
+          "default": "<required>"
+        },
+        {
+          "name": "source",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "str:manual"
+        },
+        {
+          "name": "metadata",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "Mapping[str, object] | None",
+          "default": "None"
+        }
+      ],
+      "returns": "CampaignMember"
+    },
+    "add_members": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "entities",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "Iterable[EntityReference]",
+          "default": "<required>"
+        },
+        {
+          "name": "source",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "str:manual"
+        },
+        {
+          "name": "metadata",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "Mapping[str, object] | None",
+          "default": "None"
+        }
+      ],
+      "returns": "tuple[CampaignMember, ...]"
+    },
+    "remove_member": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "entity",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "EntityReference",
+          "default": "<required>"
+        }
+      ],
+      "returns": "bool"
+    },
+    "remove_members": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "entities",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "Iterable[EntityReference]",
+          "default": "<required>"
+        }
+      ],
+      "returns": "int"
+    },
+    "members": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[CampaignMember]"
+    },
+    "audience": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[EntityReference]"
+    },
+    "audience_count": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        }
+      ],
+      "returns": "int"
+    },
+    "contains": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "entity",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "EntityReference",
+          "default": "<required>"
+        }
+      ],
+      "returns": "bool"
+    },
+    "attach_segment_source": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "segment_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "SegmentId",
+          "default": "<required>"
+        },
+        {
+          "name": "metadata",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "Mapping[str, object] | None",
+          "default": "None"
+        }
+      ],
+      "returns": "CampaignSegmentSource"
+    },
+    "refresh_segment_source": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "segment_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "SegmentId",
+          "default": "<required>"
+        }
+      ],
+      "returns": "CampaignSegmentSource"
+    },
+    "detach_segment_source": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "segment_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "SegmentId",
+          "default": "<required>"
+        }
+      ],
+      "returns": "bool"
+    },
+    "segment_sources": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[CampaignSegmentSource]"
+    },
+    "add_attribution": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "target",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "EntityReference",
+          "default": "<required>"
+        },
+        {
+          "name": "source",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "<required>"
+        },
+        {
+          "name": "external_ref",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str | None",
+          "default": "None"
+        },
+        {
+          "name": "metadata",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "Mapping[str, object] | None",
+          "default": "None"
+        }
+      ],
+      "returns": "CampaignAttributionReference"
+    },
+    "remove_attribution": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "target",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "EntityReference",
+          "default": "<required>"
+        },
+        {
+          "name": "source",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "<required>"
+        },
+        {
+          "name": "external_ref",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str | None",
+          "default": "None"
+        }
+      ],
+      "returns": "bool"
+    },
+    "attributions": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[CampaignAttributionReference]"
+    },
+    "link_communication": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "communication_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CommunicationRecordId",
+          "default": "<required>"
+        },
+        {
+          "name": "role",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "str:touchpoint"
+        },
+        {
+          "name": "metadata",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "Mapping[str, object] | None",
+          "default": "None"
+        }
+      ],
+      "returns": "CampaignCommunicationLink"
+    },
+    "unlink_communication": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "communication_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CommunicationRecordId",
+          "default": "<required>"
+        }
+      ],
+      "returns": "bool"
+    },
+    "communication_links": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[CampaignCommunicationLink]"
+    },
+    "communications": {
+      "parameters": [
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "OffsetPageRequest | None",
+          "default": "None"
+        }
+      ],
+      "returns": "Page[CommunicationRecord]"
+    }
+  },
+  "dataops_signatures": {
+    "import_campaign_members": {
+      "parameters": [
+        {
+          "name": "campaigns",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignDataOperationsAPI",
+          "default": "<required>"
+        },
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "reader",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "ImportReader",
+          "default": "<required>"
+        },
+        {
+          "name": "source",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "str",
+          "default": "str:import"
+        },
+        {
+          "name": "mapper",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "ImportMapper | None",
+          "default": "None"
+        },
+        {
+          "name": "max_rows",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int",
+          "default": "int:1000"
+        },
+        {
+          "name": "retain_row_results",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "bool",
+          "default": "bool:True"
+        }
+      ],
+      "returns": "ImportReport"
+    },
+    "iter_campaign_direct_member_records": {
+      "parameters": [
+        {
+          "name": "campaigns",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignDataOperationsAPI",
+          "default": "<required>"
+        },
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page_size",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int",
+          "default": "int:50"
+        }
+      ],
+      "returns": "Iterator[Mapping[str, object]]"
+    },
+    "iter_campaign_audience_records": {
+      "parameters": [
+        {
+          "name": "campaigns",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignDataOperationsAPI",
+          "default": "<required>"
+        },
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page_size",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int",
+          "default": "int:50"
+        }
+      ],
+      "returns": "Iterator[Mapping[str, object]]"
+    },
+    "iter_campaign_segment_source_records": {
+      "parameters": [
+        {
+          "name": "campaigns",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignDataOperationsAPI",
+          "default": "<required>"
+        },
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "page_size",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int",
+          "default": "int:50"
+        }
+      ],
+      "returns": "Iterator[Mapping[str, object]]"
+    },
+    "export_campaign_records": {
+      "parameters": [
+        {
+          "name": "campaigns",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignDataOperationsAPI",
+          "default": "<required>"
+        },
+        {
+          "name": "campaign_id",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "CampaignId",
+          "default": "<required>"
+        },
+        {
+          "name": "destination",
+          "kind": "POSITIONAL_OR_KEYWORD",
+          "annotation": "TextDestination",
+          "default": "<required>"
+        },
+        {
+          "name": "kind",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "ExportKind",
+          "default": "<required>"
+        },
+        {
+          "name": "format",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "ExportFormat",
+          "default": "<required>"
+        },
+        {
+          "name": "page_size",
+          "kind": "KEYWORD_ONLY",
+          "annotation": "int",
+          "default": "int:50"
+        }
+      ],
+      "returns": "int"
+    }
+  },
+  "domain_local_fields": {
+    "Campaign": [
+      "key",
+      "name",
+      "description",
+      "status",
+      "starts_at",
+      "ends_at",
+      "owner_id",
+      "revision",
+      "metadata",
+      "archived_at"
+    ],
+    "CampaignUpdate": [
+      "name",
+      "description",
+      "starts_at",
+      "ends_at",
+      "owner_id",
+      "metadata"
+    ],
+    "CampaignQuery": [
+      "status",
+      "owner_id",
+      "include_archived"
+    ],
+    "CampaignMember": [
+      "campaign_id",
+      "entity",
+      "added_at",
+      "source",
+      "actor_id",
+      "metadata"
+    ],
+    "CampaignSegmentSource": [
+      "campaign_id",
+      "segment_id",
+      "segment_revision",
+      "entity_kind",
+      "attached_at",
+      "captured_at",
+      "member_count",
+      "actor_id",
+      "metadata"
+    ],
+    "CampaignAttributionReference": [
+      "campaign_id",
+      "target",
+      "source",
+      "recorded_at",
+      "external_ref",
+      "actor_id",
+      "metadata"
+    ],
+    "CampaignCommunicationLink": [
+      "campaign_id",
+      "communication_id",
+      "linked_at",
+      "role",
+      "actor_id",
+      "metadata"
+    ]
+  },
+  "campaign_status_values": [
+    "draft",
+    "active",
+    "completed",
+    "archived"
+  ],
+  "event_types": [
+    "campaign.activated",
+    "campaign.archived",
+    "campaign.attribution_added",
+    "campaign.attribution_removed",
+    "campaign.communication_linked",
+    "campaign.communication_unlinked",
+    "campaign.completed",
+    "campaign.created",
+    "campaign.member_added",
+    "campaign.member_removed",
+    "campaign.members_added",
+    "campaign.members_removed",
+    "campaign.segment_source_attached",
+    "campaign.segment_source_detached",
+    "campaign.segment_source_refreshed",
+    "campaign.updated"
+  ],
+  "domain_error_codes": [
+    "campaign.activate.invalid_state",
+    "campaign.archive.invalid_timestamp",
+    "campaign.archive.status_mismatch",
+    "campaign.archive.timestamp_required",
+    "campaign.archived",
+    "campaign.attribution.external_ref.too_long",
+    "campaign.attribution.target.not_found",
+    "campaign.attribution.target_kind.unsupported",
+    "campaign.communication.persistence.unsupported",
+    "campaign.complete.invalid_state",
+    "campaign.description.too_long",
+    "campaign.export.format.invalid",
+    "campaign.export.kind.invalid",
+    "campaign.import.max_rows.invalid",
+    "campaign.import.row_limit",
+    "campaign.import.source.invalid",
+    "campaign.key.invalid",
+    "campaign.member.batch_duplicate",
+    "campaign.member.bulk_limit",
+    "campaign.member.kind.unsupported",
+    "campaign.member.not_found",
+    "campaign.member.source.required",
+    "campaign.member.source.too_long",
+    "campaign.name.required",
+    "campaign.name.too_long",
+    "campaign.revision.conflict",
+    "campaign.revision.invalid",
+    "campaign.schedule.invalid",
+    "campaign.segment_source.capture.invalid_timestamp",
+    "campaign.segment_source.kind.unsupported",
+    "campaign.segment_source.member_count.invalid",
+    "campaign.segment_source.revision.invalid",
+    "campaign.status.invalid"
+  ],
+  "exception_names": [
+    "PyCRMKitError",
+    "ValidationError",
+    "NotFoundError",
+    "ConflictError",
+    "DuplicateError",
+    "InvalidStateError",
+    "RepositoryError",
+    "IntegrationError"
+  ],
+  "fastapi_pydantic_fields": {
+    "CampaignCreateRequest": {
+      "fields": [
+        "key",
+        "name",
+        "description",
+        "starts_at",
+        "ends_at",
+        "owner_id",
+        "metadata"
+      ],
+      "required": [
+        "key",
+        "name",
+        "metadata"
+      ]
+    },
+    "CampaignUpdateRequest": {
+      "fields": [
+        "expected_revision",
+        "name",
+        "description",
+        "starts_at",
+        "ends_at",
+        "owner_id",
+        "metadata"
+      ],
+      "required": [
+        "expected_revision"
+      ]
+    },
+    "CampaignRevisionRequest": {
+      "fields": [
+        "expected_revision"
+      ],
+      "required": [
+        "expected_revision"
+      ]
+    },
+    "CampaignResponse": {
+      "fields": [
+        "id",
+        "key",
+        "name",
+        "description",
+        "status",
+        "created_at",
+        "updated_at",
+        "starts_at",
+        "ends_at",
+        "owner_id",
+        "revision",
+        "metadata",
+        "archived_at"
+      ],
+      "required": [
+        "id",
+        "key",
+        "name",
+        "description",
+        "status",
+        "created_at",
+        "updated_at",
+        "starts_at",
+        "ends_at",
+        "owner_id",
+        "revision",
+        "metadata",
+        "archived_at"
+      ]
+    },
+    "CampaignMembersRequest": {
+      "fields": [
+        "members",
+        "source",
+        "metadata"
+      ],
+      "required": [
+        "members",
+        "metadata"
+      ]
+    },
+    "CampaignRemoveMembersRequest": {
+      "fields": [
+        "members"
+      ],
+      "required": [
+        "members"
+      ]
+    },
+    "CampaignMemberResponse": {
+      "fields": [
+        "campaign_id",
+        "entity",
+        "added_at",
+        "source",
+        "metadata"
+      ],
+      "required": [
+        "campaign_id",
+        "entity",
+        "added_at",
+        "source",
+        "metadata"
+      ]
+    },
+    "CampaignSegmentAttachRequest": {
+      "fields": [
+        "segment_id",
+        "metadata"
+      ],
+      "required": [
+        "segment_id",
+        "metadata"
+      ]
+    },
+    "CampaignSegmentSourceResponse": {
+      "fields": [
+        "campaign_id",
+        "segment_id",
+        "segment_revision",
+        "entity_kind",
+        "attached_at",
+        "captured_at",
+        "member_count",
+        "metadata"
+      ],
+      "required": [
+        "campaign_id",
+        "segment_id",
+        "segment_revision",
+        "entity_kind",
+        "attached_at",
+        "captured_at",
+        "member_count",
+        "metadata"
+      ]
+    },
+    "CampaignAttributionRequest": {
+      "fields": [
+        "target",
+        "source",
+        "external_ref",
+        "metadata"
+      ],
+      "required": [
+        "target",
+        "source",
+        "metadata"
+      ]
+    },
+    "CampaignAttributionRemoveRequest": {
+      "fields": [
+        "target",
+        "source",
+        "external_ref"
+      ],
+      "required": [
+        "target",
+        "source"
+      ]
+    },
+    "CampaignAttributionResponse": {
+      "fields": [
+        "campaign_id",
+        "target",
+        "source",
+        "external_ref",
+        "recorded_at",
+        "metadata"
+      ],
+      "required": [
+        "campaign_id",
+        "target",
+        "source",
+        "external_ref",
+        "recorded_at",
+        "metadata"
+      ]
+    },
+    "CampaignCommunicationLinkRequest": {
+      "fields": [
+        "communication_id",
+        "role",
+        "metadata"
+      ],
+      "required": [
+        "communication_id",
+        "metadata"
+      ]
+    },
+    "CampaignCommunicationUnlinkRequest": {
+      "fields": [
+        "communication_id"
+      ],
+      "required": [
+        "communication_id"
+      ]
+    },
+    "CampaignCommunicationLinkResponse": {
+      "fields": [
+        "campaign_id",
+        "communication_id",
+        "linked_at",
+        "role",
+        "metadata"
+      ],
+      "required": [
+        "campaign_id",
+        "communication_id",
+        "linked_at",
+        "role",
+        "metadata"
+      ]
+    }
+  },
+  "drf_serializer_fields": {
+    "CampaignFilterSerializer": [
+      "status",
+      "owner_id",
+      "include_archived",
+      "limit",
+      "offset"
+    ],
+    "CampaignCreateSerializer": [
+      "key",
+      "name",
+      "description",
+      "starts_at",
+      "ends_at",
+      "owner_id",
+      "metadata"
+    ],
+    "CampaignUpdateSerializer": [
+      "expected_revision",
+      "name",
+      "description",
+      "starts_at",
+      "ends_at",
+      "owner_id",
+      "metadata"
+    ],
+    "CampaignRevisionSerializer": [
+      "expected_revision"
+    ],
+    "CampaignResponseSerializer": [
+      "id",
+      "key",
+      "name",
+      "description",
+      "status",
+      "created_at",
+      "updated_at",
+      "starts_at",
+      "ends_at",
+      "owner_id",
+      "revision",
+      "metadata",
+      "archived_at"
+    ],
+    "CampaignMembersSerializer": [
+      "source",
+      "metadata"
+    ],
+    "CampaignRemoveMembersSerializer": [],
+    "CampaignMemberResponseSerializer": [
+      "campaign_id",
+      "added_at",
+      "source",
+      "metadata"
+    ],
+    "CampaignSegmentAttachSerializer": [
+      "segment_id",
+      "metadata"
+    ],
+    "CampaignSegmentSourceResponseSerializer": [
+      "campaign_id",
+      "segment_id",
+      "segment_revision",
+      "entity_kind",
+      "attached_at",
+      "captured_at",
+      "member_count",
+      "metadata"
+    ],
+    "CampaignAttributionSerializer": [
+      "source",
+      "external_ref",
+      "metadata"
+    ],
+    "CampaignAttributionRemoveSerializer": [
+      "source",
+      "external_ref"
+    ],
+    "CampaignAttributionResponseSerializer": [
+      "campaign_id",
+      "source",
+      "external_ref",
+      "recorded_at",
+      "metadata"
+    ],
+    "CampaignCommunicationLinkSerializer": [
+      "communication_id",
+      "role",
+      "metadata"
+    ],
+    "CampaignCommunicationUnlinkSerializer": [
+      "communication_id"
+    ],
+    "CampaignCommunicationLinkResponseSerializer": [
+      "campaign_id",
+      "communication_id",
+      "linked_at",
+      "role",
+      "metadata"
+    ]
+  },
+  "invariants": {
+    "max_campaign_import_rows": 1000,
+    "unsets": [
+      "name",
+      "description",
+      "starts_at",
+      "ends_at",
+      "owner_id",
+      "metadata"
+    ],
+    "exclude_patch_fields": [
+      "key",
+      "status",
+      "revision",
+      "archived_at"
+    ]
+  },
+  "boundary": "Campaign metadata + lifecycle + direct/Segment audiences + attribution and CommunicationRecord metadata links + Python-only direct-member import/export. No marketing automation, no HTTP file import/export, no global batch atomicity, no snapshot-consistent concurrent export, no universal IAM."
+}
