@@ -385,7 +385,7 @@ The HTTP layer does not expose SQLAlchemy expressions, Django QuerySets,
 repositories or Unit-of-Work objects.
 
 
-## 1.2.0b3 Campaign HTTP (beta candidate, opt-in)
+## 1.2.0b3 Campaign HTTP (GitHub prerelease, opt-in)
 
 Campaign is **not** activated by the existing `create_crm_router(factory)`
 call. To enable it, pass `campaign_access` constructed with a host-verified
@@ -419,4 +419,4 @@ denied before accessing the facade or returning a total/count. The legacy
 routes; it is expressly **not** trusted for Campaign HTTP.
 
 See [Campaign security and configuration](1.2.0b3-campaign-security.md)
-and [1.2.0b3 release candidate notes](../releases/1.2.0b3.md).
+and [1.2.0b3 release notes](../releases/1.2.0b3.md).

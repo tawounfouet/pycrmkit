@@ -1,4 +1,4 @@
-# Campaign Data Operations - 1.2.0b3 (beta candidate)
+# Campaign Data Operations - 1.2.0b3 (GitHub prerelease)
 
 Campaign DataOps adds **Python API** entrypoints for importing direct Campaign members and exporting three separate views. There is no HTTP file-upload endpoint. Import and export must be authorized by your application's caller policy **before** invoking these Python functions. The HTTP Campaign policy is not automatically applied to direct Python calls.
 

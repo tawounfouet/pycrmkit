@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.0b3] - 2026-10-28 (candidate; not published)
+## [1.2.0b3] - 2026-10-28 (GitHub prerelease published)
 
 ### Added
 - Added optional, explicitly secured Campaign HTTP routes for FastAPI and Django REST Framework: metadata/lifecycle, direct members, deduplicated audience/count, captured Segment sources, attribution and CommunicationRecord link metadata.
@@ -15,8 +15,11 @@
 - No Campaign messaging/delivery, full CommunicationRecord content HTTP endpoint, HTTP file upload, atomic batch import or snapshot-consistent export under concurrent writes.
 
 ### Release governance
-- The pre-version-bump implementation source SHA `5e68d7e3082b74c7293b9b9cccf4d3b0883dd003` passed 66 GitHub checks; **new candidate version-bearing SHA requires fresh complete CI**.
-- PR #101 remains draft until latest-head gates are green. No tag, artifacts, GitHub prerelease or PyPI publication has been made for b3.
+- Version-bearing candidate SHA `2127553388a38f4d8c5530ad1b3e3793ad2fad3a` passed 66 GitHub checks; PR #101 was squash-merged.
+- Exact qualified main source SHA `76aff8231ee4fe824088951af2e9ce20a0c54f68` passed 24/24 push workflows (63/63 checks).
+- Immutable annotated tag `v1.2.0b3` points to that qualified SHA. GitHub prerelease published with wheel, sdist, SHA256SUMS and release manifest; publication workflow run `40763832545` succeeded and verified downloaded assets.
+- SHA-256: wheel `c7e5848e7efaef955cfba50e354da0a4abd56db9ef4b505a095c41c7a953e86d`; sdist `b4969514869196ed0cefeadf5c07fb4569bbcb7de66b74f9acf12447ca0e1995`.
+- PyPI publication has not been verified or claimed.
 - Next: `1.2.0rc1 — Campaign Production Qualification`.
 
 

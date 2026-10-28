@@ -241,7 +241,7 @@ operations therefore keep the same domain and adapter semantics as non-HTTP
 consumers.
 
 
-## 1.2.0b3 Campaign HTTP (beta candidate, opt-in)
+## 1.2.0b3 Campaign HTTP (GitHub prerelease, opt-in)
 
 The Django router preserves `create_drf_router()` by default; Campaign
 routes are only registered using `create_drf_router(include_campaigns=True)`

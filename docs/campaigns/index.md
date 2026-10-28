@@ -84,7 +84,7 @@ Campaign
 All Campaign SQLAlchemy repositories participate in the existing
 `SQLAlchemyUnitOfWork`; repository methods do not commit independently.
 
-Django Campaign persistence was delivered in `1.2.0b2`; optional Campaign HTTP and DataOps are planned for `1.2.0b3`.
+Django Campaign persistence was delivered in `1.2.0b2`; optional Campaign HTTP and DataOps were released as the `1.2.0b3` GitHub prerelease.
 
 ## Explicit boundary
 
@@ -273,7 +273,7 @@ See [Django Integration](../integrations/django.md) and
 [1.2.0b2 release notes](../releases/1.2.0b2.md).
 
 
-## Optional Campaign HTTP and Data Operations - 1.2.0b3
+## Optional Campaign HTTP and Data Operations - 1.2.0b3 GitHub prerelease
 
 The Campaign HTTP surface is **opt-in** and facade-backed in both
 FastAPI and Django REST Framework. It includes:
@@ -301,5 +301,5 @@ These functions use the same `crm.campaigns` facade across Memory, SQLAlchemy
 and Django. They do **not** promise atomic bulk import, exactly-once delivery,
 or snapshot-consistent exports during concurrent writes.
 
-[1.2.0b3 candidate notes](../releases/1.2.0b3.md) document the
+[1.2.0b3 release notes](../releases/1.2.0b3.md) document the
 qualification status and release gates.
