@@ -383,3 +383,40 @@ history and SavedQuery execution.
 
 The HTTP layer does not expose SQLAlchemy expressions, Django QuerySets,
 repositories or Unit-of-Work objects.
+
+
+## 1.2.0b3 Campaign HTTP (beta candidate, opt-in)
+
+Campaign is **not** activated by the existing `create_crm_router(factory)`
+call. To enable it, pass `campaign_access` constructed with a host-verified
+identity resolver and explicit authorization policy:
+
+```python
+from pycrmkit.integrations.campaign_security import CampaignSecurityBoundary
+from pycrmkit.integrations.fastapi.campaign_security import CampaignHTTPAccess
+from pycrmkit.integrations.fastapi.router import create_crm_router
+
+# These functions must be implemented by the embedding application.
+security = CampaignSecurityBoundary(
+    resolve_principal=host_verified_principal,
+    authorize=host_campaign_policy,
+)
+campaign_access = CampaignHTTPAccess(build_crm, security)
+app.include_router(
+    create_crm_router(build_crm, campaign_access=campaign_access),
+    prefix="/crm",
+)
+```
+
+The `host_verified_principal`, `host_campaign_policy` and `build_crm` symbols
+above are application-supplied; this is a wiring template, **not** a runnable
+allow-all authentication implementation.
+
+Endpoints include `/crm/campaigns`, members, audience/count, Segment sources,
+attributions and metadata-only communication-links. Unauthorized requests are
+denied before accessing the facade or returning a total/count. The legacy
+`X-Actor-ID` behavior documented above applies only to the *older* generic
+routes; it is expressly **not** trusted for Campaign HTTP.
+
+See [Campaign security and configuration](1.2.0b3-campaign-security.md)
+and [1.2.0b3 release candidate notes](../releases/1.2.0b3.md).
