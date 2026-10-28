@@ -294,7 +294,242 @@ class SavedQueryModel(_TimestampedModel):
         ]
 
 
+
+class CampaignModel(_TimestampedModel):
+    """Campaign aggregate persistence; the domain owns business state and time."""
+
+    id = models.CharField(max_length=36, primary_key=True)
+    key = models.CharField(max_length=120, unique=True)
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=2000, null=True)
+    status = models.CharField(max_length=32, db_index=True)
+    starts_at = models.DateTimeField(null=True)
+    ends_at = models.DateTimeField(null=True)
+    owner_id = models.CharField(max_length=36, null=True, db_index=True)
+    revision = models.PositiveIntegerField()
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+    archived_at = models.DateTimeField(null=True, db_index=True)
+
+    class Meta:
+        db_table = "pycrmkit_campaigns"
+        ordering = ("created_at", "id")
+        indexes = [
+            models.Index(
+                fields=("created_at",),
+                name="ix_dj_campaign_created",
+            ),
+        ]
+
+
+class CampaignMemberModel(models.Model):
+    """Direct audience membership, independent from Segment captures."""
+
+    id = models.BigAutoField(primary_key=True)
+    campaign = models.ForeignKey(
+        CampaignModel,
+        db_column="campaign_id",
+        on_delete=models.CASCADE,
+        related_name="member_rows",
+    )
+    entity_kind = models.CharField(max_length=64)
+    entity_id = models.CharField(max_length=36)
+    added_at = models.DateTimeField()
+    source = models.CharField(max_length=120)
+    actor_id = models.CharField(max_length=255, null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_campaign_members"
+        ordering = ("added_at", "entity_kind", "entity_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("campaign", "entity_kind", "entity_id"),
+                name="uq_dj_campaign_member",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=("entity_kind", "entity_id"),
+                name="ix_dj_campaign_member_entity",
+            ),
+        ]
+
+
+class CampaignSegmentSourceModel(models.Model):
+    """Persistent Segment snapshot source with an internal-only surrogate PK."""
+
+    id = models.BigAutoField(primary_key=True)
+    campaign = models.ForeignKey(
+        CampaignModel,
+        db_column="campaign_id",
+        on_delete=models.CASCADE,
+        related_name="segment_source_rows",
+    )
+    segment_id = models.CharField(max_length=36, db_index=True)
+    segment_revision = models.PositiveIntegerField()
+    entity_kind = models.CharField(max_length=64)
+    attached_at = models.DateTimeField()
+    captured_at = models.DateTimeField()
+    member_count = models.PositiveIntegerField()
+    actor_id = models.CharField(max_length=255, null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_campaign_segment_sources"
+        ordering = ("attached_at", "segment_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("campaign", "segment_id"),
+                name="uq_dj_campaign_source",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=("campaign", "attached_at"),
+                name="ix_dj_campaign_src_attached",
+            ),
+        ]
+
+
+class CampaignSegmentMemberModel(models.Model):
+    """Captured member owned by its exact, persistently materialized source."""
+
+    id = models.BigAutoField(primary_key=True)
+    source = models.ForeignKey(
+        CampaignSegmentSourceModel,
+        db_column="source_id",
+        on_delete=models.CASCADE,
+        related_name="captured_member_rows",
+    )
+    entity_kind = models.CharField(max_length=64)
+    entity_id = models.CharField(max_length=36)
+
+    class Meta:
+        db_table = "pycrmkit_campaign_segment_members"
+        ordering = ("entity_kind", "entity_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("source", "entity_kind", "entity_id"),
+                name="uq_dj_campaign_snapshot",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=("entity_kind", "entity_id"),
+                name="ix_dj_campaign_snap_entity",
+            ),
+        ]
+
+
+class CampaignAttributionModel(models.Model):
+    """Campaign attribution; blank external_ref is the DB form of None."""
+
+    id = models.BigAutoField(primary_key=True)
+    campaign = models.ForeignKey(
+        CampaignModel,
+        db_column="campaign_id",
+        on_delete=models.CASCADE,
+        related_name="attribution_rows",
+    )
+    target_kind = models.CharField(max_length=64)
+    target_id = models.CharField(max_length=36)
+    source = models.CharField(max_length=120, db_index=True)
+    external_ref = models.CharField(max_length=512, default="")
+    recorded_at = models.DateTimeField()
+    actor_id = models.CharField(max_length=255, null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_campaign_attributions"
+        ordering = ("recorded_at", "source", "target_kind", "target_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=(
+                    "campaign",
+                    "target_kind",
+                    "target_id",
+                    "source",
+                    "external_ref",
+                ),
+                name="uq_dj_campaign_attribution",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=("target_kind", "target_id"),
+                name="ix_dj_campaign_attr_target",
+            ),
+            models.Index(
+                fields=("campaign", "recorded_at"),
+                name="ix_dj_campaign_attr_date",
+            ),
+        ]
+
+
+class CampaignCommunicationLinkModel(models.Model):
+    """Campaign-owned reference to a CommunicationRecord (not an FK)."""
+
+    id = models.BigAutoField(primary_key=True)
+    campaign = models.ForeignKey(
+        CampaignModel,
+        db_column="campaign_id",
+        on_delete=models.CASCADE,
+        related_name="communication_link_rows",
+    )
+    communication_id = models.CharField(max_length=36, db_index=True)
+    linked_at = models.DateTimeField()
+    role = models.CharField(max_length=120)
+    actor_id = models.CharField(max_length=255, null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_campaign_communication_links"
+        ordering = ("linked_at", "communication_id", "id")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("campaign", "communication_id"),
+                name="uq_dj_campaign_link",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=("campaign", "linked_at"),
+                name="ix_dj_campaign_link_date",
+            ),
+        ]
+
+
+
+class CommunicationRecordModel(_TimestampedModel):
+    """Django-owned lightweight CRM CommunicationRecord persistence."""
+
+    id = models.CharField(max_length=36, primary_key=True)
+    channel = models.CharField(max_length=32, db_index=True)
+    direction = models.CharField(max_length=32)
+    occurred_at = models.DateTimeField(db_index=True)
+    counterparties_json = models.JSONField(default=list)
+    references_json = models.JSONField(default=list)
+    subject = models.CharField(max_length=500, null=True)
+    intent_id = models.CharField(max_length=36, null=True, unique=True)
+    delivery_attempt_id = models.CharField(max_length=36, null=True, unique=True)
+    external_id = models.CharField(max_length=500, null=True, db_index=True)
+    delivery_status = models.CharField(max_length=32, null=True)
+    last_delivery_event_at = models.DateTimeField(null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_communication_records"
+        ordering = ("-occurred_at", "id")
+
+
 __all__ = [
+    "CommunicationRecordModel",
+    "CampaignAttributionModel",
+    "CampaignCommunicationLinkModel",
+    "CampaignMemberModel",
+    "CampaignModel",
+    "CampaignSegmentMemberModel",
+    "CampaignSegmentSourceModel",
     "ContactAddressModel",
     "ContactEmailModel",
     "ContactModel",

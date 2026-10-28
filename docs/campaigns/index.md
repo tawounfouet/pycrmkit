@@ -250,3 +250,25 @@ Alembic head for the SQLAlchemy adapter is now:
 Revision `0006` is additive and preserves existing 1.1 data. Cross-aggregate
 references to Segment, CommunicationRecord, Contact, Organization, Lead and
 Opportunity remain reference-only rather than database foreign keys.
+
+
+## Django ORM Campaign persistence — 1.2.0b2
+
+The existing headless `crm.campaigns` facade runs with
+`DjangoTransactionBridge`, backed by typed codecs and native Campaign
+repositories for definitions, audiences, and attribution/communication linkage.
+
+Django migration `0004_campaign_persistence` introduces six Campaign tables;
+`0005_communication_record_store` provides transactional native
+`CommunicationRecord` lookup/save and record-existence validation for links.
+This **does not** implement the full Communication repository, outbound email
+sending or delivery events. No Campaign HTTP endpoint is introduced by b2.
+
+Django uses an internal `BigAutoField` for Segment source rows and a real
+`source_id` FK for captured members, whereas SQLAlchemy uses a composite
+source identity. **Do not manage the same physical tables with both Alembic
+and Django migrations.** Django ORM `models.CASCADE` is not a promise of
+PostgreSQL-native `ON DELETE CASCADE`.
+
+See [Django Integration](../integrations/django.md) and
+[1.2.0b2 release notes](../releases/1.2.0b2.md).

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import Protocol
 
 from pycrmkit.campaigns.entities import Campaign, CampaignId
 from pycrmkit.campaigns.linkage import (
@@ -13,12 +14,18 @@ from pycrmkit.campaigns.linkage import (
 from pycrmkit.campaigns.linkage_repository import CampaignLinkageRepository
 from pycrmkit.campaigns.repository import CampaignRepository
 from pycrmkit.communication import CommunicationRecord, CommunicationRecordId
-from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
-from pycrmkit.exceptions import ValidationError
+from pycrmkit.exceptions import IntegrationError, ValidationError
 from pycrmkit.segments import SEGMENTABLE_ENTITY_KINDS, SegmentQueryExecutor
+
+
+class CommunicationRecordLookup(Protocol):
+    """A real, same-transaction store able to validate and hydrate records."""
+
+    def get_record(self, record_id: CommunicationRecordId) -> CommunicationRecord:
+        ...
 
 
 @dataclass(slots=True)
@@ -27,7 +34,7 @@ class CampaignLinkageService:
 
     campaigns: CampaignRepository
     linkage: CampaignLinkageRepository
-    communications: CommunicationRepository
+    communications: CommunicationRecordLookup | None
     entity_resolver: SegmentQueryExecutor
     clock: Clock = field(default_factory=SystemClock)
 
@@ -92,7 +99,7 @@ class CampaignLinkageService:
         metadata: Mapping[str, object] | None = None,
     ) -> CampaignCommunicationLink:
         self._mutable_campaign(campaign_id)
-        self.communications.get_record(communication_id)
+        self._require_communications().get_record(communication_id)
         link = CampaignCommunicationLink(
             campaign_id=campaign_id,
             communication_id=communication_id,
@@ -130,10 +137,11 @@ class CampaignLinkageService:
         campaign_id: CampaignId,
         page: OffsetPageRequest | None = None,
     ) -> Page[CommunicationRecord]:
+        communications = self._require_communications()
         request = page or OffsetPageRequest()
         links = self.communication_links(campaign_id, request)
         records = tuple(
-            self.communications.get_record(link.communication_id)
+            communications.get_record(link.communication_id)
             for link in links.items
         )
         return Page(
@@ -142,6 +150,14 @@ class CampaignLinkageService:
             offset=links.offset,
             total=links.total,
         )
+
+    def _require_communications(self) -> CommunicationRecordLookup:
+        if self.communications is None:
+            raise IntegrationError(
+                "Communication record persistence is not available for this adapter",
+                code="campaign.communication.persistence.unsupported",
+            )
+        return self.communications
 
     def _mutable_campaign(self, campaign_id: CampaignId) -> Campaign:
         campaign = self.campaigns.get(campaign_id)

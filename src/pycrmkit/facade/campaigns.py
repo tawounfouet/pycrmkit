@@ -8,12 +8,12 @@ from datetime import datetime
 from pycrmkit.campaigns import (
     Campaign,
     CampaignAttributionReference,
+    CampaignAttributionUnitOfWork,
     CampaignAudienceService,
     CampaignAudienceUnitOfWork,
     CampaignCommunicationLink,
     CampaignId,
     CampaignLinkageService,
-    CampaignLinkageUnitOfWork,
     CampaignMember,
     CampaignQuery,
     CampaignSegmentSource,
@@ -577,7 +577,7 @@ class CampaignsAPI:
         )
 
     def _linkage_service(self, uow: object) -> CampaignLinkageService:
-        if not isinstance(uow, CampaignLinkageUnitOfWork):
+        if not isinstance(uow, CampaignAttributionUnitOfWork):
             raise IntegrationError(
                 "Campaign attribution/communication linkage is not available "
                 "for this persistence adapter yet",
@@ -586,7 +586,10 @@ class CampaignsAPI:
         return CampaignLinkageService(
             uow.campaigns,
             uow.campaign_linkage,
-            uow.communications,
+            (
+                getattr(uow, "communication_records", None)
+                or getattr(uow, "communications", None)
+            ),
             uow.segment_query_executor,
             clock=self._runtime.clock,
         )

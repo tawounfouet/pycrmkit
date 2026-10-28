@@ -402,3 +402,73 @@ with an explicit adapter capability error.
 Snapshot materialization and bulk Static membership use the same
 `crm.segments` facade as Memory and SQLAlchemy/PostgreSQL. No Django ORM model
 leaks into the domain API.
+
+
+## Campaign persistence in the 1.2.0b2 development branch
+
+**Status: implemented on PR #99; awaiting the complete CI/PostgreSQL release gate.**
+Use the built-in optional Django app and migrate it to its latest revision.
+The existing Campaign services and public Python facade are not Django-specific.
+
+```bash
+python manage.py migrate pycrmkit_crm
+```
+
+The Campaign schema is introduced by `0004_campaign_persistence` and has
+six independent Django ORM tables (Campaign, direct members, materialized
+Segment sources and members, attribution, communication linkage). A separate
+additive migration, `0005_communication_record_store`, supplies a real
+Django-owned record lookup/save boundary for `CommunicationRecord`. It does
+not provide email delivery, intents, attempts, or the entire
+`CommunicationRepository` protocol.
+
+The existing Django `DjangoTransactionBridge` now includes the
+`campaigns`, `campaign_audience`, `campaign_linkage`, and
+`communication_records` (record-level only) properties. They share its
+`transaction.atomic()` and deferred `on_commit` semantics. A consuming
+application can use the standard `CRM(..., uow_factory=...)` facade:
+
+```python
+from typing import cast
+
+from pycrmkit import CRM
+from pycrmkit.config import CRMConfig
+from pycrmkit.core.unit_of_work import UnitOfWork
+from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+
+def uow_factory() -> UnitOfWork:
+    return cast(UnitOfWork, DjangoTransactionBridge())
+
+crm = CRM(
+    uow_factory=uow_factory,
+    config=CRMConfig(audit_enabled=False),
+    webhook_auto_delivery=False,
+)
+
+campaign = crm.campaigns.create(key="django-launch", name="Django Launch")
+print(crm.campaigns.get(campaign.id).key)
+```
+
+The Django bridge remains partial for unrelated CRM bounded contexts.
+The `cast` above only documents the known narrower application capability.
+It does not add missing repositories to the bridge. When a
+`CommunicationRecord` exists inside the Django store,
+`crm.campaigns.link_communication(...)` validates and loads it using
+the **same Django transaction** before saving a Campaign-owned link.
+
+### Deployment and schema ownership
+
+**Do not apply Django Campaign migrations to tables managed by SQLAlchemy/
+Alembic in the same schema.** The Django Segment source has an internal
+`BigAutoField` and captured members reference it with `source_id`;
+SQLAlchemy b1 uses a composite source key and composite child foreign key.
+Identical `pycrmkit_campaign*` table names do **not** imply physical
+compatibility or shared migration ownership. Provision a separate schema or
+database for each persistence adapter until a formally qualified cross-adapter
+data migration exists.
+
+`models.CASCADE` provides Django ORM deletion behavior; this does not by
+itself promise a PostgreSQL `ON DELETE CASCADE` constraint. Database FK
+integrity and ORM-level deletion are tested separately. Production claims
+require the real PostgreSQL CI qualification, especially for concurrent
+revisions, duplicate writes, transaction rollback and schema upgrades.

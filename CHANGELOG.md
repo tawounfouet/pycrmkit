@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.0b2] - 2026-10-28 (candidate; not yet published)
+
+### Added
+- Added six native Django ORM Campaign models and additive migration `0004_campaign_persistence` for campaigns, direct members, captured Segment sources/members, attributions and Communication links.
+- Added Campaign Django codecs and repositories wired through `DjangoTransactionBridge`, with revision CAS and SQL-union audience membership.
+- Added separate `0005_communication_record_store` for transactional Django CommunicationRecord lookup/save, with real existence validation when linking records to Campaigns.
+- Added PostgreSQL 17 migration/constraint, concurrency, rollback and installed-wheel qualification; migration contract tests run in a dedicated database.
+
+### Compatibility and limitations
+- The public Campaign API, Memory and SQLAlchemy adapters retain their existing contracts.
+- Django `communication_records` provides record lookup/save only, **not** the full CommunicationRepository (intents, delivery attempts, delivery events).
+- No Campaign HTTP endpoints or marketing delivery features are included.
+- Django and Alembic Campaign schemas cannot be managed by both migration systems in the same schema; Segment source FK layouts differ.
+- Published v1.2.0b1 and stable v1.1 artifacts remain unchanged.
+
+### Release governance
+- Package version promotion requires a fresh PR CI cycle, exact-main checks after merge, artifact hashes and verification of tag/publication.
+- Next: `1.2.0b3 — HTTP + Data Operations Integration`.
+
+
 ## [1.2.0b1] - 2026-10-27
 
 ### Added

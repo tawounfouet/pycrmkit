@@ -50,6 +50,55 @@ jobs:
       - name: Verify migration/model state
         run: python examples/django/manage.py makemigrations pycrmkit_crm --check --dry-run
 
+      # The migration tests deliberately downgrade to zero and the Django
+      # session fixture tears down its tables. Running them in the reference
+      # application's DB would destroy the schema used by the smoke tests.
+      - name: Create isolated PostgreSQL database for Campaign tests
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from urllib.parse import urlsplit, urlunsplit
+
+          import psycopg
+
+          application_url = os.environ["PYCRMKIT_DATABASE_URL"]
+          parsed = urlsplit(application_url)
+          contract_database = "pycrmkit_django_campaign_contracts"
+          with psycopg.connect(application_url, autocommit=True) as connection:
+              connection.execute(f'CREATE DATABASE "{contract_database}"')
+
+          contract_url = urlunsplit((
+              parsed.scheme,
+              parsed.netloc,
+              f"/{contract_database}",
+              "",
+              "",
+          ))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write(f"PYCRMKIT_DJANGO_TEST_DATABASE_URL={contract_url}\n")
+          PY
+
+      - name: Django Campaign repository and migration tests on isolated PostgreSQL
+        run: pytest tests/integrations/django/test_campaign_models.py tests/integrations/django/test_campaign_persistence.py tests/integrations/django/test_migrations.py -q
+
+      - name: Ensure reference app schema survived isolated migration tests
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg
+
+          with psycopg.connect(os.environ["PYCRMKIT_DATABASE_URL"]) as connection:
+              tables = {
+                  row[0]
+                  for row in connection.execute(
+                      "SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname='public'"
+                  )
+              }
+          assert {"pycrmkit_contacts", "pycrmkit_campaigns", "django_migrations"} <= tables, tables
+          print("Reference app schema preserved after isolated Campaign tests")
+          PY
+
       - name: Source checkout Django/PostgreSQL E2E
         run: |
           state="$(mktemp)"
@@ -71,7 +120,7 @@ jobs:
 
           import pycrmkit
 
-          assert pycrmkit.__version__ == "1.2.0b1"
+          assert pycrmkit.__version__ == "1.2.0b2"
           assert importlib.util.find_spec("django") is None
           assert importlib.util.find_spec("rest_framework") is None
           print("PyCRMKit core-only installed wheel remains Django/DRF-free: OK")
