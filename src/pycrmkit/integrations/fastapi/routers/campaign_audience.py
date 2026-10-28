@@ -5,7 +5,7 @@ Authorization checks precede facade access, including audience cardinality.
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status
@@ -31,7 +31,7 @@ from pycrmkit.integrations.fastapi.pagination import (
 from pycrmkit.integrations.fastapi.schemas import EntityReferenceSchema
 from pycrmkit.segments import SegmentId
 
-_AUTH_ERRORS = {
+_AUTH_ERRORS: dict[int | str, dict[str, Any]] = {
     401: {"description": "Authenticated Campaign principal required"},
     403: {"description": "Campaign permission denied"},
 }
