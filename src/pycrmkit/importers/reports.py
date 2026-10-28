@@ -14,7 +14,6 @@ class ImportStage(StrEnum):
     MAP = "map"
     NORMALIZE = "normalize"
     VALIDATE = "validate"
-    PERSIST = "persist"
 
 
 class ImportRowStatus(StrEnum):
