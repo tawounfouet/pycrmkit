@@ -20,14 +20,20 @@ from pycrmkit.campaigns import (
     CampaignQuery,
     CampaignUnitOfWork,
 )
-from pycrmkit.communication import CommunicationRecordId
+from pycrmkit.communication import (
+    CommunicationAddress,
+    CommunicationChannel,
+    CommunicationDirection,
+    CommunicationRecord,
+    CommunicationRecordId,
+)
 from pycrmkit.config import CRMConfig
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.events import InProcessEventBus
-from pycrmkit.exceptions import ConflictError, DuplicateError, IntegrationError
+from pycrmkit.exceptions import ConflictError, DuplicateError, NotFoundError
 from pycrmkit.integrations.django.campaign_audience import DjangoCampaignAudienceRepository
 from pycrmkit.integrations.django.campaign_codec import (
     campaign_from_model,
@@ -151,20 +157,37 @@ def test_django_facade_persists_audience_segment_snapshot_and_attribution() -> N
     assert crm.campaigns.attributions(campaign.id).items == (attribution,)
     assert crm.campaigns.communication_links(campaign.id).total == 0
 
-    with pytest.raises(IntegrationError) as link_error:
-        crm.campaigns.link_communication(
-            campaign.id, CommunicationRecordId(UUID(int=999))
-        )
-    assert link_error.value.code == "campaign.communication.persistence.unsupported"
+    unknown_id = CommunicationRecordId(UUID(int=999))
+    with pytest.raises(NotFoundError) as missing:
+        crm.campaigns.link_communication(campaign.id, unknown_id)
+    assert missing.value.code == "communication.record.not_found"
 
-    with pytest.raises(IntegrationError) as records_error:
-        crm.campaigns.communications(campaign.id)
-    assert records_error.value.code == "campaign.communication.persistence.unsupported"
+    record = CommunicationRecord(
+        id=CommunicationRecordId(UUID(int=998)),
+        created_at=NOW,
+        updated_at=NOW,
+        channel=CommunicationChannel.EMAIL,
+        direction=CommunicationDirection.OUTBOUND,
+        occurred_at=NOW,
+        counterparties=(
+            CommunicationAddress(CommunicationChannel.EMAIL, "ada@example.com"),
+        ),
+        references=(ada_ref,),
+        subject="Django native",
+        metadata={"nested": {"campaign": True}},
+    )
+    with DjangoTransactionBridge() as bridge:
+        bridge.communications.save_record(record)
+        bridge.commit()
+    linked = crm.campaigns.link_communication(campaign.id, record.id)
+    assert linked.communication_id == record.id
+    assert crm.campaigns.communications(campaign.id).items == (record,)
 
     another = _crm()
     assert another.campaigns.get(campaign.id) == campaign
     assert another.campaigns.audience(campaign.id).items == (ada_ref,)
     assert another.campaigns.attributions(campaign.id).items == (attribution,)
+    assert another.campaigns.communications(campaign.id).items == (record,)
 
 
 def test_django_campaign_rollback_discards_all_state() -> None:

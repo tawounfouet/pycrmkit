@@ -14,6 +14,7 @@ from pycrmkit.exceptions import InvalidStateError, RepositoryError
 from pycrmkit.integrations.django.campaign_audience import DjangoCampaignAudienceRepository
 from pycrmkit.integrations.django.campaign_linkage import DjangoCampaignLinkageRepository
 from pycrmkit.integrations.django.campaign_repositories import DjangoCampaignRepository
+from pycrmkit.integrations.django.communication_records import DjangoCommunicationRecordStore
 from pycrmkit.integrations.django.repositories import (
     DjangoContactRepository,
     DjangoExternalIdentityRepository,
@@ -50,6 +51,7 @@ class DjangoTransactionBridge:
         self._joined_ambient_transaction = False
         self._atomic: transaction.Atomic | None = None
         self._pending_events: list[DomainEvent] = []
+        self._communications: DjangoCommunicationRecordStore | None = None
         self._campaigns: DjangoCampaignRepository | None = None
         self._campaign_audience: DjangoCampaignAudienceRepository | None = None
         self._campaign_linkage: DjangoCampaignLinkageRepository | None = None
@@ -61,6 +63,12 @@ class DjangoTransactionBridge:
         self._saved_queries: DjangoSavedQueryRepository | None = None
         self._segment_memberships: DjangoSegmentMembershipRepository | None = None
         self._segment_query_executor: DjangoSegmentQueryExecutor | None = None
+
+    @property
+    def communications(self) -> DjangoCommunicationRecordStore:
+        self._ensure_writable()
+        assert self._communications is not None
+        return self._communications
 
     @property
     def campaigns(self) -> DjangoCampaignRepository:
@@ -255,6 +263,7 @@ class DjangoTransactionBridge:
             self._atomic = None
 
     def _bind_repositories(self) -> None:
+        self._communications = DjangoCommunicationRecordStore()
         self._campaigns = DjangoCampaignRepository()
         self._campaign_audience = DjangoCampaignAudienceRepository()
         self._campaign_linkage = DjangoCampaignLinkageRepository()
@@ -268,6 +277,7 @@ class DjangoTransactionBridge:
         self._segment_query_executor = DjangoSegmentQueryExecutor()
 
     def _unbind_repositories(self) -> None:
+        self._communications = None
         self._campaigns = None
         self._campaign_audience = None
         self._campaign_linkage = None

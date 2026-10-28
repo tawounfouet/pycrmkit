@@ -23,6 +23,7 @@ TABLES = {
     "pycrmkit_segments",
     "pycrmkit_segment_members",
     "pycrmkit_saved_queries",
+    "pycrmkit_communication_records",
     "pycrmkit_campaigns",
     "pycrmkit_campaign_members",
     "pycrmkit_campaign_segment_sources",
@@ -46,6 +47,11 @@ def test_initial_migration_is_discoverable_and_applied() -> None:
     ) in MigrationRecorder(connection).applied_migrations()
     assert ("pycrmkit_crm", "0003_segmentation") in loader.graph.nodes
     assert ("pycrmkit_crm", "0004_campaign_persistence") in loader.graph.nodes
+    assert ("pycrmkit_crm", "0005_communication_record_store") in loader.graph.nodes
+    assert (
+        "pycrmkit_crm",
+        "0005_communication_record_store",
+    ) in MigrationRecorder(connection).applied_migrations()
     assert (
         "pycrmkit_crm",
         "0004_campaign_persistence",

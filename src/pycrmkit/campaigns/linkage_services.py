@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import Protocol
 
 from pycrmkit.campaigns.entities import Campaign, CampaignId
 from pycrmkit.campaigns.linkage import (
@@ -13,12 +14,18 @@ from pycrmkit.campaigns.linkage import (
 from pycrmkit.campaigns.linkage_repository import CampaignLinkageRepository
 from pycrmkit.campaigns.repository import CampaignRepository
 from pycrmkit.communication import CommunicationRecord, CommunicationRecordId
-from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import Clock, SystemClock
 from pycrmkit.exceptions import IntegrationError, ValidationError
 from pycrmkit.segments import SEGMENTABLE_ENTITY_KINDS, SegmentQueryExecutor
+
+
+class CommunicationRecordLookup(Protocol):
+    """A real, same-transaction store able to validate and hydrate records."""
+
+    def get_record(self, record_id: CommunicationRecordId) -> CommunicationRecord:
+        ...
 
 
 @dataclass(slots=True)
@@ -27,7 +34,7 @@ class CampaignLinkageService:
 
     campaigns: CampaignRepository
     linkage: CampaignLinkageRepository
-    communications: CommunicationRepository | None
+    communications: CommunicationRecordLookup | None
     entity_resolver: SegmentQueryExecutor
     clock: Clock = field(default_factory=SystemClock)
 
@@ -144,7 +151,7 @@ class CampaignLinkageService:
             total=links.total,
         )
 
-    def _require_communications(self) -> CommunicationRepository:
+    def _require_communications(self) -> CommunicationRecordLookup:
         if self.communications is None:
             raise IntegrationError(
                 "Communication record persistence is not available for this adapter",

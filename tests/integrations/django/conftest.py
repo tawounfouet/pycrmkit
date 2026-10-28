@@ -35,6 +35,7 @@ django.setup()
 
 from pycrmkit.integrations.django.models import (  # noqa: E402
     CampaignModel,
+    CommunicationRecordModel,
     ContactModel,
     ExternalIdentityModel,
     OrganizationModel,
@@ -70,6 +71,7 @@ def clean_django_rows(django_schema: None) -> None:
     """Keep reusable contract and transaction cases isolated."""
 
     CampaignModel.objects.all().delete()
+    CommunicationRecordModel.objects.all().delete()
     SegmentMemberModel.objects.all().delete()
     SegmentModel.objects.all().delete()
     SavedQueryModel.objects.all().delete()

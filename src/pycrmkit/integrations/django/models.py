@@ -499,7 +499,31 @@ class CampaignCommunicationLinkModel(models.Model):
         ]
 
 
+
+class CommunicationRecordModel(_TimestampedModel):
+    """Django-owned lightweight CRM CommunicationRecord persistence."""
+
+    id = models.CharField(max_length=36, primary_key=True)
+    channel = models.CharField(max_length=32, db_index=True)
+    direction = models.CharField(max_length=32)
+    occurred_at = models.DateTimeField(db_index=True)
+    counterparties_json = models.JSONField(default=list)
+    references_json = models.JSONField(default=list)
+    subject = models.CharField(max_length=500, null=True)
+    intent_id = models.CharField(max_length=36, null=True, unique=True)
+    delivery_attempt_id = models.CharField(max_length=36, null=True, unique=True)
+    external_id = models.CharField(max_length=500, null=True, db_index=True)
+    delivery_status = models.CharField(max_length=32, null=True)
+    last_delivery_event_at = models.DateTimeField(null=True)
+    metadata_json = models.JSONField(db_column="metadata", default=dict)
+
+    class Meta:
+        db_table = "pycrmkit_communication_records"
+        ordering = ("-occurred_at", "id")
+
+
 __all__ = [
+    "CommunicationRecordModel",
     "CampaignAttributionModel",
     "CampaignCommunicationLinkModel",
     "CampaignMemberModel",
