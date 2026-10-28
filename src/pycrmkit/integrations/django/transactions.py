@@ -11,6 +11,9 @@ from pycrmkit.events.bus import InProcessEventBus
 from pycrmkit.events.envelope import DomainEvent
 from pycrmkit.events.publisher import EventPublisher
 from pycrmkit.exceptions import InvalidStateError, RepositoryError
+from pycrmkit.integrations.django.campaign_audience import DjangoCampaignAudienceRepository
+from pycrmkit.integrations.django.campaign_linkage import DjangoCampaignLinkageRepository
+from pycrmkit.integrations.django.campaign_repositories import DjangoCampaignRepository
 from pycrmkit.integrations.django.repositories import (
     DjangoContactRepository,
     DjangoExternalIdentityRepository,
@@ -47,6 +50,9 @@ class DjangoTransactionBridge:
         self._joined_ambient_transaction = False
         self._atomic: transaction.Atomic | None = None
         self._pending_events: list[DomainEvent] = []
+        self._campaigns: DjangoCampaignRepository | None = None
+        self._campaign_audience: DjangoCampaignAudienceRepository | None = None
+        self._campaign_linkage: DjangoCampaignLinkageRepository | None = None
         self._contacts: DjangoContactRepository | None = None
         self._external_identities: DjangoExternalIdentityRepository | None = None
         self._organizations: DjangoOrganizationRepository | None = None
@@ -55,6 +61,24 @@ class DjangoTransactionBridge:
         self._saved_queries: DjangoSavedQueryRepository | None = None
         self._segment_memberships: DjangoSegmentMembershipRepository | None = None
         self._segment_query_executor: DjangoSegmentQueryExecutor | None = None
+
+    @property
+    def campaigns(self) -> DjangoCampaignRepository:
+        self._ensure_writable()
+        assert self._campaigns is not None
+        return self._campaigns
+
+    @property
+    def campaign_audience(self) -> DjangoCampaignAudienceRepository:
+        self._ensure_writable()
+        assert self._campaign_audience is not None
+        return self._campaign_audience
+
+    @property
+    def campaign_linkage(self) -> DjangoCampaignLinkageRepository:
+        self._ensure_writable()
+        assert self._campaign_linkage is not None
+        return self._campaign_linkage
 
     @property
     def contacts(self) -> DjangoContactRepository:
@@ -231,6 +255,9 @@ class DjangoTransactionBridge:
             self._atomic = None
 
     def _bind_repositories(self) -> None:
+        self._campaigns = DjangoCampaignRepository()
+        self._campaign_audience = DjangoCampaignAudienceRepository()
+        self._campaign_linkage = DjangoCampaignLinkageRepository()
         self._contacts = DjangoContactRepository()
         self._external_identities = DjangoExternalIdentityRepository()
         self._organizations = DjangoOrganizationRepository()
@@ -241,6 +268,9 @@ class DjangoTransactionBridge:
         self._segment_query_executor = DjangoSegmentQueryExecutor()
 
     def _unbind_repositories(self) -> None:
+        self._campaigns = None
+        self._campaign_audience = None
+        self._campaign_linkage = None
         self._contacts = None
         self._external_identities = None
         self._organizations = None
