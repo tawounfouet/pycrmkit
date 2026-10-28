@@ -24,6 +24,9 @@ from pycrmkit.integrations.fastapi.pagination import (
 from pycrmkit.integrations.fastapi.routers.campaign_audience import (
     create_campaign_audience_router,
 )
+from pycrmkit.integrations.fastapi.routers.campaign_linkage import (
+    create_campaign_linkage_router,
+)
 
 _AUTH_ERRORS: dict[int | str, dict[str, Any]] = {
     401: {"description": "Verified Campaign principal is required"},
@@ -190,6 +193,7 @@ def create_campaigns_router(access: CampaignHTTPAccess) -> APIRouter:
         )
 
     router.include_router(create_campaign_audience_router(access))
+    router.include_router(create_campaign_linkage_router(access))
     return router
 
 
