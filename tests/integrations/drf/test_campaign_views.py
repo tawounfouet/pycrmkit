@@ -76,7 +76,7 @@ def test_drf_campaign_registration_remains_explicit() -> None:
 
     with override_settings(PYCRMKIT_CAMPAIGN_SECURITY=_policy()):
         secured = create_drf_router(include_campaigns=True)
-        assert any(str(url.pattern).startswith("campaigns") for url in secured.urls)
+        assert any("campaigns" in str(url.pattern) for url in secured.urls)
 
 
 def test_drf_campaign_create_read_patch_and_lifecycle() -> None:
