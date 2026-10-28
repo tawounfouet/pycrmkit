@@ -14,7 +14,10 @@ from pycrmkit.campaigns.linkage import (
 )
 from pycrmkit.campaigns.linkage_repository import CampaignLinkageRepository
 from pycrmkit.campaigns.linkage_services import CampaignLinkageService
-from pycrmkit.campaigns.linkage_unit_of_work import CampaignLinkageUnitOfWork
+from pycrmkit.campaigns.linkage_unit_of_work import (
+    CampaignAttributionUnitOfWork,
+    CampaignLinkageUnitOfWork,
+)
 from pycrmkit.campaigns.queries import CampaignQuery
 from pycrmkit.campaigns.repository import CampaignRepository
 from pycrmkit.campaigns.services import CampaignService
@@ -26,6 +29,7 @@ __all__ = [
     "CampaignAudienceService",
     "CampaignAudienceUnitOfWork",
     "CampaignAttributionReference",
+    "CampaignAttributionUnitOfWork",
     "CampaignCommunicationLink",
     "CampaignId",
     "CampaignLinkageRepository",
