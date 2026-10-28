@@ -18,7 +18,7 @@ import pytest
 
 from pycrmkit import CRM
 from pycrmkit import campaigns as campaign_api
-from pycrmkit.campaigns import CampaignQuery, CampaignStatus, CampaignUpdate, UNSET
+from pycrmkit.campaigns import UNSET, CampaignQuery, CampaignStatus, CampaignUpdate
 from pycrmkit.events import BUILTIN_EVENT_TYPES, default_event_registry
 from pycrmkit.exceptions import PyCRMKitError, ValidationError
 
@@ -167,6 +167,10 @@ def test_fastapi_campaign_pydantic_field_contract_when_extra_installed() -> None
 def test_drf_campaign_serializer_fields_when_extra_installed() -> None:
     pytest.importorskip("django")
     pytest.importorskip("rest_framework")
+    from django.conf import settings
+
+    if not settings.configured:
+        pytest.skip("DRF schema freeze runs in tests/integrations/drf with configured settings")
     serializers = importlib.import_module(
         "pycrmkit.integrations.django.drf.campaign_serializers"
     )
