@@ -6,7 +6,6 @@ They must not be imported by the framework-neutral core.
 
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -30,31 +29,9 @@ from pycrmkit.campaigns import (
     CampaignUpdate,
 )
 from pycrmkit.core.ids import EntityId
+from pycrmkit.integrations.campaign_payload_validation import validate_campaign_metadata
 from pycrmkit.core.references import EntityReference
 from pycrmkit.integrations.fastapi.schemas import EntityReferenceSchema
-
-
-def _bounded_metadata(value: dict[str, Any]) -> dict[str, Any]:
-    """Keep user-controlled JSON metadata bounded before reaching the facade."""
-    try:
-        encoded = json.dumps(value, allow_nan=False, ensure_ascii=False)
-    except (TypeError, ValueError) as exc:
-        raise ValueError("metadata must contain only finite JSON values") from exc
-    if len(encoded.encode("utf-8")) > 16384:
-        raise ValueError("metadata may not exceed 16384 UTF-8 bytes")
-
-    def depth(item: object, current: int) -> None:
-        if current > 8:
-            raise ValueError("metadata nesting depth may not exceed 8")
-        if isinstance(item, dict):
-            for child in item.values():
-                depth(child, current + 1)
-        elif isinstance(item, list):
-            for child in item:
-                depth(child, current + 1)
-
-    depth(value, 0)
-    return value
 
 
 class CampaignAPIModel(BaseModel):
@@ -75,7 +52,7 @@ class CampaignCreateRequest(CampaignAPIModel):
     @field_validator("metadata")
     @classmethod
     def check_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
-        return _bounded_metadata(value)
+        return validate_campaign_metadata(value)
 
 
 class CampaignUpdateRequest(CampaignAPIModel):
@@ -102,7 +79,7 @@ class CampaignUpdateRequest(CampaignAPIModel):
     def check_metadata(
         cls, value: dict[str, Any] | None
     ) -> dict[str, Any] | None:
-        return _bounded_metadata(value) if value is not None else None
+        return validate_campaign_metadata(value) if value is not None else None
 
     def to_domain(self) -> CampaignUpdate:
         """Only supplied fields are mapped; omitted values stay domain UNSET."""
@@ -171,7 +148,7 @@ class CampaignMembersRequest(CampaignAPIModel):
     @field_validator("metadata")
     @classmethod
     def check_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
-        return _bounded_metadata(value)
+        return validate_campaign_metadata(value)
 
     @model_validator(mode="after")
     def no_repeated_member(self) -> CampaignMembersRequest:
@@ -216,7 +193,7 @@ class CampaignSegmentAttachRequest(CampaignAPIModel):
     @field_validator("metadata")
     @classmethod
     def check_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
-        return _bounded_metadata(value)
+        return validate_campaign_metadata(value)
 
 
 class CampaignSegmentSourceResponse(CampaignAPIModel):
@@ -254,7 +231,7 @@ class CampaignAttributionRequest(CampaignAPIModel):
     @field_validator("metadata")
     @classmethod
     def check_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
-        return _bounded_metadata(value)
+        return validate_campaign_metadata(value)
 
 
 class CampaignAttributionRemoveRequest(CampaignAPIModel):
@@ -293,7 +270,7 @@ class CampaignCommunicationLinkRequest(CampaignAPIModel):
     @field_validator("metadata")
     @classmethod
     def check_metadata(cls, value: dict[str, Any]) -> dict[str, Any]:
-        return _bounded_metadata(value)
+        return validate_campaign_metadata(value)
 
 
 class CampaignCommunicationUnlinkRequest(CampaignAPIModel):
