@@ -70,7 +70,7 @@
     "invalid_patch": 422
   },
   "error_codes": {
-    "missing": "resource.not_found",
+    "missing": "campaign.not_found",
     "stale_revision": "campaign.revision.conflict",
     "invalid_patch": "request.validation_error"
   }
