@@ -118,7 +118,11 @@ def test_campaign_member_limit_rejects_more_than_1000() -> None:
 def test_campaign_metadata_size_and_depth_are_bounded() -> None:
     with pytest.raises(PydanticValidationError):
         CampaignCreateRequest.model_validate(
-            {"key": "renewal-q4", "name": "Renewal Q4", "metadata": {"data": "x" * 17000}}
+            {
+                "key": "renewal-q4",
+                "name": "Renewal Q4",
+                "metadata": {"data": "x" * 17000},
+            }
         )
 
     nested: dict[str, object] = {}
