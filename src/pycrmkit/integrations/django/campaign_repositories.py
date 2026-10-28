@@ -23,7 +23,6 @@ from pycrmkit.integrations.django.campaign_codec import (
 )
 from pycrmkit.integrations.django.models import CampaignModel
 
-
 _T = TypeVar("_T")
 
 

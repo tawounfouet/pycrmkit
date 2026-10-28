@@ -10,7 +10,6 @@ from pycrmkit.communication.repository import CommunicationRepository
 from pycrmkit.segments import SegmentQueryExecutor
 
 
-
 @runtime_checkable
 class CampaignAttributionUnitOfWork(Protocol):
     """Minimum capability for attribution and stored communication links.
