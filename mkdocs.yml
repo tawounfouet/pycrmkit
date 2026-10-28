@@ -204,6 +204,7 @@ nav:
       - 1.2.0a2 Campaign Membership & Segment Sources: releases/1.2.0a2.md
       - 1.2.0a3 Attribution & Communication Linkage: releases/1.2.0a3.md
       - 1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence: releases/1.2.0b1.md
+      - 1.2.0b2 Django Campaign Persistence: releases/1.2.0b2.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
