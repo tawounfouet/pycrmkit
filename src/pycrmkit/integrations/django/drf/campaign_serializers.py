@@ -79,6 +79,16 @@ class AwareDateTimeField(serializers.DateTimeField):
         return super().to_internal_value(value)
 
 
+class CampaignFilterSerializer(StrictCampaignSerializer):
+    status = serializers.ChoiceField(
+        choices=[item.value for item in CampaignStatus], required=False
+    )
+    owner_id = serializers.UUIDField(required=False)
+    include_archived = serializers.BooleanField(required=False, default=False)
+    limit = serializers.IntegerField(required=False, min_value=1, max_value=200)
+    offset = serializers.IntegerField(required=False, min_value=0)
+
+
 class CampaignCreateSerializer(StrictCampaignSerializer):
     key = serializers.CharField(max_length=120)
     name = serializers.CharField(max_length=200)
@@ -305,6 +315,7 @@ def campaign_communication_link_payload(
 __all__ = [
     "StrictCampaignSerializer",
     "AwareDateTimeField",
+    "CampaignFilterSerializer",
     "CampaignCreateSerializer",
     "CampaignUpdateSerializer",
     "CampaignRevisionSerializer",
