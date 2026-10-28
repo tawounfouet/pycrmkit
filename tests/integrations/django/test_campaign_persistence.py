@@ -40,6 +40,7 @@ from pycrmkit.core.time import FixedClock
 from pycrmkit.core.unit_of_work import UnitOfWork
 from pycrmkit.events import InProcessEventBus
 from pycrmkit.exceptions import ConflictError, DuplicateError, NotFoundError
+from pycrmkit.importers import IterableReader
 from pycrmkit.integrations.django.campaign_audience import DjangoCampaignAudienceRepository
 from pycrmkit.integrations.django.campaign_codec import (
     campaign_from_model,
@@ -49,7 +50,6 @@ from pycrmkit.integrations.django.campaign_linkage import DjangoCampaignLinkageR
 from pycrmkit.integrations.django.campaign_repositories import DjangoCampaignRepository
 from pycrmkit.integrations.django.models import CampaignModel
 from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
-from pycrmkit.importers import IterableReader
 
 NOW = datetime(2026, 10, 28, 8, 30, tzinfo=UTC)
 
