@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, status
@@ -25,7 +25,7 @@ from pycrmkit.integrations.fastapi.pagination import (
     pagination_params,
 )
 
-_AUTH_ERRORS = {
+_AUTH_ERRORS: dict[int | str, dict[str, Any]] = {
     401: {"description": "Verified Campaign principal is required"},
     403: {"description": "Campaign action or resource access is denied"},
 }
