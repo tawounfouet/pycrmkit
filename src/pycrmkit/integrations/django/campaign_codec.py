@@ -13,14 +13,15 @@ from pycrmkit.campaigns import (
 )
 from pycrmkit.communication import CommunicationRecordId
 from copy import deepcopy
-from typing import Any, cast
+from datetime import UTC, datetime
+from typing import overload
 
 from pycrmkit.contacts import ContactId
 from pycrmkit.leads import LeadId
 from pycrmkit.opportunities import OpportunityId
 from pycrmkit.organizations import OrganizationId
 from pycrmkit.core.ids import EntityId, UUIDId
-from pycrmkit.core.time import as_utc
+
 from pycrmkit.core.references import EntityReference
 from pycrmkit.segments import SegmentId
 
@@ -34,6 +35,23 @@ from pycrmkit.integrations.django.models import (
 )
 
 
+
+
+@overload
+def aware(value: datetime) -> datetime: ...
+
+
+@overload
+def aware(value: None) -> None: ...
+
+
+def aware(value: datetime | None) -> datetime | None:
+    """Normalize DB timestamps including nullable and SQLite-naive variants."""
+    if value is None:
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 def entity_reference(kind: str, identifier: str) -> EntityReference:
@@ -79,18 +97,18 @@ def campaign_from_model(model: CampaignModel) -> Campaign:
 
     return Campaign(
         id=CampaignId.parse(model.id),
-        created_at=as_utc(model.created_at),
-        updated_at=as_utc(model.updated_at),
+        created_at=aware(model.created_at),
+        updated_at=aware(model.updated_at),
         key=model.key,
         name=model.name,
         description=model.description,
         status=CampaignStatus(model.status),
-        starts_at=as_utc(model.starts_at),
-        ends_at=as_utc(model.ends_at),
+        starts_at=aware(model.starts_at),
+        ends_at=aware(model.ends_at),
         owner_id=EntityId.parse(model.owner_id) if model.owner_id is not None else None,
         revision=model.revision,
         metadata=deepcopy(dict(model.metadata_json or {})),
-        archived_at=as_utc(model.archived_at),
+        archived_at=aware(model.archived_at),
     )
 
 
@@ -114,7 +132,7 @@ def campaign_member_from_model(model: CampaignMemberModel) -> CampaignMember:
     return CampaignMember(
         campaign_id=CampaignId.parse(model.campaign_id),
         entity=entity_reference(model.entity_kind, model.entity_id),
-        added_at=as_utc(model.added_at),
+        added_at=aware(model.added_at),
         source=model.source,
         actor_id=model.actor_id,
         metadata=deepcopy(dict(model.metadata_json or {})),
@@ -151,8 +169,8 @@ def campaign_segment_source_from_model(
         segment_id=SegmentId.parse(model.segment_id),
         segment_revision=model.segment_revision,
         entity_kind=model.entity_kind,
-        attached_at=as_utc(model.attached_at),
-        captured_at=as_utc(model.captured_at),
+        attached_at=aware(model.attached_at),
+        captured_at=aware(model.captured_at),
         member_count=model.member_count,
         actor_id=model.actor_id,
         metadata=deepcopy(dict(model.metadata_json or {})),
@@ -206,7 +224,7 @@ def campaign_attribution_from_model(
         campaign_id=CampaignId.parse(model.campaign_id),
         target=entity_reference(model.target_kind, model.target_id),
         source=model.source,
-        recorded_at=as_utc(model.recorded_at),
+        recorded_at=aware(model.recorded_at),
         external_ref=_attribution_external_ref_from_db(model.external_ref),
         actor_id=model.actor_id,
         metadata=deepcopy(dict(model.metadata_json or {})),
@@ -236,7 +254,7 @@ def campaign_communication_link_from_model(
     return CampaignCommunicationLink(
         campaign_id=CampaignId.parse(model.campaign_id),
         communication_id=CommunicationRecordId.parse(model.communication_id),
-        linked_at=as_utc(model.linked_at),
+        linked_at=aware(model.linked_at),
         role=model.role,
         actor_id=model.actor_id,
         metadata=deepcopy(dict(model.metadata_json or {})),
