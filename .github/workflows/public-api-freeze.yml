@@ -50,6 +50,6 @@ jobs:
           cp tests/compatibility/public_api_v1_1_candidate.json /tmp/pycrmkit-api-freeze/
           (
             cd /tmp
-            PYTHONPATH="" "$GITHUB_WORKSPACE/.venv-public-api/bin/python" -I -m pytest \\
+            PYTHONPATH="" "$GITHUB_WORKSPACE/.venv-public-api/bin/python" -I -m pytest \
               /tmp/pycrmkit-api-freeze/test_public_api_v1_2_campaign_candidate.py -q
           )
