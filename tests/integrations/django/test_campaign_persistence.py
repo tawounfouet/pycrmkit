@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import io
+import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from threading import Barrier
@@ -21,6 +23,8 @@ from pycrmkit.campaigns import (
     CampaignLinkageRepository,
     CampaignQuery,
     CampaignUnitOfWork,
+    export_campaign_records,
+    import_campaign_members,
 )
 from pycrmkit.communication import (
     CommunicationAddress,
@@ -45,6 +49,7 @@ from pycrmkit.integrations.django.campaign_linkage import DjangoCampaignLinkageR
 from pycrmkit.integrations.django.campaign_repositories import DjangoCampaignRepository
 from pycrmkit.integrations.django.models import CampaignModel
 from pycrmkit.integrations.django.transactions import DjangoTransactionBridge
+from pycrmkit.importers import IterableReader
 
 NOW = datetime(2026, 10, 28, 8, 30, tzinfo=UTC)
 
@@ -248,3 +253,54 @@ def test_postgresql_concurrent_campaign_revision_cas() -> None:
         results = list(executor.map(update, ("writer-one", "writer-two")))
     assert sorted(results) == ["conflict", "success"]
     assert DjangoCampaignRepository().get(original.id).revision == 2
+
+
+def test_django_campaign_dataops_direct_members_and_replay_survive_reload() -> None:
+    """Exercise b3 imports and exports through the real Django UoW."""
+    crm = _crm()
+    ada = crm.contacts.create(display_name="Import Ada")
+    grace = crm.contacts.create(display_name="Import Grace")
+    campaign = crm.campaigns.create(key="django-b3-import", name="Django Import")
+    segment = crm.segments.create_static(
+        key="django-b3-captured", name="Captured", entity_kind="contact"
+    )
+    crm.segments.add_member(
+        segment.id, EntityReference("contact", ada.id)
+    )
+    crm.campaigns.attach_segment_source(campaign.id, segment.id)
+
+    values = [
+        {"entity_kind": "contact", "entity_id": str(ada.id)},
+        {"entity_kind": "contact", "entity_id": str(grace.id)},
+        {"entity_kind": "contact", "entity_id": str(ada.id)},
+    ]
+    report = import_campaign_members(
+        crm.campaigns,
+        campaign.id,
+        IterableReader(values),
+        source="django-b3-import",
+    )
+    assert report.rows_created == 2
+    assert report.duplicates == 1
+    restored = _crm()
+    assert restored.campaigns.members(campaign.id).total == 2
+    assert restored.campaigns.audience_count(campaign.id) == 2
+    assert restored.campaigns.segment_sources(campaign.id).total == 1
+
+    replayed = import_campaign_members(
+        restored.campaigns, campaign.id, IterableReader(values)
+    )
+    assert replayed.rows_created == 0
+    assert replayed.duplicates == 3
+
+    output = io.StringIO()
+    assert export_campaign_records(
+        restored.campaigns, campaign.id, output,
+        kind="direct", format="jsonl", page_size=1
+    ) == 2
+    lines = [json.loads(row) for row in output.getvalue().splitlines()]
+    assert {row["entity_id"] for row in lines} == {
+        str(ada.id), str(grace.id)
+    }
+    assert all(row["source"] == "django-b3-import" for row in lines)
+    assert all("actor_id" not in row for row in lines)
