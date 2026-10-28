@@ -586,7 +586,10 @@ class CampaignsAPI:
         return CampaignLinkageService(
             uow.campaigns,
             uow.campaign_linkage,
-            getattr(uow, "communications", None),
+            (
+                getattr(uow, "communication_records", None)
+                or getattr(uow, "communications", None)
+            ),
             uow.segment_query_executor,
             clock=self._runtime.clock,
         )

@@ -179,7 +179,7 @@ def test_django_facade_persists_audience_segment_snapshot_and_attribution() -> N
         metadata={"nested": {"campaign": True}},
     )
     with DjangoTransactionBridge() as bridge:
-        bridge.communications.save_record(record)
+        bridge.communication_records.save_record(record)
         bridge.commit()
     linked = crm.campaigns.link_communication(campaign.id, record.id)
     assert linked.communication_id == record.id

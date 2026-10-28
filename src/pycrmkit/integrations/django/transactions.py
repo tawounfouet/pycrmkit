@@ -51,7 +51,7 @@ class DjangoTransactionBridge:
         self._joined_ambient_transaction = False
         self._atomic: transaction.Atomic | None = None
         self._pending_events: list[DomainEvent] = []
-        self._communications: DjangoCommunicationRecordStore | None = None
+        self._communication_records: DjangoCommunicationRecordStore | None = None
         self._campaigns: DjangoCampaignRepository | None = None
         self._campaign_audience: DjangoCampaignAudienceRepository | None = None
         self._campaign_linkage: DjangoCampaignLinkageRepository | None = None
@@ -65,10 +65,10 @@ class DjangoTransactionBridge:
         self._segment_query_executor: DjangoSegmentQueryExecutor | None = None
 
     @property
-    def communications(self) -> DjangoCommunicationRecordStore:
+    def communication_records(self) -> DjangoCommunicationRecordStore:
         self._ensure_writable()
-        assert self._communications is not None
-        return self._communications
+        assert self._communication_records is not None
+        return self._communication_records
 
     @property
     def campaigns(self) -> DjangoCampaignRepository:
@@ -263,7 +263,7 @@ class DjangoTransactionBridge:
             self._atomic = None
 
     def _bind_repositories(self) -> None:
-        self._communications = DjangoCommunicationRecordStore()
+        self._communication_records = DjangoCommunicationRecordStore()
         self._campaigns = DjangoCampaignRepository()
         self._campaign_audience = DjangoCampaignAudienceRepository()
         self._campaign_linkage = DjangoCampaignLinkageRepository()
@@ -277,7 +277,7 @@ class DjangoTransactionBridge:
         self._segment_query_executor = DjangoSegmentQueryExecutor()
 
     def _unbind_repositories(self) -> None:
-        self._communications = None
+        self._communication_records = None
         self._campaigns = None
         self._campaign_audience = None
         self._campaign_linkage = None

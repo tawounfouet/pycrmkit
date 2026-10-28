@@ -424,7 +424,7 @@ not provide email delivery, intents, attempts, or the entire
 
 The existing Django `DjangoTransactionBridge` now includes the
 `campaigns`, `campaign_audience`, `campaign_linkage`, and
-`communications` (record-level only) properties. They share its
+`communication_records` (record-level only) properties. They share its
 `transaction.atomic()` and deferred `on_commit` semantics. A consuming
 application can use the standard `CRM(..., uow_factory=...)` facade:
 
