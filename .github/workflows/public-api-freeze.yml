@@ -25,6 +25,9 @@ jobs:
       - name: Source public API freeze candidate
         run: python -m pytest tests/compatibility/test_public_api_v1_candidate.py tests/compatibility/test_public_api_v1_1_candidate.py -q
 
+      - name: Campaign 1.2 source API freeze
+        run: python -m pytest tests/compatibility/test_public_api_v1_2_campaign_candidate.py -q
+
       - name: Build release artifacts
         run: python -m build
 
@@ -36,3 +39,17 @@ jobs:
           wheel="$(ls dist/pycrmkit-*.whl)"
           .venv-public-api/bin/python -m pip install "${wheel}" pytest
           PYTHONPATH="" .venv-public-api/bin/python -m pytest tests/compatibility/test_public_api_v1_candidate.py -q
+
+      - name: Installed-wheel Campaign 1.2 API freeze (isolated core-only)
+        shell: bash
+        run: |
+          mkdir -p /tmp/pycrmkit-api-freeze
+          cp tests/compatibility/test_public_api_v1_2_campaign_candidate.py /tmp/pycrmkit-api-freeze/
+          cp tests/compatibility/public_api_v1_2_campaign_candidate.json /tmp/pycrmkit-api-freeze/
+          cp tests/compatibility/public_api_v1_candidate.json /tmp/pycrmkit-api-freeze/
+          cp tests/compatibility/public_api_v1_1_candidate.json /tmp/pycrmkit-api-freeze/
+          (
+            cd /tmp
+            PYTHONPATH="" "$GITHUB_WORKSPACE/.venv-public-api/bin/python" -I -m pytest \\
+              /tmp/pycrmkit-api-freeze/test_public_api_v1_2_campaign_candidate.py -q
+          )
