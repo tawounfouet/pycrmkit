@@ -16,6 +16,9 @@ from pycrmkit.integrations.fastapi.campaign_schemas import (
     CampaignUpdateRequest,
 )
 from pycrmkit.integrations.fastapi.campaign_security import CampaignHTTPAccess
+from pycrmkit.integrations.fastapi.routers.campaign_audience import (
+    create_campaign_audience_router,
+)
 from pycrmkit.integrations.fastapi.pagination import (
     PageResponse,
     PaginationParams,
@@ -186,6 +189,7 @@ def create_campaigns_router(access: CampaignHTTPAccess) -> APIRouter:
             )
         )
 
+    router.include_router(create_campaign_audience_router(access))
     return router
 
 
