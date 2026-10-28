@@ -17,11 +17,6 @@ from uuid import UUID
 
 import pytest
 from django.test import override_settings
-
-# DRF-only extras must not require the separately optional FastAPI distribution.
-pytest.importorskip("fastapi.applications", reason="Cross-transport golden requires FastAPI")
-from fastapi import FastAPI, Request
-from fastapi.testclient import TestClient
 from rest_framework.test import APIRequestFactory, force_authenticate
 
 from pycrmkit import CRM
@@ -33,8 +28,8 @@ from pycrmkit.integrations.django.drf.campaign_security import (
     authenticated_drf_principal,
 )
 from pycrmkit.integrations.django.drf.campaign_views import CampaignViewSet
-from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
-from pycrmkit.integrations.fastapi.campaign_security import CampaignHTTPAccess
+# DRF-only extras stay importable: FastAPI is required only when executing this suite.
+pytest.importorskip("fastapi.applications", reason="Cross-transport golden requires FastAPI")
 
 GOLDEN = Path(__file__).parents[2] / "contracts/campaign_http/response_golden_v1_2.json"
 _ACTOR = "rc1-actor"
@@ -61,7 +56,13 @@ def _normalize(value: Any) -> Any:
     return normalized
 
 
-def _client(crm: CRM, denied: list[str | None]) -> tuple[TestClient, CampaignSecurityBoundary]:
+def _client(crm: CRM, denied: list[str | None]) -> tuple[Any, CampaignSecurityBoundary]:
+    from fastapi import FastAPI, Request
+    from fastapi.testclient import TestClient
+
+    from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
+    from pycrmkit.integrations.fastapi.campaign_security import CampaignHTTPAccess
+
     def authenticate(request: object) -> CampaignPrincipal | None:
         if isinstance(request, Request) and request.headers.get("authorization") == (
             "Bearer verified"
