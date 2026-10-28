@@ -5,7 +5,7 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 ## Status
 
 Current stable version: **1.1.0 — Segmentation & Sales Task Foundation**.  
-Current development candidate: **1.2.0b3 — HTTP + Data Operations Integration** (beta; PR #101, not yet published).  
+Current GitHub prerelease: **1.2.0b3 — HTTP + Data Operations Integration** (published 2026-10-28; [GitHub release](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0b3)).  
 Qualified 1.1 release candidate lineage: **1.1.0rc1 — Segmentation Production Qualification**.
 
 The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
@@ -170,7 +170,7 @@ python scripts/release_check.py
 MIT © 2026 Thomas Awounfouet.
 
 
-## Campaign beta (1.2.0b3 - candidate, not published)
+## Campaign beta (1.2.0b3 - GitHub prerelease)
 
 The optional Campaign HTTP integration adds facade-backed FastAPI and Django
 REST Framework endpoints for Campaign metadata, members, captured Segment
