@@ -211,10 +211,10 @@ def test_fastapi_campaign_bulk_validation_and_openapi() -> None:
 
     schema = client.get("/openapi.json").json()["paths"]
     for route in (
-        f"/crm/campaigns/{{campaign_id}}/members",
-        f"/crm/campaigns/{{campaign_id}}/audience",
-        f"/crm/campaigns/{{campaign_id}}/audience/count",
-        f"/crm/campaigns/{{campaign_id}}/segment-sources",
+        "/crm/campaigns/{campaign_id}/members",
+        "/crm/campaigns/{campaign_id}/audience",
+        "/crm/campaigns/{campaign_id}/audience/count",
+        "/crm/campaigns/{campaign_id}/segment-sources",
     ):
         assert route in schema
         for operation in schema[route].values():
