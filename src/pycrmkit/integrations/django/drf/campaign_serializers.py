@@ -76,7 +76,7 @@ class AwareDateTimeField(serializers.DateTimeField):
             raise serializers.ValidationError(
                 "datetime must include a timezone offset"
             )
-        return cast(datetime, super().to_internal_value(value))
+        return super().to_internal_value(value)
 
 
 class CampaignCreateSerializer(StrictCampaignSerializer):
@@ -161,12 +161,14 @@ def campaign_payload(value: Campaign) -> dict[str, Any]:
 
 class CampaignMembersSerializer(StrictCampaignSerializer):
     members = EntityReferenceSerializer(
-        many=True, allow_empty=False, min_length=1, max_length=1000
+        many=True, allow_empty=False
     )
-    source = serializers.CharField(required=False, max_length=120, default="api")
+    source: Any = serializers.CharField(required=False, max_length=120, default="api")
     metadata = serializers.JSONField(required=False, default=dict)
 
     def validate_members(self, value: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if len(value) > 1000:
+            raise serializers.ValidationError("at most 1000 members are allowed")
         identities = [(v["kind"].casefold(), v["id"]) for v in value]
         if len(identities) != len(set(identities)):
             raise serializers.ValidationError("duplicate member reference")
@@ -175,15 +177,20 @@ class CampaignMembersSerializer(StrictCampaignSerializer):
 
 class CampaignRemoveMembersSerializer(StrictCampaignSerializer):
     members = EntityReferenceSerializer(
-        many=True, allow_empty=False, min_length=1, max_length=1000
+        many=True, allow_empty=False
     )
+
+    def validate_members(self, value: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if len(value) > 1000:
+            raise serializers.ValidationError("at most 1000 members are allowed")
+        return value
 
 
 class CampaignMemberResponseSerializer(StrictCampaignSerializer):
     campaign_id = serializers.UUIDField()
     entity = EntityReferenceSerializer()
     added_at = serializers.DateTimeField()
-    source = serializers.CharField()
+    source: Any = serializers.CharField()
     metadata = serializers.JSONField()
 
 
@@ -228,7 +235,7 @@ def campaign_segment_source_payload(value: CampaignSegmentSource) -> dict[str, A
 
 class CampaignAttributionSerializer(StrictCampaignSerializer):
     target = EntityReferenceSerializer()
-    source = serializers.CharField(max_length=120)
+    source: Any = serializers.CharField(max_length=120)
     external_ref = serializers.CharField(
         required=False, allow_null=True, allow_blank=True, max_length=512
     )
@@ -237,7 +244,7 @@ class CampaignAttributionSerializer(StrictCampaignSerializer):
 
 class CampaignAttributionRemoveSerializer(StrictCampaignSerializer):
     target = EntityReferenceSerializer()
-    source = serializers.CharField(max_length=120)
+    source: Any = serializers.CharField(max_length=120)
     external_ref = serializers.CharField(
         required=False, allow_null=True, allow_blank=True, max_length=512
     )
@@ -246,7 +253,7 @@ class CampaignAttributionRemoveSerializer(StrictCampaignSerializer):
 class CampaignAttributionResponseSerializer(StrictCampaignSerializer):
     campaign_id = serializers.UUIDField()
     target = EntityReferenceSerializer()
-    source = serializers.CharField()
+    source: Any = serializers.CharField()
     external_ref = serializers.CharField(allow_null=True)
     recorded_at = serializers.DateTimeField()
     metadata = serializers.JSONField()
