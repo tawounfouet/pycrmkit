@@ -1,6 +1,7 @@
 """Composable FastAPI routers for the public PyCRMKit facade."""
 
 from pycrmkit.integrations.fastapi.routers.activities import create_activities_router
+from pycrmkit.integrations.fastapi.routers.campaigns import create_campaigns_router
 from pycrmkit.integrations.fastapi.routers.contacts import create_contacts_router
 from pycrmkit.integrations.fastapi.routers.leads import create_leads_router
 from pycrmkit.integrations.fastapi.routers.opportunities import (
@@ -21,6 +22,7 @@ from pycrmkit.integrations.fastapi.routers.timeline import create_timeline_route
 
 __all__ = [
     "create_activities_router",
+    "create_campaigns_router",
     "create_contacts_router",
     "create_leads_router",
     "create_opportunities_router",
