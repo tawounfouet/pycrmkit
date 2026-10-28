@@ -22,11 +22,13 @@ from pycrmkit.campaigns import (
     CampaignUpdate,
 )
 from pycrmkit.core.ids import EntityId
+from pycrmkit.core.references import EntityReference
 from pycrmkit.integrations.campaign_payload_validation import (
     validate_campaign_metadata,
 )
 from pycrmkit.integrations.django.drf.segmentation_serializers import (
     EntityReferenceSerializer,
+    _entity_reference,
 )
 
 if TYPE_CHECKING:
@@ -184,6 +186,10 @@ class CampaignMembersSerializer(StrictCampaignSerializer):
             raise serializers.ValidationError("duplicate member reference")
         return value
 
+    def references(self) -> tuple[EntityReference, ...]:
+        values = cast(dict[str, Any], self.validated_data)
+        return tuple(_entity_reference(item) for item in values["members"])
+
 
 class CampaignRemoveMembersSerializer(StrictCampaignSerializer):
     members = EntityReferenceSerializer(
@@ -194,6 +200,10 @@ class CampaignRemoveMembersSerializer(StrictCampaignSerializer):
         if len(value) > 1000:
             raise serializers.ValidationError("at most 1000 members are allowed")
         return value
+
+    def references(self) -> tuple[EntityReference, ...]:
+        values = cast(dict[str, Any], self.validated_data)
+        return tuple(_entity_reference(item) for item in values["members"])
 
 
 class CampaignMemberResponseSerializer(StrictCampaignSerializer):
