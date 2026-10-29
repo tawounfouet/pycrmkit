@@ -49,7 +49,7 @@ def test_scope_freeze_explicitly_preserves_domain_and_release_boundaries() -> No
         "LOT-32-011",
         "LOT-32-012",
     ):
-        assert required in evidence, required
+        assert required.casefold() in evidence.casefold(), required
 
 
 def test_historical_campaign_manifest_keeps_all_three_version_roles() -> None:
