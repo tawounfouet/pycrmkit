@@ -60,14 +60,21 @@ def test_frozen_campaign_manifest_preserves_beta_baseline_and_rc_target() -> Non
     assert candidate["promoted_release"] == "1.2.0"
 
 
-def test_release_documentation_marks_candidate_as_unpublished() -> None:
+def test_release_documentation_records_qualified_github_publication() -> None:
     note = (ROOT / "docs/releases/1.2.0rc1.md").read_text(encoding="utf-8")
-    assert "NOT MERGED / NOT TAGGED / NOT PUBLISHED" in note
+    assert "PUBLISHED — GITHUB PRERELEASE" in note
+    assert "https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1" in note
+    assert "5113cedb50750185e457505dfcca5519ce3a62bd" in note
+    assert "27/27" in note
+    assert "not published by this workflow" in note
     assert "LOT-31-016" in note
     assert (ROOT / "docs/development/1.2.0rc1-qualification-matrix.md").is_file()
     template = (ROOT / "docs/development/1.2.0rc1-go-no-go-template.md").read_text(
         encoding="utf-8"
     )
+    # Keep the pre-publication template as an immutable audit example; the
+    # actual final decision and asset fingerprints live in the release notes.
+    assert "Historical pre-publication TEMPLATE" in template
     assert "**Outcome:** `UNDECIDED`" in template
     # Historical publish workflows are not edited to point to rc1.
     for name in ("b2", "b3"):
