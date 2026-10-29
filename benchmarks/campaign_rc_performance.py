@@ -24,12 +24,16 @@ from uuid import UUID
 
 from pycrmkit import CRM, CRMConfig, __version__
 from pycrmkit.campaigns import (
-    Campaign, CampaignId, CampaignMember, export_campaign_records,
+    Campaign,
+    CampaignId,
+    CampaignMember,
+    export_campaign_records,
     import_campaign_members,
 )
 from pycrmkit.contacts import Contact, ContactId
 from pycrmkit.core.references import EntityReference
 from pycrmkit.core.time import FixedClock
+from pycrmkit.events import InProcessEventBus
 from pycrmkit.importers import IterableReader
 from pycrmkit.storage.memory import MemoryStore, MemoryUnitOfWork
 
@@ -230,6 +234,7 @@ def _postgres_evidence(engine: Any, crm: CRM, campaign: Campaign) -> dict[str, o
 def _make_crm(uow_factory: Any) -> CRM:
     return CRM(
         uow_factory=uow_factory,
+        event_bus=InProcessEventBus(),
         clock=FixedClock(NOW),
         config=CRMConfig(events_enabled=False, audit_enabled=False),
         webhook_auto_delivery=False,
@@ -240,7 +245,8 @@ def run(backend: str) -> dict[str, object]:
     engine = None
     if backend == "memory":
         store = MemoryStore()
-        uow_factory = lambda: MemoryUnitOfWork(store)
+        def uow_factory() -> MemoryUnitOfWork:
+            return MemoryUnitOfWork(store)
         fresh_campaigns = 0
     elif backend == "postgres":
         url = os.environ.get("PYCRMKIT_TEST_POSTGRES_URL", "")
@@ -255,7 +261,8 @@ def run(backend: str) -> dict[str, object]:
         Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
         session_factory = sessionmaker(bind=engine, expire_on_commit=False)
-        uow_factory = lambda: SQLAlchemyUnitOfWork(session_factory)
+        def uow_factory() -> SQLAlchemyUnitOfWork:
+            return SQLAlchemyUnitOfWork(session_factory)
         fresh_campaigns = 4  # 1 warm-up + 3 actual 1000-member first imports
     else:
         raise ValueError("invalid benchmark backend")

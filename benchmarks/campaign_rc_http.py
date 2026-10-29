@@ -20,7 +20,8 @@ from fastapi.testclient import TestClient
 
 from pycrmkit import CRM, __version__
 from pycrmkit.integrations.campaign_security import (
-    CampaignPrincipal, CampaignSecurityBoundary,
+    CampaignPrincipal,
+    CampaignSecurityBoundary,
 )
 from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
 from pycrmkit.integrations.fastapi.campaign_security import CampaignHTTPAccess
