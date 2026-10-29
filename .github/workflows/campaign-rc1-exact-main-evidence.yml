@@ -1,0 +1,116 @@
+name: Campaign RC1 Exact-Main Evidence (NO PUBLISH)
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_main_sha:
+        description: Exact 40-character qualified main SHA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  rebuild:
+    name: Exact-main artifacts + SHA256; no tag or public release
+    if: github.repository == 'tawounfouet/pycrmkit' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      EXPECTED_MAIN_SHA: \${{ inputs.expected_main_sha }}
+      GH_TOKEN: \${{ github.token }}
+      RC_VERSION: '1.2.0rc1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Ensure requested source is exact current main, no existing release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$GITHUB_SHA" = "$EXPECTED_MAIN_SHA"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_MAIN_SHA"
+          test "$(git rev-parse refs/remotes/origin/main)" = "$EXPECTED_MAIN_SHA"
+          grep -Fqx '__version__ = "1.2.0rc1"' src/pycrmkit/__about__.py
+          if git ls-remote --tags origin refs/tags/v1.2.0rc1 | grep -q .; then
+            echo "Release tag already exists: no overwrite allowed" >&2
+            exit 1
+          fi
+      - name: Require completed green exact-main push workflows
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          sha = os.environ["EXPECTED_MAIN_SHA"]
+          url = (
+              "https://api.github.com/repos/tawounfouet/pycrmkit/actions/runs"
+              f"?head_sha={sha}&per_page=100"
+          )
+          req = urllib.request.Request(url, headers={
+              "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+              "Accept": "application/vnd.github+json",
+          })
+          with urllib.request.urlopen(req, timeout=30) as response:
+              runs = json.load(response)["workflow_runs"]
+          selected = [
+              run for run in runs
+              if run["head_sha"] == sha and run["head_branch"] == "main"
+              and run["event"] == "push"
+          ]
+          if len(selected) < 28:
+              raise SystemExit(f"Insufficient exact-main push workflows: {len(selected)}")
+          not_green = [
+              (run["name"], run["status"], run["conclusion"])
+              for run in selected
+              if run["status"] != "completed" or run["conclusion"] != "success"
+          ]
+          if not_green:
+              raise SystemExit(f"Required main matrix failed or pending: {not_green}")
+          print(f"Qualified {len(selected)} exact-main push workflow runs for {sha}")
+          PY
+      - name: Build exact-main RC files and validate package contents
+        run: |
+          python -m pip install --upgrade pip "build>=1.2" "twine>=6" "pytest>=8"
+          python -m pytest tests/compatibility/test_rc1_release_bundle.py -q
+          python -m build
+          python -m twine check dist/*
+          python scripts/rc1_distribution_manifest.py \
+            --dist dist --expected-version "$RC_VERSION" \
+            --output /tmp/rc1-distribution-inspection.json
+      - name: Isolated installed core wheel smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp scripts/v1_production_wheel_smoke.py /tmp/rc1-wheel-smoke.py
+          python -m venv /tmp/pycrmkit-rc1-evidence-venv
+          /tmp/pycrmkit-rc1-evidence-venv/bin/python -m pip install --no-deps \
+            "$GITHUB_WORKSPACE/dist/pycrmkit-$RC_VERSION-py3-none-any.whl"
+          (
+            cd /tmp
+            PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+              PYCRMKIT_EXPECTED_VERSION="$RC_VERSION" PYCRMKIT_EXPECT_CORE_ONLY=1 \
+              /tmp/pycrmkit-rc1-evidence-venv/bin/python -I rc1-wheel-smoke.py
+          )
+          /tmp/pycrmkit-rc1-evidence-venv/bin/python -m pip check
+      - name: Generate four release-evidence files — never publish
+        run: |
+          python scripts/rc1_release_bundle.py \
+            --dist dist --source-sha "$EXPECTED_MAIN_SHA" \
+            --build-run-id "$GITHUB_RUN_ID"
+          (cd dist && sha256sum -c SHA256SUMS-v1.2.0rc1.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pycrmkit-v1.2.0rc1-exact-main-evidence-NOT-PUBLISHED
+          path: |
+            dist/pycrmkit-1.2.0rc1-py3-none-any.whl
+            dist/pycrmkit-1.2.0rc1.tar.gz
+            dist/SHA256SUMS-v1.2.0rc1.txt
+            dist/release-manifest-v1.2.0rc1.json
+          if-no-files-found: error

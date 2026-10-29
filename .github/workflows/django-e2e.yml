@@ -82,6 +82,40 @@ jobs:
       - name: Django Campaign repository and migration tests on isolated PostgreSQL
         run: pytest tests/integrations/django/test_campaign_models.py tests/integrations/django/test_campaign_persistence.py tests/integrations/django/test_migrations.py -q
 
+      - name: RC1 Django Campaign Persistence and Migration Gate (isolated PostgreSQL)
+        run: python -m pytest tests/integrations/django/test_campaign_rc_migration_gate.py -q
+
+      # SQLAlchemy must never create its Campaign tables on Django's schema.
+      # Create a third database to qualify the exact same facade journey.
+      - name: Create independent PostgreSQL database for SQLAlchemy conformance
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from urllib.parse import urlsplit, urlunsplit
+
+          import psycopg
+
+          host_url = os.environ["PYCRMKIT_DATABASE_URL"]
+          parsed = urlsplit(host_url)
+          database = "pycrmkit_rc_cross_adapter_sqlalchemy"
+          with psycopg.connect(host_url, autocommit=True) as connection:
+              connection.execute(f'CREATE DATABASE "{database}"')
+
+          sqlalchemy_url = urlunsplit((
+              "postgresql+psycopg",
+              parsed.netloc,
+              f"/{database}",
+              "",
+              "",
+          ))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write(f"PYCRMKIT_CROSS_ADAPTER_SQLALCHEMY_URL={sqlalchemy_url}\n")
+          PY
+
+      - name: RC1 Cross-Adapter Campaign Conformance (Memory, SQLAlchemy PG17, Django PG17)
+        run: python -m pytest tests/integrations/django/test_campaign_cross_adapter_rc.py -q -rs
+
       - name: Ensure reference app schema survived isolated migration tests
         run: |
           python - <<'PY'
@@ -120,7 +154,7 @@ jobs:
 
           import pycrmkit
 
-          assert pycrmkit.__version__ == "1.2.0b3"
+          assert pycrmkit.__version__ == "1.2.0rc1"
           assert importlib.util.find_spec("django") is None
           assert importlib.util.find_spec("rest_framework") is None
           print("PyCRMKit core-only installed wheel remains Django/DRF-free: OK")

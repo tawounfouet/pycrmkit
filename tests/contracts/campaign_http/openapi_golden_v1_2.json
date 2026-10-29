@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "source_release": "1.2.0b3",
+  "target_release": "1.2.0rc1",
+  "meaning": "Selected FastAPI OpenAPI Campaign operation success/status/schema contract. Other non-Campaign endpoints intentionally excluded. 401/403/422 expected on all operations; 404/409 exercised at runtime and may be undocumented.",
+  "operations": {
+    "/crm/campaigns": {
+      "post": {
+        "success_status": "201",
+        "response_shape": "ref:CampaignResponse",
+        "request_schema": "CampaignCreateRequest",
+        "response_statuses": [
+          "201",
+          "401",
+          "403",
+          "422"
+        ]
+      },
+      "get": {
+        "success_status": "200",
+        "response_shape": "page:CampaignResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "ref:CampaignResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422"
+        ]
+      },
+      "patch": {
+        "success_status": "200",
+        "response_shape": "ref:CampaignResponse",
+        "request_schema": "CampaignUpdateRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/activate": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "ref:CampaignResponse",
+        "request_schema": "CampaignRevisionRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/complete": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "ref:CampaignResponse",
+        "request_schema": "CampaignRevisionRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/archive": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "ref:CampaignResponse",
+        "request_schema": "CampaignRevisionRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/members": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "page:CampaignMemberResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422",
+          "500"
+        ]
+      },
+      "post": {
+        "success_status": "200",
+        "response_shape": "array:CampaignMemberResponse",
+        "request_schema": "CampaignMembersRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/members/remove": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "mapping:integer",
+        "request_schema": "CampaignRemoveMembersRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/audience": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "page:EntityReferenceSchema",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/audience/count": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "mapping:integer",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/segment-sources": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "page:CampaignSegmentSourceResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422",
+          "500"
+        ]
+      },
+      "post": {
+        "success_status": "201",
+        "response_shape": "ref:CampaignSegmentSourceResponse",
+        "request_schema": "CampaignSegmentAttachRequest",
+        "response_statuses": [
+          "201",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/segment-sources/{segment_id}/refresh": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "ref:CampaignSegmentSourceResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/segment-sources/{segment_id}/detach": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "mapping:boolean",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/attributions": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "page:CampaignAttributionResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422",
+          "500"
+        ]
+      },
+      "post": {
+        "success_status": "201",
+        "response_shape": "ref:CampaignAttributionResponse",
+        "request_schema": "CampaignAttributionRequest",
+        "response_statuses": [
+          "201",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/attributions/remove": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "mapping:boolean",
+        "request_schema": "CampaignAttributionRemoveRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/communication-links": {
+      "get": {
+        "success_status": "200",
+        "response_shape": "page:CampaignCommunicationLinkResponse",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "422",
+          "500"
+        ]
+      },
+      "post": {
+        "success_status": "201",
+        "response_shape": "ref:CampaignCommunicationLinkResponse",
+        "request_schema": "CampaignCommunicationLinkRequest",
+        "response_statuses": [
+          "201",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    },
+    "/crm/campaigns/{campaign_id}/communication-links/remove": {
+      "post": {
+        "success_status": "200",
+        "response_shape": "mapping:boolean",
+        "request_schema": "CampaignCommunicationUnlinkRequest",
+        "response_statuses": [
+          "200",
+          "401",
+          "403",
+          "404",
+          "409",
+          "422",
+          "500"
+        ]
+      }
+    }
+  }
+}

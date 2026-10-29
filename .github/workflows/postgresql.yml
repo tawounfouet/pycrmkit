@@ -32,4 +32,47 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[postgresql,dev]"
-      - run: pytest -m postgresql tests/adapters/postgresql tests/e2e/test_campaign_sqlalchemy_end_to_end.py -q
+      - name: PostgreSQL release regression excluding dedicated Campaign race gate
+        run: >-
+          pytest -m postgresql
+          tests/adapters/postgresql
+          tests/e2e/test_campaign_sqlalchemy_end_to_end.py
+          --ignore=tests/adapters/postgresql/test_campaign_concurrency_rc.py
+          -q
+      - name: Campaign RC1 real PostgreSQL query, EXPLAIN and import-1000 performance
+        env:
+          PYTHONHASHSEED: "0"
+        run: |
+          python benchmarks/campaign_rc_performance.py --backend postgres --output campaign-rc1-postgres.json
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          name = "campaign-rc1-postgres.json"
+          payload = Path(name).read_text(encoding="utf-8")
+          evidence = json.loads(payload)
+          assert evidence["passed"] is True
+          assert evidence["dataset"]["direct_members"] == 1000
+          assert evidence["sql_profile"]["sql_query_guardrail_passed"]
+          assert evidence["sql_profile"]["audience_count_calls"] == 10
+          assert "import_fresh_1000" in {m["name"] for m in evidence["metrics"]}
+          assert not re.search(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", payload, re.I)
+          assert not any(term in payload.lower() for term in (
+              "password", "localhost", "postgresql://", "select *"
+          ))
+          print("RC1 PostgreSQL performance + SQL observability: PASS")
+          PY
+
+      - name: Upload Campaign RC1 PostgreSQL anonymized performance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: campaign-rc1-postgresql-performance
+          path: campaign-rc1-postgres.json
+          if-no-files-found: error
+
+      - name: Campaign RC1 live PostgreSQL concurrency and transaction gate
+        run: >-
+          pytest -m postgresql
+          tests/adapters/postgresql/test_campaign_concurrency_rc.py
+          -q

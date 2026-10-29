@@ -25,6 +25,45 @@ jobs:
       - name: Source public API freeze candidate
         run: python -m pytest tests/compatibility/test_public_api_v1_candidate.py tests/compatibility/test_public_api_v1_1_candidate.py -q
 
+      - name: Campaign 1.2 source API freeze
+        run: python -m pytest tests/compatibility/test_public_api_v1_2_campaign_candidate.py -q
+
+      - name: Campaign RC1 HTTP and DRF golden freeze
+        run: >-
+          python -m pytest
+          tests/integrations/drf/test_campaign_public_freeze_rc.py
+          tests/integrations/drf/test_campaign_http_golden_rc.py
+          tests/integrations/fastapi/test_campaign_openapi_golden_rc.py
+          -q
+
+      - name: Campaign RC1 Host Identity and Tenant Scope Qualification
+        run: >-
+          python -m pytest
+          tests/unit/test_campaign_host_security_rc.py
+          tests/integrations/fastapi/test_campaign_host_scope_rc.py
+          tests/integrations/drf/test_campaign_host_scope_rc.py
+          -q
+
+      - name: Campaign RC1 Cross-Transport Lifecycle E2E
+        run: python -m pytest tests/integrations/test_campaign_transport_parity.py -q
+
+      - name: Campaign RC1 Domain Invariants and Failure Injection
+        run: python -m pytest tests/qualification/test_campaign_invariants_failure_rc.py -q
+
+      - name: Campaign RC1 Import Replay and Failure Qualification
+        run: >-
+          python -m pytest
+          tests/qualification/test_campaign_import_rc.py
+          tests/integrations/test_campaign_dataops_import.py
+          -q
+
+      - name: Campaign RC1 Export Consistency and Privacy Qualification
+        run: >-
+          python -m pytest
+          tests/qualification/test_campaign_export_rc.py
+          tests/integrations/test_campaign_dataops_export.py
+          -q
+
       - name: Build release artifacts
         run: python -m build
 
@@ -36,3 +75,17 @@ jobs:
           wheel="$(ls dist/pycrmkit-*.whl)"
           .venv-public-api/bin/python -m pip install "${wheel}" pytest
           PYTHONPATH="" .venv-public-api/bin/python -m pytest tests/compatibility/test_public_api_v1_candidate.py -q
+
+      - name: Installed-wheel Campaign 1.2 API freeze (isolated core-only)
+        shell: bash
+        run: |
+          mkdir -p /tmp/pycrmkit-api-freeze
+          cp tests/compatibility/test_public_api_v1_2_campaign_candidate.py /tmp/pycrmkit-api-freeze/
+          cp tests/compatibility/public_api_v1_2_campaign_candidate.json /tmp/pycrmkit-api-freeze/
+          cp tests/compatibility/public_api_v1_candidate.json /tmp/pycrmkit-api-freeze/
+          cp tests/compatibility/public_api_v1_1_candidate.json /tmp/pycrmkit-api-freeze/
+          (
+            cd /tmp
+            PYTHONPATH="" "$GITHUB_WORKSPACE/.venv-public-api/bin/python" -I -m pytest \
+              /tmp/pycrmkit-api-freeze/test_public_api_v1_2_campaign_candidate.py -q
+          )

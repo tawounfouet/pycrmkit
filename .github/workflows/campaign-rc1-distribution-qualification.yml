@@ -1,0 +1,121 @@
+name: Campaign RC1 Distribution Qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  installed-distributions:
+    name: Python ${{ matrix.python-version }} / isolated wheel + sdist
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    env:
+      # Source-of-truth promoted in LOT-31-015. This tests real RC-labelled
+      # artifacts; publication is reserved for LOT-31-016.
+      PYCRMKIT_DISTRIBUTION_VERSION: "1.2.0rc1"
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install only build/metadata toolchain on host runner
+        run: python -m pip install --upgrade pip "build>=1.2" "twine>=6" "pytest>=8"
+
+      - name: Distribution inspector negative and manifest contract tests
+        run: python -m pytest tests/compatibility/test_rc1_distribution_manifest.py -q
+
+      - name: Build isolated wheel and sdist from this exact checkout
+        run: |
+          rm -rf dist build
+          python -m build
+          python -m twine check dist/*
+
+      - name: Verify version/extras, installed resource coverage and SHA256 manifest
+        run: |
+          python scripts/rc1_distribution_manifest.py \
+            --dist dist \
+            --expected-version "$PYCRMKIT_DISTRIBUTION_VERSION" \
+            --output "rc1-distribution-manifest-py${{ matrix.python-version }}.json"
+
+      - name: Stage existing smoke scripts outside source checkout
+        shell: bash
+        run: |
+          mkdir -p /tmp/pycrmkit-rc1-distribution-smokes
+          cp scripts/v1_production_wheel_smoke.py /tmp/pycrmkit-rc1-distribution-smokes/
+          cp examples/data_operations/campaign_scenario.py /tmp/pycrmkit-rc1-distribution-smokes/
+
+      - name: Core-only wheel and sdist are installable without optional dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE"
+          SMOKE="/tmp/pycrmkit-rc1-distribution-smokes"
+          WHEEL="$ROOT/dist/pycrmkit-$PYCRMKIT_DISTRIBUTION_VERSION-py3-none-any.whl"
+          SDIST="$ROOT/dist/pycrmkit-$PYCRMKIT_DISTRIBUTION_VERSION.tar.gz"
+          for kind in wheel sdist; do
+            python -m venv "/tmp/pycrmkit-rc1-core-$kind"
+            ENV_PYTHON="/tmp/pycrmkit-rc1-core-$kind/bin/python"
+            "$ENV_PYTHON" -m pip install --upgrade pip
+            if [ "$kind" = wheel ]; then
+              "$ENV_PYTHON" -m pip install --no-deps "$WHEEL"
+            else
+              "$ENV_PYTHON" -m pip install "$SDIST"
+            fi
+            (
+              cd "$SMOKE"
+              PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$ROOT" \
+                PYCRMKIT_EXPECTED_VERSION="$PYCRMKIT_DISTRIBUTION_VERSION" \
+                PYCRMKIT_EXPECT_CORE_ONLY=1 \
+                "$ENV_PYTHON" -I v1_production_wheel_smoke.py
+              PYTHONPATH="" "$ENV_PYTHON" -I campaign_scenario.py
+            )
+            "$ENV_PYTHON" -m pip check
+          done
+
+      - name: Wheel and sdist full-extras install under Python 3.13
+        if: matrix.python-version == '3.13'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE"
+          SMOKE="/tmp/pycrmkit-rc1-distribution-smokes"
+          EXTRAS="sqlalchemy,postgresql,migrations,fastapi,django,drf,email,resend"
+          for kind in wheel sdist; do
+            python -m venv "/tmp/pycrmkit-rc1-extras-$kind"
+            ENV_PYTHON="/tmp/pycrmkit-rc1-extras-$kind/bin/python"
+            "$ENV_PYTHON" -m pip install --upgrade pip
+            if [ "$kind" = wheel ]; then
+              FILE="$ROOT/dist/pycrmkit-$PYCRMKIT_DISTRIBUTION_VERSION-py3-none-any.whl"
+            else
+              FILE="$ROOT/dist/pycrmkit-$PYCRMKIT_DISTRIBUTION_VERSION.tar.gz"
+            fi
+            "$ENV_PYTHON" -m pip install "$FILE[$EXTRAS]"
+            (
+              cd "$SMOKE"
+              PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$ROOT" \
+                PYCRMKIT_EXPECTED_VERSION="$PYCRMKIT_DISTRIBUTION_VERSION" \
+                PYCRMKIT_REQUIRE_OPTIONALS=1 \
+                "$ENV_PYTHON" -I v1_production_wheel_smoke.py
+              PYTHONPATH="" "$ENV_PYTHON" -I campaign_scenario.py
+              PYTHONPATH="" "/tmp/pycrmkit-rc1-extras-$kind/bin/pycrmkit-migrate" --help >/dev/null
+            )
+            "$ENV_PYTHON" -m pip check
+          done
+
+      - name: Upload distribution manifest and pre-RC artifacts (no publication)
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: campaign-rc1-distribution-qualification
+          path: |
+            dist/*
+            rc1-distribution-manifest-py3.13.json
+          if-no-files-found: error

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from sqlalchemy import delete, exists, func, or_, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.selectable import Subquery
 
@@ -22,6 +23,7 @@ from pycrmkit.storage.sqlalchemy.campaign_codec import (
     campaign_segment_source_from_model,
     campaign_segment_source_to_model,
 )
+from pycrmkit.storage.sqlalchemy.errors import translate_sqlalchemy_error
 from pycrmkit.storage.sqlalchemy.mappers import entity_reference
 from pycrmkit.storage.sqlalchemy.models.campaign import (
     CampaignMemberModel,
@@ -150,7 +152,14 @@ class SQLAlchemyCampaignAudienceRepository:
         self._validate_capture(source, members)
         source_model = campaign_segment_source_to_model(source)
         self.session.add(source_model)
-        self.session.flush((source_model,))
+        try:
+            self.session.flush((source_model,))
+        except SQLAlchemyError as error:
+            # A competing transaction can win the (campaign_id, segment_id)
+            # primary-key race between our preflight GET and this INSERT.
+            # Preserve the public backend-neutral error contract at this
+            # flush boundary, just as the UoW does at commit time.
+            raise translate_sqlalchemy_error(error) from error
         self.session.add_all(
             [
                 campaign_segment_member_to_model(
