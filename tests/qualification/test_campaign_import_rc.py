@@ -10,7 +10,6 @@ from __future__ import annotations
 import csv
 import io
 import json
-from collections.abc import Mapping
 
 import pytest
 
@@ -39,7 +38,7 @@ def _reader(format: str, rows: list[dict[str, object]]) -> object:
     if format == "csv":
         stream = io.StringIO()
         writer = csv.DictWriter(
-            stream, fieldnames=["entity_kind", "entity_id"], extrasaction="ignore"
+            stream, fieldnames=list(rows[0]), extrasaction="ignore"
         )
         writer.writeheader()
         writer.writerows(rows)
@@ -109,10 +108,10 @@ def test_source_field_mapping_is_identical_across_formats(format: str) -> None:
     crm = CRM.memory(webhook_auto_delivery=False)
     person = crm.contacts.create(display_name="Mapped")
     campaign = crm.campaigns.create(key="rc-mapping-" + format, name="Mapping")
-    raw = [{"entity_kind": "contact", "entity_id": str(person.id)}]
+    raw = [{"kind": "contact", "uuid": str(person.id)}]
     mapping = RecordMapper((
-        FieldMapping("entity_kind", "entity_kind"),
-        FieldMapping("entity_id", "entity_id"),
+        FieldMapping("kind", "entity_kind"),
+        FieldMapping("uuid", "entity_id"),
     ))
     report = import_campaign_members(
         crm.campaigns, campaign.id, _reader(format, raw), mapper=mapping
