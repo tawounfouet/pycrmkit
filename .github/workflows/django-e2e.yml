@@ -82,6 +82,9 @@ jobs:
       - name: Django Campaign repository and migration tests on isolated PostgreSQL
         run: pytest tests/integrations/django/test_campaign_models.py tests/integrations/django/test_campaign_persistence.py tests/integrations/django/test_migrations.py -q
 
+      - name: RC1 Django Campaign Persistence and Migration Gate (isolated PostgreSQL)
+        run: python -m pytest tests/integrations/django/test_campaign_rc_migration_gate.py -q
+
       - name: Ensure reference app schema survived isolated migration tests
         run: |
           python - <<'PY'
