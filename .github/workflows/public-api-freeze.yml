@@ -57,6 +57,13 @@ jobs:
           tests/integrations/test_campaign_dataops_import.py
           -q
 
+      - name: Campaign RC1 Export Consistency and Privacy Qualification
+        run: >-
+          python -m pytest
+          tests/qualification/test_campaign_export_rc.py
+          tests/integrations/test_campaign_dataops_export.py
+          -q
+
       - name: Build release artifacts
         run: python -m build
 
