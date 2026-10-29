@@ -1,0 +1,308 @@
+name: Publish PyCRMKit v1.2.0rc1 (qualified GitHub prerelease)
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/publish-v1.2.0rc1.yml"]
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: pycrmkit-v1.2.0rc1-github-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify exact merged main, artifact hashes, immutable tag and GitHub prerelease
+    if: github.repository == 'tawounfouet/pycrmkit' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TARGET_SHA: 5113cedb50750185e457505dfcca5519ce3a62bd
+      TAG: v1.2.0rc1
+      RUN_ID: "40957621949"
+      VERSION: 1.2.0rc1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Verify publisher-only commit and immutable qualified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse refs/remotes/origin/main)" = "$GITHUB_SHA"
+          git merge-base --is-ancestor "$TARGET_SHA" "$GITHUB_SHA"
+          diff -u \
+            <(printf '%s\n' '.github/workflows/campaign-rc1-exact-main-evidence.yml' '.github/workflows/publish-v1.2.0rc1.yml') \
+            <(git diff --name-only "$TARGET_SHA" "$GITHUB_SHA")
+          grep -Fqx '__version__ = "1.2.0rc1"' src/pycrmkit/__about__.py
+          git show "$TARGET_SHA:src/pycrmkit/__about__.py" | grep -Fqx '__version__ = "1.2.0rc1"'
+          python - <<'PY'
+          from pathlib import Path
+          changelog = Path('CHANGELOG.md').read_text()
+          assert '## [1.2.0rc1]' in changelog
+          PY
+
+      - name: Assert exactly qualified merged-source push CI, including real database gates
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          repo = os.environ["GITHUB_REPOSITORY"]
+          sha = os.environ["TARGET_SHA"]
+          request = urllib.request.Request(
+              f"https://api.github.com/repos/{repo}/actions/runs?head_sha={sha}&per_page=100",
+              headers={
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Accept": "application/vnd.github+json",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              data = json.load(response)
+          selected = [
+              run for run in data["workflow_runs"] if
+              run["head_sha"] == sha and run["head_branch"] == "main" and run["event"] == "push"
+          ]
+          expected = set("""
+          Build
+          CI
+          Campaign RC1 Distribution Qualification
+          Campaign RC1 Production Host Installed Wheel E2E
+          Compatibility Matrix
+          DRF Integration
+          Data Operations E2E
+          Django Integration
+          Django PostgreSQL E2E
+          Docs
+          FastAPI PostgreSQL E2E
+          Lint
+          Migrations
+          Performance Baseline
+          Persistence Qualification
+          PostgreSQL
+          Production Cross-Layer E2E
+          Production Installed Artifact Qualification
+          Production Integration Qualification
+          Production Persistence & Migrations
+          Production Qualification
+          Production Qualification Contract
+          Public API Freeze
+          Security & Privacy
+          Segmentation Production Qualification
+          Tests
+          Typing
+          """.strip().splitlines())
+          # whitespace in triple quoted literal is deliberately trimmed per row
+          expected = {name.strip() for name in expected}
+          actual = {run["name"] for run in selected}
+          if actual != expected or len(selected) != len(expected):
+              raise SystemExit(
+                  f"Exact SHA workflow set mismatch: expected={sorted(expected)}, "
+                  f"observed={sorted(actual)}, rows={len(selected)}"
+              )
+          bad = [
+              (run["name"], run["status"], run["conclusion"]) for run in selected
+              if run["status"] != "completed" or run["conclusion"] != "success"
+          ]
+          if bad:
+              raise SystemExit(f"NO-GO: not all source-main workflows green: {bad}")
+          print(f"EXACT MAIN SHA {sha}: {len(selected)}/{len(expected)} workflows SUCCESS")
+          PY
+
+      - name: Verify PR was merged at exact qualified SHA and risk tickets resolved
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/112" --jq .merged)" = true
+          test "$(gh api "repos/$GITHUB_REPOSITORY/pulls/112" --jq .merge_commit_sha)" = "$TARGET_SHA"
+          for id in 103 104 105 106 107 108 109 110 111; do
+            test "$(gh api "repos/$GITHUB_REPOSITORY/issues/$id" --jq .state)" = closed
+          done
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+            --jq '{head_sha,head_branch,event,status,conclusion}' > /tmp/qualification-run.json
+          python - <<'PY'
+          import json, os
+          data=json.load(open('/tmp/qualification-run.json'))
+          assert data == {
+              "head_sha": os.environ["TARGET_SHA"],
+              "head_branch": "main",
+              "event": "push",
+              "status": "completed",
+              "conclusion": "success",
+          }, data
+          PY
+
+      - name: Retrieve real RC wheel/sdist from exact-main green qualification artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p candidate dist
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" \
+            --name campaign-rc1-distribution-qualification --dir candidate
+          wheel="$(find candidate -type f -name "pycrmkit-$VERSION-py3-none-any.whl" -print -quit)"
+          sdist="$(find candidate -type f -name "pycrmkit-$VERSION.tar.gz" -print -quit)"
+          evidence="$(find candidate -type f -name 'rc1-distribution-manifest-py3.13.json' -print -quit)"
+          test -n "$wheel" && test -n "$sdist" && test -n "$evidence"
+          cp "$wheel" "$sdist" dist/
+          python - <<'PY'
+          import hashlib, json, pathlib
+          root = pathlib.Path('dist')
+          found = next(pathlib.Path('candidate').rglob('rc1-distribution-manifest-py3.13.json'))
+          data = json.loads(found.read_text())
+          assert data['built_package_version'] == '1.2.0rc1'
+          assert data['wheel_and_sdist_contents_passed'] is True
+          assert data['publication_authorized'] is False
+          for item in data['files']:
+              artifact = root / item['name']
+              assert artifact.is_file()
+              assert artifact.stat().st_size == item['bytes']
+              assert hashlib.sha256(artifact.read_bytes()).hexdigest() == item['sha256']
+          assert len(data['files']) == 2
+          print("Exact-main wheel + sdist match independent CI qualification SHA256")
+          PY
+
+      - name: Verify RC metadata, packaged migrations, twine and installed wheel smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip "twine>=6"
+          python -m twine check dist/*
+          python scripts/rc1_distribution_manifest.py \
+            --dist dist --expected-version "$VERSION" \
+            --output /tmp/release-inspection.json
+          cp scripts/v1_production_wheel_smoke.py /tmp/rc1-qualified-wheel-smoke.py
+          python -m venv /tmp/pycrmkit-v1.2.0rc1-release-venv
+          /tmp/pycrmkit-v1.2.0rc1-release-venv/bin/python -m pip install \
+            --no-deps "$GITHUB_WORKSPACE/dist/pycrmkit-$VERSION-py3-none-any.whl"
+          (
+            cd /tmp
+            PYTHONPATH="" PYCRMKIT_REPOSITORY_ROOT="$GITHUB_WORKSPACE" \
+            PYCRMKIT_EXPECTED_VERSION="$VERSION" PYCRMKIT_EXPECT_CORE_ONLY=1 \
+              /tmp/pycrmkit-v1.2.0rc1-release-venv/bin/python -I rc1-qualified-wheel-smoke.py
+          )
+          /tmp/pycrmkit-v1.2.0rc1-release-venv/bin/python -m pip check
+
+      - name: Freeze final SHA-256 and release manifest for the exact source SHA
+        run: |
+          python - <<'PY'
+          from datetime import UTC, datetime
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path('dist')
+          names=[
+              'pycrmkit-1.2.0rc1-py3-none-any.whl',
+              'pycrmkit-1.2.0rc1.tar.gz',
+          ]
+          entries=[
+              {
+                  'name':name,
+                  'bytes':(root/name).stat().st_size,
+                  'sha256':hashlib.sha256((root/name).read_bytes()).hexdigest()
+              } for name in names
+          ]
+          (root/'SHA256SUMS-v1.2.0rc1.txt').write_text(
+              ''.join(f"{item['sha256']}  {item['name']}\n" for item in entries)
+          )
+          manifest={
+              'project':'pycrmkit','version':'1.2.0rc1','tag':'v1.2.0rc1',
+              'source_sha':os.environ['TARGET_SHA'],
+              'qualified_main_workflows':27,
+              'qualification_artifact_run':int(os.environ['RUN_ID']),
+              'publisher_workflow_commit':os.environ['GITHUB_SHA'],
+              'release_channel':'github-prerelease',
+              'pypi_publication':'not performed',
+              'artifacts':entries,
+              'generated_utc':datetime.now(UTC).isoformat(),
+          }
+          (root/'release-manifest-v1.2.0rc1.json').write_text(
+              json.dumps(manifest,indent=2,sort_keys=True)+'\n'
+          )
+          PY
+          (cd dist && sha256sum -c SHA256SUMS-v1.2.0rc1.txt)
+
+      - name: Compose scoped GitHub prerelease notes
+        run: |
+          cat > /tmp/notes.md <<'EOF'
+          # PyCRMKit 1.2.0rc1 — Campaign Production Qualification
+
+          Release candidate of the 1.2 Campaign contract. Adds no new messaging
+          engine, tenant/IAM provider or stable API promise. Includes Campaign
+          metadata, audience/Segment snapshots, attribution references,
+          CommunicationRecord link metadata, optional secure FastAPI/DRF
+          integration, bounded CSV/JSON/JSONL data operations and Memory,
+          PostgreSQL/SQLAlchemy and Django persistence adapters.
+
+          ## Qualification
+
+          - Exact post-merge source: 5113cedb50750185e457505dfcca5519ce3a62bd
+          - 27/27 source-main GitHub Actions workflow runs successful.
+          - Python 3.11, 3.12 and 3.13; isolated wheel/sdist and optional extras.
+          - Real PostgreSQL 17 migration and signed-reference-host integration.
+          - SHA256SUMS and source-provenance manifest attached.
+
+          ## Important limitations
+
+          Hosts provide trusted authentication, authorization, secrets/TLS,
+          tenant policy and private-data controls; no embedded IAM.
+          Import is bounded and can partially commit; export is not
+          snapshot-consistent under concurrent writes. CSV opened in a spreadsheet
+          needs a consuming-host formula guard. Stable 1.2.0 is a separate release.
+          This GitHub prerelease is NOT a claim of publication to PyPI.
+          EOF
+
+      - name: Create immutable annotated tag pointing to exact qualified source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git ls-remote --tags origin "refs/tags/$TAG" | grep -q .; then
+            git fetch origin "refs/tags/$TAG:refs/tags/$TAG"
+            test "$(git rev-parse "$TAG^{commit}")" = "$TARGET_SHA"
+          else
+            git tag -a "$TAG" "$TARGET_SHA" -m "PyCRMKit 1.2.0rc1 Campaign Production Qualification"
+            git push origin "refs/tags/$TAG"
+          fi
+          test "$(git rev-parse "$TAG^{commit}")" = "$TARGET_SHA"
+
+      - name: Create GitHub prerelease with exactly four immutable assets
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "NO-GO: existing release cannot be overwritten" >&2
+            exit 1
+          fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --verify-tag --prerelease \
+            --title "PyCRMKit v1.2.0rc1 — Campaign Production Qualification" \
+            --notes-file /tmp/notes.md \
+            dist/pycrmkit-1.2.0rc1-py3-none-any.whl \
+            dist/pycrmkit-1.2.0rc1.tar.gz \
+            dist/SHA256SUMS-v1.2.0rc1.txt \
+            dist/release-manifest-v1.2.0rc1.json
+
+      - name: Independently re-download all release assets, verify checksums and tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --json isPrerelease --jq .isPrerelease)" = true
+          test "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --json isDraft --jq .isDraft)" = false
+          gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq .object.sha >/tmp/tag-object-sha
+          test -s /tmp/tag-object-sha
+          test "$(git rev-parse "$TAG^{commit}")" = "$TARGET_SHA"
+          mkdir -p verify
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir verify
+          test "$(find verify -maxdepth 1 -type f | wc -l)" -eq 4
+          (cd verify && sha256sum -c SHA256SUMS-v1.2.0rc1.txt)
+          cmp dist/release-manifest-v1.2.0rc1.json verify/release-manifest-v1.2.0rc1.json
+          cmp dist/SHA256SUMS-v1.2.0rc1.txt verify/SHA256SUMS-v1.2.0rc1.txt
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url --jq .url

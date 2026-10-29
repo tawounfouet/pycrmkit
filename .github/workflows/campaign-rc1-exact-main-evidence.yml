@@ -18,8 +18,8 @@ jobs:
     if: github.repository == 'tawounfouet/pycrmkit' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      EXPECTED_MAIN_SHA: \${{ inputs.expected_main_sha }}
-      GH_TOKEN: \${{ github.token }}
+      EXPECTED_MAIN_SHA: ${{ inputs.expected_main_sha }}
+      GH_TOKEN: ${{ github.token }}
       RC_VERSION: '1.2.0rc1'
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +64,8 @@ jobs:
               if run["head_sha"] == sha and run["head_branch"] == "main"
               and run["event"] == "push"
           ]
-          if len(selected) < 28:
-              raise SystemExit(f"Insufficient exact-main push workflows: {len(selected)}")
+          if len(selected) < 27:
+              raise SystemExit(f"Insufficient exact-main push workflows (expected at least 27): {len(selected)}")
           not_green = [
               (run["name"], run["status"], run["conclusion"])
               for run in selected
