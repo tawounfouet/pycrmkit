@@ -32,4 +32,15 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[postgresql,dev]"
-      - run: pytest -m postgresql tests/adapters/postgresql tests/e2e/test_campaign_sqlalchemy_end_to_end.py -q
+      - name: PostgreSQL release regression excluding dedicated Campaign race gate
+        run: >-
+          pytest -m postgresql
+          tests/adapters/postgresql
+          tests/e2e/test_campaign_sqlalchemy_end_to_end.py
+          --ignore=tests/adapters/postgresql/test_campaign_concurrency_rc.py
+          -q
+      - name: Campaign RC1 live PostgreSQL concurrency and transaction gate
+        run: >-
+          pytest -m postgresql
+          tests/adapters/postgresql/test_campaign_concurrency_rc.py
+          -q
