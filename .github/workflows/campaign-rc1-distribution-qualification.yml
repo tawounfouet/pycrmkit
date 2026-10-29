@@ -14,9 +14,9 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     env:
-      # Frozen b3 baseline. Change only at LOT-31-015 when candidate
-      # version + all historical-current-version assertions are synchronized.
-      PYCRMKIT_DISTRIBUTION_VERSION: "1.2.0b3"
+      # Source-of-truth promoted in LOT-31-015. This tests real RC-labelled
+      # artifacts; publication is reserved for LOT-31-016.
+      PYCRMKIT_DISTRIBUTION_VERSION: "1.2.0rc1"
       PYTHONHASHSEED: "0"
     steps:
       - uses: actions/checkout@v4

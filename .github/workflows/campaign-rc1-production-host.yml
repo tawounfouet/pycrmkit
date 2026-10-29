@@ -26,7 +26,7 @@ jobs:
           --health-retries 20
     env:
       PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_rc1_host
-      PYCRMKIT_EXPECTED_VERSION: "1.2.0b3"
+      PYCRMKIT_EXPECTED_VERSION: "1.2.0rc1"
     steps:
       - uses: actions/checkout@v4
 

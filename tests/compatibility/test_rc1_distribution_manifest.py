@@ -16,7 +16,7 @@ from scripts.rc1_distribution_manifest import (
 )
 
 
-def _valid_metadata(*, version: str = "1.2.0b3", drop_extra: str | None = None) -> bytes:
+def _valid_metadata(*, version: str = "1.2.0rc1", drop_extra: str | None = None) -> bytes:
     values = sorted(EXTRAS - ({drop_extra} if drop_extra else set()))
     rows = [
         "Metadata-Version: 2.4",
@@ -30,15 +30,15 @@ def _valid_metadata(*, version: str = "1.2.0b3", drop_extra: str | None = None) 
 
 
 def test_metadata_accepts_complete_supported_dependency_contract() -> None:
-    _metadata(_valid_metadata(), "1.2.0b3")
+    _metadata(_valid_metadata(), "1.2.0rc1")
 
 
 @pytest.mark.parametrize(
     ("metadata", "expected"),
     [
-        (_valid_metadata(version="1.2.0rc1"), "1.2.0b3"),
-        (_valid_metadata(drop_extra="postgresql"), "1.2.0b3"),
-        (_valid_metadata().replace(b">=3.11,<3.14", b">=3.12,<3.14"), "1.2.0b3"),
+        (_valid_metadata(version="1.2.0b3"), "1.2.0rc1"),
+        (_valid_metadata(drop_extra="postgresql"), "1.2.0rc1"),
+        (_valid_metadata().replace(b">=3.11,<3.14", b">=3.12,<3.14"), "1.2.0rc1"),
     ],
 )
 def test_distribution_inspector_rejects_version_extra_or_python_drift(

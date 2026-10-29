@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0rc1] - 2026-10-29 (CANDIDATE BRANCH ONLY; NOT PUBLISHED)
+
+### Production qualification (no feature scope expansion)
+- Frozen Campaign public facade/DTO/enum/event contracts and FastAPI/DRF OpenAPI/response parity; retained the V1 and V1.1 manifests, adding the versioned Campaign 1.2 API contract.
+- Qualified explicit host-authenticated authorization, denied unauthorized and cross-tenant Campaign access, and validated an isolated signed-reference FastAPI host against a PostgreSQL 17 database from a **wheel-installed** package.
+- Qualified Memory, SQLAlchemy/PostgreSQL and Django adapter conformance, transaction/concurrency behavior, installed migration chains, import replay/partial-write boundaries, and paginated export privacy/consistency limits.
+- Added repeatable synthetic Campaign p50/p95, SQL statement-plan and memory evidence, keeping historical performance budgets untouched; candidate artifacts are not production SLAs.
+- Added cross-Python (3.11, 3.12, 3.13) wheel/sdist installation, dependency-extras and packaged migration-resource contracts; distribution checks now use **actual `1.2.0rc1` filenames/metadata**.
+- Promoted the version source of truth to `1.2.0rc1` and aligned current-version tests, workflow checks, and sample smokes. Historical publication workflows for v1.2.0b2/v1.2.0b3 and frozen release records remain unchanged.
+
+### Boundaries and release discipline
+- No new marketing engine, message delivery service, IAM/tenancy provider, global batch atomicity, durable outbox or snapshot-consistent export under concurrent writes.
+- PR #112 remains **DRAFT** until LOT-31-016 GO/NO-GO. This entry prepares a candidate; it does **not** claim an annotated tag, GitHub prerelease, PyPI release, definitive checksums or qualified exact-`main` SHA.
+- Pre-promotion b3-labelled metrics/assets from LOT-31-013 are **not** final RC-distribution evidence. Rerun all gates at the real version-bearing candidate SHA, then at post-merge source SHA before publication.
+
 ## [1.2.0b3] - 2026-10-28 (GitHub prerelease published)
 
 ### Added

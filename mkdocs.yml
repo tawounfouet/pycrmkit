@@ -208,6 +208,7 @@ nav:
       - 1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence: releases/1.2.0b1.md
       - 1.2.0b2 Django Campaign Persistence: releases/1.2.0b2.md
       - 1.2.0b3 HTTP & Data Operations Candidate: releases/1.2.0b3.md
+      - 1.2.0rc1 Campaign Production Qualification (unpublished): releases/1.2.0rc1.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md

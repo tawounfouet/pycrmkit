@@ -2,7 +2,9 @@
 
 This is an external release-quality gate: it runs from checkout before
 installation, and it deliberately does NOT import the source pycrmkit package.
-The RC metadata/version flip is reserved for LOT-31-015.
+The source version is now promoted to RC in LOT-31-015. These SHA-256 hashes
+are candidate-build evidence only; post-merge immutable release hashes wait
+until LOT-31-016.
 """
 from __future__ import annotations
 
