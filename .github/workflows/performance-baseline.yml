@@ -30,6 +30,16 @@ jobs:
         run: |
           python benchmarks/performance_baseline.py             --output performance-baseline-source.json
 
+      - name: Campaign RC1 performance contract / evidence schema
+        run: python -m pytest tests/performance/test_campaign_rc_qualification.py -q
+
+      - name: Campaign RC1 source Memory performance and host-authenticated HTTP baselines
+        env:
+          PYTHONHASHSEED: "0"
+        run: |
+          python benchmarks/campaign_rc_performance.py --backend memory --output campaign-rc1-memory-source.json
+          python benchmarks/campaign_rc_http.py --output campaign-rc1-http-source.json
+
       - name: Build release artifacts
         run: python -m build
 
@@ -44,6 +54,45 @@ jobs:
           .venv-performance/bin/python -m pip install "${wheel}"
           PYTHONPATH="" .venv-performance/bin/python             benchmarks/performance_baseline.py             --output performance-baseline-wheel.json
 
+      - name: Installed-wheel Campaign RC1 Memory performance
+        env:
+          PYTHONHASHSEED: "0"
+        run: |
+          PYTHONPATH="" .venv-performance/bin/python benchmarks/campaign_rc_performance.py --backend memory --output campaign-rc1-memory-wheel.json
+
+      - name: Reject sensitive data or invalid RC1 evidence before artifact upload
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          files = (
+              "campaign-rc1-memory-source.json",
+              "campaign-rc1-memory-wheel.json",
+              "campaign-rc1-http-source.json",
+          )
+          for name in files:
+              data = json.loads(Path(name).read_text(encoding="utf-8"))
+              assert data["passed"] is True, name
+              if name.startswith("campaign-rc1-memory"):
+                  assert data["dataset"]["direct_members"] == 1000, name
+                  assert {m["name"] for m in data["metrics"]} == {
+                      "audience_count", "direct_prescan_1000", "export_direct_1000"
+                  }, name
+                  assert all(m["samples"] == 5 for m in data["metrics"]), name
+              else:
+                  assert data["unauthorized_probe_rejected"] is True
+                  assert data["samples"] == 5
+              payload = Path(name).read_text(encoding="utf-8")
+              assert not re.search(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", payload, re.I), name
+              assert not re.search(r"[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}", payload, re.I), name
+              assert not any(word in payload.lower() for word in (
+                  "password", "localhost", "select *", "postgresql://", "authorization:"
+              )), name
+          print("RC1 Campaign evidence is aggregate-only and passed all declared budgets")
+          PY
+
       - name: Upload performance evidence
         uses: actions/upload-artifact@v4
         with:
@@ -51,4 +100,7 @@ jobs:
           path: |
             performance-baseline-source.json
             performance-baseline-wheel.json
+            campaign-rc1-memory-source.json
+            campaign-rc1-memory-wheel.json
+            campaign-rc1-http-source.json
           if-no-files-found: error
