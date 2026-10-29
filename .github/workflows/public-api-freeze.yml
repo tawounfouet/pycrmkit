@@ -47,6 +47,9 @@ jobs:
       - name: Campaign RC1 Cross-Transport Lifecycle E2E
         run: python -m pytest tests/integrations/test_campaign_transport_parity.py -q
 
+      - name: Campaign RC1 Domain Invariants and Failure Injection
+        run: python -m pytest tests/qualification/test_campaign_invariants_failure_rc.py -q
+
       - name: Build release artifacts
         run: python -m build
 
