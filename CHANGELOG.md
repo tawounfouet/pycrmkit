@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.2.0rc1] - 2026-10-29 (CANDIDATE BRANCH ONLY; NOT PUBLISHED)
+## [1.2.0rc1] - 2026-10-29 (GitHub prerelease PUBLISHED)
 
 ### Production qualification (no feature scope expansion)
 - Frozen Campaign public facade/DTO/enum/event contracts and FastAPI/DRF OpenAPI/response parity; retained the V1 and V1.1 manifests, adding the versioned Campaign 1.2 API contract.
@@ -12,8 +12,11 @@
 
 ### Boundaries and release discipline
 - No new marketing engine, message delivery service, IAM/tenancy provider, global batch atomicity, durable outbox or snapshot-consistent export under concurrent writes.
-- PR #112 remains **DRAFT** until LOT-31-016 GO/NO-GO. This entry prepares a candidate; it does **not** claim an annotated tag, GitHub prerelease, PyPI release, definitive checksums or qualified exact-`main` SHA.
-- Pre-promotion b3-labelled metrics/assets from LOT-31-013 are **not** final RC-distribution evidence. Rerun all gates at the real version-bearing candidate SHA, then at post-merge source SHA before publication.
+- PR [#112](https://github.com/tawounfouet/pycrmkit/pull/112) merged after 71/71 checks and 28/28 PR workflows succeeded; its exact merged source `5113cedb50750185e457505dfcca5519ce3a62bd` passed **27/27 main push workflows**.
+- Immutable annotated tag `v1.2.0rc1` dereferences exactly to that source SHA; [GitHub prerelease](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1) published via [workflow run 40958353104](https://github.com/tawounfouet/pycrmkit/actions/runs/40958353104), with wheel, sdist, SHA256SUMS and release manifest. Assets were re-downloaded and verified. The later publisher-only main commit does not replace the tagged source.
+- Published archive SHA-256: wheel `a12cc02f854873d7d7f4f095d3eda210e6d2d35bd86cc4477deb3fef2391b59f`; sdist `f7d75fe888917bfb1ef93b1481d71711af25f7ff58ff2aa833d8757649e25030`. Pre-promotion b3-labelled and pre-merge rc1-labelled hashes are not substituted.
+- Nine risk qualification issues #103–#111 were resolved with explicit acceptance boundaries. No unqualified production IAM, atomic import, snapshot export, general spreadsheet safety or production performance SLA is claimed.
+- **PyPI publication is separate and was not performed or verified.** Stable 1.2.0 is a future release decision.
 
 ## [1.2.0b3] - 2026-10-28 (GitHub prerelease published)
 
