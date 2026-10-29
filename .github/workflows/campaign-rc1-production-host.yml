@@ -1,0 +1,92 @@
+name: Campaign RC1 Production Host Installed Wheel E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  installed-wheel-host:
+    name: Signed Host / PostgreSQL 17 / Wheel
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_rc1_host
+          POSTGRES_USER: pycrmkit
+          # Isolated CI container only; no fixture credentials in VCS.
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_rc1_host"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_rc1_host
+      PYCRMKIT_EXPECTED_VERSION: "1.2.0b3"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Build wheel from qualified source checkout
+        run: |
+          python -m pip install --upgrade pip "build>=1.2" "twine>=6"
+          python -m build
+          python -m twine check dist/*
+
+      - name: Install actual wheel with FastAPI, PostgreSQL and migration extras
+        run: |
+          python -m venv /tmp/pycrmkit-rc1-host-venv
+          /tmp/pycrmkit-rc1-host-venv/bin/python -m pip install --upgrade pip
+          wheel="$GITHUB_WORKSPACE/dist/pycrmkit-$PYCRMKIT_EXPECTED_VERSION-py3-none-any.whl"
+          /tmp/pycrmkit-rc1-host-venv/bin/python -m pip install \
+            "$wheel[fastapi,postgresql,migrations]" "httpx>=0.28,<1"
+          /tmp/pycrmkit-rc1-host-venv/bin/python -m pip check
+
+      - name: Generate short-lived test-only signing key (never log its value)
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          import secrets
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write("PYCRMKIT_RC_HOST_SIGNING_KEY=" + secrets.token_hex(48) + "\n")
+          print("One-time host signing key generated")
+          PY
+
+      - name: Apply migrations using wheel-installed Alembic CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          (
+            cd /tmp
+            PYTHONPATH="" /tmp/pycrmkit-rc1-host-venv/bin/pycrmkit-migrate upgrade head
+            PYTHONPATH="" /tmp/pycrmkit-rc1-host-venv/bin/pycrmkit-migrate current
+            PYTHONPATH="" /tmp/pycrmkit-rc1-host-venv/bin/pycrmkit-migrate check
+          )
+
+      - name: Run signed-identity host E2E outside checkout and restart instance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pycrmkit-rc1-host-reference
+          cp examples/campaign_rc_host/host_app.py /tmp/pycrmkit-rc1-host-reference/
+          cp examples/campaign_rc_host/scenario.py /tmp/pycrmkit-rc1-host-reference/
+          (
+            cd /tmp/pycrmkit-rc1-host-reference
+            PYTHONPATH="" /tmp/pycrmkit-rc1-host-venv/bin/python scenario.py
+          )
+
+      - name: Preserve a precise wheel + real database host gate conclusion
+        run: |
+          echo "LOT-31-014 HOST GATE: signed principal + tenant-scoped Campaign HTTP +"
+          echo "real PostgreSQL 17 + wheel-installed Alembic migrations + restart = PASS"
+          echo "The test key and database are disposable; no release was published."
