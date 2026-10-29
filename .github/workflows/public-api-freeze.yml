@@ -50,6 +50,13 @@ jobs:
       - name: Campaign RC1 Domain Invariants and Failure Injection
         run: python -m pytest tests/qualification/test_campaign_invariants_failure_rc.py -q
 
+      - name: Campaign RC1 Import Replay and Failure Qualification
+        run: >-
+          python -m pytest
+          tests/qualification/test_campaign_import_rc.py
+          tests/integrations/test_campaign_dataops_import.py
+          -q
+
       - name: Build release artifacts
         run: python -m build
 
