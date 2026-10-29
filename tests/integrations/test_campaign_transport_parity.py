@@ -7,16 +7,17 @@ wire-shaped payload parity, not two copies of hard-coded expected responses.
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from typing import Any
 from uuid import uuid4
 
+import pytest
+from django.conf import settings
 from django.test import override_settings
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from rest_framework.test import APIRequestFactory, force_authenticate
 
 from pycrmkit import CRM
 from pycrmkit.communication import (
@@ -31,10 +32,6 @@ from pycrmkit.integrations.campaign_security import (
     CampaignPrincipal,
     CampaignSecurityBoundary,
 )
-from pycrmkit.integrations.django.drf.campaign_security import (
-    authenticated_drf_principal,
-)
-from pycrmkit.integrations.django.drf.campaign_views import CampaignViewSet
 from pycrmkit.integrations.fastapi import create_crm_router, install_error_handlers
 from pycrmkit.integrations.fastapi.campaign_security import CampaignHTTPAccess
 from pycrmkit.segments import SegmentMode
@@ -44,6 +41,43 @@ _HEADERS = {
     "Authorization": "Bearer trusted-session",
     "X-Actor-ID": "untrusted-administrator",
 }
+
+
+@pytest.fixture(autouse=True)
+def _isolated_campaign_drf_settings() -> Iterator[None]:
+    """Make this dual-transport module runnable alone, independent of collection order."""
+    import django
+
+    if not settings.configured:
+        settings.configure(
+            SECRET_KEY="pycrmkit-cross-transport-tests",
+            INSTALLED_APPS=[],
+            DATABASES={"default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": ":memory:",
+            }},
+            USE_TZ=True,
+            TIME_ZONE="UTC",
+        )
+    django.setup()
+    with override_settings(
+        REST_FRAMEWORK={
+            "UNAUTHENTICATED_USER": None,
+            "EXCEPTION_HANDLER": (
+                "pycrmkit.integrations.django.drf.errors."
+                "pycrmkit_exception_handler"
+            ),
+        },
+    ):
+        yield
+
+
+def _drf_security_boundary() -> CampaignSecurityBoundary:
+    from pycrmkit.integrations.django.drf.campaign_security import (
+        authenticated_drf_principal,
+    )
+
+    return CampaignSecurityBoundary(authenticated_drf_principal, _allow)
 
 
 def _allow(
@@ -95,6 +129,10 @@ def _drf(
     body: dict[str, object] | None = None,
     authenticated: bool = True,
 ) -> tuple[int, Any]:
+    from rest_framework.test import APIRequestFactory, force_authenticate
+
+    from pycrmkit.integrations.django.drf.campaign_views import CampaignViewSet
+
     request = getattr(APIRequestFactory(), method)(
         path,
         body or {},
@@ -220,9 +258,7 @@ def test_campaign_read_contracts_are_identical_on_both_transports() -> None:
     _denied_action[0] = None
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         for action, fast_path, drf_path, pk in cases:
             fast = client.get(fast_path, headers=_HEADERS)
@@ -245,9 +281,7 @@ def test_campaign_patch_roundtrips_between_frameworks() -> None:
     _denied_action[0] = None
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         unchanged = client.patch(
             url, headers=_HEADERS, json={"expected_revision": 1}
@@ -284,9 +318,7 @@ def test_campaign_authz_and_invalid_input_status_parity() -> None:
     path = f"/crm/campaigns/{cid}"
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         for action, suffix in (
             ("campaign.members.read", "audience/count"),
@@ -337,9 +369,7 @@ def test_rc1_cross_transport_create_patch_and_full_lifecycle() -> None:
     _denied_action[0] = None
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         # FastAPI creates; DRF reads the very same object.
         created = client.post(
@@ -448,9 +478,7 @@ def test_rc1_cross_transport_membership_mutations_and_read_parity() -> None:
     _denied_action[0] = None
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         created = client.post(
             f"/crm/campaigns/{cid}/members", headers=_HEADERS,
@@ -498,9 +526,7 @@ def test_rc1_cross_transport_segment_attribution_and_communication_links() -> No
     _denied_action[0] = None
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         # Start with an existing Segment source. DRF detaches; FastAPI sees zero.
         sources = client.get(url + "/segment-sources", headers=_HEADERS)
@@ -611,9 +637,7 @@ def test_rc1_cross_transport_pagination_edges_and_empty_pages() -> None:
     )
     with override_settings(
         PYCRMKIT_CRM_FACTORY=lambda: crm,
-        PYCRMKIT_CAMPAIGN_SECURITY=CampaignSecurityBoundary(
-            authenticated_drf_principal, _allow
-        ),
+        PYCRMKIT_CAMPAIGN_SECURITY=_drf_security_boundary(),
     ):
         for limit, offset in ((1, 0), (1, 1), (200, 0), (200, 250)):
             for action, fast_path, drf_path, pk in paths:
