@@ -64,7 +64,7 @@ def _metadata(raw: bytes, version: str) -> None:
     parsed = Parser().parsestr(raw.decode("utf-8"))
     assert parsed["Name"].casefold() == "pycrmkit"
     assert parsed["Version"] == version, (parsed["Version"], version)
-    assert parsed["Requires-Python"] == ">=3.11,<3.14", parsed["Requires-Python"]
+    assert {part.strip() for part in parsed["Requires-Python"].split(",")} == {">=3.11", "<3.14"}, parsed["Requires-Python"]
     extras = set(parsed.get_all("Provides-Extra", []))
     assert extras == EXTRAS, (sorted(extras), sorted(EXTRAS))
     assert not any(word in str(parsed).casefold() for word in (
