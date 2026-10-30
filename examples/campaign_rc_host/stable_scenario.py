@@ -44,15 +44,17 @@ def main() -> None:
     own_b = crm.contacts.create(display_name="Private Alice Second", owner_id=alice)
     foreign = crm.contacts.create(display_name="Private Bob Only", owner_id=bob)
     contaminated = crm.segments.create_static(
-        key="stable-host-contaminated", name="Foreign member fixture",
-        entity_kind="contact", owner_id=alice,
+        key="stable-host-contaminated",
+        name="Foreign member fixture",
+        entity_kind="contact",
+        owner_id=alice,
     )
-    crm.segments.add_member(
-        contaminated.id, EntityReference("contact", foreign.id)
-    )
+    crm.segments.add_member(contaminated.id, EntityReference("contact", foreign.id))
     clean = crm.segments.create_static(
-        key="stable-host-clean", name="Clean snapshot",
-        entity_kind="contact", owner_id=alice,
+        key="stable-host-clean",
+        name="Clean snapshot",
+        entity_kind="contact",
+        owner_id=alice,
     )
     crm.segments.add_member(clean.id, EntityReference("contact", own_a.id))
     own_communication = record(app, tenant="alice")
@@ -77,12 +79,11 @@ def main() -> None:
         for token_headers in (
             {},
             {"X-Actor-ID": "alice"},
-            {"Authorization": "Bearer " + signed_token(
-                "alice", secret=secret, expires_offset=-1
-            )},
-            {"Authorization": "Bearer " + signed_token(
-                "alice", secret=secret, audience="other-service"
-            )},
+            {"Authorization": "Bearer " + signed_token("alice", secret=secret, expires_offset=-1)},
+            {
+                "Authorization": "Bearer "
+                + signed_token("alice", secret=secret, audience="other-service")
+            },
         ):
             response = client.post(
                 "/host/campaigns",
@@ -94,9 +95,11 @@ def main() -> None:
         assert state.factory_calls == before, "Bad claims reached CRM factory"
 
         forged_owner = client.post(
-            "/host/campaigns", headers=alice_headers,
+            "/host/campaigns",
+            headers=alice_headers,
             json={
-                "key": "forged-owner", "name": "No",
+                "key": "forged-owner",
+                "name": "No",
                 "owner_id": str(bob),
             },
         )
@@ -104,7 +107,8 @@ def main() -> None:
         assert state.factory_calls == before
 
         owned = client.post(
-            "/host/campaigns", headers=alice_headers,
+            "/host/campaigns",
+            headers=alice_headers,
             json={"key": "stable-host-alice", "name": "Reference Tenant"},
         )
         assert owned.status_code == 201, owned.text
@@ -112,7 +116,8 @@ def main() -> None:
         assert owned.json()["owner_id"] == str(alice)
 
         other = client.post(
-            "/host/campaigns", headers=bob_headers,
+            "/host/campaigns",
+            headers=bob_headers,
             json={"key": "stable-host-bob", "name": "Other Tenant"},
         )
         assert other.status_code == 201, other.text
@@ -133,13 +138,14 @@ def main() -> None:
         ):
             payload = None
             if path.endswith("/import"):
-                payload = {"rows": [
-                    {"entity_kind": "contact", "entity_id": str(own_a.id)}
-                ]}
+                payload = {"rows": [{"entity_kind": "contact", "entity_id": str(own_a.id)}]}
             elif path.endswith("/attribution"):
                 payload = {"contact_id": str(own_a.id), "source": "verified"}
             response = client.request(
-                verb.upper(), path, headers=headers, json=payload,
+                verb.upper(),
+                path,
+                headers=headers,
+                json=payload,
             )
             assert response.status_code == 403, (path, response.text)
             assert "total" not in response.json()
@@ -147,12 +153,14 @@ def main() -> None:
             assert "Private" not in response.text
         assert state.factory_calls == before, "Cross-tenant denial invoked CRM factory"
 
-        assert client.post(
-            core_url + "/members", headers=alice_headers,
-            json={"members": [
-                {"kind": "contact", "id": str(foreign.id)}
-            ]},
-        ).status_code == 403
+        assert (
+            client.post(
+                core_url + "/members",
+                headers=alice_headers,
+                json={"members": [{"kind": "contact", "id": str(foreign.id)}]},
+            ).status_code
+            == 403
+        )
 
         # A Segment with the CORRECT owner but a foreign member is unsafe.
         rejected_capture = client.post(
@@ -171,60 +179,64 @@ def main() -> None:
 
         # Host input validation MUST reject oversized payloads without writes.
         oversized = client.post(
-            host_url + "/import", headers=alice_headers,
-            json={"rows": [
-                {"entity_kind": "contact", "entity_id": str(own_a.id)}
-                for _ in range(1001)
-            ]},
+            host_url + "/import",
+            headers=alice_headers,
+            json={
+                "rows": [
+                    {"entity_kind": "contact", "entity_id": str(own_a.id)} for _ in range(1001)
+                ]
+            },
         )
         assert oversized.status_code == 422, oversized.text
         assert crm.campaigns.members(CampaignId.parse(cid)).total == 0
 
         # All references are validated before the *first* write.
         mixed = client.post(
-            host_url + "/import", headers=alice_headers,
-            json={"rows": [
-                {"entity_kind": "contact", "entity_id": str(own_b.id)},
-                {"entity_kind": "contact", "entity_id": str(foreign.id)},
-            ]},
+            host_url + "/import",
+            headers=alice_headers,
+            json={
+                "rows": [
+                    {"entity_kind": "contact", "entity_id": str(own_b.id)},
+                    {"entity_kind": "contact", "entity_id": str(foreign.id)},
+                ]
+            },
         )
         assert mixed.status_code == 403, mixed.text
         assert crm.campaigns.members(CampaignId.parse(cid)).total == 0
 
         missing = client.post(
-            host_url + "/import", headers=alice_headers,
-            json={"rows": [
-                {"entity_kind": "contact", "entity_id": str(own_b.id)},
-                {"entity_kind": "contact", "entity_id": str(uuid4())},
-            ]},
+            host_url + "/import",
+            headers=alice_headers,
+            json={
+                "rows": [
+                    {"entity_kind": "contact", "entity_id": str(own_b.id)},
+                    {"entity_kind": "contact", "entity_id": str(uuid4())},
+                ]
+            },
         )
         assert missing.status_code == 404, missing.text
         assert crm.campaigns.members(CampaignId.parse(cid)).total == 0
 
         events: list[object] = []
         state.event_bus.subscribe("campaign.member_added", events.append)
-        valid_rows = {"rows": [
-            {"entity_kind": "contact", "entity_id": str(own_a.id)},
-            {"entity_kind": "contact", "entity_id": str(own_b.id)},
-        ]}
-        imported = client.post(
-            host_url + "/import", headers=alice_headers, json=valid_rows
-        )
+        valid_rows = {
+            "rows": [
+                {"entity_kind": "contact", "entity_id": str(own_a.id)},
+                {"entity_kind": "contact", "entity_id": str(own_b.id)},
+            ]
+        }
+        imported = client.post(host_url + "/import", headers=alice_headers, json=valid_rows)
         assert imported.status_code == 200, imported.text
         assert imported.json()["rows_created"] == 2
         assert imported.json()["validation_errors"] == 0
         assert len(events) == 2
-        replay = client.post(
-            host_url + "/import", headers=alice_headers, json=valid_rows
-        )
+        replay = client.post(host_url + "/import", headers=alice_headers, json=valid_rows)
         assert replay.status_code == 200, replay.text
         assert replay.json()["rows_created"] == 0
         assert replay.json()["duplicates"] == 2
         assert len(events) == 2
 
-        total = client.get(
-            core_url + "/audience/count", headers=alice_headers
-        )
+        total = client.get(core_url + "/audience/count", headers=alice_headers)
         assert total.status_code == 200
         assert total.json() == {"count": 2}
 
@@ -232,22 +244,20 @@ def main() -> None:
         assert exported.status_code == 200, exported.text
         assert "ndjson" in exported.headers["content-type"]
         values = [json.loads(line) for line in exported.text.splitlines()]
-        assert {v["entity_id"] for v in values} == {
-            str(own_a.id), str(own_b.id)
-        }
-        assert all(
-            set(v) == {"campaign_id", "entity_kind", "entity_id"} for v in values
-        )
+        assert {v["entity_id"] for v in values} == {str(own_a.id), str(own_b.id)}
+        assert all(set(v) == {"campaign_id", "entity_kind", "entity_id"} for v in values)
         for confidential in ("Private Alice", "Private Bob", "subject", "counterparties"):
             assert confidential not in exported.text
 
         denied_attr = client.post(
-            host_url + "/attribution", headers=alice_headers,
+            host_url + "/attribution",
+            headers=alice_headers,
             json={"contact_id": str(foreign.id), "source": "referral"},
         )
         assert denied_attr.status_code == 403
         accepted_attr = client.post(
-            host_url + "/attribution", headers=alice_headers,
+            host_url + "/attribution",
+            headers=alice_headers,
             json={"contact_id": str(own_a.id), "source": " Conference  "},
         )
         assert accepted_attr.status_code == 201, accepted_attr.text
@@ -271,22 +281,19 @@ def main() -> None:
 
     restarted = create_app(url)
     with TestClient(restarted) as client:
-        own = client.get(
-            f"/crm/campaigns/{cid}", headers=alice_headers
-        )
+        own = client.get(f"/crm/campaigns/{cid}", headers=alice_headers)
         assert own.status_code == 200, own.text
         assert own.json()["owner_id"] == str(alice)
-        assert client.get(
-            f"/crm/campaigns/{cid}/audience/count", headers=alice_headers
-        ).json() == {"count": 2}
-        assert client.get(
-            f"/crm/campaigns/{cid}/attributions", headers=alice_headers
-        ).json()["total"] == 1
+        assert client.get(f"/crm/campaigns/{cid}/audience/count", headers=alice_headers).json() == {
+            "count": 2
+        }
+        assert (
+            client.get(f"/crm/campaigns/{cid}/attributions", headers=alice_headers).json()["total"]
+            == 1
+        )
         # The conservative reference host denies generic link reads even
         # to the owner. Persistence is separately verified by the facade.
-        links_http = client.get(
-            f"/crm/campaigns/{cid}/communication-links", headers=alice_headers
-        )
+        links_http = client.get(f"/crm/campaigns/{cid}/communication-links", headers=alice_headers)
         assert links_http.status_code == 403, links_http.text
         assert "total" not in links_http.json()
         assert (
@@ -295,12 +302,8 @@ def main() -> None:
             ).total
             == 1
         )
-        assert client.get(
-            f"/crm/campaigns/{cid}", headers=bob_headers
-        ).status_code == 403
-        assert client.get(
-            f"/host/campaigns/{cid}/export", headers=bob_headers
-        ).status_code == 403
+        assert client.get(f"/crm/campaigns/{cid}", headers=bob_headers).status_code == 403
+        assert client.get(f"/host/campaigns/{cid}/export", headers=bob_headers).status_code == 403
     restarted.state.pycrmkit_host.engine.dispose()
 
     print(
