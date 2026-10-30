@@ -56,7 +56,10 @@ def test_runbook_never_confuses_merge_with_publication() -> None:
 
 def test_prepublication_status_and_frozen_rc_evidence() -> None:
     assert "PREPARED / NOT PUBLISHED" in _read("docs/releases/1.2.0.md")
-    assert "Current stable version: **1.1.0" in _read("README.md")
+    readme = _read("README.md")
+    assert "Release availability:" in readme
+    assert "not necessarily published" in readme
+    assert "Published stable version: **1.2.0" not in readme
     assert '"target_release": "1.2.0rc1"' in _read(
         "tests/compatibility/public_api_v1_2_campaign_candidate.json"
     )

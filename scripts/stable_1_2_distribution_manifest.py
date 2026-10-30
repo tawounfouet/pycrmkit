@@ -66,7 +66,7 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _metadata(raw: bytes, version: str) -> None:
+def _metadata(raw: bytes, version: str, *, expected_readme: str | None = None) -> None:
     parsed = Parser().parsestr(raw.decode("utf-8"))
     assert parsed["Name"].casefold() == "pycrmkit"
     assert parsed["Version"] == version, (parsed["Version"], version)
@@ -75,6 +75,11 @@ def _metadata(raw: bytes, version: str) -> None:
     )
     extras = set(parsed.get_all("Provides-Extra", []))
     assert extras == EXTRAS, (sorted(extras), sorted(EXTRAS))
+    if expected_readme is not None:
+        assert (parsed["Description-Content-Type"] or "").startswith("text/markdown")
+        assert parsed.get_payload().rstrip("\r\n") == expected_readme.rstrip("\r\n"), (
+            "PyPI long description differs from the source README"
+        )
     assert not any(
         word in str(parsed).casefold()
         for word in (
@@ -85,8 +90,11 @@ def _metadata(raw: bytes, version: str) -> None:
     )
 
 
-def inspect(dist: Path, version: str) -> dict[str, object]:
+def inspect(
+    dist: Path, version: str, *, readme_path: Path = Path("README.md")
+) -> dict[str, object]:
     assert version == "1.2.0", "stable 1.2.0 artifacts required"
+    source_readme = readme_path.read_text(encoding="utf-8")
     # The wheel is pure Python, while the sdist must preserve all migration
     # sources and public package resources; neither can silently lose files.
     wheel_name = f"pycrmkit-{version}-py3-none-any.whl"
@@ -107,7 +115,7 @@ def inspect(dist: Path, version: str) -> dict[str, object]:
         entry_path = f"pycrmkit-{version}.dist-info/entry_points.txt"
         record_path = f"pycrmkit-{version}.dist-info/RECORD"
         assert {metadata_path, entry_path, record_path} <= names
-        _metadata(archive.read(metadata_path), version)
+        _metadata(archive.read(metadata_path), version, expected_readme=source_readme)
         assert "pycrmkit-migrate" in archive.read(entry_path).decode()
     prefix = f"pycrmkit-{version}/"
     with tarfile.open(sdist, "r:gz") as archive:
@@ -125,7 +133,12 @@ def inspect(dist: Path, version: str) -> dict[str, object]:
         assert must <= members, ("sdist missing", sorted(must - members))
         info = archive.extractfile(prefix + "PKG-INFO")
         assert info is not None
-        _metadata(info.read(), version)
+        _metadata(info.read(), version, expected_readme=source_readme)
+        archived_readme = archive.extractfile(prefix + "README.md")
+        assert archived_readme is not None
+        assert archived_readme.read().decode("utf-8") == source_readme, (
+            "sdist README differs from the source README"
+        )
         assert not any(name.startswith("/") or ".." in Path(name).parts for name in names), (
             "Unsafe source archive path"
         )
@@ -147,6 +160,7 @@ def inspect(dist: Path, version: str) -> dict[str, object]:
             for p in (wheel, sdist)
         ],
         "wheel_and_sdist_contents_passed": True,
+        "readme_matches_wheel_sdist_metadata": True,
         "passed": True,
     }
 
@@ -154,10 +168,11 @@ def inspect(dist: Path, version: str) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dist", type=Path, default=Path("dist"))
+    parser.add_argument("--readme", type=Path, default=Path("README.md"))
     parser.add_argument("--expected-version", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    report = inspect(args.dist, args.expected_version)
+    report = inspect(args.dist, args.expected_version, readme_path=args.readme)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     print("Distribution contents, metadata and hashes: PASS", args.expected_version)
 

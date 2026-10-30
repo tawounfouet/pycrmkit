@@ -1,20 +1,30 @@
 # Changelog
 
-## [1.2.0] - PREPARED / NOT PUBLISHED (LOT-32-008)
+All notable changes to PyCRMKit are documented here. Releases follow Semantic Versioning and PEP 440.
 
-This is a **documentation-only, pre-version-promotion candidate entry**, not evidence of a GitHub stable tag, release or PyPI version. Current published stable remains **1.1.0**; current GitHub prerelease is **1.2.0rc1**. The package's current source version remains **1.2.0rc1** until LOT-32-009.
+## [Unreleased]
 
-### Planned stable scope (no new features since RC1)
-- Promote the frozen Campaign 1.2 metadata/lifecycle/revision, direct membership and captured Segment sources, attribution and Communication link metadata, optional FastAPI/DRF and CSV/JSON/JSONL DataOps contract qualified in `v1.2.0rc1`.
-- Keep V1/V1.1 public API, error and event compatibility. Keep Alembic head `0006_campaign_persistence` and Django head `0005_communication_record_store` unchanged by a package-label-only promotion.
-- Respect host-owned IAM/tenant/purpose controls, per-row import partial commits, no snapshot under export churn and the consumer's mandatory spreadsheet-formula defense.
-- Planned supported matrix: Python 3.11–3.13, PostgreSQL 16/17, SQLAlchemy 2.0/2.1, FastAPI 0.141/Pydantic 2.13, Django 5.2/DRF 3.18; only tested combinations are claimed. No production SLAs or support lifetime have been approved.
+### Documentation
+- Simplified the repository README to emphasize installation, the public CRM facade, integrations and documentation.
+- Corrected the 1.2.0 source/publication status without changing runtime code, public APIs or release artifacts.
 
-### Pending gates and publication evidence
-- [PREPARED release notes](docs/releases/1.2.0.md), [migration guide](docs/getting-started/1.2.0-upgrade.md), [support matrix](docs/reference/1.2.0-support-and-compatibility.md), [release runbook](docs/development/1.2.0-stable-release-gate.md).
-- LOT-32-009 version flip, LOT-32-010 built `1.2.0` archives and clean installs, LOT-32-011 release maintainer GO / exact-`main` tests, LOT-32-012 verified GitHub publication and independent PyPI decision, LOT-32-013 post-publish rehash and public status update.
-- **Pending:** stable source and tag SHA, actual wheel/sdist SHA-256, publisher SHA, release URL, date and verified PyPI status. None is inferred from prerelease assets.
+## [1.2.0] - PREPARED / NOT PUBLISHED
 
+**Campaign Metadata Stable** is feature-frozen and qualified, but its stable GitHub tag/release and PyPI distribution are **not yet verified as published**. The package source on `main` is already `1.2.0`; the latest verified GitHub prerelease is [`v1.2.0rc1`](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1).
+
+### Stable scope (unchanged from RC1)
+- Campaign metadata, lifecycle and optimistic revisions; direct members, captured Segment sources and deduplicated audiences.
+- Attribution references and CommunicationRecord link metadata (no message delivery).
+- Opt-in FastAPI/DRF Campaign endpoints with host-supplied authentication and authorization.
+- Bounded CSV/JSON/JSONL Campaign import/export with documented partial-write, replay and export-consistency limits.
+- Memory, SQLAlchemy/PostgreSQL and Django persistence; V1/V1.1 compatibility preserved, with Alembic `0006_campaign_persistence` and Django `0005_communication_record_store` migration heads unchanged.
+
+### Qualification and pending publication
+- [PR #113](https://github.com/tawounfouet/pycrmkit/pull/113) was merged; the qualified exact-`main` source commit is `7133c19f85c497c16ed944d39cd3227cb402f13c` (34/34 push workflows, 84/84 check runs successful).
+- LOT-32-012 remains open until the annotated `v1.2.0` tag, GitHub stable release, wheel/sdist, SHA-256 manifest and post-download verification are completed.
+- PyPI publication is a **separate decision**; no PyPI 1.2.0 publication is claimed.
+- LOT-32-013 will update public publication status and artifact hashes **after** independent verification.
+- References: [prepared release notes](docs/releases/1.2.0.md), [upgrade guide](docs/getting-started/1.2.0-upgrade.md), [support matrix](docs/reference/1.2.0-support-and-compatibility.md), [release gate](docs/development/1.2.0-stable-release-gate.md).
 
 ## [1.2.0rc1] - 2026-10-29 (GitHub prerelease PUBLISHED)
 
@@ -196,12 +206,6 @@ This is a **documentation-only, pre-version-promotion candidate entry**, not evi
 ### Next
 - `1.1.0 — Segmentation & Sales Task Foundation`, after zero-blocker qualification.
 
-
-All notable changes to PyCRMKit will be documented in this file.
-
-The project follows Semantic Versioning semantics and PEP 440 version syntax.
-
-## [Unreleased]
 
 ## [1.1.0b3] - 2026-09-29
 

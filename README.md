@@ -1,202 +1,80 @@
 # PyCRMKit
 
-PyCRMKit is a headless Python framework for customer relationships, activities, sales pipelines, and CRM automation.
+**Headless, framework-agnostic CRM building blocks for Python applications.**
 
-## Status
+Build customer relationship workflows without running a full CRM server. PyCRMKit provides a typed domain model, a Python facade, events and pluggable persistence; your application controls its API, identity and deployment.
 
-**1.2.0 — Campaign Metadata Stable is PREPARED / NOT PUBLISHED.** The release notes and support agreement are drafts for [LOT-32-008](docs/releases/1.2.0.md), not a stable artifact or an available PyPI release. The release-branch package source is `1.2.0` after LOT-32-009, but the stable package is **not yet published**. See the [upgrade guide](docs/getting-started/1.2.0-upgrade.md), [compatibility/support matrix](docs/reference/1.2.0-support-and-compatibility.md) and [release gate](docs/development/1.2.0-stable-release-gate.md).
+## Features
 
+- **CRM:** contacts, organizations, relationships, tags and custom fields.
+- **Sales & activities:** leads, opportunities, pipelines, tasks and customer timelines.
+- **Segmentation & campaigns:** saved queries, segment membership, Campaign metadata, audiences and attribution references.
+- **Automation:** domain events, audit history, webhooks and provider-neutral email workflows.
+- **Data operations:** CSV/JSON/JSONL import and export, external identities, duplicate review and contact merge.
+- **Integrations:** in-memory storage, SQLAlchemy/PostgreSQL, FastAPI, Django and Django REST Framework.
 
-Current stable version: **1.1.0 — Segmentation & Sales Task Foundation**.  
-Latest GitHub prerelease: **1.2.0rc1 — Campaign Production Qualification** (published 2026-10-29; [GitHub release](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1)). Stable remains **1.1.0**; PyPI availability for 1.2.0rc1 is **not** established.  
-Qualified 1.1 release candidate lineage: **1.1.0rc1 — Segmentation Production Qualification**.
+## Installation
 
-The stable `0.1`–`0.5` CRM, Activity/Timeline, Sales, Communication and Eventing/Webhooks contracts are now compatibility-governed. `0.5.0` promotes the fully qualified release candidate without new functional scope: committed CRM domain events automatically match registered subscriptions, serialize/sign/deliver, persist retry/dead-letter state, and expose delivery history.
+Requires **Python 3.11–3.13**. For a version available on [PyPI](https://pypi.org/project/pycrmkit/):
 
-The project is intentionally framework-agnostic at its core. SMTP, Jinja2, Resend, SQLAlchemy/PostgreSQL, FastAPI, Django, and Django REST Framework remain opt-in integrations. `0.8.0` is the stable Django integration line. `0.9.0a1` introduced provider-neutral external identities across Memory, SQLAlchemy/PostgreSQL, and Django persistence. `0.9.0a2` added the format-neutral Read → Map → Normalize → Validate → Deduplicate → Persist → Report framework. `0.9.0b1` added standard-library CSV, JSON and JSONL readers/exporters. `0.9.0b2` added explainable candidate detection, deterministic signal scoring, conflicts and provenance. `0.9.0b3` adds conservative transactional Contact merge execution with activity/relationship reassignment, tag union, custom-field conflict policies, external-identity preservation, audit and provenance. `0.9.0rc1` qualified the complete CSV import → normalization/validation → duplicate review → merge → audit/provenance → CSV/JSON/JSONL export journey from both source checkout and the built wheel. `0.9.0` promotes that qualified behavior to the stable Data Operations line without adding new functional scope. `1.0.0a1` starts the V1 stabilization cycle by classifying the existing facade, domain, repository, event/serialization, configuration and integration surfaces as public, provisional or internal, with an executable source/wheel compatibility contract. `1.0.0b1` hardens that candidate with privacy-safe diagnostics, sensitive event redaction, webhook secret rotation and replay-age verification, explicit destructive-operation safeguards, and stricter duplicate-merge integrity checks. `1.0.0b2` establishes reproducible source/wheel performance baselines for Contact creation/search, Timeline retrieval, bulk import, repository pagination and event publication, and adds summary-only import reporting for bounded-memory high-volume runs. `1.0.0b3` publishes an executable V1 compatibility matrix across Python 3.11–3.13, PostgreSQL 16/17, SQLAlchemy 2.0/2.1, FastAPI 0.141/Pydantic 2.13, Django 5.2/DRF 3.18 and supported optional-extra combinations. `1.0.0rc1` converges the frozen API, security/privacy, performance, compatibility, PostgreSQL transactions/migrations, FastAPI, Django/DRF, cross-layer E2E and isolated wheel/sdist qualification behind a zero-blocker production release gate. `1.0.0` promotes that exact qualified V1 contract to Production Stable without adding functional scope. `1.1.0` promotes the qualified Segmentation/SavedQuery, Sales Task and Business Calendar extension line from `1.1.0rc1` without adding functional scope, preserving the exact SQLAlchemy/Alembic `0005` and Django `0003_segmentation` migration heads.
+```bash
+python -m pip install pycrmkit
+```
 
-## Architecture
+For the latest source checkout (including versions not yet published):
 
-```text
-Application
-    ↓
-PyCRMKit
-    ↓
-CRM Domain Model
-    ↓
-Services / Policies / Domain Events
-    ↓
-Timeline Projectors / Repository Contracts
-    ↓
-Storage / Integrations
+```bash
+git clone https://github.com/tawounfouet/pycrmkit.git
+cd pycrmkit
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e .
 ```
 
 ## Quickstart
 
 ```python
 from pycrmkit import CRM
-from pycrmkit.activities import ActivityParticipant
 from pycrmkit.core.references import EntityReference
 
 crm = CRM.memory()
 contact = crm.contacts.create(first_name="Ada", last_name="Lovelace")
 contact_ref = EntityReference("contact", contact.id)
 
-crm.activities.log(
-    type="call",
-    subject="Commercial follow-up",
-    direction="outbound",
-    participants=(ActivityParticipant(contact_ref, is_primary=True),),
-)
-task = crm.tasks.create(
-    title="Prepare renewal",
-    priority="high",
-    references=(contact_ref,),
-)
+task = crm.tasks.create(title="Prepare follow-up", references=(contact_ref,))
 crm.tasks.complete(task.id)
 
-history = crm.timeline.for_contact(contact.id)
-for entry in history.items:
-    print(entry.occurred_at, entry.event_type, entry.title)
+for entry in crm.timeline.for_contact(contact.id).items:
+    print(entry.title)
 ```
 
-Use `crm.with_context(actor_id=..., correlation_id=...)` for explicit mutation context. For event-driven work, use `crm.with_event(parent_event)` so actor/correlation context is propagated and `causation_id` points to the direct parent event.
+`CRM.memory()` requires no database or web framework. Add an adapter for durable storage or HTTP endpoints.
 
-## Install for development
+## Architecture
+
+```text
+Application → CRM facade → Domain services & events → Repository contracts → Adapters
+```
+
+The core has **no mandatory third-party runtime dependencies**. SQLAlchemy, PostgreSQL, FastAPI, Django/DRF and email integrations are opt-in.
+
+**Scope:** Campaigns manage metadata, audiences and references; they do not send marketing messages. Host applications must enforce authentication, tenant authorization and database migration ownership.
+
+## Documentation
+
+- [Quickstart](https://github.com/tawounfouet/pycrmkit/blob/main/docs/getting-started/quickstart.md) · [Guides](https://github.com/tawounfouet/pycrmkit/blob/main/docs/guides/index.md)
+- [Campaigns](https://github.com/tawounfouet/pycrmkit/blob/main/docs/campaigns/index.md) · [Compatibility](https://github.com/tawounfouet/pycrmkit/blob/main/docs/reference/1.2.0-support-and-compatibility.md)
+- [Releases](https://github.com/tawounfouet/pycrmkit/releases) · [Changelog](https://github.com/tawounfouet/pycrmkit/blob/main/CHANGELOG.md) · [Contributing](https://github.com/tawounfouet/pycrmkit/blob/main/CONTRIBUTING.md)
+
+**Release availability:** Check the GitHub Releases page and PyPI independently. A version present in source control is not necessarily published on either platform.
+
+## Development
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
 python -m pip install -e ".[dev]"
 pytest
 ```
 
-## Development roadmap
-
-```text
-0.0.1  Repository Bootstrap              ✓
-0.0.2  Packaging & Quality Tooling       ✓
-0.0.3  CI / Docs / Release Engineering  ✓
-0.1.0a1 Core Primitives                    ✓
-0.1.0a2 Contacts                           ✓
-0.1.0a3 Organizations                      ✓
-0.1.0b1 Relationships                      ✓
-0.1.0b2 Tags & Custom Fields               ✓
-0.1.0b3 Memory Adapter                      ✓
-0.1.0b4 Events & Audit                      ✓
-0.1.0rc1 CRM Facade & Integration           ✓
-0.1.0  CRM Core Foundation                  ✓
-0.2.0a1 Activities                            ✓
-0.2.0a2 Tasks                                 ✓
-0.2.0b1 Timeline                              ✓
-0.2.0rc1 Activity & Timeline Integration       ✓
-0.2.0  Activity & Timeline Stable              ✓
-0.3.0a1 Money & Lead Foundation                ✓
-0.3.0a2 Opportunities                           ✓
-0.3.0b1 Pipeline & Stage                         ✓
-0.3.0b2 Lead Conversion                           ✓
-0.3.0rc1 Sales Integration                         ✓
-0.3.0  Sales Foundation                             ✓
-0.4.0a1 Communication Domain                         ✓
-0.4.0a2 Email Provider Protocol                      ✓
-0.4.0b1 Templates & SMTP                             ✓
-0.4.0b2 Resend Adapter                               ✓
-0.4.0rc1 Delivery Events & History                   ✓
-0.4.0  Communication Stable                          ✓
-0.5.0a1 Event Registry & Serialization                ✓
-0.5.0a2 Correlation & Causation                       ✓
-0.5.0b1 Webhook Registrations                          ✓
-0.5.0b2 Webhook Delivery Engine                         ✓
-0.5.0rc1 Eventing & Webhooks E2E                         ✓
-0.5.0  Eventing & Webhooks Stable                            ✓
-0.6.0a1 SQLAlchemy Foundation                                ✓
-0.6.0a2 Repository Adapters                                   ✓
-0.6.0b1 Unit of Work & Transactions                           ✓
-0.6.0b2 PostgreSQL                                             ✓
-0.6.0b3 Alembic / Migrations                                   ✓
-0.6.0rc1 Persistence Qualification                              ✓
-0.6.0  Persistence Foundation                                    ✓
-0.7.0a1 Schemas & Dependency Bridge                              ✓
-0.7.0b1 Routers                                                   ✓
-0.7.0b2 OpenAPI & Error Mapping                                  ✓
-0.7.0rc1 Example + E2E                                             ✓
-0.7.0  FastAPI Integration                                           ✓
-0.8.0a1 Django Application Bridge                                     ✓
-0.8.0b1 Django Migrations & Admin                                      ✓
-0.8.0b2 Optional DRF                                                   ✓
-0.8.0rc1 Django Example + E2E                                          ✓
-0.8.0  Django Integration                                              ✓
-0.9.0a1 External Identities                                               ✓
-0.9.0a2 Import Framework                                                   ✓
-0.9.0b1 CSV / JSON / JSONL                                                  ✓
-0.9.0b2 Deduplication                                                       ✓
-0.9.0b3 Merge                                                               ✓
-0.9.0rc1 Data Operations E2E                                                ✓
-0.9.0  Data Operations Stable                                               ✓
-1.0.0a1 Public API Freeze Candidate                                         ✓
-1.0.0b1 Security & Privacy Hardening                                         ✓
-1.0.0b2 Performance Baseline                                                  ✓
-1.0.0b3 Compatibility Matrix                                                   ✓
-1.0.0rc1 Full Production Qualification                                          ✓
-1.0.0  Production Stable                                                         ✓
-1.1.0a1 Query Expressions & Segment Foundations                                  ✓
-1.1.0a2 Saved Queries & Advanced Segment Semantics                                ✓
-1.1.0a3 Sales Task Ergonomics & Business Calendar                                 ✓
-1.1.0b1 SQLAlchemy/PostgreSQL Segmentation                                         ✓
-1.1.0b2 Django + Snapshot + Bulk Membership                                         ✓
-1.1.0b3 Data Operations + API Integration                                            ✓
-1.1.0rc1 Segmentation Production Qualification                                          ✓
-1.1.0  Segmentation & Sales Task Foundation                                               ✓ stable
-1.2.0a1 Campaign Foundations & Metadata                                                     ✓
-1.2.0a2 Campaign Membership & Segment Sources                                                ✓
-1.2.0a3 Attribution & Communication Linkage                                                   ✓
-1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence                                             ✓ beta
-1.2.0b2 Django Campaign Persistence                                                           ✓ prerelease
-1.2.0b3 HTTP + Data Operations Integration                                                     ✓ prerelease
-1.2.0rc1 Campaign Production Qualification                                                     ✓ GitHub prerelease
-1.2.0  Campaign Metadata Stable                                                               ◀ PREPARED / NOT PUBLISHED
-```
-
-## Quality
-
-```bash
-make test
-make lint
-make typecheck
-make coverage
-make build
-python scripts/release_check.py
-```
-
 ## License
 
-MIT © 2026 Thomas Awounfouet.
-
-
-**Release candidate published:** `v1.2.0rc1` ([release notes](docs/releases/1.2.0rc1.md); [GitHub prerelease](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1)). PR [#112](https://github.com/tawounfouet/pycrmkit/pull/112) has been merged; 27/27 exact-source main workflows succeeded, and the annotated tag points at `5113cedb50750185e457505dfcca5519ce3a62bd`. PyPI remains independent.
-
-## Campaign beta (1.2.0b3 - GitHub prerelease)
-
-The optional Campaign HTTP integration adds facade-backed FastAPI and Django
-REST Framework endpoints for Campaign metadata, members, captured Segment
-sources, deduplicated audience/count, attribution references and
-metadata-only CommunicationRecord links. **Campaign routes stay off by
-default** until the host injects verified authentication and per-action
-authorization. Untrusted `X-Actor-ID` headers cannot authorize Campaign
-access; existing generic routes retain their historical behavior.
-
-Campaign Python DataOps enables direct-membership imports via the existing
-CSV/JSON/JSONL readers and portable exports of direct members, audience or
-Segment-source provenance. It does not modify the frozen generic
-`ImportPipeline` API; imports are bounded and not globally atomic.
-
-Runnable core-only scenario:
-
-```bash
-python examples/data_operations/campaign_scenario.py
-```
-
-See [Campaign guide](docs/campaigns/index.md),
-[Campaign DataOps](docs/data_operations/campaigns.md),
-[HTTP security integration](docs/integrations/1.2.0b3-campaign-security.md)
-and [1.2.0b3 candidate notes](docs/releases/1.2.0b3.md).
+[MIT](https://github.com/tawounfouet/pycrmkit/blob/main/LICENSE) © 2026 Thomas Awounfouet.

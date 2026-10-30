@@ -32,7 +32,7 @@ jobs:
           ruff check tests/compatibility/test_campaign_stable_go_no_go_gate.py
           ruff format --check tests/compatibility/test_campaign_stable_go_no_go_gate.py
           mkdocs build --strict
-      - name: Freeze runtime changes to the version source only
+      - name: Freeze runtime changes; allow post-promotion documentation-only PRs
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
@@ -40,11 +40,20 @@ jobs:
           git fetch origin main
           git diff --name-only origin/main...HEAD -- src/pycrmkit/ > /tmp/stable-runtime-diff
           cat /tmp/stable-runtime-diff
-          test "$(wc -l < /tmp/stable-runtime-diff)" -eq 1
-          grep -Fx "src/pycrmkit/__about__.py" /tmp/stable-runtime-diff
-          git diff origin/main...HEAD -- src/pycrmkit/__about__.py > /tmp/version.patch
-          grep -F -- '-__version__ = "1.2.0rc1"' /tmp/version.patch
-          grep -F -- '+__version__ = "1.2.0"' /tmp/version.patch
+          if [ ! -s /tmp/stable-runtime-diff ]; then
+            # Post-promotion documentation / distribution gates may change
+            # without another version bump. Both sides must already be stable.
+            git show origin/main:src/pycrmkit/__about__.py | grep -Fx '__version__ = "1.2.0"'
+            grep -Fx '__version__ = "1.2.0"' src/pycrmkit/__about__.py
+          else
+            # Original release-promotion path remains strict: exactly the
+            # one RC1 -> stable version source change is allowed.
+            test "$(wc -l < /tmp/stable-runtime-diff)" -eq 1
+            grep -Fx "src/pycrmkit/__about__.py" /tmp/stable-runtime-diff
+            git diff origin/main...HEAD -- src/pycrmkit/__about__.py > /tmp/version.patch
+            grep -F -- '-__version__ = "1.2.0rc1"' /tmp/version.patch
+            grep -F -- '+__version__ = "1.2.0"' /tmp/version.patch
+          fi
       - name: Explicitly withhold automated release authority
         run: |
           echo "Technical preflight only; NO maintainer GO, merge, tag, GitHub release or PyPI action."
