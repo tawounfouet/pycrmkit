@@ -44,6 +44,7 @@ class StableHarness:
             uow_factory=self.uow_factory,
             event_bus=self.bus,
             config=CRMConfig(events_enabled=True, audit_enabled=False),
+            webhook_auto_delivery=False,
         )
 
 
@@ -62,9 +63,7 @@ def stable_harness(request: pytest.FixtureRequest) -> Iterator[StableHarness]:
         return
 
     if name == "django":
-        yield StableHarness(
-            name, lambda: DjangoTransactionBridge(event_publisher=bus), bus
-        )
+        yield StableHarness(name, lambda: DjangoTransactionBridge(event_publisher=bus), bus)
         return
 
     pytest.importorskip("sqlalchemy")
@@ -115,9 +114,7 @@ def _csv(rows: list[dict[str, str]]) -> CSVReader:
 
 
 def _jsonl(rows: list[dict[str, str]]) -> JSONLReader:
-    return JSONLReader(
-        io.StringIO("".join(json.dumps(row) + "\n" for row in rows))
-    )
+    return JSONLReader(io.StringIO("".join(json.dumps(row) + "\n" for row in rows)))
 
 
 @pytest.mark.parametrize("source_format", ("json", "jsonl", "csv"))
@@ -127,9 +124,7 @@ def test_stable_campaign_replay_and_exports_match_across_adapters(
     crm = stable_harness.crm()
     ada = crm.contacts.create(display_name="Privacy Ada")
     grace = crm.contacts.create(display_name="Privacy Grace")
-    campaign = crm.campaigns.create(
-        key=f"stable-{source_format}", name="Stable Adapter"
-    )
+    campaign = crm.campaigns.create(key=f"stable-{source_format}", name="Stable Adapter")
     segment = crm.segments.create_static(
         key="stable-capture", name="Stable Capture", entity_kind="contact"
     )
@@ -154,9 +149,7 @@ def test_stable_campaign_replay_and_exports_match_across_adapters(
     observed: list[DomainEvent] = []
     stable_harness.bus.subscribe("campaign.member_added", observed.append)
 
-    first = import_campaign_members(
-        crm.campaigns, campaign.id, encoded(), source="Trusted File"
-    )
+    first = import_campaign_members(crm.campaigns, campaign.id, encoded(), source="Trusted File")
     assert first.as_dict() == {
         "rows_read": 5,
         "rows_created": 2,
@@ -174,7 +167,8 @@ def test_stable_campaign_replay_and_exports_match_across_adapters(
     assert reopened.campaigns.segment_sources(campaign.id).total == 1
 
     replay = import_campaign_members(
-        reopened.campaigns, campaign.id,
+        reopened.campaigns,
+        campaign.id,
         _csv([_record(ada.id), _record(grace.id)]),
     )
     assert replay.rows_created == 0
@@ -187,8 +181,12 @@ def test_stable_campaign_replay_and_exports_match_across_adapters(
     for format in ("csv", "json", "jsonl"):
         dest = io.StringIO()
         count = export_campaign_records(
-            reopened.campaigns, campaign.id, dest, kind="audience",
-            format=format, page_size=1,
+            reopened.campaigns,
+            campaign.id,
+            dest,
+            kind="audience",
+            format=format,
+            page_size=1,
         )
         assert count == 2
         dest.seek(0)
@@ -204,23 +202,37 @@ def test_stable_campaign_replay_and_exports_match_across_adapters(
     assert outputs["csv"] == outputs["json"] == outputs["jsonl"]
 
     source_out = io.StringIO()
-    assert export_campaign_records(
-        reopened.campaigns, campaign.id, source_out,
-        kind="sources", format="jsonl", page_size=1,
-    ) == 1
+    assert (
+        export_campaign_records(
+            reopened.campaigns,
+            campaign.id,
+            source_out,
+            kind="sources",
+            format="jsonl",
+            page_size=1,
+        )
+        == 1
+    )
     source_record = json.loads(source_out.getvalue())
     assert source_record["member_count"] == 1
     assert "Privacy Ada" not in source_out.getvalue()
     assert "Privacy Grace" not in source_out.getvalue()
 
     direct_out = io.StringIO()
-    assert export_campaign_records(
-        reopened.campaigns, campaign.id, direct_out,
-        kind="direct", format="csv", page_size=1,
-    ) == 2
-    assert {row["source"] for row in csv.DictReader(
-        io.StringIO(direct_out.getvalue())
-    )} == {"trusted file"}
+    assert (
+        export_campaign_records(
+            reopened.campaigns,
+            campaign.id,
+            direct_out,
+            kind="direct",
+            format="csv",
+            page_size=1,
+        )
+        == 2
+    )
+    assert {row["source"] for row in csv.DictReader(io.StringIO(direct_out.getvalue()))} == {
+        "trusted file"
+    }
     assert "Privacy Ada" not in direct_out.getvalue()
 
 
@@ -234,16 +246,12 @@ def test_stable_adapter_rejected_mutations_never_advance_revision_or_events(
     for type_name in ("campaign.updated", "campaign.member_added"):
         stable_harness.bus.subscribe(type_name, observed.append)
 
-    changed = crm.campaigns.update(
-        campaign.id, CampaignUpdate(name="Updated"), expected_revision=1
-    )
+    changed = crm.campaigns.update(campaign.id, CampaignUpdate(name="Updated"), expected_revision=1)
     assert changed.revision == 2
     assert len(observed) == 1
 
     with pytest.raises(ConflictError) as caught:
-        crm.campaigns.update(
-            campaign.id, CampaignUpdate(name="Lost"), expected_revision=1
-        )
+        crm.campaigns.update(campaign.id, CampaignUpdate(name="Lost"), expected_revision=1)
     assert caught.value.code == "campaign.revision.conflict"
     assert crm.campaigns.get(campaign.id).name == "Updated"
     assert crm.campaigns.get(campaign.id).revision == 2
@@ -252,9 +260,7 @@ def test_stable_adapter_rejected_mutations_never_advance_revision_or_events(
     archived = crm.campaigns.archive(campaign.id, expected_revision=2)
     assert archived.revision == 3
     with pytest.raises(InvalidStateError) as denied:
-        crm.campaigns.add_member(
-            campaign.id, EntityReference("contact", contact.id)
-        )
+        crm.campaigns.add_member(campaign.id, EntityReference("contact", contact.id))
     assert denied.value.code == "campaign.archived"
     assert stable_harness.crm().campaigns.members(campaign.id).total == 0
     assert len(observed) == 1
