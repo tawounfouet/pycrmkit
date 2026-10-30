@@ -40,9 +40,7 @@ def _reader(format: str, rows: list[dict[str, object]]) -> object:
     if format == "json":
         return JSONReader(io.StringIO(json.dumps(rows)))
     if format == "jsonl":
-        return JSONLReader(io.StringIO(
-            "".join(json.dumps(row) + "\n" for row in rows)
-        ))
+        return JSONLReader(io.StringIO("".join(json.dumps(row) + "\n" for row in rows)))
     raise AssertionError(format)
 
 
@@ -58,10 +56,7 @@ def _export_rows(stream: io.StringIO, format: str) -> list[dict[str, object]]:
 @pytest.mark.parametrize("format", ("csv", "json", "jsonl"))
 def test_partial_commit_recovery_via_full_file_replay(format: str) -> None:
     crm = CRM.memory(webhook_auto_delivery=False)
-    contacts = [
-        crm.contacts.create(display_name=f"Recovery {number}")
-        for number in range(3)
-    ]
+    contacts = [crm.contacts.create(display_name=f"Recovery {number}") for number in range(3)]
     campaign = crm.campaigns.create(key=f"stable-replay-{format}", name="Replay")
     rows = [_row(contact.id) for contact in contacts]
 
@@ -74,25 +69,25 @@ def test_partial_commit_recovery_via_full_file_replay(format: str) -> None:
         def members(self, campaign_id: object, page: object = None) -> object:
             return crm.campaigns.members(campaign_id, page)
 
-        def add_member(
-            self, campaign_id: object, entity: object, **kwargs: object
-        ) -> object:
+        def add_member(self, campaign_id: object, entity: object, **kwargs: object) -> object:
             self.calls += 1
             if self.calls == 2:
-                raise RepositoryError(
-                    "injected outage", code="storage.injected_failure"
-                )
+                raise RepositoryError("injected outage", code="storage.injected_failure")
             return crm.campaigns.add_member(campaign_id, entity, **kwargs)
 
     with pytest.raises(RepositoryError, match="injected outage"):
         import_campaign_members(
-            FailingOnce(), campaign.id, _reader(format, rows),
+            FailingOnce(),
+            campaign.id,
+            _reader(format, rows),
             source="trusted-import",
         )
     assert crm.campaigns.members(campaign.id).total == 1
 
     recovered = import_campaign_members(
-        crm.campaigns, campaign.id, _reader(format, rows),
+        crm.campaigns,
+        campaign.id,
+        _reader(format, rows),
         source="trusted-import",
     )
     assert recovered.as_dict() == {
@@ -310,9 +305,16 @@ def test_host_never_publishes_failed_spreadsheet_validation(tmp_path: object) ->
         )
         == 1
     )
-    assert export_campaign_records(
-        crm.campaigns, safe.id, staging, kind="direct", format="csv",
-    ) == 1
+    assert (
+        export_campaign_records(
+            crm.campaigns,
+            safe.id,
+            staging,
+            kind="direct",
+            format="csv",
+        )
+        == 1
+    )
     with staging.open("r", encoding="utf-8", newline="") as stream:
         assert validate_campaign_csv_for_spreadsheet(stream) == 1
     replace(staging, published)
