@@ -131,9 +131,15 @@ def main() -> None:
             ("get", core_url + "/attributions", bob_headers),
             ("get", core_url + "/communication-links", bob_headers),
         ):
+            payload = None
+            if path.endswith("/import"):
+                payload = {"rows": [
+                    {"entity_kind": "contact", "entity_id": str(own_a.id)}
+                ]}
+            elif path.endswith("/attribution"):
+                payload = {"contact_id": str(own_a.id), "source": "verified"}
             response = client.request(
-                verb.upper(), path, headers=headers,
-                json={} if verb == "post" and path.endswith("/import") else None,
+                verb.upper(), path, headers=headers, json=payload,
             )
             assert response.status_code == 403, (path, response.text)
             assert "total" not in response.json()
