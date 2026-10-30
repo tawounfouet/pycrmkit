@@ -24,17 +24,22 @@ def test_candidate_package_and_release_docs_remain_prepared() -> None:
     assert "0006_campaign_persistence" in note
     assert "0005_communication_record_store" in note
 
-    readme = _read("README.md").split("## Status", 1)[1].split("## ", 1)[0]
-    assert "Current stable version: **1.1.0" in readme
-    assert "1.2.0rc1" in readme
-    assert "PREPARED / NOT PUBLISHED" in readme
+    # The public README is also the PyPI long description: keep it evergreen,
+    # with registry links rather than an already-stale prepublication banner.
+    readme = _read("README.md")
+    assert "## Installation" in readme
+    assert "## Quickstart" in readme
+    assert "[PyPI](https://pypi.org/project/pycrmkit/)" in readme
+    assert "Release availability:" in readme
+    assert "not necessarily published" in readme
     assert "Published stable version: **1.2.0" not in readme
 
     changelog = _read("CHANGELOG.md")
-    assert changelog.index("## [1.2.0] - PREPARED / NOT PUBLISHED") < changelog.index(
-        "## [1.2.0rc1] - 2026-10-29"
-    )
-    assert "Pending" in changelog[: changelog.index("## [1.2.0rc1]")]
+    pre_rc = changelog[: changelog.index("## [1.2.0rc1]")]
+    assert "## [Unreleased]" in pre_rc
+    assert "## [1.2.0] - PREPARED / NOT PUBLISHED" in pre_rc
+    assert "LOT-32-012" in pre_rc
+    assert "PyPI" in pre_rc
 
 
 def test_freeze_provenance_and_navigation() -> None:
