@@ -218,3 +218,5 @@ nav:
       - Testing: development/testing.md
       - Release Process: development/release-process.md
       - 1.2.0 Stable Release Gate (prepared): development/1.2.0-stable-release-gate.md
+      - 1.2.0 GO-NO-GO Decision (pending): development/1.2.0-stable-lot-32-011-go-no-go.md
+      - 1.2.0 Controlled Merge Runbook: development/1.2.0-stable-lot-32-011-main-merge-runbook.md
