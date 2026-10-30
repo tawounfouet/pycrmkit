@@ -282,9 +282,19 @@ def main() -> None:
         assert client.get(
             f"/crm/campaigns/{cid}/attributions", headers=alice_headers
         ).json()["total"] == 1
-        assert client.get(
+        # The conservative reference host denies generic link reads even
+        # to the owner. Persistence is separately verified by the facade.
+        links_http = client.get(
             f"/crm/campaigns/{cid}/communication-links", headers=alice_headers
-        ).json()["total"] == 1
+        )
+        assert links_http.status_code == 403, links_http.text
+        assert "total" not in links_http.json()
+        assert (
+            restarted.state.pycrmkit_host.crm.campaigns.communication_links(
+                CampaignId.parse(cid)
+            ).total
+            == 1
+        )
         assert client.get(
             f"/crm/campaigns/{cid}", headers=bob_headers
         ).status_code == 403
