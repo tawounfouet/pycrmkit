@@ -2,9 +2,7 @@
 
 **Headless, framework-agnostic CRM building blocks for Python applications.**
 
-Build customer relationship workflows without adopting a full CRM server. PyCRMKit provides a typed domain model, a Python facade, events and pluggable persistence; your application controls its API, identity and deployment.
-
-> **Release status:** The `1.2.0` source is qualified on `main`, but **`v1.2.0` is not yet published** as a GitHub stable release and PyPI availability is not verified. The latest verified GitHub prerelease is [`v1.2.0rc1`](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1). See the [1.2.0 release notes](docs/releases/1.2.0.md).
+Build customer relationship workflows without running a full CRM server. PyCRMKit provides a typed domain model, a Python facade, events and pluggable persistence; your application controls its API, identity and deployment.
 
 ## Features
 
@@ -15,9 +13,15 @@ Build customer relationship workflows without adopting a full CRM server. PyCRMK
 - **Data operations:** CSV/JSON/JSONL import and export, external identities, duplicate review and contact merge.
 - **Integrations:** in-memory storage, SQLAlchemy/PostgreSQL, FastAPI, Django and Django REST Framework.
 
-## Quickstart
+## Installation
 
-Requires **Python 3.11–3.13**. Until the stable release is published, install the current source from a checkout:
+Requires **Python 3.11–3.13**. For a version available on [PyPI](https://pypi.org/project/pycrmkit/):
+
+```bash
+python -m pip install pycrmkit
+```
+
+For the latest source checkout (including versions not yet published):
 
 ```bash
 git clone https://github.com/tawounfouet/pycrmkit.git
@@ -26,6 +30,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -e .
 ```
+
+## Quickstart
 
 ```python
 from pycrmkit import CRM
@@ -42,7 +48,7 @@ for entry in crm.timeline.for_contact(contact.id).items:
     print(entry.title)
 ```
 
-`CRM.memory()` requires no database or web framework. Add an adapter when your application needs durable storage or HTTP endpoints.
+`CRM.memory()` requires no database or web framework. Add an adapter for durable storage or HTTP endpoints.
 
 ## Architecture
 
@@ -52,13 +58,15 @@ Application → CRM facade → Domain services & events → Repository contracts
 
 The core has **no mandatory third-party runtime dependencies**. SQLAlchemy, PostgreSQL, FastAPI, Django/DRF and email integrations are opt-in.
 
-**Scope:** Campaigns manage metadata, audiences and references; they do not send marketing messages. Host applications must enforce authentication, tenant authorization and their chosen database migration ownership.
+**Scope:** Campaigns manage metadata, audiences and references; they do not send marketing messages. Host applications must enforce authentication, tenant authorization and database migration ownership.
 
 ## Documentation
 
-- [Getting started](docs/getting-started/quickstart.md) · [Step-by-step guides](docs/guides/index.md)
-- [Campaigns](docs/campaigns/index.md) · [Compatibility and support](docs/reference/1.2.0-support-and-compatibility.md)
-- [Changelog](CHANGELOG.md) · [Release notes](docs/releases/1.2.0.md) · [Contributing](CONTRIBUTING.md)
+- [Quickstart](https://github.com/tawounfouet/pycrmkit/blob/main/docs/getting-started/quickstart.md) · [Guides](https://github.com/tawounfouet/pycrmkit/blob/main/docs/guides/index.md)
+- [Campaigns](https://github.com/tawounfouet/pycrmkit/blob/main/docs/campaigns/index.md) · [Compatibility](https://github.com/tawounfouet/pycrmkit/blob/main/docs/reference/1.2.0-support-and-compatibility.md)
+- [Releases](https://github.com/tawounfouet/pycrmkit/releases) · [Changelog](https://github.com/tawounfouet/pycrmkit/blob/main/CHANGELOG.md) · [Contributing](https://github.com/tawounfouet/pycrmkit/blob/main/CONTRIBUTING.md)
+
+**Release availability:** Check the GitHub Releases page and PyPI independently. A version present in source control is not necessarily published on either platform.
 
 ## Development
 
@@ -69,4 +77,4 @@ pytest
 
 ## License
 
-[MIT](LICENSE) © 2026 Thomas Awounfouet.
+[MIT](https://github.com/tawounfouet/pycrmkit/blob/main/LICENSE) © 2026 Thomas Awounfouet.
