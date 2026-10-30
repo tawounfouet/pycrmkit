@@ -1,9 +1,9 @@
 name: Campaign RC1 Distribution Qualification
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  # Historical RC-only artifact/host gate: manual replay only. Automated
+  # stable-source gates replace these after the 1.2.0 version promotion.
+  workflow_dispatch:
 
 jobs:
   installed-distributions:

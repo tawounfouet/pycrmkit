@@ -9,6 +9,7 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
+      - Preparing for 1.2.0 Upgrade (unpublished): getting-started/1.2.0-upgrade.md
   - Zero to Hero Guides:
       - Learning Path: guides/index.md
       - 00 Getting Started: guides/00_getting_started.md
@@ -126,12 +127,14 @@ nav:
   - Data Operations:
       - E2E Qualification: data_operations/e2e.md
       - Campaign Import & Export (1.2.0b3): data_operations/campaigns.md
+      - Campaign Import Recovery: data_operations/campaign-recovery.md
   - Security:
       - Security & Privacy Hardening: security/privacy-hardening.md
   - Performance:
       - V1 Performance Baseline: performance/baseline.md
   - Compatibility:
       - V1 Compatibility Matrix: compatibility/v1-matrix.md
+      - 1.2.0 Support & Compatibility (prepared): reference/1.2.0-support-and-compatibility.md
   - Reference:
       - Compatibility: reference/compatibility.md
   - API:
@@ -208,8 +211,12 @@ nav:
       - 1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence: releases/1.2.0b1.md
       - 1.2.0b2 Django Campaign Persistence: releases/1.2.0b2.md
       - 1.2.0b3 HTTP & Data Operations Candidate: releases/1.2.0b3.md
-      - 1.2.0rc1 Campaign Production Qualification (unpublished): releases/1.2.0rc1.md
+      - 1.2.0rc1 Campaign Production Qualification (GitHub prerelease): releases/1.2.0rc1.md
+      - 1.2.0 Campaign Metadata Stable (PREPARED / NOT PUBLISHED): releases/1.2.0.md
   - Development:
       - Contributing: development/contributing.md
       - Testing: development/testing.md
       - Release Process: development/release-process.md
+      - 1.2.0 Stable Release Gate (prepared): development/1.2.0-stable-release-gate.md
+      - 1.2.0 GO-NO-GO Decision (pending): development/1.2.0-stable-lot-32-011-go-no-go.md
+      - 1.2.0 Controlled Merge Runbook: development/1.2.0-stable-lot-32-011-main-merge-runbook.md

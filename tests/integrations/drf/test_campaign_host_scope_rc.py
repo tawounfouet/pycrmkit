@@ -162,3 +162,37 @@ def test_drf_verified_actor_approved_tenant_scope() -> None:
         assert other.status_code == 200, other.data
         assert other.data["name"] == "Bob private"
         assert len(calls) == 3
+
+
+def test_stable_drf_foreign_metadata_denies_before_facade() -> None:
+    """DRF must not reveal Campaign-linked resources or counts cross-tenant."""
+    crm, refs, factory_calls, policy = _state()
+
+    def factory() -> CRM:
+        factory_calls.append("crm")
+        return crm
+
+    base = f"/crm/campaigns/{refs['bob']}"
+    cases = (
+        ("audience", base + "/audience/"),
+        ("segment_sources", base + "/segment-sources/"),
+        ("attributions", base + "/attributions/"),
+        ("communication_links", base + "/communication-links/"),
+    )
+    with override_settings(
+        PYCRMKIT_CRM_FACTORY=factory,
+        PYCRMKIT_CAMPAIGN_SECURITY=policy,
+    ):
+        for action, path in cases:
+            before = len(factory_calls)
+            response = _request(
+                "get", action, path, actor="alice", pk=refs["bob"],
+            )
+            assert response.status_code == 403, (action, response.data)
+            assert len(factory_calls) == before, action
+            body = str(response.data).lower()
+            assert "bob private" not in body
+            assert "subject" not in body
+            assert "counterparties" not in body
+            assert "total" not in response.data
+            assert "count" not in response.data

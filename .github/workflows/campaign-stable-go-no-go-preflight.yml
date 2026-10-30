@@ -1,0 +1,50 @@
+name: Campaign 1.2 Stable GO-NO-GO Preflight
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [release/1.2.0-campaign-metadata-stable, main]
+
+permissions:
+  contents: read
+
+jobs:
+  governance-preflight:
+    name: Stable candidate scope and decision boundary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install package and governance quality tooling
+        run: python -m pip install -e . "pytest>=8" "ruff>=0.6" "mkdocs>=1.6,<2"
+      - name: Qualify governance, version, archive and prepublication guards
+        run: |
+          python -m pytest -q \
+            tests/compatibility/test_campaign_stable_go_no_go_gate.py \
+            tests/compatibility/test_campaign_stable_documentation_gate.py \
+            tests/compatibility/test_campaign_stable_version_promotion.py
+          ruff check tests/compatibility/test_campaign_stable_go_no_go_gate.py
+          ruff format --check tests/compatibility/test_campaign_stable_go_no_go_gate.py
+          mkdocs build --strict
+      - name: Freeze runtime changes to the version source only
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git diff --name-only origin/main...HEAD -- src/pycrmkit/ > /tmp/stable-runtime-diff
+          cat /tmp/stable-runtime-diff
+          test "$(wc -l < /tmp/stable-runtime-diff)" -eq 1
+          grep -Fx "src/pycrmkit/__about__.py" /tmp/stable-runtime-diff
+          git diff origin/main...HEAD -- src/pycrmkit/__about__.py > /tmp/version.patch
+          grep -F -- '-__version__ = "1.2.0rc1"' /tmp/version.patch
+          grep -F -- '+__version__ = "1.2.0"' /tmp/version.patch
+      - name: Explicitly withhold automated release authority
+        run: |
+          echo "Technical preflight only; NO maintainer GO, merge, tag, GitHub release or PyPI action."

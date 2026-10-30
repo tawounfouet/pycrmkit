@@ -1,0 +1,95 @@
+name: Campaign 1.2 Stable Cross-Adapter and Transport Qualification
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [release/1.2.0-campaign-metadata-stable, main]
+
+permissions:
+  contents: read
+
+jobs:
+  transport-parity:
+    name: FastAPI/DRF frozen HTTP contract and cross-transport parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - name: Public Python API and real HTTP transport semantic parity
+        run: |
+          python -m pytest -q \
+            tests/integrations/test_campaign_transport_parity.py \
+            tests/compatibility/test_v1_2_stable_contract_gate.py \
+            tests/integrations/fastapi/test_campaign_host_scope_rc.py \
+            tests/integrations/drf/test_campaign_host_scope_rc.py
+      - name: Lint new cross-adapter contract tests
+        run: |
+          ruff check tests/integrations/django/test_campaign_stable_cross_adapter.py
+          ruff format --check tests/integrations/django/test_campaign_stable_cross_adapter.py
+
+  live-three-adapters:
+    name: Memory, SQLAlchemy PostgreSQL 17, Django PostgreSQL 17
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pycrmkit_stable_django
+          POSTGRES_USER: pycrmkit
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_stable_django"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PYCRMKIT_DJANGO_TEST_DATABASE_URL: postgresql://pycrmkit@localhost:5432/pycrmkit_stable_django
+      PYCRMKIT_CROSS_ADAPTER_SQLALCHEMY_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_stable_sqlalchemy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[dev,postgresql,django,drf]"
+      - name: Provision separate disposable SQLAlchemy database
+        shell: bash
+        run: |
+          python - <<'PY'
+          import psycopg
+          with psycopg.connect(
+              "postgresql://pycrmkit@localhost:5432/pycrmkit_stable_django",
+              autocommit=True,
+          ) as connection:
+              connection.execute('CREATE DATABASE "pycrmkit_stable_sqlalchemy"')
+          print("Django and SQLAlchemy have independent disposable PostgreSQL databases")
+          PY
+      - name: Existing RC and new stable shared domain conformance
+        run: |
+          python -m pytest -q -rs \
+            --junitxml=/tmp/pycrmkit-stable-adapter-results.xml \
+            tests/integrations/django/test_campaign_cross_adapter_rc.py \
+            tests/integrations/django/test_campaign_stable_cross_adapter.py
+      - name: Strict zero-skip and all-adapter evidence
+        shell: bash
+        run: |
+          python - <<'PY'
+          from xml.etree import ElementTree as ET
+          root = ET.parse("/tmp/pycrmkit-stable-adapter-results.xml").getroot()
+          suite = root.find("testsuite") if root.tag == "testsuites" else root
+          assert suite is not None
+          assert int(suite.attrib["tests"]) >= 21, suite.attrib
+          for key in ("skipped", "errors", "failures"):
+              assert int(suite.attrib[key]) == 0, suite.attrib
+          names = [case.attrib.get("name", "") for case in suite.iter("testcase")]
+          for adapter in ("memory", "sqlalchemy", "django"):
+              assert sum(f"[{adapter}" in name for name in names) >= 5, adapter
+          print("Stable cross-adapter matrix: complete, all 3 adapters, zero skipped")
+          PY

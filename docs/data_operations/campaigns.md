@@ -1,5 +1,7 @@
 # Campaign Data Operations - 1.2.0b3 (GitHub prerelease)
 
+> **Campaign 1.2 stable release status:** `1.2.0` is **PREPARED / NOT PUBLISHED**; the verified GitHub Campaign prerelease is `1.2.0rc1`, and the current published stable line is `1.1.0`. This guide describes already implemented features and is not evidence of a published `1.2.0` artifact. Consult the [prepared release notes](../releases/1.2.0.md), [support boundaries](../reference/1.2.0-support-and-compatibility.md) and [upgrade guide](../getting-started/1.2.0-upgrade.md).
+
 Campaign DataOps adds **Python API** entrypoints for importing direct Campaign members and exporting three separate views. There is no HTTP file-upload endpoint. Import and export must be authorized by your application's caller policy **before** invoking these Python functions. The HTTP Campaign policy is not automatically applied to direct Python calls.
 
 ## Runnable example

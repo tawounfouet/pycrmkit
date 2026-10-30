@@ -7,7 +7,7 @@ import json
 import os
 from pathlib import Path
 
-EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.2.0rc1")
+EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.2.0")
 
 
 def _setup_django() -> None:
