@@ -105,30 +105,27 @@ def test_partial_commit_recovery_via_full_file_replay(format: str) -> None:
     }
     assert crm.campaigns.members(campaign.id).total == 3
 
-    repeated = import_campaign_members(
-        crm.campaigns, campaign.id, _reader(format, rows)
-    )
+    repeated = import_campaign_members(crm.campaigns, campaign.id, _reader(format, rows))
     assert repeated.rows_created == 0
     assert repeated.duplicates == 3
     assert repeated.rows_skipped == 3
-    assert {
-        str(member.entity.id)
-        for member in crm.campaigns.members(campaign.id).items
-    } == {str(contact.id) for contact in contacts}
+    assert {str(member.entity.id) for member in crm.campaigns.members(campaign.id).items} == {
+        str(contact.id) for contact in contacts
+    }
 
 
 @pytest.mark.parametrize(
     ("format", "payload", "code"),
     (
-        ("csv", "entity_kind,entity_kind\ncontact,contact\n",
-         "import.csv.header.duplicate"),
+        ("csv", "entity_kind,entity_kind\ncontact,contact\n", "import.csv.header.duplicate"),
         ("json", '[{"entity_kind": "contact"},', "import.json.syntax.invalid"),
-        ("jsonl", '{"entity_kind":"contact"}\n{invalid-json}\n',
-         "import.jsonl.syntax.invalid"),
+        ("jsonl", '{"entity_kind":"contact"}\n{invalid-json}\n', "import.jsonl.syntax.invalid"),
     ),
 )
 def test_malformed_file_fails_preflight_without_partial_memberships(
-    format: str, payload: str, code: str,
+    format: str,
+    payload: str,
+    code: str,
 ) -> None:
     crm = CRM.memory(webhook_auto_delivery=False)
     campaign = crm.campaigns.create(key=f"stable-malformed-{format}", name="Bad")
@@ -160,10 +157,11 @@ def test_summary_mode_never_includes_untrusted_row_or_personal_data() -> None:
     crm = CRM.memory(webhook_auto_delivery=False)
     campaign = crm.campaigns.create(key="stable-minimized", name="Minimized")
     canary = "CONFIDENTIAL_ROW_VALUE_NEVER_REPORT"
-    rows = [{"entity_kind": "contact", "entity_id": "not-a-uuid",
-             "private_note": canary}]
+    rows = [{"entity_kind": "contact", "entity_id": "not-a-uuid", "private_note": canary}]
     report = import_campaign_members(
-        crm.campaigns, campaign.id, IterableReader(rows),
+        crm.campaigns,
+        campaign.id,
+        IterableReader(rows),
         retain_row_results=False,
     )
     assert report.as_dict() == {
@@ -186,12 +184,16 @@ def test_stable_export_parity_and_provenance_privacy(kind: str) -> None:
     campaign = crm.campaigns.create(key=f"stable-export-{kind}", name="Export")
     ref = EntityReference("contact", contact.id)
     crm.campaigns.add_member(
-        campaign.id, ref, source="customer-list",
+        campaign.id,
+        ref,
+        source="customer-list",
         metadata={"token": "SECRET_METADATA_NEVER_EXPORT"},
     )
     segment = crm.segments.create(
-        key=f"stable-export-segment-{kind}", name="Segment",
-        entity_kind="contact", mode=SegmentMode.STATIC,
+        key=f"stable-export-segment-{kind}",
+        name="Segment",
+        entity_kind="contact",
+        mode=SegmentMode.STATIC,
     )
     crm.segments.add_members(segment.id, (ref,))
     crm.campaigns.attach_segment_source(campaign.id, segment.id)
@@ -200,8 +202,12 @@ def test_stable_export_parity_and_provenance_privacy(kind: str) -> None:
     for format in ("csv", "json", "jsonl"):
         stream = io.StringIO()
         count = export_campaign_records(
-            crm.campaigns, campaign.id, stream,
-            kind=kind, format=format, page_size=1,
+            crm.campaigns,
+            campaign.id,
+            stream,
+            kind=kind,
+            format=format,
+            page_size=1,
         )
         assert count == 1
         content = stream.getvalue()
@@ -209,16 +215,14 @@ def test_stable_export_parity_and_provenance_privacy(kind: str) -> None:
         assert "SECRET_METADATA_NEVER_EXPORT" not in content
         rows = _export_rows(stream, format)
         assert len(rows) == 1
-        assert not ({"email", "actor_id", "metadata", "recipient", "subject"}
-                    & rows[0].keys())
-        outputs[format] = [
-            {field: str(value) for field, value in row.items()}
-            for row in rows
-        ]
+        assert not ({"email", "actor_id", "metadata", "recipient", "subject"} & rows[0].keys())
+        outputs[format] = [{field: str(value) for field, value in row.items()} for row in rows]
     assert outputs["csv"] == outputs["json"] == outputs["jsonl"]
     if kind == "audience":
         assert set(outputs["csv"][0]) == {
-            "campaign_id", "entity_kind", "entity_id",
+            "campaign_id",
+            "entity_kind",
+            "entity_id",
         }
     elif kind == "direct":
         assert "source" in outputs["csv"][0]
@@ -235,14 +239,21 @@ def test_canonical_csv_is_not_spreadsheet_safe_by_default(formula: str) -> None:
     contact = crm.contacts.create(display_name="Spreadsheet")
     campaign = crm.campaigns.create(key="stable-spreadsheet", name="Spreadsheet")
     crm.campaigns.add_member(
-        campaign.id, EntityReference("contact", contact.id),
+        campaign.id,
+        EntityReference("contact", contact.id),
         source=formula,
     )
     output = io.StringIO()
-    assert export_campaign_records(
-        crm.campaigns, campaign.id, output,
-        kind="direct", format="csv",
-    ) == 1
+    assert (
+        export_campaign_records(
+            crm.campaigns,
+            campaign.id,
+            output,
+            kind="direct",
+            format="csv",
+        )
+        == 1
+    )
     # Canonical CSV stays unchanged for machine consumers; the HOST must deny
     # spreadsheet opening rather than silently changing the CRM source field.
     expected_source = unicodedata.normalize("NFKC", formula.strip()).casefold()
@@ -256,16 +267,23 @@ def test_host_never_publishes_failed_spreadsheet_validation(tmp_path: object) ->
     person = crm.contacts.create(display_name="Hidden")
     campaign = crm.campaigns.create(key="stable-publish", name="Publish")
     crm.campaigns.add_member(
-        campaign.id, EntityReference("contact", person.id),
+        campaign.id,
+        EntityReference("contact", person.id),
         source="=HYPERLINK(1)",
     )
     staging = tmp_path / "campaign.pending.csv"
     published = tmp_path / "campaign.published.csv"
     try:
-        assert export_campaign_records(
-            crm.campaigns, campaign.id, staging,
-            kind="direct", format="csv",
-        ) == 1
+        assert (
+            export_campaign_records(
+                crm.campaigns,
+                campaign.id,
+                staging,
+                kind="direct",
+                format="csv",
+            )
+            == 1
+        )
         with staging.open("r", encoding="utf-8", newline="") as stream:
             with pytest.raises(ValueError, match="spreadsheet formula risk"):
                 validate_campaign_csv_for_spreadsheet(stream)
@@ -278,7 +296,19 @@ def test_host_never_publishes_failed_spreadsheet_validation(tmp_path: object) ->
     # A separate safe CSV can be promoted only after its full validation.
     safe = crm.campaigns.create(key="stable-publish-safe", name="Safe")
     crm.campaigns.add_member(
-        safe.id, EntityReference("contact", person.id), source="reviewed",
+        safe.id,
+        EntityReference("contact", person.id),
+        source="reviewed",
+    )
+    assert (
+        export_campaign_records(
+            crm.campaigns,
+            safe.id,
+            staging,
+            kind="direct",
+            format="csv",
+        )
+        == 1
     )
     assert export_campaign_records(
         crm.campaigns, safe.id, staging, kind="direct", format="csv",
