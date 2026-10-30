@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import unicodedata
 from os import replace
 
 import pytest
@@ -244,7 +245,8 @@ def test_canonical_csv_is_not_spreadsheet_safe_by_default(formula: str) -> None:
     ) == 1
     # Canonical CSV stays unchanged for machine consumers; the HOST must deny
     # spreadsheet opening rather than silently changing the CRM source field.
-    assert _export_rows(output, "csv")[0]["source"] == formula.strip()
+    expected_source = unicodedata.normalize("NFKC", formula.strip()).casefold()
+    assert _export_rows(output, "csv")[0]["source"] == expected_source
     with pytest.raises(ValueError, match="spreadsheet formula risk"):
         validate_campaign_csv_for_spreadsheet(io.StringIO(output.getvalue()))
 
