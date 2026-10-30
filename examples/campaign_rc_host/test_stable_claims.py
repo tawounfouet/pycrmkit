@@ -12,7 +12,6 @@ import json
 import time
 
 import pytest
-
 from host_app import _verified_claims
 from starlette.requests import Request
 
