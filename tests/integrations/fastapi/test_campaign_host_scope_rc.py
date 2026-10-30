@@ -144,3 +144,39 @@ def test_fastapi_host_approved_owner_scope_and_object_read() -> None:
     assert bob.status_code == 200
     assert bob.json()["name"] == "Bob private"
     assert len(calls) == 3
+
+
+def test_stable_foreign_metadata_surfaces_are_denied_before_facade() -> None:
+    """Foreign audience/source/linkage reads must not leak content or totals."""
+    client, _, refs, factory_calls = _host()
+    paths = (
+        f"/crm/campaigns/{refs['bob']}/audience",
+        f"/crm/campaigns/{refs['bob']}/segment-sources",
+        f"/crm/campaigns/{refs['bob']}/attributions",
+        f"/crm/campaigns/{refs['bob']}/communication-links",
+    )
+    for path in paths:
+        before = len(factory_calls)
+        response = client.get(path, headers=_headers("alice"))
+        assert response.status_code == 403, (path, response.text)
+        assert len(factory_calls) == before, path
+        assert "Bob private" not in response.text
+        assert "subject" not in response.text
+        assert "counterparties" not in response.text
+        assert "total" not in response.json()
+        assert "count" not in response.json()
+
+    # The host deliberately refuses generic cross-resource mutations,
+    # even for a verified owner: referenced-entity ownership is host-owned.
+    own_path = f"/crm/campaigns/{refs['alice']}/attributions"
+    before = len(factory_calls)
+    forbidden = client.post(
+        own_path,
+        headers=_headers("alice"),
+        json={
+            "target": {"kind": "contact", "id": refs["bob"]},
+            "source": "forbidden",
+        },
+    )
+    assert forbidden.status_code == 403, forbidden.text
+    assert len(factory_calls) == before
