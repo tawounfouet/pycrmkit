@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 from pycrmkit import CRM
-from pycrmkit.campaigns import CampaignStatus, CampaignUpdate, UNSET
+from pycrmkit.campaigns import UNSET, CampaignStatus, CampaignUpdate
 from pycrmkit.events import DomainEvent, EventSerializer, default_event_registry
 from pycrmkit.exceptions import ConflictError, InvalidStateError, ValidationError
 
