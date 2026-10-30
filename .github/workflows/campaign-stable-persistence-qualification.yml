@@ -1,0 +1,149 @@
+name: Campaign 1.2 Stable Persistence Qualification
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [release/1.2.0-campaign-metadata-stable]
+
+permissions:
+  contents: read
+
+jobs:
+  memory-and-sqlite:
+    name: Memory and SQLite persistence contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - name: Memory transaction and post-commit event acceptance
+        run: python -m pytest tests/adapters/memory/test_campaign_stable_persistence_gate.py tests/adapters/memory/test_unit_of_work.py -q
+      - name: SQLAlchemy SQLite Campaign repository and facade contracts
+        run: python -m pytest tests/adapters/sqlalchemy/test_campaigns_repository.py tests/adapters/sqlalchemy/test_campaign_facade.py -q
+      - name: Django SQLite outer transaction and packaged migration contract
+        run: python -m pytest tests/integrations/django/test_campaign_stable_persistence_gate.py -q
+
+  postgres-campaign:
+    name: PostgreSQL ${{ matrix.postgresql }} / Alembic / Django separate schema
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        postgresql: ["16", "17"]
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgresql }}
+        env:
+          POSTGRES_DB: pycrmkit_stable_alembic
+          POSTGRES_USER: pycrmkit
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_stable_alembic"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_stable_alembic
+      PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_stable_alembic
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install -e ".[dev,postgresql,migrations]"
+      - name: Real PostgreSQL CAS, constraints, concurrency and rollback
+        run: >-
+          python -m pytest -m postgresql -q
+          tests/adapters/postgresql/test_campaign_concurrency_rc.py
+          tests/adapters/postgresql/test_campaign_stable_persistence_gate.py
+      - name: Alembic 0005 to 0006 data-preserving up/down/re-up and schema drift
+        run: >-
+          python -m pytest -m postgresql -q
+          tests/qualification/test_campaign_migration_qualification.py
+      - name: Installed-wheel packaged Alembic migration lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m build --wheel --outdir dist-stable-persistence
+          python -m venv /tmp/pycrmkit-stable-migration
+          wheel="$(find dist-stable-persistence -maxdepth 1 -name '*.whl' -print -quit)"
+          test -n "$wheel"
+          /tmp/pycrmkit-stable-migration/bin/python -m pip install "${wheel}[migrations]"
+          python - <<'PY'
+          import os
+          from sqlalchemy import create_engine
+          engine = create_engine(os.environ["PYCRMKIT_TEST_POSTGRES_URL"])
+          with engine.begin() as connection:
+              connection.exec_driver_sql("DROP SCHEMA IF EXISTS public CASCADE")
+              connection.exec_driver_sql("CREATE SCHEMA public")
+          engine.dispose()
+          PY
+          (
+            cd /tmp
+            PYTHONPATH="" /tmp/pycrmkit-stable-migration/bin/pycrmkit-migrate upgrade head
+            PYTHONPATH="" /tmp/pycrmkit-stable-migration/bin/pycrmkit-migrate current
+            PYTHONPATH="" /tmp/pycrmkit-stable-migration/bin/pycrmkit-migrate check
+          )
+          python - <<'PY'
+          import os
+          from sqlalchemy import create_engine, text
+          engine = create_engine(os.environ["PYCRMKIT_TEST_POSTGRES_URL"])
+          with engine.connect() as connection:
+              assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0006"
+          engine.dispose()
+          print("Wheel-installed Alembic revision 0006: PASS")
+          PY
+      - name: Provision isolated Django-owned PostgreSQL database
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from urllib.parse import urlsplit, urlunsplit
+          import psycopg
+
+          source = os.environ["PYCRMKIT_DATABASE_URL"].replace(
+              "postgresql+psycopg://", "postgresql://", 1
+          )
+          parsed = urlsplit(source)
+          database = "pycrmkit_stable_django"
+          with psycopg.connect(source, autocommit=True) as connection:
+              connection.execute(f'CREATE DATABASE "{database}"')
+          django_url = urlunsplit((
+              parsed.scheme, parsed.netloc, "/" + database, "", ""
+          ))
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
+              env.write("PYCRMKIT_DJANGO_TEST_DATABASE_URL=" + django_url + "\n")
+          PY
+      - name: Django migrations 0004/0005, savepoints, on_commit, FK and CAS
+        run: >-
+          python -m pytest -q
+          tests/integrations/django/test_campaign_stable_persistence_gate.py
+          tests/integrations/django/test_campaign_persistence.py
+          tests/integrations/django/test_campaign_rc_migration_gate.py
+      - name: Confirm independent Alembic and Django schema owners
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from sqlalchemy import create_engine, inspect, text
+          from urllib.parse import urlsplit
+
+          alembic = os.environ["PYCRMKIT_DATABASE_URL"]
+          django = os.environ["PYCRMKIT_DJANGO_TEST_DATABASE_URL"]
+          assert urlsplit(alembic).path != urlsplit(django).path
+          engine = create_engine(alembic)
+          with engine.connect() as connection:
+              assert connection.scalar(
+                  text("SELECT version_num FROM alembic_version")
+              ) == "0006"
+              assert "django_migrations" not in inspect(connection).get_table_names()
+          engine.dispose()
+          print("Independent schema ownership: PASS")
+          PY
