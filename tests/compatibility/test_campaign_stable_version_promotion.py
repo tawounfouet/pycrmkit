@@ -67,6 +67,9 @@ def test_frozen_candidate_and_publisher_keep_original_rc_identity() -> None:
 
 def test_promotion_never_claims_stable_publication() -> None:
     assert "PREPARED / NOT PUBLISHED" in _read("docs/releases/1.2.0.md")
-    assert "Current stable version: **1.1.0" in _read("README.md")
+    readme = _read("README.md")
+    assert "Release availability:" in readme
+    assert "not necessarily published" in readme
+    assert "Published stable version: **1.2.0" not in readme
     assert "## [1.2.0] - PREPARED / NOT PUBLISHED" in _read("CHANGELOG.md")
     assert "PENDING LOT-32-011/012" in _read("docs/releases/1.2.0.md")
