@@ -4,6 +4,7 @@ This inspector never imports the source package and never publishes anything.
 Candidate SHA-256 values do not stand in for immutable GitHub release assets.
 The historical RC1 inspector and its manifest contract remain unchanged.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,26 +31,31 @@ DJANGO = (
     "0005_communication_record_store.py",
 )
 EXTRAS = {
-    "sqlalchemy", "postgresql", "migrations", "fastapi", "django", "drf",
-    "email", "resend", "dev",
+    "sqlalchemy",
+    "postgresql",
+    "migrations",
+    "fastapi",
+    "django",
+    "drf",
+    "email",
+    "resend",
+    "dev",
 }
-PACKAGE_REQUIRED = {
-    "pycrmkit/py.typed",
-    "pycrmkit/__about__.py",
-    "pycrmkit/campaigns/__init__.py",
-    "pycrmkit/campaigns/data_operations.py",
-    "pycrmkit/integrations/django/migrations/__init__.py",
-    "pycrmkit/storage/sqlalchemy/migrations/env.py",
-    "pycrmkit/storage/sqlalchemy/migrations/README.md",
-    "pycrmkit/storage/sqlalchemy/migrations/script.py.mako",
-    "pycrmkit/storage/sqlalchemy/migrations/cli.py",
-} | {
-    f"pycrmkit/storage/sqlalchemy/migrations/versions/{revision}"
-    for revision in ALEMBIC
-} | {
-    f"pycrmkit/integrations/django/migrations/{revision}"
-    for revision in DJANGO
-}
+PACKAGE_REQUIRED = (
+    {
+        "pycrmkit/py.typed",
+        "pycrmkit/__about__.py",
+        "pycrmkit/campaigns/__init__.py",
+        "pycrmkit/campaigns/data_operations.py",
+        "pycrmkit/integrations/django/migrations/__init__.py",
+        "pycrmkit/storage/sqlalchemy/migrations/env.py",
+        "pycrmkit/storage/sqlalchemy/migrations/README.md",
+        "pycrmkit/storage/sqlalchemy/migrations/script.py.mako",
+        "pycrmkit/storage/sqlalchemy/migrations/cli.py",
+    }
+    | {f"pycrmkit/storage/sqlalchemy/migrations/versions/{revision}" for revision in ALEMBIC}
+    | {f"pycrmkit/integrations/django/migrations/{revision}" for revision in DJANGO}
+)
 
 
 def _sha256(path: Path) -> str:
@@ -64,12 +70,19 @@ def _metadata(raw: bytes, version: str) -> None:
     parsed = Parser().parsestr(raw.decode("utf-8"))
     assert parsed["Name"].casefold() == "pycrmkit"
     assert parsed["Version"] == version, (parsed["Version"], version)
-    assert {part.strip() for part in parsed["Requires-Python"].split(",")} == {">=3.11", "<3.14"}, parsed["Requires-Python"]
+    assert {part.strip() for part in parsed["Requires-Python"].split(",")} == {">=3.11", "<3.14"}, (
+        parsed["Requires-Python"]
+    )
     extras = set(parsed.get_all("Provides-Extra", []))
     assert extras == EXTRAS, (sorted(extras), sorted(EXTRAS))
-    assert not any(word in str(parsed).casefold() for word in (
-        "dependency_links", "localhost:5432", "test_password",
-    ))
+    assert not any(
+        word in str(parsed).casefold()
+        for word in (
+            "dependency_links",
+            "localhost:5432",
+            "test_password",
+        )
+    )
 
 
 def inspect(dist: Path, version: str) -> dict[str, object]:
@@ -113,10 +126,9 @@ def inspect(dist: Path, version: str) -> dict[str, object]:
         info = archive.extractfile(prefix + "PKG-INFO")
         assert info is not None
         _metadata(info.read(), version)
-        assert not any(
-            name.startswith("/") or ".." in Path(name).parts
-            for name in names
-        ), "Unsafe source archive path"
+        assert not any(name.startswith("/") or ".." in Path(name).parts for name in names), (
+            "Unsafe source archive path"
+        )
 
     # All hashes are output for verification of the current CI artifact.
     # They are NOT publication checksums until stable GO and immutable asset verification.

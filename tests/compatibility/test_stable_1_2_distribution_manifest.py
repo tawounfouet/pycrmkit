@@ -1,4 +1,5 @@
 """Negative and positive tests for the stable 1.2 distribution inspector."""
+
 from __future__ import annotations
 
 import hashlib
@@ -60,8 +61,7 @@ def test_required_migrations_are_complete_and_adapter_specific() -> None:
         for name in ALEMBIC
     )
     assert all(
-        f"pycrmkit/integrations/django/migrations/{name}" in PACKAGE_REQUIRED
-        for name in DJANGO
+        f"pycrmkit/integrations/django/migrations/{name}" in PACKAGE_REQUIRED for name in DJANGO
     )
 
 
