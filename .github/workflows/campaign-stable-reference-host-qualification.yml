@@ -58,16 +58,6 @@ jobs:
           /tmp/pycrmkit-stable-host-venv/bin/python -m pip install \
             "$wheel[fastapi,postgresql,migrations]" "httpx>=0.28,<1"
           /tmp/pycrmkit-stable-host-venv/bin/python -m pip check
-      - name: Generate a disposable CI-only host signing key
-        shell: bash
-        run: |
-          python - <<'PY'
-          import os
-          import secrets
-          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env:
-              env.write("PYCRMKIT_RC_HOST_SIGNING_KEY=" + secrets.token_hex(48) + "\n")
-          print("Generated an ephemeral signing key without printing the secret")
-          PY
       - name: Run wheel-provided Alembic migrations and assert head
         shell: bash
         run: |
@@ -81,7 +71,10 @@ jobs:
           /tmp/pycrmkit-stable-host-venv/bin/python - <<'PY'
           import os
           import psycopg
-          with psycopg.connect(os.environ["PYCRMKIT_DATABASE_URL"]) as db:
+          connect_url = os.environ["PYCRMKIT_DATABASE_URL"].replace(
+              "postgresql+psycopg://", "postgresql://", 1
+          )
+          with psycopg.connect(connect_url) as db:
               version = db.execute("SELECT version_num FROM alembic_version").fetchone()
           assert version == ("0006",), version
           print("Verified installed wheel migrated to Alembic head 0006")
@@ -96,6 +89,8 @@ jobs:
       - name: Requalify original RC signed-host journey and restart
         shell: bash
         run: |
+          # The signer is session-local: do not pass secrets via GITHUB_ENV.
+          export PYCRMKIT_RC_HOST_SIGNING_KEY="$(python -c 'import secrets; print(secrets.token_hex(48))')"
           (
             cd /tmp/pycrmkit-stable-host-sandbox
             PYTHONPATH="" /tmp/pycrmkit-stable-host-venv/bin/python scenario.py
@@ -103,6 +98,7 @@ jobs:
       - name: Qualify stable negative, replay, privacy and restart journeys
         shell: bash
         run: |
+          export PYCRMKIT_RC_HOST_SIGNING_KEY="$(python -c 'import secrets; print(secrets.token_hex(48))')"
           (
             cd /tmp/pycrmkit-stable-host-sandbox
             PYTHONPATH="" /tmp/pycrmkit-stable-host-venv/bin/python stable_scenario.py

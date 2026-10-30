@@ -13,10 +13,10 @@ from pathlib import Path
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-
-import pycrmkit
 from host_app import _owner, create_app
 from scenario import record, signed_token
+
+import pycrmkit
 from pycrmkit.campaigns import CampaignId
 from pycrmkit.core.references import EntityReference
 
