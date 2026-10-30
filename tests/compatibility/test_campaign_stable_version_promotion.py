@@ -53,9 +53,7 @@ def test_rc_only_workflows_remain_archival_and_do_not_run_on_stable_pr() -> None
         assert "branches: [main]" not in workflow, path
         assert "pull_request:" not in workflow, path
         assert RC_VERSION in workflow, path
-    assert "workflow_dispatch:" in _read(
-        ".github/workflows/campaign-rc1-exact-main-evidence.yml"
-    )
+    assert "workflow_dispatch:" in _read(".github/workflows/campaign-rc1-exact-main-evidence.yml")
 
 
 def test_frozen_candidate_and_publisher_keep_original_rc_identity() -> None:
@@ -63,10 +61,8 @@ def test_frozen_candidate_and_publisher_keep_original_rc_identity() -> None:
     assert '"target_release": "1.2.0rc1"' in frozen
     assert '"promoted_release": "1.2.0"' in frozen
     assert 'VERSION = "1.2.0rc1"' in _read("scripts/rc1_release_bundle.py")
-    assert '"1.2.0rc1"' in _read(
-        ".github/workflows/campaign-rc1-distribution-qualification.yml"
-    )
-    assert '1.2.0rc1' in _read(".github/workflows/publish-v1.2.0rc1.yml")
+    assert '"1.2.0rc1"' in _read(".github/workflows/campaign-rc1-distribution-qualification.yml")
+    assert "1.2.0rc1" in _read(".github/workflows/publish-v1.2.0rc1.yml")
 
 
 def test_promotion_never_claims_stable_publication() -> None:

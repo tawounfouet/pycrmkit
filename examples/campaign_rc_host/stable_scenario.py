@@ -25,8 +25,8 @@ def main() -> None:
     checkout = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
     imported = Path(pycrmkit.__file__).resolve()
     assert not imported.is_relative_to(checkout), "Source checkout masqueraded as wheel"
-    assert importlib.metadata.version("pycrmkit") == "1.2.0rc1"
-    assert pycrmkit.__version__ == "1.2.0rc1"
+    assert importlib.metadata.version("pycrmkit") == "1.2.0"
+    assert pycrmkit.__version__ == "1.2.0"
 
     url = os.environ["PYCRMKIT_DATABASE_URL"]
     assert url.startswith("postgresql+psycopg://")

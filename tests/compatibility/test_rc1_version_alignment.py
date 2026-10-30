@@ -3,6 +3,7 @@
 Only current-version assertions and new candidate packaging are promoted.
 Frozen historical manifests retain their b3 baseline on purpose.
 """
+
 from __future__ import annotations
 
 import importlib.metadata
@@ -37,9 +38,9 @@ CURRENT_CONTROLS = (
 def test_current_stable_version_is_single_source_of_truth() -> None:
     assert pycrmkit.__version__ == STABLE_VERSION
     assert importlib.metadata.version("pycrmkit") == STABLE_VERSION
-    assert f'__version__ = "{STABLE_VERSION}"' in (
-        ROOT / "src/pycrmkit/__about__.py"
-    ).read_text(encoding="utf-8")
+    assert f'__version__ = "{STABLE_VERSION}"' in (ROOT / "src/pycrmkit/__about__.py").read_text(
+        encoding="utf-8"
+    )
     project = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert 'version = {attr = "pycrmkit.__about__.__version__"}' in project
 
@@ -69,9 +70,7 @@ def test_release_documentation_records_qualified_github_publication() -> None:
     assert "not published by this workflow" in note
     assert "LOT-31-016" in note
     assert (ROOT / "docs/development/1.2.0rc1-qualification-matrix.md").is_file()
-    template = (ROOT / "docs/development/1.2.0rc1-go-no-go-template.md").read_text(
-        encoding="utf-8"
-    )
+    template = (ROOT / "docs/development/1.2.0rc1-go-no-go-template.md").read_text(encoding="utf-8")
     # Keep the pre-publication template as an immutable audit example; the
     # actual final decision and asset fingerprints live in the release notes.
     assert "Historical pre-publication TEMPLATE" in template

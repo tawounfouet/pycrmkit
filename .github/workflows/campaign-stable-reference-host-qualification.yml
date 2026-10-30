@@ -36,7 +36,7 @@ jobs:
 
     env:
       PYCRMKIT_DATABASE_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_stable_host
-      PYCRMKIT_EXPECTED_VERSION: "1.2.0rc1"
+      PYCRMKIT_EXPECTED_VERSION: "1.2.0"
 
     steps:
       - uses: actions/checkout@v4
