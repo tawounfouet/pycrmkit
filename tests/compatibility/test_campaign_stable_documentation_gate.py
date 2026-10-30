@@ -1,4 +1,3 @@
-
 """LOT-32-008: release documentation must not pretend that stable is published."""
 
 from __future__ import annotations
@@ -35,7 +34,7 @@ def test_candidate_package_and_release_docs_remain_prepared() -> None:
     assert changelog.index("## [1.2.0] - PREPARED / NOT PUBLISHED") < changelog.index(
         "## [1.2.0rc1] - 2026-10-29"
     )
-    assert "Pending" in changelog[:changelog.index("## [1.2.0rc1]")]
+    assert "Pending" in changelog[: changelog.index("## [1.2.0rc1]")]
 
 
 def test_freeze_provenance_and_navigation() -> None:
@@ -62,19 +61,34 @@ def test_freeze_provenance_and_navigation() -> None:
 def test_support_contract_is_bounded_not_invented() -> None:
     matrix = _read("docs/reference/1.2.0-support-and-compatibility.md")
     for value in (
-        "3.11", "3.12", "3.13", "16 and 17", "2.0.x and 2.1.x",
-        "0.141", "5.2", "3.18", "No promised support duration",
-        "not an atomic bulk import", "not snapshot consistent",
+        "3.11",
+        "3.12",
+        "3.13",
+        "16 and 17",
+        "2.0.x and 2.1.x",
+        "0.141",
+        "5.2",
+        "3.18",
+        "No promised support duration",
+        "not an atomic bulk import",
+        "not snapshot consistent",
     ):
         assert value.lower() in matrix.lower(), value
     runbook = _read("docs/development/1.2.0-stable-release-gate.md")
     for section in (
-        "Partial publication recovery", "NO-GO", "LOT-32-009",
-        "LOT-32-010", "LOT-32-011", "LOT-32-012", "LOT-32-013",
-        "PyPI", "annotated",
+        "Partial publication recovery",
+        "NO-GO",
+        "LOT-32-009",
+        "LOT-32-010",
+        "LOT-32-011",
+        "LOT-32-012",
+        "LOT-32-013",
+        "PyPI",
+        "annotated",
     ):
         assert section in runbook
     guide = _read("docs/getting-started/1.2.0-upgrade.md")
     assert "PREPARED / NOT PUBLISHED" in guide
     assert "Do **not** combine" in guide
     assert "Rollback" in guide
+
