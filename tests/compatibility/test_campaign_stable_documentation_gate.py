@@ -91,4 +91,3 @@ def test_support_contract_is_bounded_not_invented() -> None:
     assert "PREPARED / NOT PUBLISHED" in guide
     assert "Do **not** combine" in guide
     assert "Rollback" in guide
-
