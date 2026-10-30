@@ -1,0 +1,97 @@
+name: Campaign 1.2 Stable Compatibility Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [release/1.2.0-campaign-metadata-stable]
+
+permissions:
+  contents: read
+
+jobs:
+  rc-to-stable-contracts:
+    name: Exact RC source, golden contracts, HTTP parity and isolated core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install source and optional HTTP/ORM test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Verify tagged RC source and freeze protected source/contracts
+        shell: bash
+        env:
+          RC_SOURCE: 5113cedb50750185e457505dfcca5519ce3a62bd
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse 'refs/tags/v1.2.0rc1^{commit}')"
+          test "$actual" = "$RC_SOURCE"
+          git merge-base --is-ancestor "$RC_SOURCE" HEAD
+          # The stable promotion starts with identical Campaign runtime semantics.
+          # If a later lot needs a blocker fix, first approve and requalify the
+          # exception; do not silently regenerate the historical fixture.
+          git diff --exit-code "$RC_SOURCE" HEAD -- \
+            src/pycrmkit/campaigns \
+            src/pycrmkit/events \
+            src/pycrmkit/facade/campaigns.py \
+            src/pycrmkit/integrations/campaign_security.py \
+            src/pycrmkit/integrations/campaign_payload_validation.py \
+            src/pycrmkit/integrations/fastapi \
+            src/pycrmkit/integrations/django/drf \
+            tests/compatibility/public_api_v1_candidate.json \
+            tests/compatibility/public_api_v1_1_candidate.json \
+            tests/compatibility/public_api_v1_2_campaign_candidate.json \
+            tests/contracts/campaign_http/openapi_golden_v1_2.json \
+            tests/contracts/campaign_http/response_golden_v1_2.json
+
+      - name: V1, V1.1 and Campaign signatures, DTOs, events and semantics
+        run: |
+          python -m pytest -q \
+            tests/compatibility/test_public_api_v1_candidate.py \
+            tests/compatibility/test_public_api_v1_1_candidate.py \
+            tests/compatibility/test_public_api_v1_2_campaign_candidate.py \
+            tests/compatibility/test_v1_2_stable_contract_gate.py
+
+      - name: FastAPI OpenAPI, DRF golden, HTTP parity and tenant/list/count denies
+        run: |
+          python -m pytest -q \
+            tests/integrations/fastapi/test_campaign_openapi_golden_rc.py \
+            tests/integrations/drf/test_campaign_public_freeze_rc.py \
+            tests/integrations/drf/test_campaign_http_golden_rc.py \
+            tests/integrations/test_campaign_transport_parity.py \
+            tests/integrations/fastapi/test_campaign_host_scope_rc.py \
+            tests/integrations/drf/test_campaign_host_scope_rc.py \
+            tests/integrations/fastapi/test_campaign_routers.py
+
+      - name: Build wheel and smoke test core without optional extras
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m build --wheel --outdir dist-stable-contract
+          python -m venv .venv-stable-core
+          .venv-stable-core/bin/python -m pip install --no-deps dist-stable-contract/pycrmkit-*.whl
+          (
+            cd /tmp
+            PYTHONPATH="" "$GITHUB_WORKSPACE/.venv-stable-core/bin/python" -I - <<'PY'
+          import importlib.util
+          import pycrmkit
+          from pycrmkit import CRM
+          from pycrmkit.campaigns import CampaignUpdate
+          assert ".venv-stable-core" in pycrmkit.__file__, pycrmkit.__file__
+          for name in ("fastapi", "django", "sqlalchemy", "rest_framework"):
+              assert importlib.util.find_spec(name) is None, name
+          crm = CRM.memory(webhook_auto_delivery=False)
+          created = crm.campaigns.create(key="isolated-core", name="Pure Python")
+          assert crm.campaigns.get(created.id).name == "Pure Python"
+          assert isinstance(CampaignUpdate(), CampaignUpdate)
+          print(f"isolated core-only wheel verified: {pycrmkit.__version__}")
+          PY
+          )
