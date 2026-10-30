@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [release/1.2.0-campaign-metadata-stable]
+    branches: [release/1.2.0-campaign-metadata-stable, main]
 
 permissions:
   contents: read

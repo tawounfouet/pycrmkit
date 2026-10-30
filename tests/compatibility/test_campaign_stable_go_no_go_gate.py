@@ -67,3 +67,24 @@ def test_prepublication_status_and_frozen_rc_evidence() -> None:
     assert "gh release create" not in workflow
     assert "gh pr merge" not in workflow
     assert "git tag" not in workflow
+
+
+def test_all_stable_qualification_workflows_run_on_exact_main_push() -> None:
+    """A merged main SHA must receive the same dedicated stable gates as the PR."""
+    for name in (
+        "campaign-stable-compatibility",
+        "campaign-stable-cross-adapter-transport",
+        "campaign-stable-dataops-qualification",
+        "campaign-stable-distribution-qualification",
+        "campaign-stable-docs-qualification",
+        "campaign-stable-go-no-go-preflight",
+        "campaign-stable-persistence-qualification",
+        "campaign-stable-reference-host-qualification",
+        "campaign-stable-version-promotion",
+    ):
+        workflow = _read(f".github/workflows/{name}.yml")
+        assert "pull_request:" in workflow, name
+        assert "push:" in workflow, name
+        assert "main]" in workflow, name
+        assert "contents: read" in workflow, name
+        assert "contents: write" not in workflow, name
