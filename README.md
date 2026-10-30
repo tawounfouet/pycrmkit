@@ -4,6 +4,9 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
+**1.2.0 — Campaign Metadata Stable is PREPARED / NOT PUBLISHED.** The release notes and support agreement are drafts for [LOT-32-008](docs/releases/1.2.0.md), not a stable artifact or an available PyPI release. The package source remains `1.2.0rc1` until the separate version-promotion lot. See the [upgrade guide](docs/getting-started/1.2.0-upgrade.md), [compatibility/support matrix](docs/reference/1.2.0-support-and-compatibility.md) and [release gate](docs/development/1.2.0-stable-release-gate.md).
+
+
 Current stable version: **1.1.0 — Segmentation & Sales Task Foundation**.  
 Latest GitHub prerelease: **1.2.0rc1 — Campaign Production Qualification** (published 2026-10-29; [GitHub release](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1)). Stable remains **1.1.0**; PyPI availability for 1.2.0rc1 is **not** established.  
 Qualified 1.1 release candidate lineage: **1.1.0rc1 — Segmentation Production Qualification**.
@@ -148,10 +151,10 @@ pytest
 1.2.0a2 Campaign Membership & Segment Sources                                                ✓
 1.2.0a3 Attribution & Communication Linkage                                                   ✓
 1.2.0b1 SQLAlchemy/PostgreSQL Campaign Persistence                                             ✓ beta
-1.2.0b2 Django Campaign Persistence                                                           ◀ candidate
-1.2.0b3 HTTP + Data Operations Integration
-1.2.0rc1 Campaign Production Qualification
-1.2.0  Campaign Metadata Stable
+1.2.0b2 Django Campaign Persistence                                                           ✓ prerelease
+1.2.0b3 HTTP + Data Operations Integration                                                     ✓ prerelease
+1.2.0rc1 Campaign Production Qualification                                                     ✓ GitHub prerelease
+1.2.0  Campaign Metadata Stable                                                               ◀ PREPARED / NOT PUBLISHED
 ```
 
 ## Quality

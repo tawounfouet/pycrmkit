@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.2.0] - PREPARED / NOT PUBLISHED (LOT-32-008)
+
+This is a **documentation-only, pre-version-promotion candidate entry**, not evidence of a GitHub stable tag, release or PyPI version. Current published stable remains **1.1.0**; current GitHub prerelease is **1.2.0rc1**. The package's current source version remains **1.2.0rc1** until LOT-32-009.
+
+### Planned stable scope (no new features since RC1)
+- Promote the frozen Campaign 1.2 metadata/lifecycle/revision, direct membership and captured Segment sources, attribution and Communication link metadata, optional FastAPI/DRF and CSV/JSON/JSONL DataOps contract qualified in `v1.2.0rc1`.
+- Keep V1/V1.1 public API, error and event compatibility. Keep Alembic head `0006_campaign_persistence` and Django head `0005_communication_record_store` unchanged by a package-label-only promotion.
+- Respect host-owned IAM/tenant/purpose controls, per-row import partial commits, no snapshot under export churn and the consumer's mandatory spreadsheet-formula defense.
+- Planned supported matrix: Python 3.11–3.13, PostgreSQL 16/17, SQLAlchemy 2.0/2.1, FastAPI 0.141/Pydantic 2.13, Django 5.2/DRF 3.18; only tested combinations are claimed. No production SLAs or support lifetime have been approved.
+
+### Pending gates and publication evidence
+- [PREPARED release notes](docs/releases/1.2.0.md), [migration guide](docs/getting-started/1.2.0-upgrade.md), [support matrix](docs/reference/1.2.0-support-and-compatibility.md), [release runbook](docs/development/1.2.0-stable-release-gate.md).
+- LOT-32-009 version flip, LOT-32-010 built `1.2.0` archives and clean installs, LOT-32-011 release maintainer GO / exact-`main` tests, LOT-32-012 verified GitHub publication and independent PyPI decision, LOT-32-013 post-publish rehash and public status update.
+- **Pending:** stable source and tag SHA, actual wheel/sdist SHA-256, publisher SHA, release URL, date and verified PyPI status. None is inferred from prerelease assets.
+
+
 ## [1.2.0rc1] - 2026-10-29 (GitHub prerelease PUBLISHED)
 
 ### Production qualification (no feature scope expansion)

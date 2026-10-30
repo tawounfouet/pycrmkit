@@ -1,5 +1,7 @@
 # FastAPI Integration
 
+> **Campaign 1.2 stable release status:** `1.2.0` is **PREPARED / NOT PUBLISHED**; the verified GitHub Campaign prerelease is `1.2.0rc1`, and the current published stable line is `1.1.0`. This guide describes already implemented features and is not evidence of a published `1.2.0` artifact. Consult the [prepared release notes](../releases/1.2.0.md), [support boundaries](../reference/1.2.0-support-and-compatibility.md) and [upgrade guide](../getting-started/1.2.0-upgrade.md).
+
 PyCRMKit's FastAPI support is optional and additive.
 
 Install it with:

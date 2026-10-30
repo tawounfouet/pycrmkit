@@ -1,6 +1,6 @@
 # Installation
 
-PyCRMKit `0.9.0` is the current stable line; `1.0.0` is the current stable V1 release.
+The current published stable line is **`1.1.0`**, while **`1.2.0rc1` is a GitHub prerelease**. The `1.2.0` stable documentation is **PREPARED / NOT PUBLISHED**; its version and artifacts must not be assumed available from PyPI. See the [planned 1.2 upgrade](1.2.0-upgrade.md) and [supported matrix](../reference/1.2.0-support-and-compatibility.md).
 
 ## V1 qualified compatibility
 

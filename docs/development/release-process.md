@@ -19,6 +19,10 @@ python scripts/release_check.py
 
 The release check validates linting, typing, tests, documentation, package build, artifact installation, and smoke import.
 
+## Campaign 1.2 stable gate (prepared)
+
+The Campaign `1.2.0` release is **PREPARED / NOT PUBLISHED**. Read the [stable release gate, rollback and partial-publication recovery runbook](1.2.0-stable-release-gate.md) before changing `1.2.0rc1` to `1.2.0`. Publication requires a separate maintainer GO and a verified exact-source tag/artifact chain. GitHub and PyPI are independent distribution channels.
+
 ## Stable gate
 
 For stable releases, the built wheel must install into a clean virtual environment and execute the functional `scripts/smoke_test.py` path against the installed package. The stable tag must point to the exact qualified commit.
