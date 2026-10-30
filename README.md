@@ -4,7 +4,7 @@ PyCRMKit is a headless Python framework for customer relationships, activities, 
 
 ## Status
 
-**1.2.0 — Campaign Metadata Stable is PREPARED / NOT PUBLISHED.** The release notes and support agreement are drafts for [LOT-32-008](docs/releases/1.2.0.md), not a stable artifact or an available PyPI release. The package source remains `1.2.0rc1` until the separate version-promotion lot. See the [upgrade guide](docs/getting-started/1.2.0-upgrade.md), [compatibility/support matrix](docs/reference/1.2.0-support-and-compatibility.md) and [release gate](docs/development/1.2.0-stable-release-gate.md).
+**1.2.0 — Campaign Metadata Stable is PREPARED / NOT PUBLISHED.** The release notes and support agreement are drafts for [LOT-32-008](docs/releases/1.2.0.md), not a stable artifact or an available PyPI release. The release-branch package source is `1.2.0` after LOT-32-009, but the stable package is **not yet published**. See the [upgrade guide](docs/getting-started/1.2.0-upgrade.md), [compatibility/support matrix](docs/reference/1.2.0-support-and-compatibility.md) and [release gate](docs/development/1.2.0-stable-release-gate.md).
 
 
 Current stable version: **1.1.0 — Segmentation & Sales Task Foundation**.  

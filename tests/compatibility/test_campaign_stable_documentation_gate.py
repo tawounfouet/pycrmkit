@@ -14,7 +14,7 @@ def _read(path: str) -> str:
 
 
 def test_candidate_package_and_release_docs_remain_prepared() -> None:
-    assert __version__ == "1.2.0rc1", "version promotion is LOT-32-009"
+    assert __version__ == "1.2.0", "source promoted in LOT-32-009; not published"
     note = _read("docs/releases/1.2.0.md")
     assert "PREPARED / NOT PUBLISHED" in note
     assert "PENDING" in note

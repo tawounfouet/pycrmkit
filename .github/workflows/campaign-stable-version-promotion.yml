@@ -1,0 +1,59 @@
+name: Campaign 1.2 Stable Version Promotion
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [release/1.2.0-campaign-metadata-stable, main]
+
+permissions:
+  contents: read
+
+jobs:
+  source-version-and-archive-boundary:
+    name: Python ${{ matrix.python-version }} / promoted source and history
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install promoted package and checks
+        run: python -m pip install -e ".[dev]"
+      - name: Current source version, RC archive and unpublished gate
+        run: |
+          python -m pytest -q \
+            tests/compatibility/test_rc1_version_alignment.py \
+            tests/compatibility/test_campaign_stable_documentation_gate.py \
+            tests/compatibility/test_campaign_stable_version_promotion.py \
+            tests/smoke/test_import.py tests/test_version.py
+      - name: Lint promotion guards
+        run: |
+          ruff check tests/compatibility/test_rc1_version_alignment.py tests/compatibility/test_campaign_stable_version_promotion.py tests/compatibility/test_campaign_stable_documentation_gate.py
+          ruff format --check tests/compatibility/test_rc1_version_alignment.py tests/compatibility/test_campaign_stable_version_promotion.py tests/compatibility/test_campaign_stable_documentation_gate.py
+      - name: Build promoted candidate distribution (qualification only)
+        run: |
+          python -m pip install "build>=1.2" "twine>=6"
+          python -m build
+          python -m twine check dist/*
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from tarfile import open as open_tar
+
+          dist = Path("dist")
+          wheel = dist / "pycrmkit-1.2.0-py3-none-any.whl"
+          sdist = dist / "pycrmkit-1.2.0.tar.gz"
+          assert wheel.is_file() and sdist.is_file()
+          with ZipFile(wheel) as archive:
+              metadata = archive.read("pycrmkit-1.2.0.dist-info/METADATA")
+              assert b"Version: 1.2.0" in metadata
+          with open_tar(sdist, "r:gz") as archive:
+              assert "pycrmkit-1.2.0/PKG-INFO" in archive.getnames()
+          print("Version 1.2.0 artifacts built and inspected, NOT published")
+          PY
