@@ -12,9 +12,9 @@ import json
 import time
 
 import pytest
-from starlette.requests import Request
 
 from host_app import _verified_claims
+from starlette.requests import Request
 
 _SIGNING_KEY = b"stable-host-test-only-key-0123456789abcdef0123456789"
 
@@ -102,5 +102,7 @@ def test_signing_key_rotation_invalidates_old_fixture_tokens() -> None:
     token = _encode(_claims(), key=old_key)
     assert _verified_claims(_request(token), old_key) is not None
     assert _verified_claims(_request(token), _SIGNING_KEY) is None
-    tampered = token[:-1] + ("A" if token[-1] != "A" else "B")
+    head, signature = token.split(".")
+    changed = "A" if signature[0] != "A" else "B"
+    tampered = head + "." + changed + signature[1:]
     assert _verified_claims(_request(tampered), old_key) is None
