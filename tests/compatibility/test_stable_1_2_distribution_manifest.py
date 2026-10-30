@@ -68,7 +68,7 @@ def test_required_migrations_are_complete_and_adapter_specific() -> None:
 def test_artifact_evidence_uses_real_sha256_bytes(tmp_path: Path) -> None:
     archive = tmp_path / "synthetic.whl"
     archive.write_bytes(b"Stable synthetic bytes")
-    assert _sha256(archive) == hashlib.sha256(b"RC1 synthetic bytes").hexdigest()
+    assert _sha256(archive) == hashlib.sha256(b"Stable synthetic bytes").hexdigest()
 
 
 def test_rc_artifacts_cannot_be_mislabelled_stable(tmp_path: Path) -> None:
