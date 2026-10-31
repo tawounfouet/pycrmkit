@@ -31,3 +31,6 @@ env/
 
 # Docs
 site/
+
+# Archives & Session transcripts
+archives/
