@@ -87,6 +87,19 @@ def test_production_demo_write_rejected_before_persistent_access(
     monkeypatch.setenv("PYCRMKIT_DATABASE_URL", isolated_database_url)
     monkeypatch.setenv("PYCRMKIT_ENV", "production")
     monkeypatch.delenv("PYCRMKIT_CONFIG", raising=False)
-    assert main(["seed", "--database", "--yes"], prog_name="pck") == int(
-        ExitCode.VALIDATION_ERROR
-    )
+    database_access_attempts: list[str] = []
+
+    def forbid_engine(*args: object, **kwargs: object) -> object:
+        database_access_attempts.append("unexpected SQLAlchemy engine creation")
+        raise AssertionError("Production demo commands must not access PostgreSQL")
+
+    with monkeypatch.context() as blocked:
+        blocked.setattr("sqlalchemy.create_engine", forbid_engine)
+        assert main(["seed", "--database", "--yes"], prog_name="pck") == int(
+            ExitCode.VALIDATION_ERROR
+        )
+        assert main(["reset", "--force"], prog_name="pck") == int(
+            ExitCode.VALIDATION_ERROR
+        )
+
+    assert database_access_attempts == []

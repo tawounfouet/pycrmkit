@@ -5,6 +5,16 @@
 **Pull request:** [#129](https://github.com/tawounfouet/pycrmkit/pull/129)  
 **State:** **NO-GO / open draft / not merged**
 
+## 2026-11-01 audit update (historical exact-SHA evidence)
+
+- PR #129 integration HEAD `600fddbc29eb2fc0a1ab290e2ea0c03a01791868` had **74/74 successful check runs**, zero pending or failed, including Ruff, mypy, pytest 3.11/3.12/3.13, PostgreSQL 17 no-mutation, wheel/sdist and GitGuardian. This is historical evidence for that SHA only.
+- GitHub v1.2.0 release asset digest metadata matches `aud-fix-04-release-provenance.md`; independent downloaded-byte hashing and PyPI checksums remain unverified.
+- PR #115 remains open and requires explicit reconciliation.
+- GitHub PR #129 had zero submitted reviews. Branch protection endpoint returned 403; absence of returned rulesets is not proof of absent protection.
+- Separate hardening branch `audit/track-s-s0-closeout-hardening` adds production seed/reset engine-denial regression coverage. **This new branch is not qualified by the earlier 74/74 result.**
+- The previous queue/pending language below is preserved as a dated historical snapshot, not current CI status.
+- **NO-GO** for merge/release until new exact-SHA checks, independent provenance verification and explicit maintainer approval.
+
 ## Trust boundaries and evidence levels
 
 Do not treat a green check on an earlier commit as evidence for a newer SHA.
