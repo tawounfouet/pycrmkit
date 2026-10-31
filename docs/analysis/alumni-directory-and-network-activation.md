@@ -1,5 +1,11 @@
 # Analyse Approfondie : Création d'un Annuaire d'Alumni, Référents de Promo & Activation Django avec PyCRMKit
 
+> **Privacy and implementation notice (Track S / AUD-FIX-09)**  
+> **Classification: ILLUSTRATIVE / NON-EXECUTABLE without verification.** This is a design scenario, not proof of a working CLI command, full agent runtime, deployed integration, production-grade security, external email delivery or regulatory compliance. Validate every code snippet against the exact installed PyCRMKit version and obtain host approval before live use.  
+> **Intended use:** Alumni directory opt-in and account-activation support. **Data at risk:** Alumni directory sharing, Google Forms exports, invitation tokens, student contact details and WhatsApp cohort groups.  
+> The deploying organization must document a valid processing purpose and lawful basis, inform data subjects, restrict collection and access, set and enforce a retention/deletion schedule, and review third-party processing and international transfers where applicable. Consent must be recorded where it is the applicable legal basis or channel requirement; consent is not automatically the lawful basis for every CRM operation.  
+> Do not import personal chat transcripts, audio, financial/payment evidence or private contact lists wholesale into CRM. Retain approved summaries/identifiers only, with host authorization and safeguards. Email addresses below use the reserved `example.org` domain as synthetic test fixtures. See [Track S privacy governance](../development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Document de Référence Méthodologique & Réseaux d'Anciens Élèves**  
 > **Auteur** : Thomas Awounfouet / WebTech Forge  
 > **Cas d'Usage** : Association d'Alumni & Écoles d'Ingénieurs / Universités (ex: Réseau Prépa Vogt Alumni, Écoles d'Ingénieurs)  
@@ -139,8 +145,8 @@ alumni = crm.contacts.create(
     first_name="Christian",
     last_name="Mvondo",
     emails=(
-        ContactEmail("christian.mvondo@gmail.com", is_primary=True),
-        ContactEmail("c.mvondo@totalenergies.com", is_primary=False),
+        ContactEmail("demo.person01@example.org", is_primary=True),
+        ContactEmail("demo.person02@example.org", is_primary=False),
     ),
     phones=(ContactPhone("+33612345678", is_primary=True),),
     source="google_forms_promo_2019",

@@ -1,17 +1,19 @@
-"""Feature tours execution command for PyCRMKit CLI."""
+"""Feature tours execution command for PyCRMKit CLI.
+
+Tours are loaded from trusted package resources, not from the current
+repository's examples/ directory.
+"""
 
 from __future__ import annotations
 
-import importlib.util
-import sys
 import time
-from pathlib import Path
 from typing import Annotated
 
 import typer
 from rich.table import Table
 
 from pycrmkit import __version__
+from pycrmkit._feature_tours_loader import TOUR_FILES, run_tour
 from pycrmkit.cli.console import console
 from pycrmkit.cli.exit_codes import ExitCode
 
@@ -24,28 +26,16 @@ TOURS = [
     ("06_campaigns_v1_2.py", "Campaigns v1.2.0 & Linkage (Audience, Concurrency, Attribution)"),
 ]
 
+assert tuple(name for name, _ in TOURS) == TOUR_FILES
 
-def _load_and_run(script_path: Path) -> tuple[str, float, str]:
-    t0 = time.perf_counter()
-    module_name = f"tour_{script_path.stem}"
-    spec = importlib.util.spec_from_file_location(module_name, str(script_path))
-    if spec is None or spec.loader is None:
-        return "FAIL", 0.0, f"Cannot load spec for {script_path}"
 
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
+def _load_and_run(filename: str) -> tuple[str, float, str]:
+    start = time.perf_counter()
     try:
-        spec.loader.exec_module(module)
-        if hasattr(module, "run_tour"):
-            module.run_tour()
-        else:
-            return "FAIL", 0.0, "Missing run_tour() entrypoint"
-    except Exception as exc:  # noqa: BLE001
-        elapsed = time.perf_counter() - t0
-        return "FAIL", elapsed, str(exc)
-
-    elapsed = time.perf_counter() - t0
-    return "PASS", elapsed, ""
+        run_tour(filename)
+    except Exception as exc:  # noqa: BLE001 - report each tour separately
+        return "FAIL", time.perf_counter() - start, str(exc)
+    return "PASS", time.perf_counter() - start, ""
 
 
 def tours_command(
@@ -54,12 +44,8 @@ def tours_command(
         typer.Option("--tour", "-t", help="Filter by tour index (e.g. 1, 01) or keyword."),
     ] = None,
 ) -> None:
-    """Run autonomous, in-memory PyCRMKit feature tours with Rich scorecard reporting."""
-    # Resolve examples/feature_tours relative to repo root or package root
-    repo_root = Path(__file__).resolve().parents[4]
-    tours_dir = repo_root / "examples" / "feature_tours"
-
-    selected_tours = []
+    """Run six self-contained, in-memory PyCRMKit feature tours."""
+    selected_tours: list[tuple[str, str]] = []
     for filename, desc in TOURS:
         if tour_filter:
             filt = tour_filter.strip().lower()
@@ -75,31 +61,21 @@ def tours_command(
         raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
 
     console.print(
-        f"\n[bold blue]Running {len(selected_tours)} PyCRMKit Feature Tour(s)[/bold blue] (v{__version__})...\n"
+        f"\\n[bold blue]Running {len(selected_tours)} PyCRMKit Feature Tour(s)[/bold blue] (v{__version__})...\\n"
     )
 
-    results = []
+    results: list[tuple[str, str, str, float, str]] = []
     all_passed = True
     total_start = time.perf_counter()
 
     for filename, desc in selected_tours:
-        script_file = tours_dir / filename
-        if not script_file.is_file():
-            results.append((filename, desc, "FAIL", 0.0, "File not found"))
-            all_passed = False
-            continue
-
         with console.status(f"[cyan]Running {filename}...[/cyan]"):
-            status, duration, error_msg = _load_and_run(script_file)
-
+            status, duration, error_msg = _load_and_run(filename)
         if status != "PASS":
             all_passed = False
-
         results.append((filename, desc, status, duration, error_msg))
 
     total_duration = time.perf_counter() - total_start
-
-    # Scorecard
     table = Table(title="PyCRMKit Feature Tours - Execution Scorecard", border_style="dim")
     table.add_column("Script", style="bold cyan")
     table.add_column("Status", justify="center")
@@ -107,21 +83,20 @@ def tours_command(
     table.add_column("Scope")
 
     for filename, desc, status, duration, _error_msg in results:
-        status_badge = (
-            "[bold green]✓ PASS[/bold green]" if status == "PASS" else "[bold red]✗ FAIL[/bold red]"
+        label = (
+            "[bold green]✓ PASS[/bold green]"
+            if status == "PASS"
+            else "[bold red]✗ FAIL[/bold red]"
         )
-        table.add_row(
-            filename,
-            status_badge,
-            f"{duration:.3f}s",
-            desc,
-        )
+        table.add_row(filename, label, f"{duration:.3f}s", desc)
 
     console.print(table)
     console.print(f"[bold]Total Duration:[/bold] {total_duration:.3f}s")
 
     if not all_passed:
-        console.print("\n[bold red]Some feature tours failed.[/bold red]")
+        for filename, _, status, _, error_msg in results:
+            if status != "PASS":
+                console.print(f"[red]{filename}: {error_msg}[/red]")
+        console.print("[bold red]Some feature tours failed.[/bold red]")
         raise typer.Exit(code=int(ExitCode.EXECUTION_FAILURE))
-
-    console.print("\n[bold green]All feature tours passed successfully![/bold green]")
+    console.print("[bold green]All feature tours passed successfully![/bold green]")
