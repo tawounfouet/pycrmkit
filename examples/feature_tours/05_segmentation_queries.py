@@ -30,9 +30,10 @@ def run_tour() -> dict[str, object]:
     print(f"\n[1/5] CRM initialisé (Acteur: {crm.context.actor_id})")
 
     c1 = crm.contacts.create(first_name="Alice", last_name="Dubois", source="linkedin")
+    crm.contacts.create(first_name="Bernard", last_name="Lemoine", source="linkedin")
     c3 = crm.contacts.create(first_name="Claire", last_name="Moreau", source="webinar")
     c4 = crm.contacts.create(first_name="David", last_name="Rousseau", source="cold_call")
-    print("[2/5] Base de contacts peuplée : 3 contacts créés avec sources distinctes")
+    print("[2/5] Base de contacts peuplée : 4 contacts créés avec sources distinctes")
 
     # 2. Static Segment
     static_seg = crm.segments.create_static(
