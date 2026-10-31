@@ -82,21 +82,19 @@ def reset_command(
         console.print("[red]Local state reset is prohibited in production.[/red]")
         raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
     target = _resolve_store_path()
-    if not target.exists():
-        console.print("[dim]Local CRM store is already empty (no state file found).[/dim]")
-        return
-
-    if not force:
-        confirm = typer.confirm(f"Are you sure you want to delete the local CRM state at {target}?")
-        if not confirm:
-            console.print("[yellow]Reset cancelled.[/yellow]")
-            return
-
-    # Reset is a state mutation: hold the same lock as the CLI writers.
-    # Otherwise a concurrent seed can resurrect data after a reset.
+    # Hold the lock across existence check, confirmation and deletion. Checking
+    # outside the lock can wrongly report "already empty" while a writer races.
     with _exclusive_state_lock(target):
         checked = _checked_path(target)
-        checked.unlink(missing_ok=True)
+        if not checked.exists():
+            console.print("[dim]Local CRM store is already empty (no state file found).[/dim]")
+            return
+        if not force:
+            confirm = typer.confirm(f"Are you sure you want to delete the local CRM state at {target}?")
+            if not confirm:
+                console.print("[yellow]Reset cancelled.[/yellow]")
+                return
+        checked.unlink()
     console.print(
         Panel(
             f"[bold green]✓ CRM State Successfully Cleared[/bold green]\n\n"
