@@ -108,6 +108,7 @@ version = {attr = "pycrmkit.__about__.__version__"}
 [tool.setuptools.package-data]
 pycrmkit = [
   "py.typed",
+  "_feature_tours/*.py.txt",
   "storage/sqlalchemy/migrations/script.py.mako",
   "storage/sqlalchemy/migrations/README.md",
 ]
