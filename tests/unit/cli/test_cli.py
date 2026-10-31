@@ -68,7 +68,7 @@ def test_missing_dependency_guard(capsys) -> None:
 
 
 def test_cli_seed_and_dashboard(tmp_path, monkeypatch, capsys) -> None:
-    test_state_file = tmp_path / "cli_test_state.pickle"
+    test_state_file = tmp_path / "cli_test_state.json"
     monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(test_state_file))
 
     # 1. Seed demo data
@@ -90,7 +90,7 @@ def test_cli_seed_and_dashboard(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_contacts_crud(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "contacts_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "contacts_test.json"))
 
     # Create contact
     code = main(
@@ -111,7 +111,7 @@ def test_cli_contacts_crud(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_orgs_crud(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "orgs_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "orgs_test.json"))
 
     # Create org
     code = main(["orgs", "create", "DARPA Research Lab", "--trade-name", "DARPA"], prog_name="pck")
@@ -128,7 +128,7 @@ def test_cli_orgs_crud(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_sales_and_opportunities(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "sales_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "sales_test.json"))
     main(["seed"], prog_name="pck")
     capsys.readouterr()
 
@@ -147,7 +147,7 @@ def test_cli_sales_and_opportunities(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_campaigns_and_tasks(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "camps_tasks_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "camps_tasks_test.json"))
     main(["seed"], prog_name="pck")
     capsys.readouterr()
 
