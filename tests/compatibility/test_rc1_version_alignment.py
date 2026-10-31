@@ -63,7 +63,7 @@ def test_frozen_campaign_manifest_preserves_beta_baseline_and_rc_target() -> Non
 
 def test_release_documentation_records_qualified_github_publication() -> None:
     note = (ROOT / "docs/releases/1.2.0rc1.md").read_text(encoding="utf-8")
-    assert "PUBLISHED — GITHUB PRERELEASE" in note
+    assert "PUBLISHED - GITHUB PRERELEASE" in note
     assert "https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0rc1" in note
     assert "5113cedb50750185e457505dfcca5519ce3a62bd" in note
     assert "27/27" in note

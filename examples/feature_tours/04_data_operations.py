@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PyCRMKit 1.2.0 — Feature Tour 04: Data Operations, Deduplication & Merge.
+"""PyCRMKit 1.2.0 - Feature Tour 04: Data Operations, Deduplication & Merge.
 
 Demonstrates and verifies:
 - Ingestion pipeline with CSVReader

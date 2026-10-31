@@ -147,4 +147,4 @@ Migrations remain explicit deployment operations.
 ## Deferred
 
 `0.9.0a1` does not implement the import pipeline. That begins with
-**`0.9.0a2 — Import Framework`**.
+**`0.9.0a2 - Import Framework`**.

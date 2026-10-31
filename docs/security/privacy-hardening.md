@@ -380,5 +380,5 @@ qualification work.
 The next milestone is:
 
 ```text
-1.0.0b2 — Performance Baseline
+1.0.0b2 - Performance Baseline
 ```

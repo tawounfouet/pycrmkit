@@ -1,4 +1,4 @@
-# Association Member Onboarding — Practical Examples & Recipes
+# Association Member Onboarding - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`association-member-onboarding`](SKILL.md)  

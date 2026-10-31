@@ -366,10 +366,10 @@ paths, error payloads, status mappings and pagination semantics are treated as
 stable public integration contracts. Backward-compatible fixes belong in patch
 releases.
 
-The next planned integration milestone is **`0.8.0a1 — Django Application Bridge`**.
+The next planned integration milestone is **`0.8.0a1 - Django Application Bridge`**.
 
 
-## V1.1 beta extension — Segmentation
+## V1.1 beta extension - Segmentation
 
 From **1.1.0b3**, the composite router also exposes Segments and Saved Queries:
 

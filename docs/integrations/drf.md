@@ -225,10 +225,10 @@ persisted aggregate families.
 
 ## Next
 
-The roadmap continues with **`0.9.0a1 — External Identities`**.
+The roadmap continues with **`0.9.0a1 - External Identities`**.
 
 
-## V1.1 beta extension — Segmentation
+## V1.1 beta extension - Segmentation
 
 From **1.1.0b3**, `create_drf_router()` also registers:
 

@@ -51,7 +51,7 @@ def load_tour_module(script_path: Path):
 def main() -> int:
     tour_dir = Path(__file__).resolve().parent
     print("=" * 80)
-    print("🚀 PYCRMKIT FEATURE TOURS — GLOBAL TEST SUITE RUNNER")
+    print("🚀 PYCRMKIT FEATURE TOURS - GLOBAL TEST SUITE RUNNER")
     print(f"📦 PyCRMKit Version: {__version__}")
     print(f"📂 Tour Directory:   {tour_dir}")
     print(f"🕒 Started At:       {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -98,7 +98,7 @@ def main() -> int:
 
     # Final Scorecard
     print("\n" + "=" * 80)
-    print("📊 PYCRMKIT FEATURE TOURS — CONSOLIDATED SCORECARD")
+    print("📊 PYCRMKIT FEATURE TOURS - CONSOLIDATED SCORECARD")
     print("=" * 80)
     print(f"{'Tour Script':<30} | {'Status':<6} | {'Duration':<9} | {'Scope'}")
     print("-" * 80)
@@ -121,7 +121,7 @@ def main() -> int:
         print("🎉 TOUTES LES FONCTIONNALITÉS DE PYCRMKIT SONT TESTÉES ET VALIDÉES AVEC SUCCÈS !")
         return 0
     else:
-        print("⚠️ CERTAINS TESTS ONT ÉCHOUÉ — Veuillez consulter les traces ci-dessus.")
+        print("⚠️ CERTAINS TESTS ONT ÉCHOUÉ - Veuillez consulter les traces ci-dessus.")
         return 1
 
 

@@ -220,7 +220,7 @@ new provider dependency
 The next roadmap milestone is:
 
 ```text
-1.0.0a1 — Public API Freeze Candidate
+1.0.0a1 - Public API Freeze Candidate
 ```
 
 

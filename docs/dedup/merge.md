@@ -198,6 +198,6 @@ application scenario.
 
 That cross-capability scenario is qualified by:
 
-`0.9.0rc1 — Data Operations E2E`.
+`0.9.0rc1 - Data Operations E2E`.
 
 See [Data Operations E2E](../data_operations/e2e.md) for the complete release-candidate journey.

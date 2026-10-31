@@ -1,4 +1,4 @@
-# Alumni Directory Activation — Detailed Workflow & Architecture
+# Alumni Directory Activation - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Cycle de Vie de l'Annuaire Alumni**  
 > **Skill Associé** : [`alumni-directory-activation`](SKILL.md)  

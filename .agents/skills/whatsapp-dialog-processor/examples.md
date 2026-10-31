@@ -1,4 +1,4 @@
-# WhatsApp Dialog Processor — Practical Examples & Recipes
+# WhatsApp Dialog Processor - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`whatsapp-dialog-processor`](SKILL.md)  

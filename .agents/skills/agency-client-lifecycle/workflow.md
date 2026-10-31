@@ -1,4 +1,4 @@
-# Agency Client Lifecycle — Detailed Workflow & Architecture
+# Agency Client Lifecycle - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Spécifications Métier**  
 > **Skill Associé** : [`agency-client-lifecycle`](SKILL.md)  

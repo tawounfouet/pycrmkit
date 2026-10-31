@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PyCRMKit 1.2.0 — Feature Tour 01: Core CRM Foundations.
+"""PyCRMKit 1.2.0 - Feature Tour 01: Core CRM Foundations.
 
 Demonstrates and verifies:
 - CRM.memory() initialization with audit context

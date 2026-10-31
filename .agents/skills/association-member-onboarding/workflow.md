@@ -1,4 +1,4 @@
-# Association Member Onboarding — Detailed Workflow & Architecture
+# Association Member Onboarding - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Cycle de Vie Associatif**  
 > **Skill Associé** : [`association-member-onboarding`](SKILL.md)  

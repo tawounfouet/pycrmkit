@@ -13,7 +13,7 @@ pip install "pycrmkit[django]"
 
 ## Stable 0.8.x scope
 
-`0.8.0 — Django Integration Stable` promotes the fully qualified release
+`0.8.0 - Django Integration Stable` promotes the fully qualified release
 candidate without adding new Django feature scope. The Django application,
 persistence, migration, admin, transaction and optional DRF layers are
 qualified together against PostgreSQL 17.
@@ -337,7 +337,7 @@ The Django persistence adapter remains intentionally bounded to Contacts,
 Organizations and Relationships. Stable status freezes that documented scope;
 it does not imply a complete cross-domain Django UnitOfWork.
 
-## V0.9 prerelease extension — External Identities
+## V0.9 prerelease extension - External Identities
 
 `0.9.0a1` adds `ExternalIdentityModel` and `DjangoExternalIdentityRepository` to the optional Django adapter. Django schemas advance explicitly through:
 
@@ -351,14 +351,14 @@ The new repository participates in `DjangoTransactionBridge` and is qualified ag
 
 ## Next milestone
 
-The project roadmap now advances to **`0.9.0a2 — Import Framework`**.
+The project roadmap now advances to **`0.9.0a2 - Import Framework`**.
 
 ## Next milestone
 
-The next delivery is **`0.8.0 — Django Integration Stable`**.
+The next delivery is **`0.8.0 - Django Integration Stable`**.
 
 
-## V1.1 beta extension — Segmentation
+## V1.1 beta extension - Segmentation
 
 **1.1.0b2** adds Django persistence capabilities for the Segmentation domain:
 

@@ -82,7 +82,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Immutable annotated tag `v1.2.0b3` points to that qualified SHA. GitHub prerelease published with wheel, sdist, SHA256SUMS and release manifest; publication workflow run `40763832545` succeeded and verified downloaded assets.
 - SHA-256: wheel `c7e5848e7efaef955cfba50e354da0a4abd56db9ef4b505a095c41c7a953e86d`; sdist `b4969514869196ed0cefeadf5c07fb4569bbcb7de66b74f9acf12447ca0e1995`.
 - PyPI publication has not been verified or claimed.
-- Next: `1.2.0rc1 — Campaign Production Qualification`.
+- Next: `1.2.0rc1 - Campaign Production Qualification`.
 
 
 ## [1.2.0b2] - 2026-10-28 (candidate; not yet published)
@@ -102,7 +102,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Release governance
 - Package version promotion requires a fresh PR CI cycle, exact-main checks after merge, artifact hashes and verification of tag/publication.
-- Next: `1.2.0b3 — HTTP + Data Operations Integration`.
+- Next: `1.2.0b3 - HTTP + Data Operations Integration`.
 
 
 ## [1.2.0b1] - 2026-10-27
@@ -127,7 +127,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Historical 1.1 release manifests, migration-head evidence and frozen checksums remain unchanged.
 
 ### Next
-- `1.2.0b2 — Django Campaign Persistence`.
+- `1.2.0b2 - Django Campaign Persistence`.
 
 ## [1.2.0a3] - 2026-09-30
 
@@ -145,7 +145,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Email design, advertising management and large-scale marketing delivery remain out of scope.
 
 ### Next
-- `1.2.0b1 — SQLAlchemy/PostgreSQL Campaign Persistence`.
+- `1.2.0b1 - SQLAlchemy/PostgreSQL Campaign Persistence`.
 
 ## [1.2.0a2] - 2026-09-30
 
@@ -168,7 +168,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - PyCRMKit 1.1 remains the stable compatibility baseline.
 
 ### Next
-- `1.2.0a3 — Attribution & Communication Linkage`.
+- `1.2.0a3 - Attribution & Communication Linkage`.
 
 ## [1.2.0a1] - 2026-09-30
 
@@ -188,7 +188,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Email design, advertising management, bulk marketing delivery, journey/cadence execution and advanced attribution modelling remain outside PyCRMKit core.
 
 ### Next
-- `1.2.0a2 — Campaign Membership & Segment Sources`.
+- `1.2.0a2 - Campaign Membership & Segment Sources`.
 
 ## [1.1.0] - 2026-09-29
 
@@ -222,7 +222,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - A blocking fix after RC publication requires `1.1.0rc2` and a renewed qualification cycle.
 
 ### Next
-- `1.1.0 — Segmentation & Sales Task Foundation`, after zero-blocker qualification.
+- `1.1.0 - Segmentation & Sales Task Foundation`, after zero-blocker qualification.
 
 
 ## [1.1.0b3] - 2026-09-29
@@ -242,7 +242,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Existing V1 HTTP routes and persistence contracts remain backward compatible.
 
 ### Next
-- `1.1.0rc1 — Segmentation Production Qualification`.
+- `1.1.0rc1 - Segmentation Production Qualification`.
 
 ## [1.1.0b2] - 2026-09-29
 
@@ -269,7 +269,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Django remains optional and framework-specific persistence objects stay outside the public domain model.
 
 ### Next
-- `1.1.0b3 — Data Operations + API Integration`.
+- `1.1.0b3 - Data Operations + API Integration`.
 
 ## [1.1.0b1] - 2026-09-29
 
@@ -393,8 +393,8 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - No new CRM feature, public API expansion, persistence schema or migration is introduced by the RC promotion.
 
 ### Changed
-- Latest V1 prerelease is now `1.0.0rc1 — Full Production Qualification`.
-- Next roadmap milestone after candidate qualification is `1.0.0 — Production Stable`.
+- Latest V1 prerelease is now `1.0.0rc1 - Full Production Qualification`.
+- Next roadmap milestone after candidate qualification is `1.0.0 - Production Stable`.
 
 ## [1.0.0b3] - 2026-09-27
 
@@ -434,7 +434,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `1.0.0b2` to `1.0.0b3`.
-- Development roadmap advances to `1.0.0rc1 — Full Production Qualification`.
+- Development roadmap advances to `1.0.0rc1 - Full Production Qualification`.
 
 ## [1.0.0b2] - 2026-09-27
 
@@ -473,7 +473,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `1.0.0b1` to `1.0.0b2`.
-- Development roadmap advances to `1.0.0b3 — Compatibility Matrix`.
+- Development roadmap advances to `1.0.0b3 - Compatibility Matrix`.
 
 ## [1.0.0b1] - 2026-09-27
 
@@ -514,7 +514,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `1.0.0a1` to `1.0.0b1`.
-- Development roadmap advances to `1.0.0b2 — Performance Baseline`.
+- Development roadmap advances to `1.0.0b2 - Performance Baseline`.
 
 ## [1.0.0a1] - 2026-09-27
 
@@ -552,7 +552,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.9.0` to `1.0.0a1`.
-- Development roadmap advances to `1.0.0b1 — Security & Privacy Hardening`.
+- Development roadmap advances to `1.0.0b1 - Security & Privacy Hardening`.
 
 ## [0.9.0] - 2026-09-27
 
@@ -588,7 +588,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.9.0rc1` to `0.9.0`.
 - `0.9.0` becomes the current stable PyCRMKit line.
-- Development roadmap advances to `1.0.0a1 — Public API Freeze Candidate`.
+- Development roadmap advances to `1.0.0a1 - Public API Freeze Candidate`.
 
 ## [0.9.0rc1] - 2026-09-27
 
@@ -615,7 +615,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.9.0b3` to `0.9.0rc1`.
-- Development roadmap advances to `0.9.0 — Data Operations Stable`.
+- Development roadmap advances to `0.9.0 - Data Operations Stable`.
 
 ## [0.9.0b3] - 2026-09-27
 
@@ -654,7 +654,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.9.0b2` to `0.9.0b3`.
-- Development roadmap advances to `0.9.0rc1 — Data Operations E2E`.
+- Development roadmap advances to `0.9.0rc1 - Data Operations E2E`.
 
 ## [0.9.0b2] - 2026-09-27
 
@@ -690,7 +690,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.9.0b1` to `0.9.0b2`.
-- Development roadmap advances to `0.9.0b3 — Merge`.
+- Development roadmap advances to `0.9.0b3 - Merge`.
 
 ## [0.9.0b1] - 2026-09-27
 
@@ -716,7 +716,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.9.0a2` to `0.9.0b1`.
-- Development roadmap advances to `0.9.0b2 — Deduplication`.
+- Development roadmap advances to `0.9.0b2 - Deduplication`.
 
 ## [0.9.0a2] - 2026-09-27
 
@@ -746,7 +746,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.9.0a1` to `0.9.0a2`.
-- Development roadmap advances to `0.9.0b1 — CSV / JSON / JSONL`.
+- Development roadmap advances to `0.9.0b1 - CSV / JSON / JSONL`.
 
 ## [0.9.0a1] - 2026-09-26
 
@@ -776,7 +776,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Scope boundary
 - This alpha does not implement row readers, mapping rules, import normalization, validation reports, deduplication or merge execution.
-- The next milestone is `0.9.0a2 — Import Framework`.
+- The next milestone is `0.9.0a2 - Import Framework`.
 
 ### Changed
 - Package version advanced from `0.8.0` to `0.9.0a1`.
@@ -816,7 +816,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.8.0rc1` to `0.8.0`.
 - `0.8.0` becomes the current stable PyCRMKit line.
-- Development roadmap advances to `0.9.0a1 — External Identities`.
+- Development roadmap advances to `0.9.0a1 - External Identities`.
 
 ## [0.8.0rc1] - 2026-09-26
 
@@ -852,7 +852,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.8.0b2` to `0.8.0rc1`.
-- Development roadmap advances to `0.8.0 — Django Integration Stable`.
+- Development roadmap advances to `0.8.0 - Django Integration Stable`.
 
 ### Next
 - `0.8.0` should promote the fully qualified release candidate without adding new Django feature scope.
@@ -887,7 +887,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.8.0b1` to `0.8.0b2`.
-- Development roadmap advances to `0.8.0rc1 — Django Example + E2E`.
+- Development roadmap advances to `0.8.0rc1 - Django Example + E2E`.
 
 ### Deferred
 - Reference Django application and full Django E2E remain scheduled for `0.8.0rc1`.
@@ -927,7 +927,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.8.0a1` to `0.8.0b1`.
-- Development roadmap advances to `0.8.0b2 — Optional DRF`.
+- Development roadmap advances to `0.8.0b2 - Optional DRF`.
 
 ### Deferred
 - DRF remains scheduled for `0.8.0b2`.
@@ -965,7 +965,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.7.0` to `0.8.0a1`.
-- Development roadmap advances to `0.8.0b1 — Django Migrations & Admin`.
+- Development roadmap advances to `0.8.0b1 - Django Migrations & Admin`.
 
 ## [0.7.0] - 2026-09-26
 
@@ -994,7 +994,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ### Changed
 - Package version advanced from `0.7.0rc1` to `0.7.0`.
-- Development roadmap advances to `0.8.0a1 — Django Application Bridge`.
+- Development roadmap advances to `0.8.0a1 - Django Application Bridge`.
 
 ## [0.7.0rc1] - 2026-09-26
 
@@ -1010,7 +1010,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.7.0b2` to `0.7.0rc1`.
 - FastAPI integration moves from beta contract qualification to full PostgreSQL-backed release-candidate qualification.
-- Development roadmap advances to `0.7.0 — FastAPI Integration Stable`.
+- Development roadmap advances to `0.7.0 - FastAPI Integration Stable`.
 
 ### Deployment semantics
 - Database migrations remain an explicit deployment step via `pycrmkit-migrate upgrade head`.
@@ -1042,7 +1042,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - Package version advanced from `0.7.0b1` to `0.7.0b2`.
 - Routers now document typed error responses alongside their success schemas.
 - FastAPI router E2E tests run with the public error-handler installation path.
-- Development roadmap advances to `0.7.0rc1 — FastAPI Example + E2E`.
+- Development roadmap advances to `0.7.0rc1 - FastAPI Example + E2E`.
 
 ### HTTP mapping
 - `ValidationError` → 422.
@@ -1072,7 +1072,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.7.0a1` to `0.7.0b1`.
 - FastAPI consumers can mount the complete CRM HTTP surface under an application-defined prefix.
-- Development roadmap advances to `0.7.0b2 — OpenAPI / Error Mapping`.
+- Development roadmap advances to `0.7.0b2 - OpenAPI / Error Mapping`.
 
 ### Router semantics
 - Every router receives a request-scoped CRM facade through `CRMDependency`.
@@ -1099,7 +1099,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.6.0` to `0.7.0a1`.
 - FastAPI becomes an opt-in integration extra while the core package remains framework-agnostic.
-- Development roadmap advances within the FastAPI line to `0.7.0b1 — Routers`.
+- Development roadmap advances within the FastAPI line to `0.7.0b1 - Routers`.
 
 ### Integration semantics
 - `X-Actor-ID` and `X-Correlation-ID` are applied through `CRM.with_context(...)`.
@@ -1137,7 +1137,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.6.0rc1` to `0.6.0`.
 - Persistence Foundation becomes the current stable line.
-- Development roadmap advances to `0.7.0 — FastAPI Integration`.
+- Development roadmap advances to `0.7.0 - FastAPI Integration`.
 
 ### Deferred
 - FastAPI, Django and Data Operations remain later roadmap lines.
@@ -1151,7 +1151,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - PostgreSQL execution of the reusable SQLAlchemy repository conformance suite.
 - Explicit multi-repository rollback qualification against PostgreSQL.
 - Installed-wheel smoke in a clean virtual environment using packaged migrations and PostgreSQL.
-- Alembic revision `0002 — align repository reference semantics`.
+- Alembic revision `0002 - align repository reference semantics`.
 
 ### Changed
 - Package version advanced from `0.6.0b3` to `0.6.0rc1`.
@@ -1239,7 +1239,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 - General tests remain green on Python 3.11, 3.12 and 3.13.
 
 ### Deferred
-- Versioned schema evolution and upgrade/downgrade qualification remain scheduled for `0.6.0b3 — Alembic / Migrations`.
+- Versioned schema evolution and upgrade/downgrade qualification remain scheduled for `0.6.0b3 - Alembic / Migrations`.
 - Full persistence release-candidate qualification remains scheduled for `0.6.0rc1`.
 
 ## [0.6.0b1] - 2026-09-26
@@ -1326,7 +1326,7 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 ### Changed
 - Package version advanced from `0.5.0rc1` to `0.5.0`.
 - Candidate API and webhook documentation now reflect the stable `0.5.x` compatibility promise.
-- Development roadmap now advances to `0.6.0a1 — SQLAlchemy Foundation`.
+- Development roadmap now advances to `0.6.0a1 - SQLAlchemy Foundation`.
 
 ### Deferred
 - Production SQLAlchemy/PostgreSQL persistence, durable cross-process outbox/claiming, distributed delivery coordination, FastAPI, Django, and data operations remain later milestones.

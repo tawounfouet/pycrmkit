@@ -1,4 +1,4 @@
-# PyCRMKit Agentic Ecosystem — Orchestration des Agents Autonomes
+# PyCRMKit Agentic Ecosystem - Orchestration des Agents Autonomes
 
 > **Manifeste de l'Architecture Agentique de PyCRMKit**  
 > **Localisation** : `professionnal/webtech/packages/pycrmkit/.agents/`  

@@ -17,7 +17,7 @@ def test_go_no_go_dossier_is_explicitly_pending() -> None:
     dossier = _read("docs/development/1.2.0-stable-lot-32-011-go-no-go.md")
     assert __version__ == "1.2.0"
     assert "Decision now: NO-GO / PENDING MAINTAINER AUTHORIZATION" in dossier
-    assert "Decision | **PENDING — NOT APPROVED**" in dossier
+    assert "Decision | **PENDING - NOT APPROVED**" in dossier
     assert "LOT-32-011 is **IN PROGRESS**" in dossier
     assert "LOT-32-012 GitHub publication authorization | **NOT GRANTED**" in dossier
     assert "Separate PyPI publication decision | **NOT AUTHORIZED" in dossier

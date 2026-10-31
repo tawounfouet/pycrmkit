@@ -172,7 +172,7 @@ Django Segmentation persistence and Snapshot creation remain scheduled for
 `1.1.0b2`.
 
 
-## Snapshot Segment — 1.1.0b2
+## Snapshot Segment - 1.1.0b2
 
 Freeze a query result:
 
@@ -202,7 +202,7 @@ snapshot = crm.segments.snapshot(
 Snapshot membership is immutable. Later CRM changes may change a Dynamic
 Segment, but never rewrite the captured Snapshot.
 
-## Bulk membership — 1.1.0b2
+## Bulk membership - 1.1.0b2
 
 Static Segments support bounded transactional membership batches:
 
@@ -224,7 +224,7 @@ crm.segments.remove_members(
 One batch may contain at most 1000 references. Duplicate references in one add
 batch are rejected before persistence.
 
-## Django persistence — 1.1.0b2
+## Django persistence - 1.1.0b2
 
 The Django bridge now implements Segment, SegmentMember and SavedQuery
 persistence plus portable query evaluation for the entity kinds currently owned
@@ -240,7 +240,7 @@ state. Queries requiring state not owned by the current Django persistence
 bridge fail explicitly.
 
 
-## Data Operations — 1.1.0b3
+## Data Operations - 1.1.0b3
 
 Static Segment membership can now be imported through the existing
 provider-neutral Import Framework:
@@ -284,7 +284,7 @@ JSONLExporter("members.jsonl").write(
 The same records can be sent to CSV or JSON exporters. Dynamic exports are live;
 create a Snapshot first when reproducibility is required.
 
-## HTTP APIs — 1.1.0b3
+## HTTP APIs - 1.1.0b3
 
 The optional FastAPI and DRF composite routers now expose Segment and SavedQuery
 operations through the public CRM facade. No transport layer receives

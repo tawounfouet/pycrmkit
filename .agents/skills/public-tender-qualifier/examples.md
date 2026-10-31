@@ -1,4 +1,4 @@
-# Public Tender Qualifier — Practical Examples & Recipes
+# Public Tender Qualifier - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`public-tender-qualifier`](SKILL.md)  

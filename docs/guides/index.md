@@ -33,41 +33,41 @@ example application.
 
 ## Start here
 
-1. [Getting Started](00_getting_started.md) — install PyCRMKit and create the first Contact.
-2. [Core Concepts](01_core_concepts.md) — understand Entity, Value Object, typed ID, Repository, Unit of Work, Facade, Events and Adapters.
-3. [Your First CRM](02_first_crm.md) — build a small in-memory CRM with Contact, Organization, Relationship, Activity, Task and Timeline.
-4. [Contacts](03_contacts.md) — master the Contact aggregate, value objects, lifecycle, search and pagination.
-5. [Organizations](04_organizations.md) — master company/account identity, domains, addresses, lifecycle and search.
-6. [Relationships](05_relationships.md) — connect CRM entities with typed, directional and temporal relationships.
-7. [Tags & Custom Fields](06_tags_and_custom_fields.md) — extend CRM entities with reusable classification and versioned typed business data.
-8. [Activities](07_activities.md) — model customer interaction history, participants, references and temporal queries.
-9. [Tasks](08_tasks.md) — master actionable CRM work, priorities, due dates, lifecycle transitions and overdue queries.
-10. [Timeline](09_timeline.md) — understand immutable customer-history projections, replay safety, filters and transactional consistency.
-11. [Leads](10_leads.md) — model commercial qualification, explicit lifecycle transitions and portable Lead queries.
-12. [Opportunities](11_opportunities.md) — model commercial outcomes, Decimal-safe value, probability, lifecycle and portable Opportunity queries.
-13. [Pipelines](12_pipelines.md) — define ordered sales stages, transition policy, default probabilities and Opportunity movement.
-14. [Lead Conversion](13_lead_conversion.md) — convert qualified Leads atomically into exactly one Opportunity with idempotent retry semantics.
-15. [Email & Communications](14_email_and_communications.md) — send provider-neutral email, track delivery history, callbacks, idempotency and Timeline projection.
-16. [Domain Events](15_domain_events.md) — govern immutable versioned event envelopes, deterministic serialization, in-process subscriptions and causal tracing.
-17. [Webhooks](16_webhooks.md) — deliver committed DomainEvents externally with signed, idempotent, retryable HTTP delivery.
-18. [External Identities](17_external_identities.md) — map provider-owned record IDs to CRM entities with deterministic ownership, idempotent attach and privacy-aware events.
-19. [Importing Data](18_importing_data.md) — build provider-neutral Read → Map → Normalize → Validate → Deduplicate → Persist pipelines with structured and bounded reporting.
-20. [Deduplication](19_deduplication.md) — evaluate explainable candidate evidence with exact normalized signals, configurable scoring, conflicts and conservative auto-selection.
-21. [Contact Merge](20_contact_merge.md) — reconcile reviewed duplicate Contacts transactionally with explicit primary selection, conflict policy, linked-state reassignment, archival and minimized audit.
-22. [Exporting Data](21_exporting_data.md) — project authorized CRM state into deterministic CSV, JSON and JSONL records with explicit format, pagination and privacy boundaries.
-23. [Memory Adapter](22_memory_adapter.md) — understand the official in-process adapter, transaction snapshots, explicit commit/rollback, copy isolation, deterministic repository semantics and post-commit events.
-24. [SQLAlchemy](23_sqlalchemy.md) — map repository contracts onto relational persistence with explicit domain/ORM mappers, session-scoped repositories, shared transaction ownership and backend-safe errors.
-25. [PostgreSQL](24_postgresql.md) — qualify production-reference persistence with database constraints, concurrency-safe uniqueness, ownership foreign keys, exact numeric round trips and backend-neutral SQLSTATE translation.
-26. [Migrations](25_migrations.md) — evolve PostgreSQL safely through immutable Alembic revisions, drift checks, historical upgrades, controlled downgrade policy and installed-wheel migration qualification.
-27. [FastAPI](26_fastapi.md) — expose the CRM facade through Pydantic transport schemas, request-scoped context, command-oriented routers, stable HTTP errors, OpenAPI contracts and PostgreSQL-backed API qualification.
-28. [Django](27_django.md) — integrate Django ORM persistence, adapter-specific migrations, explicit transactions, ambient savepoints, admin operations and PostgreSQL qualification without making ORM models the domain.
-29. [Django REST Framework](28_django_rest_framework.md) — expose the bounded Django CRM surface through explicit serializers, facade-backed ViewSets, offset pagination, request context and privacy-safe error mapping.
-30. [Transactions & Unit of Work](29_transactions_and_unit_of_work.md) — unify explicit commit, rollback, multi-repository atomicity and post-commit events across Memory snapshots, SQLAlchemy Sessions and Django atomic/savepoint boundaries.
-31. [Context, Events & Audit](30_context_events_and_audit.md) — propagate actor, correlation and causation through immutable Domain Events, privacy-conscious Audit records, transactional Timeline projections and post-commit subscribers.
-32. [Error Handling](31_error_handling.md) — normalize domain, persistence and integration failures through stable codes, privacy-safe context, backend translation and predictable FastAPI/DRF HTTP contracts.
-33. [Security & Privacy](32_security_and_privacy.md) — harden sensitive diagnostics, secret-bearing representations, event/audit payloads, webhook integrity and destinations, destructive operations and merge safeguards.
-34. [Testing PyCRMKit Applications](33_testing_pycrmkit_applications.md) — build an application test pyramid from deterministic Memory workflows through adapter contracts, PostgreSQL/migrations, HTTP E2E and installed-artifact qualification.
-35. [Observability & Debugging](34_observability_and_debugging.md) — correlate production operations through CRM context, Audit, Domain Events, stable error codes, delivery attempts and privacy-safe application logs.
+1. [Getting Started](00_getting_started.md) - install PyCRMKit and create the first Contact.
+2. [Core Concepts](01_core_concepts.md) - understand Entity, Value Object, typed ID, Repository, Unit of Work, Facade, Events and Adapters.
+3. [Your First CRM](02_first_crm.md) - build a small in-memory CRM with Contact, Organization, Relationship, Activity, Task and Timeline.
+4. [Contacts](03_contacts.md) - master the Contact aggregate, value objects, lifecycle, search and pagination.
+5. [Organizations](04_organizations.md) - master company/account identity, domains, addresses, lifecycle and search.
+6. [Relationships](05_relationships.md) - connect CRM entities with typed, directional and temporal relationships.
+7. [Tags & Custom Fields](06_tags_and_custom_fields.md) - extend CRM entities with reusable classification and versioned typed business data.
+8. [Activities](07_activities.md) - model customer interaction history, participants, references and temporal queries.
+9. [Tasks](08_tasks.md) - master actionable CRM work, priorities, due dates, lifecycle transitions and overdue queries.
+10. [Timeline](09_timeline.md) - understand immutable customer-history projections, replay safety, filters and transactional consistency.
+11. [Leads](10_leads.md) - model commercial qualification, explicit lifecycle transitions and portable Lead queries.
+12. [Opportunities](11_opportunities.md) - model commercial outcomes, Decimal-safe value, probability, lifecycle and portable Opportunity queries.
+13. [Pipelines](12_pipelines.md) - define ordered sales stages, transition policy, default probabilities and Opportunity movement.
+14. [Lead Conversion](13_lead_conversion.md) - convert qualified Leads atomically into exactly one Opportunity with idempotent retry semantics.
+15. [Email & Communications](14_email_and_communications.md) - send provider-neutral email, track delivery history, callbacks, idempotency and Timeline projection.
+16. [Domain Events](15_domain_events.md) - govern immutable versioned event envelopes, deterministic serialization, in-process subscriptions and causal tracing.
+17. [Webhooks](16_webhooks.md) - deliver committed DomainEvents externally with signed, idempotent, retryable HTTP delivery.
+18. [External Identities](17_external_identities.md) - map provider-owned record IDs to CRM entities with deterministic ownership, idempotent attach and privacy-aware events.
+19. [Importing Data](18_importing_data.md) - build provider-neutral Read → Map → Normalize → Validate → Deduplicate → Persist pipelines with structured and bounded reporting.
+20. [Deduplication](19_deduplication.md) - evaluate explainable candidate evidence with exact normalized signals, configurable scoring, conflicts and conservative auto-selection.
+21. [Contact Merge](20_contact_merge.md) - reconcile reviewed duplicate Contacts transactionally with explicit primary selection, conflict policy, linked-state reassignment, archival and minimized audit.
+22. [Exporting Data](21_exporting_data.md) - project authorized CRM state into deterministic CSV, JSON and JSONL records with explicit format, pagination and privacy boundaries.
+23. [Memory Adapter](22_memory_adapter.md) - understand the official in-process adapter, transaction snapshots, explicit commit/rollback, copy isolation, deterministic repository semantics and post-commit events.
+24. [SQLAlchemy](23_sqlalchemy.md) - map repository contracts onto relational persistence with explicit domain/ORM mappers, session-scoped repositories, shared transaction ownership and backend-safe errors.
+25. [PostgreSQL](24_postgresql.md) - qualify production-reference persistence with database constraints, concurrency-safe uniqueness, ownership foreign keys, exact numeric round trips and backend-neutral SQLSTATE translation.
+26. [Migrations](25_migrations.md) - evolve PostgreSQL safely through immutable Alembic revisions, drift checks, historical upgrades, controlled downgrade policy and installed-wheel migration qualification.
+27. [FastAPI](26_fastapi.md) - expose the CRM facade through Pydantic transport schemas, request-scoped context, command-oriented routers, stable HTTP errors, OpenAPI contracts and PostgreSQL-backed API qualification.
+28. [Django](27_django.md) - integrate Django ORM persistence, adapter-specific migrations, explicit transactions, ambient savepoints, admin operations and PostgreSQL qualification without making ORM models the domain.
+29. [Django REST Framework](28_django_rest_framework.md) - expose the bounded Django CRM surface through explicit serializers, facade-backed ViewSets, offset pagination, request context and privacy-safe error mapping.
+30. [Transactions & Unit of Work](29_transactions_and_unit_of_work.md) - unify explicit commit, rollback, multi-repository atomicity and post-commit events across Memory snapshots, SQLAlchemy Sessions and Django atomic/savepoint boundaries.
+31. [Context, Events & Audit](30_context_events_and_audit.md) - propagate actor, correlation and causation through immutable Domain Events, privacy-conscious Audit records, transactional Timeline projections and post-commit subscribers.
+32. [Error Handling](31_error_handling.md) - normalize domain, persistence and integration failures through stable codes, privacy-safe context, backend translation and predictable FastAPI/DRF HTTP contracts.
+33. [Security & Privacy](32_security_and_privacy.md) - harden sensitive diagnostics, secret-bearing representations, event/audit payloads, webhook integrity and destinations, destructive operations and merge safeguards.
+34. [Testing PyCRMKit Applications](33_testing_pycrmkit_applications.md) - build an application test pyramid from deterministic Memory workflows through adapter contracts, PostgreSQL/migrations, HTTP E2E and installed-artifact qualification.
+35. [Observability & Debugging](34_observability_and_debugging.md) - correlate production operations through CRM context, Audit, Domain Events, stable error codes, delivery attempts and privacy-safe application logs.
 
 ## LEVEL 1 complete
 
@@ -190,4 +190,4 @@ These guides target the stable V1 contract. Examples should remain executable on
 PyCRMKit 1.0.x. When a future version changes a learning path, the guide should say
 which version introduced the change instead of silently rewriting historical behavior.
 
-Start with [00 — Getting Started](00_getting_started.md).
+Start with [00 - Getting Started](00_getting_started.md).

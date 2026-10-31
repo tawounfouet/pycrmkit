@@ -100,7 +100,7 @@ def tours_command(
     total_duration = time.perf_counter() - total_start
 
     # Scorecard
-    table = Table(title="PyCRMKit Feature Tours — Execution Scorecard", border_style="dim")
+    table = Table(title="PyCRMKit Feature Tours - Execution Scorecard", border_style="dim")
     table.add_column("Script", style="bold cyan")
     table.add_column("Status", justify="center")
     table.add_column("Duration", justify="right", style="dim")

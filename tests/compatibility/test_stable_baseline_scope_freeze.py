@@ -77,7 +77,7 @@ def test_inventory_identifies_current_history_mixed_and_rc_workflows() -> None:
 def test_rc_publication_evidence_remains_historical_not_stable_claim() -> None:
     rc_evidence = RC_RELEASE.read_text(encoding="utf-8")
     freeze = BASELINE.read_text(encoding="utf-8")
-    assert "PUBLISHED — GITHUB PRERELEASE" in rc_evidence
+    assert "PUBLISHED - GITHUB PRERELEASE" in rc_evidence
     assert RC_SOURCE in rc_evidence
     assert "27/27" in rc_evidence
     assert "1.1.0" in freeze

@@ -1,4 +1,4 @@
-# WhatsApp Dialog Processor — Detailed Workflow & Architecture
+# WhatsApp Dialog Processor - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Transformation Conversationnelle**  
 > **Skill Associé** : [`whatsapp-dialog-processor`](SKILL.md)  

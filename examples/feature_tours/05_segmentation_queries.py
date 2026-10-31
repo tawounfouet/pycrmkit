@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PyCRMKit 1.2.0 — Feature Tour 05: Segmentation & Saved Queries.
+"""PyCRMKit 1.2.0 - Feature Tour 05: Segmentation & Saved Queries.
 
 Demonstrates and verifies:
 - Creation and population of Contacts and Organizations

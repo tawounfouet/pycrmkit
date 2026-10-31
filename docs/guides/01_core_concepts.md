@@ -1,4 +1,4 @@
-# 01 — Core Concepts
+# 01 - Core Concepts
 
 > Applies to PyCRMKit 1.0.x. Baseline: 1.0.0.
 
@@ -409,5 +409,5 @@ Adapter           infrastructure implementation
 
 ## Next
 
-Continue with [02 — Your First CRM](02_first_crm.md). You will use these concepts
+Continue with [02 - Your First CRM](02_first_crm.md). You will use these concepts
 together in one small but complete customer workflow.

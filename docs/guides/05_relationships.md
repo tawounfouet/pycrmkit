@@ -1,4 +1,4 @@
-# 05 — Relationships
+# 05 - Relationships
 
 > Applies to PyCRMKit 1.0.x. Baseline: 1.0.0.
 
@@ -980,7 +980,7 @@ You can now explain and use:
 
 ## Next
 
-The next planned chapter is **06 — Tags & Custom Fields**.
+The next planned chapter is **06 - Tags & Custom Fields**.
 
 That chapter finishes LEVEL 1 by introducing extensible CRM classification and
 business-specific data without modifying the Contact, Organization or

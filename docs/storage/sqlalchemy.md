@@ -185,7 +185,7 @@ alembic current
 alembic check
 ```
 
-The current development head is revision `0006 — Campaign persistence`.
+The current development head is revision `0006 - Campaign persistence`.
 
 `Base.metadata.create_all(...)` remains useful for tests and local
 experimentation, but it is no longer the production schema lifecycle.
@@ -248,7 +248,7 @@ wheel.
 `0.6.0` promotes that qualified behavior to the stable persistence contract
 without changing the migration head or persistence semantics.
 
-The next milestone is **`0.7.0 — FastAPI Integration`**.
+The next milestone is **`0.7.0 - FastAPI Integration`**.
 
 
 ## 1.1 Segmentation persistence

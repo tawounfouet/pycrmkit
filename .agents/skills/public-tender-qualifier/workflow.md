@@ -1,4 +1,4 @@
-# Public Tender Qualifier — Detailed Workflow & Architecture
+# Public Tender Qualifier - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Commande Publique**  
 > **Skill Associé** : [`public-tender-qualifier`](SKILL.md)  

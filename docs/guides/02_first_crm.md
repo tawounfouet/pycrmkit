@@ -1,4 +1,4 @@
-# 02 — Your First CRM
+# 02 - Your First CRM
 
 > Applies to PyCRMKit 1.0.x. Baseline: 1.0.0.
 

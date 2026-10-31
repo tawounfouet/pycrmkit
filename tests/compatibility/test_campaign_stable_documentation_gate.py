@@ -44,7 +44,7 @@ def test_candidate_package_and_release_docs_remain_prepared() -> None:
 
 def test_freeze_provenance_and_navigation() -> None:
     rc = _read("docs/releases/1.2.0rc1.md")
-    assert "**PUBLISHED — GITHUB PRERELEASE**" in rc
+    assert "**PUBLISHED - GITHUB PRERELEASE**" in rc
     assert "5113cedb50750185e457505dfcca5519ce3a62bd" in rc
     assert "a12cc02f854873d7d7f4f095d3eda210e6d2d35bd86cc4477deb3fef2391b59f" in rc
     frozen = _read("tests/compatibility/public_api_v1_2_campaign_candidate.json")

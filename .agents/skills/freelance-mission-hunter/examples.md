@@ -1,4 +1,4 @@
-# Freelance Mission Hunter — Practical Examples & Recipes
+# Freelance Mission Hunter - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`freelance-mission-hunter`](SKILL.md)  

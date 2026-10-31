@@ -1,4 +1,4 @@
-# Student Career Launch — Practical Examples & Recipes
+# Student Career Launch - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`student-career-launch`](SKILL.md)  

@@ -1,4 +1,4 @@
-# Alumni Directory Activation — Practical Examples & Recipes
+# Alumni Directory Activation - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Recettes SDK**  
 > **Skill Associé** : [`alumni-directory-activation`](SKILL.md)  

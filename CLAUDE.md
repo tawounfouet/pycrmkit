@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-# PyCRMKit — Claude Code & Interactive Agent Instructions
+# PyCRMKit - Claude Code & Interactive Agent Instructions
 
 This file contains operational instructions for Claude Code, Antigravity, and interactive coding sessions.
 It is intentionally a thin overlay. The canonical repository-wide instructions live in:

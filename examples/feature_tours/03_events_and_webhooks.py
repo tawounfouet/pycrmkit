@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PyCRMKit 1.2.0 — Feature Tour 03: Domain Events, Webhooks & Communications.
+"""PyCRMKit 1.2.0 - Feature Tour 03: Domain Events, Webhooks & Communications.
 
 Demonstrates and verifies:
 - In-process Domain Event Bus subscriptions & correlation tracking

@@ -118,4 +118,4 @@ dedup scoring
 merge execution
 ```
 
-The next milestone is `0.9.0b2 — Deduplication`.
+The next milestone is `0.9.0b2 - Deduplication`.

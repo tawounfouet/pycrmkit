@@ -106,7 +106,7 @@ Those concerns remain outside PyCRMKit core.
 Membership, captured Segment audience and communication linkage were delivered in earlier 1.2 milestones. Their optional HTTP and file DataOps integrations are part of the `1.2.0b3` beta candidate.
 
 
-## Audience — 1.2.0a2
+## Audience - 1.2.0a2
 
 Campaign audience is intentionally separated into direct membership and Segment
 source provenance.
@@ -173,7 +173,7 @@ crm.campaigns.contains(campaign.id, reference)
 The Memory adapter is the semantic reference for these contracts in 1.2.0a2.
 
 
-## Attribution & communication linkage — 1.2.0a3
+## Attribution & communication linkage - 1.2.0a3
 
 Campaign attribution remains reference-oriented rather than analytical.
 
@@ -206,7 +206,7 @@ by the Communication domain and provider adapters.
 
 
 
-## SQLAlchemy/PostgreSQL persistence — 1.2.0b1
+## SQLAlchemy/PostgreSQL persistence - 1.2.0b1
 
 The public facade does not change when switching from Memory to SQLAlchemy.
 
@@ -253,7 +253,7 @@ references to Segment, CommunicationRecord, Contact, Organization, Lead and
 Opportunity remain reference-only rather than database foreign keys.
 
 
-## Django ORM Campaign persistence — 1.2.0b2
+## Django ORM Campaign persistence - 1.2.0b2
 
 The existing headless `crm.campaigns` facade runs with
 `DjangoTransactionBridge`, backed by typed codecs and native Campaign

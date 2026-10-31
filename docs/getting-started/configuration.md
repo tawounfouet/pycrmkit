@@ -34,7 +34,7 @@ When executing CLI commands or initializing storage backends, PyCRMKit resolves 
 Create a `pycrm.yml` file at the root of your project or in `~/.pycrmkit/pycrm.yml`:
 
 ```yaml
-# pycrm.yml — PyCRMKit Declarative Configuration
+# pycrm.yml - PyCRMKit Declarative Configuration
 version: "1.0"
 
 # Operator & Audit Context

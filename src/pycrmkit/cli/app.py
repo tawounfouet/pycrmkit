@@ -20,7 +20,7 @@ from pycrmkit.cli.console import console
 
 app = typer.Typer(
     name="pck",
-    help="PyCRMKit — Headless CRM building blocks for Python applications.",
+    help="PyCRMKit - Headless CRM building blocks for Python applications.",
     no_args_is_help=True,
     add_completion=False,
     rich_markup_mode="rich",

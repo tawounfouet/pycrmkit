@@ -5,7 +5,7 @@ This page records the currently qualified compatibility baseline for PyCRMKit.
 ## Current stable line
 
 ```text
-PyCRMKit 0.9.0 — Data Operations Stable
+PyCRMKit 0.9.0 - Data Operations Stable
 ```
 
 The previously stabilized Django integration remains compatibility-governed

@@ -1,4 +1,4 @@
-# 03 — Contacts
+# 03 - Contacts
 
 > Applies to PyCRMKit 1.0.x. Baseline: 1.0.0.
 
@@ -1108,7 +1108,7 @@ You can now explain and use:
 
 ## Next
 
-The next planned chapter is **04 — Organizations**.
+The next planned chapter is **04 - Organizations**.
 
 Organizations add the company/account side of the CRM model. Chapter 05 will
 then introduce Relationships to connect Contacts and Organizations explicitly

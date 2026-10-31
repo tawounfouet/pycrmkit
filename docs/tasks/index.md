@@ -144,7 +144,7 @@ task.reopened
 Audit entries are committed atomically with task state. The facade records changed field names rather than copying task titles/descriptions into audit metadata by default.
 
 
-## Sales work queues — 1.1.0a3
+## Sales work queues - 1.1.0a3
 
 ~~~python
 crm.tasks.overdue(assignee_id="seller-7")

@@ -1,4 +1,4 @@
-# 04 — Organizations
+# 04 - Organizations
 
 > Applies to PyCRMKit 1.0.x. Baseline: 1.0.0.
 
@@ -1079,7 +1079,7 @@ You can now explain and use:
 
 ## Next
 
-The next planned chapter is **05 — Relationships**.
+The next planned chapter is **05 - Relationships**.
 
 That chapter connects the two aggregates you now understand:
 

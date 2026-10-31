@@ -242,5 +242,5 @@ application-level integrations.
 The next V1 milestone is:
 
 ```text
-1.0.0b3 — Compatibility Matrix
+1.0.0b3 - Compatibility Matrix
 ```

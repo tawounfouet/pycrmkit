@@ -1,4 +1,4 @@
-# 00 — Getting Started
+# 00 - Getting Started
 
 > Applies to PyCRMKit 1.0.x. Baseline: 1.0.0.
 
@@ -219,6 +219,6 @@ You can now:
 
 ## Next
 
-Continue with [01 — Core Concepts](01_core_concepts.md) before adding more CRM
+Continue with [01 - Core Concepts](01_core_concepts.md) before adding more CRM
 objects. That chapter explains the architecture behind the small amount of code
 you just wrote.

@@ -91,13 +91,13 @@ pck migrate --help    # Manage database schema migrations via Alembic
 
 Real-world architectural blueprints with transactional code patterns, Mermaid flows, and ASCII schemas:
 
-- [Web Agency Client Lifecycle](docs/analysis/web-agency-client-lifecycle.md) — Commercial avant-vente, devis, delivery & ongoing MCO contracts.
-- [WhatsApp Dialog Processor](docs/analysis/whatsapp-and-referral-crm-analysis.md) — Conversational intake, phone identity (E.164) & entity extraction.
-- [Freelance Mission Hunter](docs/analysis/freelance-mission-hunt-and-kpis.md) — Personal ATS, application tracking & J+5 relances.
-- [Public Procurement & Tender Qualification](docs/analysis/public-tenders-and-rfp-bid-management.md) — Go/No-Go scorecard, GME consortia & J-1 16h00 DLRO deadline lock.
-- [Student Career Launch](docs/analysis/student-internship-alternance-job-hunt.md) — Junior & student job hunt, interview notes & academic exports.
-- [Non-Profit Member Onboarding](docs/analysis/association-member-lifecycle-and-onboarding.md) — Multi-channel fees (HelloAsso/virement/PayPal), M365 IT tasks & annual renewal campaigns (*Diversité Alternative*).
-- [Alumni Directory & Network Activation](docs/analysis/alumni-directory-and-network-activation.md) — Cohort ambassadors, Google Forms import, tokenized invite & Django account activation.
+- [Web Agency Client Lifecycle](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/web-agency-client-lifecycle.md) - Commercial avant-vente, devis, delivery & ongoing MCO contracts.
+- [WhatsApp Dialog Processor](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/whatsapp-and-referral-crm-analysis.md) - Conversational intake, phone identity (E.164) & entity extraction.
+- [Freelance Mission Hunter](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/freelance-mission-hunt-and-kpis.md) - Personal ATS, application tracking & J+5 relances.
+- [Public Procurement & Tender Qualification](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/public-tenders-and-rfp-bid-management.md) - Go/No-Go scorecard, GME consortia & J-1 16h00 DLRO deadline lock.
+- [Student Career Launch](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/student-internship-alternance-job-hunt.md) - Junior & student job hunt, interview notes & academic exports.
+- [Non-Profit Member Onboarding](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/association-member-lifecycle-and-onboarding.md) - Multi-channel fees (HelloAsso/virement/PayPal), M365 IT tasks & annual renewal campaigns (*Diversité Alternative*).
+- [Alumni Directory & Network Activation](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/alumni-directory-and-network-activation.md) - Cohort ambassadors, Google Forms import, tokenized invite & Django account activation.
 
 ## Autonomous Agent Ecosystem (`.agents/`)
 
@@ -118,9 +118,9 @@ The core has **no mandatory third-party runtime dependencies**. SQLAlchemy, Post
 
 ## Documentation
 
-- [Quickstart](docs/getting-started/quickstart.md) · [Guides](docs/guides/index.md) · [Blueprints & Analysis](docs/analysis/web-agency-client-lifecycle.md)
-- [Campaigns](docs/campaigns/index.md) · [Compatibility](docs/reference/1.2.0-support-and-compatibility.md) · [Agent Ecosystem](.agents/AGENTS.md)
-- [Releases](https://github.com/tawounfouet/pycrmkit/releases) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+- [Quickstart](https://github.com/tawounfouet/pycrmkit/blob/main/docs/getting-started/quickstart.md) · [Guides](https://github.com/tawounfouet/pycrmkit/blob/main/docs/guides/index.md) · [Blueprints & Analysis](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/web-agency-client-lifecycle.md)
+- [Campaigns](https://github.com/tawounfouet/pycrmkit/blob/main/docs/campaigns/index.md) · [Compatibility](https://github.com/tawounfouet/pycrmkit/blob/main/docs/reference/1.2.0-support-and-compatibility.md) · [Agent Ecosystem](https://github.com/tawounfouet/pycrmkit/blob/main/.agents/AGENTS.md)
+- [Releases](https://github.com/tawounfouet/pycrmkit/releases) · [Changelog](https://github.com/tawounfouet/pycrmkit/blob/main/CHANGELOG.md) · [Contributing](https://github.com/tawounfouet/pycrmkit/blob/main/CONTRIBUTING.md)
 
 **Release availability:** Check the GitHub Releases page and PyPI independently. A version present in source control is not necessarily published on either platform.
 

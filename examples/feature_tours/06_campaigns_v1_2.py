@@ -91,7 +91,7 @@ def run_tour() -> dict[str, object]:
     # Valid update with expected_revision=1 -> revision becomes 2
     updated_campaign = crm.campaigns.update(
         campaign.id,
-        CampaignUpdate(name="Tech Summit Europe 2026 — Official Launch"),
+        CampaignUpdate(name="Tech Summit Europe 2026 - Official Launch"),
         expected_revision=1,
     )
     assert updated_campaign.revision == 2

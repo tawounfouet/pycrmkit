@@ -1,4 +1,4 @@
-# Student Career Launch — Detailed Workflow & Architecture
+# Student Career Launch - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & ATS Étudiant / Alternance**  
 > **Skill Associé** : [`student-career-launch`](SKILL.md)  

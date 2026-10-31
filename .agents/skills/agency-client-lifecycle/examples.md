@@ -1,4 +1,4 @@
-# Agency Client Lifecycle — Practical Examples & Recipes
+# Agency Client Lifecycle - Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`agency-client-lifecycle`](SKILL.md)  

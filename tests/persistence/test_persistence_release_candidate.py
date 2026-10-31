@@ -131,7 +131,7 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
         correlation_id="corr-persistence-rc",
     )
 
-    # 0.1 — CRM Core
+    # 0.1 - CRM Core
     contact = crm.contacts.create(
         first_name="Ada",
         last_name="Lovelace",
@@ -168,7 +168,7 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
         metadata={"portal": "eu"},
     )
 
-    # 0.2 — Activity, Task and Timeline
+    # 0.2 - Activity, Task and Timeline
     activity = crm.activities.log(
         type="meeting",
         subject="Persistence RC discovery",
@@ -193,7 +193,7 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
     task = crm.tasks.complete(task.id)
     assert task.status is TaskStatus.COMPLETED
 
-    # 0.3 — Sales
+    # 0.3 - Sales
     _define_pipeline(crm)
     lead = crm.leads.create(
         contact_id=contact.id,
@@ -216,7 +216,7 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
         )
     assert opportunity.status is OpportunityStatus.WON
 
-    # 0.4 — Communication
+    # 0.4 - Communication
     record = crm.email.send(
         to=(
             CommunicationRecipient(
@@ -243,7 +243,7 @@ def test_stable_0_1_to_0_5_surface_round_trips_through_postgresql(
         external_event_id="evt-persistence-rc-delivered",
     )
 
-    # 0.5 — Eventing & Webhooks
+    # 0.5 - Eventing & Webhooks
     observed: list[DomainEvent] = []
     crm.events.subscribe("contact.created", observed.append)
     subscription = crm.webhooks.register(

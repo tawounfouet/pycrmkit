@@ -59,7 +59,7 @@
     "byte_reproducible": true
   },
   "promotion_ready": true,
-  "next_milestone": "1.0.0 — Production Stable",
+  "next_milestone": "1.0.0 - Production Stable",
   "first_candidate_build": {
     "workflow_run_id": 36327901778,
     "wheel_sha256": "3288db9571d39d83c0819af02d8b91eb991be94be57e1d60ba3bd0c3d1a27c41",

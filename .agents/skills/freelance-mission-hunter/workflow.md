@@ -1,4 +1,4 @@
-# Freelance Mission Hunter — Detailed Workflow & Architecture
+# Freelance Mission Hunter - Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Entonnoir de Chasse Freelance**  
 > **Skill Associé** : [`freelance-mission-hunter`](SKILL.md)  

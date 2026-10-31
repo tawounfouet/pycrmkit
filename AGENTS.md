@@ -1,6 +1,6 @@
 # AGENTS.md
 
-# PyCRMKit — Repository Instructions for Coding Agents
+# PyCRMKit - Repository Instructions for Coding Agents
 
 This file defines the canonical repository-level instructions for AI coding agents and automated contributors working on PyCRMKit.
 It applies to the entire repository unless a more specific `AGENTS.md` exists in a subdirectory.

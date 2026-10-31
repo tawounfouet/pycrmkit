@@ -80,7 +80,7 @@ def version_command(
 
     # Rich formatted rendering
     banner = (
-        f"[bold blue]PyCRMKit[/bold blue] [bold green]v{__version__}[/bold green] — "
+        f"[bold blue]PyCRMKit[/bold blue] [bold green]v{__version__}[/bold green] - "
         "Headless CRM Building Blocks for Python"
     )
     console.print(Panel(banner, border_style="blue"))

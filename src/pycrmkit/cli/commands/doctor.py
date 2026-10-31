@@ -168,7 +168,7 @@ def doctor_command(
     status_text = "SYSTEM HEALTHY" if overall_healthy else "ISSUES DETECTED"
     console.print(
         Panel(
-            f"[{status_style}]PyCRMKit Doctor Diagnostic — {status_text}[/{status_style}]",
+            f"[{status_style}]PyCRMKit Doctor Diagnostic - {status_text}[/{status_style}]",
             border_style="blue",
         )
     )

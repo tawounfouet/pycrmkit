@@ -168,12 +168,12 @@ def verify(state_path: Path) -> None:
 
     updated = client.patch(
         f"/crm/contacts/{state['contact_id']}/",
-        {"display_name": "Ada Lovelace — persisted"},
+        {"display_name": "Ada Lovelace - persisted"},
         format="json",
         HTTP_X_CORRELATION_ID="django-e2e-verify",
     )
     _expect(updated, 200)
-    assert updated.data["display_name"] == "Ada Lovelace — persisted"
+    assert updated.data["display_name"] == "Ada Lovelace - persisted"
 
     ended = client.post(f"/crm/relationships/{state['relationship_id']}/end/")
     _expect(ended, 200)

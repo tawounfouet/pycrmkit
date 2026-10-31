@@ -2,9 +2,9 @@
 
 PyCRMKit is a modular, headless Python CRM domain framework.
 
-The current published stable version is **`1.1.0 — Segmentation & Sales Task Foundation`**.  
-The latest published GitHub prerelease is **`1.2.0rc1 — Campaign Production Qualification`**.  
-The next `1.2.0 — Campaign Metadata Stable` is **PREPARED / NOT PUBLISHED**; the library source version is still `1.2.0rc1`. Read the [draft release notes](releases/1.2.0.md), [support matrix](reference/1.2.0-support-and-compatibility.md) and [upgrade guide](getting-started/1.2.0-upgrade.md). This draft does not establish PyPI availability.
+The current published stable version is **`1.1.0 - Segmentation & Sales Task Foundation`**.  
+The latest published GitHub prerelease is **`1.2.0rc1 - Campaign Production Qualification`**.  
+The next `1.2.0 - Campaign Metadata Stable` is **PREPARED / NOT PUBLISHED**; the library source version is still `1.2.0rc1`. Read the [draft release notes](releases/1.2.0.md), [support matrix](reference/1.2.0-support-and-compatibility.md) and [upgrade guide](getting-started/1.2.0-upgrade.md). This draft does not establish PyPI availability.
 The stable `0.1`–`0.5` CRM Core, Activity/Timeline, Sales, Communication,
 and Eventing/Webhooks contracts are compatibility-governed:
 

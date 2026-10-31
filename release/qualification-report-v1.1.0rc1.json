@@ -20,5 +20,5 @@
   },
   "sqlalchemy_migration_head": "0005",
   "django_migration_head": "0003_segmentation",
-  "next_milestone": "1.1.0 — Segmentation & Sales Task Foundation"
+  "next_milestone": "1.1.0 - Segmentation & Sales Task Foundation"
 }

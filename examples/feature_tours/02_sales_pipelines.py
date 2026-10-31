@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PyCRMKit 1.2.0 — Feature Tour 02: Sales Pipelines & Lead Conversion.
+"""PyCRMKit 1.2.0 - Feature Tour 02: Sales Pipelines & Lead Conversion.
 
 Demonstrates and verifies:
 - Lead capture and qualification
