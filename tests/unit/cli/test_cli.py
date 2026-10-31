@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from unittest.mock import patch
 
 from pycrmkit import __version__
@@ -28,7 +29,12 @@ def test_cli_help(capsys) -> None:
     code = main(["--help"], prog_name="pck")
     assert code == int(ExitCode.SUCCESS)
     captured = capsys.readouterr()
-    assert "Usage: pck" in captured.out or "Usage: pck" in captured.err
+    # Rich/Typer may colorize Usage and the executable separately.
+    plain_help = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", captured.out + captured.err)
+    normalized = " ".join(plain_help.split())
+    assert "Usage: pck" in normalized
+    for command in ("version", "doctor", "contacts", "seed"):
+        assert command in normalized
 
 
 def test_cli_version_json(capsys) -> None:
@@ -68,7 +74,7 @@ def test_missing_dependency_guard(capsys) -> None:
 
 
 def test_cli_seed_and_dashboard(tmp_path, monkeypatch, capsys) -> None:
-    test_state_file = tmp_path / "cli_test_state.pickle"
+    test_state_file = tmp_path / "cli_test_state.json"
     monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(test_state_file))
 
     # 1. Seed demo data
@@ -90,7 +96,7 @@ def test_cli_seed_and_dashboard(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_contacts_crud(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "contacts_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "contacts_test.json"))
 
     # Create contact
     code = main(
@@ -111,7 +117,7 @@ def test_cli_contacts_crud(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_orgs_crud(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "orgs_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "orgs_test.json"))
 
     # Create org
     code = main(["orgs", "create", "DARPA Research Lab", "--trade-name", "DARPA"], prog_name="pck")
@@ -128,7 +134,7 @@ def test_cli_orgs_crud(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_sales_and_opportunities(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "sales_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "sales_test.json"))
     main(["seed"], prog_name="pck")
     capsys.readouterr()
 
@@ -147,7 +153,7 @@ def test_cli_sales_and_opportunities(tmp_path, monkeypatch, capsys) -> None:
 
 def test_cli_campaigns_and_tasks(tmp_path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("COLUMNS", "160")
-    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "camps_tasks_test.pickle"))
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(tmp_path / "camps_tasks_test.json"))
     main(["seed"], prog_name="pck")
     capsys.readouterr()
 
@@ -197,3 +203,82 @@ def test_cli_campaigns_and_tasks(tmp_path, monkeypatch, capsys) -> None:
     assert code == int(ExitCode.SUCCESS)
     captured = capsys.readouterr()
     assert "CRM State Successfully Cleared" in captured.out
+
+
+def test_cli_rejects_invalid_explicit_yaml(tmp_path, monkeypatch, capsys) -> None:
+    config = tmp_path / "invalid.yml"
+    config.write_text("database: [unclosed\n", encoding="utf-8")
+    monkeypatch.setenv("PYCRMKIT_CONFIG", str(config))
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    assert main(["version", "--json"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert "Configuration error:" in capsys.readouterr().err
+
+
+def test_seed_refuses_implicit_persistent_database(tmp_path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/not_a_test_db")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    assert main(["seed"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert "database is configured" in capsys.readouterr().out
+    assert main(["seed", "--database"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert "require --database --yes" in capsys.readouterr().out
+    assert not (tmp_path / "cli_state.json").exists()
+
+
+def test_dashboard_demo_never_contacts_configured_database(tmp_path, monkeypatch, capsys) -> None:
+    state_file = tmp_path / "should_not_exist.json"
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(state_file))
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/unreachable_db")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    code = main(["dashboard", "--demo"], prog_name="pck")
+    assert code == int(ExitCode.SUCCESS)
+    out = capsys.readouterr().out
+    # Rich can wrap the mode label at different terminal widths.
+    assert "Ephemeral" in out
+    assert not state_file.exists()
+
+
+def test_seed_rejects_production_profile_without_database_access(monkeypatch, capsys) -> None:
+    monkeypatch.setenv("PYCRMKIT_ENV", "production")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/production")
+    assert main(["seed", "--database", "--yes"], prog_name="pck") == int(
+        ExitCode.VALIDATION_ERROR
+    )
+    assert "prohibited in production" in capsys.readouterr().out
+
+
+def test_doctor_rejects_unreachable_explicit_backend_without_secret_disclosure(
+    monkeypatch, capsys
+) -> None:
+    secret = "test-password"
+    url = f"postgresql+psycopg://testuser:{secret}@127.0.0.1:1/missing"
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", url)
+    monkeypatch.delenv("PYCRMKIT_CONFIG", raising=False)
+    code = main(["doctor", "--json"], prog_name="pck")
+    output = capsys.readouterr()
+    assert code == int(ExitCode.GENERAL_ERROR)
+    data = json.loads(output.out)
+    assert data["status"] == "unhealthy"
+    assert any(
+        check["name"] == "Database Live Ping" and check["status"] == "FAIL"
+        for check in data["checks"]
+    )
+    assert secret not in output.out + output.err
+    assert "testuser" not in output.out + output.err
+
+
+def test_cli_never_prints_credentials_on_database_connection_failure(
+    monkeypatch, capsys
+) -> None:
+    secret = "demo-password"
+    monkeypatch.setenv(
+        "PYCRMKIT_DATABASE_URL",
+        f"postgresql+psycopg://ci_operator:{secret}@127.0.0.1:1/unreachable",
+    )
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.delenv("PYCRMKIT_CONFIG", raising=False)
+    assert main(["contacts", "list"], prog_name="pck") != int(ExitCode.SUCCESS)
+    out = capsys.readouterr()
+    assert secret not in out.out + out.err
+    assert "ci_operator" not in out.out + out.err

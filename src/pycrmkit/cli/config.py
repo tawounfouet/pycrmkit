@@ -17,6 +17,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+
+class CLIConfigurationError(ValueError):
+    """Configuration was supplied but cannot be safely interpreted."""
+
+
 DEFAULT_CONFIG_FILES: tuple[str, ...] = (
     "pycrm.yml",
     "pycrm.yaml",
@@ -32,7 +37,7 @@ _PROFILE_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 @dataclass
 class DatabaseConfig:
-    backend: str = "postgresql"
+    backend: str = "memory"
     url: str | None = None
     url_env: str = "DATABASE_URL"
     pool_size: int = 5
@@ -77,7 +82,7 @@ class CLIConfig:
 def _substitute_env_vars(text: str) -> str:
     """Replace ${VAR} or ${VAR:-default} with environment values."""
 
-    def _replacer(match: re.Match) -> str:
+    def _replacer(match: re.Match[str]) -> str:
         var_name = match.group(1)
         default_val = match.group(2) if match.group(2) is not None else ""
         return os.environ.get(var_name, default_val)
@@ -193,13 +198,14 @@ def find_config_file(
         p = Path(explicit_path)
         if p.is_file():
             return p.resolve()
-        return None
+        raise CLIConfigurationError(f"Explicit configuration file not found: {p.name}")
 
     env_config = os.getenv("PYCRMKIT_CONFIG") or os.getenv("CRM_CONFIG")
     if env_config:
         p = Path(env_config.strip())
         if p.is_file():
             return p.resolve()
+        raise CLIConfigurationError(f"Configured YAML file not found: {p.name}")
 
     base = cwd or Path.cwd()
     profile = os.getenv("PYCRMKIT_ENV") or os.getenv("CRM_ENV")
@@ -236,31 +242,51 @@ def load_yaml_config(
 ) -> CLIConfig:
     """Load and parse YAML configuration into a structured CLIConfig object."""
     target = config_path or find_config_file(explicit_path=explicit_path)
-    if target is None or not target.is_file():
+    if target is None:
         return CLIConfig(source="default")
+    if not target.is_file():
+        raise CLIConfigurationError(f"Configured YAML file not found: {target.name}")
 
     try:
         import yaml
     except ImportError:
-        # Fallback if PyYAML not installed: report file found but unparsed
-        return CLIConfig(source="unparsed", config_path=target)
+        raise CLIConfigurationError("PyYAML is required to read an existing CLI configuration") from None
 
     try:
         with open(target, encoding="utf-8") as f:
             raw = yaml.safe_load(f)
-    except Exception:
-        return CLIConfig(source="error", config_path=target)
+    except (OSError, yaml.YAMLError):
+        raise CLIConfigurationError(f"Invalid or unreadable YAML configuration: {target.name}") from None
 
     if not isinstance(raw, dict):
-        return CLIConfig(source="empty", config_path=target)
+        raise CLIConfigurationError(f"YAML configuration must be a mapping: {target.name}")
 
     expanded = _deep_substitute(raw)
 
-    runtime_data = expanded.get("runtime", {}) or {}
-    database_data = expanded.get("database", {}) or {}
-    integrations_data = expanded.get("integrations", {}) or {}
-    email_data = integrations_data.get("email", {}) or {}
-    webhooks_data = integrations_data.get("webhooks", {}) or {}
+    def _section(value: Any, name: str) -> dict[str, Any]:
+        if value is None:
+            return {}
+        if not isinstance(value, dict) or not all(isinstance(k, str) for k in value):
+            raise CLIConfigurationError(f"YAML section {name} must be a mapping")
+        return value
+
+    runtime_data = _section(expanded.get("runtime"), "runtime")
+    database_data = _section(expanded.get("database"), "database")
+    integrations_data = _section(expanded.get("integrations"), "integrations")
+    email_data = _section(integrations_data.get("email"), "integrations.email")
+    webhooks_data = _section(integrations_data.get("webhooks"), "integrations.webhooks")
+    backend = database_data.get("backend", "memory")
+    if not isinstance(backend, str) or backend not in ("memory", "local", "postgresql", "sqlite"):
+        raise CLIConfigurationError("Unsupported database backend in YAML configuration")
+    raw_url = database_data.get("url")
+    if raw_url is not None and (not isinstance(raw_url, str) or not raw_url.strip()):
+        raise CLIConfigurationError("database.url must be a nonempty string")
+    for key in ("pool_size", "max_overflow"):
+        value = database_data.get(key, 5 if key == "pool_size" else 10)
+        if type(value) is not int or value < 0:
+            raise CLIConfigurationError(f"database.{key} must be a nonnegative integer")
+    if type(database_data.get("echo", False)) is not bool:
+        raise CLIConfigurationError("database.echo must be a boolean")
 
     runtime = RuntimeConfig(
         actor_id=runtime_data.get("actor_id", "cli-operator"),
@@ -268,7 +294,7 @@ def load_yaml_config(
     )
 
     database = DatabaseConfig(
-        backend=database_data.get("backend", "postgresql"),
+        backend=backend,
         url=database_data.get("url"),
         url_env=database_data.get("url_env", "DATABASE_URL"),
         pool_size=int(database_data.get("pool_size", 5)),
@@ -321,6 +347,8 @@ def resolve_database_url() -> tuple[str | None, str]:
             return cfg.database.url, f"config:{cfg.config_path.name if cfg.config_path else 'pycrm.yml'}"
         if cfg.database.url_env and os.getenv(cfg.database.url_env):
             return os.getenv(cfg.database.url_env), f"env:{cfg.database.url_env}"
+        if cfg.database.backend not in ("memory", "local"):
+            raise CLIConfigurationError("Persistent database backend requested without a database URL")
 
     return None, "default:in-memory"
 

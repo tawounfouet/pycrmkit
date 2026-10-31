@@ -28,12 +28,9 @@ def _bootstrap_environment() -> None:
     from pycrmkit.cli.config import load_local_dotenv, load_yaml_config
 
     load_local_dotenv()
-    cfg = load_yaml_config()
-    if cfg.source == "file":
-        if cfg.database.url and "DATABASE_URL" not in os.environ and "PYCRMKIT_DATABASE_URL" not in os.environ:
-            os.environ["DATABASE_URL"] = cfg.database.url
-        if cfg.runtime.actor_id and "CRM_ACTOR_ID" not in os.environ:
-            os.environ["CRM_ACTOR_ID"] = cfg.runtime.actor_id
+    # Validate YAML without polluting the process environment. Backend and actor
+    # resolution already consult the file using the correct precedence.
+    load_yaml_config()
 
 
 def _detect_prog_name(argv: Sequence[str] | None = None) -> str:
@@ -60,8 +57,14 @@ def main(argv: Sequence[str] | None = None, prog_name: str | None = None) -> int
         )
         return MISSING_DEPENDENCY_EXIT_CODE
 
-    # Load local environment and declarative YAML configuration
-    _bootstrap_environment()
+    # A declared but invalid configuration is an error, never an implicit local fallback.
+    from pycrmkit.cli.config import CLIConfigurationError
+
+    try:
+        _bootstrap_environment()
+    except CLIConfigurationError as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return int(ExitCode.VALIDATION_ERROR)
 
     # Dynamic import of heavy Typer application
     from pycrmkit.cli.app import app
@@ -78,8 +81,16 @@ def main(argv: Sequence[str] | None = None, prog_name: str | None = None) -> int
         return int(ExitCode.INTERRUPTED)
     except BrokenPipeError:
         return int(ExitCode.BROKEN_PIPE)
-    except Exception as exc:  # noqa: BLE001
-        print(f"Error: {exc}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001 - CLI must not disclose connection exception data
+        from pycrmkit.cli.state_codec import CLIStateError
+
+        if isinstance(exc, CLIConfigurationError):
+            print(f"Configuration error: {exc}", file=sys.stderr)
+            return int(ExitCode.VALIDATION_ERROR)
+        if isinstance(exc, CLIStateError):
+            print(f"Local state error: {exc}", file=sys.stderr)
+            return int(ExitCode.VALIDATION_ERROR)
+        print("CLI command failed (exception details suppressed).", file=sys.stderr)
         return int(ExitCode.INTERNAL_ERROR)
 
 

@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from examples.data_operations.scenario import run_scenario
+from pycrmkit import __version__
 
 
 def test_data_operations_release_candidate_end_to_end() -> None:
     summary = run_scenario()
 
-    assert summary["version"] == "1.2.0"
+    assert summary["version"] == __version__
     assert summary["import"] == {
         "rows_read": 4,
         "rows_created": 3,

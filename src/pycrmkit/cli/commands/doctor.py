@@ -19,11 +19,8 @@ from pycrmkit.cli.exit_codes import ExitCode
 
 
 def _redact_value(value: str | None) -> str:
-    if not value:
-        return "[dim]<not set>[/dim]"
-    if len(value) <= 8:
-        return "***"
-    return f"{value[:3]}...{value[-3:]}"
+    """Never reveal any part of an environment value, URL or secret."""
+    return "[configured; redacted]" if value else "<not set>"
 
 
 def doctor_command(
@@ -60,13 +57,13 @@ def doctor_command(
 
     # 2. Python version check
     py_ver = sys.version_info
-    py_supported = (3, 11) <= (py_ver.major, py_ver.minor) < (3, 15)
+    py_supported = (3, 11) <= (py_ver.major, py_ver.minor) < (3, 14)
     checks.append(
         {
             "category": "Runtime",
             "name": "Python Version",
             "status": "PASS" if py_supported else "WARNING",
-            "details": f"{platform.python_version()} (Supported: 3.11 - 3.14)",
+            "details": f"{platform.python_version()} (Supported: 3.11 - 3.13)",
         }
     )
 
@@ -81,7 +78,7 @@ def doctor_command(
         assert c.id is not None
     except Exception as exc:  # noqa: BLE001
         in_memory_healthy = False
-        in_memory_detail = f"Failed: {exc}"
+        in_memory_detail = "In-memory CRM diagnostic failed (details suppressed)"
 
     checks.append(
         {
@@ -125,6 +122,7 @@ def doctor_command(
     )
 
     # 6. Live PostgreSQL connectivity check (if URL available)
+    database_healthy = True
     if resolved_db_url:
         try:
             from sqlalchemy import create_engine, inspect, text
@@ -142,17 +140,18 @@ def doctor_command(
                     "details": f"Connected to server {pg_ver} ({table_count} tables detected)",
                 }
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception:  # noqa: BLE001 - diagnostic boundary, never print exception data
+            database_healthy = False
             checks.append(
                 {
                     "category": "Storage",
-                    "name": "PostgreSQL Live Ping",
-                    "status": "WARNING",
-                    "details": f"Connection check failed: {exc}",
+                    "name": "Database Live Ping",
+                    "status": "FAIL",
+                    "details": "Explicitly configured backend is unavailable (details suppressed)",
                 }
             )
 
-    overall_healthy = in_memory_healthy and py_supported
+    overall_healthy = in_memory_healthy and py_supported and database_healthy
 
     if json_output:
         report = {
@@ -161,6 +160,8 @@ def doctor_command(
             "checks": checks,
         }
         print(json.dumps(report, indent=2))
+        if not overall_healthy:
+            raise typer.Exit(code=int(ExitCode.GENERAL_ERROR))
         return
 
     # Rich Terminal Output

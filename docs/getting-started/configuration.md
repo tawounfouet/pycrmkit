@@ -116,3 +116,36 @@ Output:
 │ Storage       │ PostgreSQL Live Ping    │ ✓ PASS │ Connected (48 tables)     │
 └───────────────┴─────────────────────────┴────────┴───────────────────────────┘
 ```
+
+---
+
+## Explicit demo-write policy (v1.3 development, AUD-FIX-03)
+
+The `seed` command is a demonstration tool, not a production data loader. When a persistent
+SQLAlchemy database is configured, `pck seed` refuses to write by default. Select the
+local store with `pck seed --local`, or, in a non-production environment only, explicitly
+authorize the configured persistent target with `pck seed --database --yes`.
+
+`pck dashboard --demo` runs on a fresh, ephemeral Memory adapter. It does not seed the
+configured SQLAlchemy database or write to the local state file. Ordinary dashboard
+reads use the configured backend.
+
+Malformed YAML, a missing explicitly configured file, or a selected persistent backend
+without a URL now results in a nonzero configuration error rather than silent fallback.
+Secrets should never be printed while diagnosing configuration problems.
+
+**Security qualification status:** AUD-FIX-03 is still under review and does not constitute
+a Gate S0 approval. The legacy CLI local state uses pickle until AUD-FIX-02 is completed;
+local state files must not be treated as safe for untrusted input or production customer data.
+
+
+## Safe local state (AUD-FIX-02 integration)
+
+Local CLI state is a versioned JSON document stored by default at
+`~/.pycrmkit/crm_state.json` or in `PYCRMKIT_CLI_STATE_FILE`.
+The serializer uses a closed PyCRMKit domain-type allowlist. It never unpickles
+untrusted data or imports classes from the local document. It rejects corrupt
+files and unknown schema versions instead of resetting them. State is written
+atomically and protected against concurrent writers by an exclusive sibling lock.
+Legacy `.pickle` state files must be archived or discarded and the trusted
+sample data regenerated. See `docs/development/1.3.0/ADR-STATE-001-safe-cli-state.md`.

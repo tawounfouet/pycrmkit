@@ -1,0 +1,56 @@
+name: Historic v1.2.0 Provenance Replay (Manual)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-tag-qualification:
+    name: Frozen v1.2.0 tag and source-archive checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v1.2.0
+          fetch-depth: 0
+      - name: Assert historical annotated tag and immutable commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "e0ae1c67ccc488918dbef845b799caf7aba3ab70"
+          test "$(git rev-parse refs/tags/v1.2.0)" = "587d6b806d098b951916b7ad219b08d62ff7ca5c"
+          test "$(git cat-file -t refs/tags/v1.2.0)" = "tag"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install frozen source and archive test tooling
+        run: python -m pip install -e ".[dev]"
+      - name: Replay 1.2-only promotion checks against 1.2 source
+        run: |
+          python -m pytest -q \
+            tests/compatibility/test_campaign_stable_version_promotion.py \
+            tests/compatibility/test_campaign_stable_documentation_gate.py \
+            tests/compatibility/test_campaign_stable_go_no_go_gate.py \
+            tests/compatibility/test_rc1_version_alignment.py \
+            tests/compatibility/test_stable_baseline_scope_freeze.py
+      - name: Rebuild and inspect source-tag packages (not release assets)
+        run: |
+          python -m build
+          python -m twine check dist/*
+          python - <<'PY'
+          from pathlib import Path
+          from email.parser import Parser
+          from zipfile import ZipFile
+
+          wheel = next(Path("dist").glob("pycrmkit-*.whl"))
+          assert wheel.name == "pycrmkit-1.2.0-py3-none-any.whl", wheel
+          with ZipFile(wheel) as zf:
+              name = next(n for n in zf.namelist() if n.endswith(".dist-info/METADATA"))
+              metadata = Parser().parsestr(zf.read(name).decode())
+              assert metadata["Version"] == "1.2.0"
+          print("Frozen tag provenance and source-built v1.2.0 metadata: PASS")
+          PY
+      - name: Preserve manual replay evidence, never publish
+        run: echo "This replay does not create a release, tag or PyPI upload."

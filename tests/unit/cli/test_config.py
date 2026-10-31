@@ -122,3 +122,38 @@ runtime:
     actor, actor_src = resolve_actor_id()
     assert actor == "from_env_actor"
     assert actor_src == "env:CRM_ACTOR_ID"
+
+
+def test_invalid_yaml_fails_closed(tmp_path: Path) -> None:
+    import pytest
+
+    from pycrmkit.cli.config import CLIConfigurationError
+
+    config = tmp_path / "pycrm.yml"
+    config.write_text("database: [unclosed\n", encoding="utf-8")
+    with pytest.raises(CLIConfigurationError, match="Invalid or unreadable YAML"):
+        load_yaml_config(config_path=config)
+
+
+def test_explicit_missing_config_is_error(tmp_path: Path) -> None:
+    import pytest
+
+    from pycrmkit.cli.config import CLIConfigurationError
+
+    with pytest.raises(CLIConfigurationError, match="not found"):
+        find_config_file(explicit_path=tmp_path / "missing.yml")
+
+
+def test_declared_backend_without_url_is_rejected(tmp_path: Path, monkeypatch) -> None:
+    import pytest
+
+    from pycrmkit.cli.config import CLIConfigurationError
+
+    config = tmp_path / "pycrm.yml"
+    config.write_text("database:\n  backend: postgresql\n", encoding="utf-8")
+    monkeypatch.setenv("PYCRMKIT_CONFIG", str(config))
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.delenv("PYCRMKIT_DATABASE_URL", raising=False)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    with pytest.raises(CLIConfigurationError, match="without a database URL"):
+        resolve_database_url()
