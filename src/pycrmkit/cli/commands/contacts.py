@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Annotated
 
 import typer
@@ -16,6 +17,7 @@ from pycrmkit.contacts import Contact, ContactEmail, ContactId, ContactPhone
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import NotFoundError
+from pycrmkit.organizations import OrganizationId
 from pycrmkit.relationships import RelationshipEndpoint, RelationshipQuery
 from pycrmkit.tasks import TaskQuery
 
@@ -31,7 +33,7 @@ def _resolve_contact(crm: CRM, query_str: str) -> Contact:
     query_clean = query_str.strip().rstrip(".")
 
     try:
-        cid = ContactId(query_clean)
+        cid = ContactId.parse(query_clean)
         return crm.contacts.get(cid)
     except (ValueError, TypeError, NotFoundError):
         pass
@@ -46,7 +48,7 @@ def _resolve_contact(crm: CRM, query_str: str) -> Contact:
     name_matches = [
         c
         for c in all_contacts
-        if q_lower in c.display_name.lower()
+        if q_lower in (c.display_name or "").lower()
         or (c.first_name and q_lower in c.first_name.lower())
         or (c.last_name and q_lower in c.last_name.lower())
     ]
@@ -177,8 +179,8 @@ def show_contact(
             endpoint = rel.source if rel.source.kind == "organization" else rel.target
             if endpoint.kind == "organization":
                 try:
-                    org = crm.organizations.get(endpoint.id)
-                    role = rel.role or rel.title or rel.relationship_type.value
+                    org = crm.organizations.get(OrganizationId.parse(endpoint.id))
+                    role = rel.role or rel.title or rel.relationship_type.code
                     org_rows.append((org, role, rel.is_primary))
                 except NotFoundError:
                     pass
@@ -189,8 +191,11 @@ def show_contact(
             for opp in query_opportunities(crm, page=OffsetPageRequest(limit=100)).items
             if opp.contact_id == contact.id
         ]
-        total_pipeline = sum((o.estimated_value for o in opps), start=0)
-        total_weighted = sum((o.estimated_value * o.probability for o in opps), start=0)
+        total_pipeline = sum((o.estimated_value or Decimal(0) for o in opps), start=Decimal(0))
+        total_weighted = sum((
+            (o.estimated_value or Decimal(0)) * (o.probability or Decimal(0))
+            for o in opps
+        ), start=Decimal(0))
 
         # 3. Enrolled Campaigns
         all_camps = crm.campaigns.list(page=OffsetPageRequest(limit=50)).items
@@ -341,17 +346,19 @@ def show_contact(
 
     if opps:
         for opp in opps:
-            weighted = opp.estimated_value * opp.probability
-            stage_badge = f"[bold cyan]{opp.stage_id.upper()}[/bold cyan]"
+            value = opp.estimated_value or Decimal(0)
+            probability = opp.probability or Decimal(0)
+            weighted = value * probability
+            stage_badge = f"[bold cyan]{(opp.stage_id or 'unassigned').upper()}[/bold cyan]"
             status_text = (
-                "[bold green]En cours[/bold green]" if opp.probability > 0 else "[dim]Terminé[/dim]"
+                "[bold green]En cours[/bold green]" if probability > 0 else "[dim]Terminé[/dim]"
             )
             o_table.add_row(
                 opp.name,
                 stage_badge,
-                f"{opp.estimated_value:,.2f} {opp.currency}",
-                f"{int(opp.probability * 100)} %",
-                f"{weighted:,.2f} {opp.currency}",
+                f"{value:,.2f} {opp.currency or 'N/A'}",
+                f"{int(probability * 100)} %",
+                f"{weighted:,.2f} {opp.currency or 'N/A'}",
                 status_text,
             )
         o_table.add_section()
@@ -416,7 +423,7 @@ def show_contact(
                 "call": "📞 Appel",
                 "email": "✉️ E-mail",
                 "note": "📝 Note",
-            }.get(act_type)
+            }.get(act_type if isinstance(act_type, str) else "")
             if not icon:
                 icon = {
                     "activity": "⚡ Activité",
