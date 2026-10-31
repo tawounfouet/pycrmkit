@@ -12,6 +12,9 @@ user-invocable: true
 
 Use this skill when managing the job search for internships (stages), work-study programs (alternances), or early-career CDD/CDI positions with PyCRMKit.
 
+* **Detailed Funnel Architecture & Academic Workflow** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/examples.md)
+
 ## Core Rules
 
 1. **La Fiche Prête en 2 Secondes** : Chaque entreprise ciblée doit avoir une fiche prête dans le CRM pour répondre immédiatement sans bégayer lors d'un appel impromptu d'un recruteur.

@@ -11,6 +11,9 @@ user-invocable: true
 
 Use this skill when prospecting, applying, and negotiating freelance missions during inter-contract periods, using PyCRMKit as a personal Applicant Tracking System (ATS).
 
+* **Detailed Funnel Architecture & Stage Definitions** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/examples.md)
+
 ## Core Principles
 
 1. **La Mission comme Opportunité B2B** : Une offre de mission est une `Opportunity` dont la valeur correspond à : $\text{TJM} \times \text{Durée en jours}$.

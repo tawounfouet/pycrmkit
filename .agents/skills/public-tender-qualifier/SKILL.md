@@ -11,6 +11,9 @@ user-invocable: true
 
 Use this skill when analyzing, preparing, and tracking public procurement tenders (appels d'offres, MAPA, accords-cadres de l'État ou des collectivités) with PyCRMKit.
 
+* **Detailed Procurement Lifecycle & Go/No-Go Scorecard** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/examples.md)
+
 ## Core Rules & Invariants
 
 1. **Règle d'Or DLRO à J-1 (16h00)** : La date limite de remise des plis (DLRO) est éliminatoire à la seconde près. La tâche de dépôt officiel **doit impérativement être fixée à J-1, 16h00**, avec la priorité `URGENT`.

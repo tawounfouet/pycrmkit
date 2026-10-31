@@ -11,6 +11,9 @@ user-invocable: true
 
 Use this skill when managing the full commercial, delivery, and maintenance lifecycle of a web agency or solo software studio using PyCRMKit.
 
+* **Detailed Architecture & Dual Pipeline Workflow** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/examples.md)
+
 ## Core Capabilities
 
 1. **Avant-Vente & Devis** : Ingestion de leads entrants, qualification, conversion atomique en `Organization` + `Contact` + `Opportunity`, et suivi du pipeline commercial.
