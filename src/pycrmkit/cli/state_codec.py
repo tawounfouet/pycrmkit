@@ -16,8 +16,8 @@ from decimal import Decimal
 from enum import Enum
 from functools import lru_cache
 from math import isfinite
-from types import MappingProxyType
-from typing import Any, get_args, get_type_hints
+from types import MappingProxyType, UnionType
+from typing import Any, Union, get_args, get_origin, get_type_hints
 from uuid import UUID
 
 from pycrmkit.storage.memory._state import _MemoryState
@@ -268,6 +268,40 @@ def _reject_invalid_constant(value: str) -> object:
     raise CLIStateError(f"Invalid JSON numeric constant: {value}")
 
 
+def _matches_state_type(value: object, annotation: Any, depth: int = 0) -> bool:
+    """Validate the concrete root repository key/value contracts after decoding."""
+    if depth > MAX_DEPTH:
+        return False
+    if annotation is Any:
+        return True
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+    if origin in (UnionType, Union):
+        return any(_matches_state_type(value, item, depth + 1) for item in args)
+    if origin is list:
+        return type(value) is list and all(
+            _matches_state_type(item, args[0], depth + 1) for item in value
+        )
+    if origin is dict:
+        return type(value) is dict and all(
+            _matches_state_type(k, args[0], depth + 1)
+            and _matches_state_type(v, args[1], depth + 1)
+            for k, v in value.items()
+        )
+    if origin is tuple:
+        if type(value) is not tuple:
+            return False
+        if len(args) == 2 and args[1] is Ellipsis:
+            return all(_matches_state_type(item, args[0], depth + 1) for item in value)
+        return len(value) == len(args) and all(
+            _matches_state_type(item, expected, depth + 1)
+            for item, expected in zip(value, args, strict=True)
+        )
+    if isinstance(annotation, type):
+        return isinstance(value, annotation)
+    return False
+
+
 def load_state(raw: bytes) -> _MemoryState:
     """Reject invalid schema, corrupt JSON, duplicate keys and forged type tags."""
     if len(raw) > MAX_STATE_BYTES:
@@ -294,7 +328,11 @@ def load_state(raw: bytes) -> _MemoryState:
         raise CLIStateError("CLI state root must be a MemoryStore snapshot")
     # All root collections are real dicts in this schema. Bad JSON must never
     # silently become an empty, partially missing or incorrectly typed store.
+    annotations = get_type_hints(_MemoryState)
     for field in dataclasses.fields(_MemoryState):
-        if type(getattr(decoded, field.name)) is not dict:
+        collection = getattr(decoded, field.name)
+        if type(collection) is not dict:
             raise CLIStateError(f"Invalid MemoryStore collection: {field.name}")
+        if not _matches_state_type(collection, annotations[field.name]):
+            raise CLIStateError(f"Invalid MemoryStore key/value contract: {field.name}")
     return decoded
