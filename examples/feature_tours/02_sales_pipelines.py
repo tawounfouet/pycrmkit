@@ -11,21 +11,13 @@ Demonstrates and verifies:
 
 from __future__ import annotations
 
-import sys
-from decimal import Decimal
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
-
 from pycrmkit import CRM, __version__
 from pycrmkit.contacts import ContactEmail
 from pycrmkit.pipelines import (
+    InvalidStageTransition,
     Stage,
     StageOutcome,
     StageTransition,
-    InvalidStageTransition,
 )
 
 
