@@ -9,6 +9,7 @@ nav:
   - Getting Started:
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
+      - Configuration & Profiles: getting-started/configuration.md
       - Preparing for 1.2.0 Upgrade (unpublished): getting-started/1.2.0-upgrade.md
   - Zero to Hero Guides:
       - Learning Path: guides/index.md

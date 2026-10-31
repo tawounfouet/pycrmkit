@@ -1,0 +1,21 @@
+version: "1.0"
+
+runtime:
+  actor_id: "thomas@webtech.agency"
+  environment: "development"
+
+database:
+  backend: "postgresql"
+  url: "postgresql+psycopg:///pycrm"
+  pool_size: 5
+  max_overflow: 10
+  echo: false
+
+integrations:
+  email:
+    provider: "mock"
+  webhooks:
+    signing_secret_env: "CRM_SIGNING_SECRET"
+
+cli:
+  format: "rich"

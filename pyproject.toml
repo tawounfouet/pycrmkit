@@ -7,7 +7,7 @@ name = "pycrmkit"
 dynamic = ["version"]
 description = "Headless CRM building blocks for Python applications."
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Thomas Awounfouet" }]
@@ -23,6 +23,12 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+cli = [
+  "typer>=0.12,<1",
+  "rich>=13,<16",
+  "python-dotenv>=1.0,<2",
+  "PyYAML>=6,<7",
+]
 sqlalchemy = [
   "SQLAlchemy>=2.0,<2.2",
 ]
@@ -53,6 +59,10 @@ resend = [
   "resend>=2.47,<3",
 ]
 dev = [
+  "typer>=0.12,<1",
+  "rich>=13,<16",
+  "python-dotenv>=1.0,<2",
+  "PyYAML>=6,<7",
   "SQLAlchemy>=2.0,<2.2",
   "alembic>=1.16,<2",
   "psycopg[binary]>=3.2,<3.4",
@@ -81,6 +91,9 @@ Repository = "https://github.com/tawounfouet/pycrmkit"
 Issues = "https://github.com/tawounfouet/pycrmkit/issues"
 
 [project.scripts]
+pck = "pycrmkit.cli.bootstrap:main"
+pycrm = "pycrmkit.cli.bootstrap:main"
+pycrmkit = "pycrmkit.cli.bootstrap:main"
 pycrmkit-migrate = "pycrmkit.storage.sqlalchemy.migrations.cli:main"
 
 [tool.setuptools]

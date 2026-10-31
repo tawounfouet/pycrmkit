@@ -19,13 +19,21 @@ target_metadata = Base.metadata
 
 
 def _database_url() -> str:
-    value = os.environ.get("PYCRMKIT_DATABASE_URL")
+    value = os.environ.get("PYCRMKIT_DATABASE_URL") or os.environ.get("DATABASE_URL")
     if value:
         return value
+    try:
+        from pycrmkit.cli.config import resolve_database_url
+
+        resolved, _ = resolve_database_url()
+        if resolved:
+            return resolved
+    except Exception:
+        pass
     configured = config.get_main_option("sqlalchemy.url")
     if not configured or configured.startswith("driver://"):
         raise RuntimeError(
-            "Set PYCRMKIT_DATABASE_URL or configure sqlalchemy.url before running migrations"
+            "Set PYCRMKIT_DATABASE_URL, DATABASE_URL or configure pycrm.yml before running migrations"
         )
     return configured
 

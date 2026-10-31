@@ -50,6 +50,39 @@ for entry in crm.timeline.for_contact(contact.id).items:
 
 `CRM.memory()` requires no database or web framework. Add an adapter for durable storage or HTTP endpoints.
 
+## CLI Tool (`pck` / `pycrm`)
+
+PyCRMKit includes an optional modern terminal CLI powered by Typer and Rich with zero external database dependencies:
+
+```bash
+# Install CLI optional dependencies (from local editable checkout)
+pip install -e ".[cli]"
+# Or using uv:
+uv pip install -e ".[cli]"
+
+# Executive CRM Command Center & Analytics Dashboard
+pck dashboard         # Live KPIs, visual sales funnel, campaigns, action items
+pck seed              # Seed realistic B2B enterprise demonstration scenario
+pck reset -f          # Reset local CRM store state
+
+# Domain Management Commands
+pck contacts list     # List contacts with phone/email channels & status
+pck orgs list         # List corporate accounts and trading brands
+pck sales pipelines   # List commercial pipelines & stage probabilities
+pck sales opps        # List deal opportunities & weighted revenue forecast
+pck sales move <id> <stage>  # Advance opportunity respecting pipeline transition rules
+pck campaigns list    # List multi-channel marketing campaigns (v1.2.0)
+pck campaigns audience <id>  # View enrolled VIP audience members
+pck tasks list        # List scheduled follow-ups and priority action items
+pck tasks complete <id>      # Mark action item as completed
+
+# Diagnostics & Engine
+pck doctor            # Run diagnostic checks & environment audit
+pck version           # Show capability extras (SQLAlchemy, PostgreSQL, FastAPI, etc.)
+pck tours             # Run autonomous feature tours suite (< 150 ms)
+pck migrate --help    # Manage database schema migrations via Alembic
+```
+
 ## Architecture
 
 ```text

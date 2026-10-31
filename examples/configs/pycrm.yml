@@ -1,0 +1,55 @@
+# ==============================================================================
+# PyCRMKit — Declarative Configuration Blueprint
+# ==============================================================================
+# Inspired by dbt and pyingestkit architecture.
+#
+# Precedence Order:
+#   1. CLI options (--database-url, --actor-id)
+#   2. OS Environment Variables (export DATABASE_URL=...)
+#   3. Local dotenv file (.env / .env.{profile})
+#   4. Declarative YAML config (pycrm.yml / pycrm.yml.{profile})
+#   5. In-Memory / Local Pickle store fallback
+# ==============================================================================
+
+version: "1.0"
+
+# ------------------------------------------------------------------------------
+# Runtime & Operator Audit Context
+# ------------------------------------------------------------------------------
+runtime:
+  actor_id: "thomas@webtech.agency"
+  environment: "development" # development | staging | production
+
+# ------------------------------------------------------------------------------
+# Persistence & Database Storage Engine
+# ------------------------------------------------------------------------------
+database:
+  backend: "postgresql" # postgresql | sqlite | memory
+  # Direct connection URI or environment interpolation:
+  url: "postgresql+psycopg:///pycrm"
+  # Fallback environment variable name if url is omitted:
+  url_env: "DATABASE_URL"
+  pool_size: 5
+  max_overflow: 10
+  echo: false
+
+# ------------------------------------------------------------------------------
+# External Providers & Service Integrations
+# ------------------------------------------------------------------------------
+integrations:
+  email:
+    provider: "resend" # resend | mock | smtp
+    api_key_env: "RESEND_API_KEY"
+    default_sender: "contact@webtech.agency"
+
+  webhooks:
+    signing_secret_env: "CRM_SIGNING_SECRET"
+
+# ------------------------------------------------------------------------------
+# CLI Diagnostic & Presentation Settings
+# ------------------------------------------------------------------------------
+cli:
+  format: "rich" # rich | json | plain
+  dashboard:
+    default_pipeline: "default"
+    kpi_window_days: 30
