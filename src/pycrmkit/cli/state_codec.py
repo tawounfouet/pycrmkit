@@ -59,6 +59,19 @@ def _allowed_models() -> dict[str, type[Any]]:
             walk(arg)
 
     walk(_MemoryState)
+
+    # Generic entity bases can erase concrete typed-ID annotations at runtime.
+    # These subclasses are defined by the installed PyCRMKit package, never by
+    # strings from disk, and must be registered before decoding stored tags.
+    from pycrmkit.core.ids import UUIDId
+
+    def register_ids(base: type[UUIDId]) -> None:
+        for subclass in base.__subclasses__():
+            if subclass.__module__.startswith("pycrmkit."):
+                allowed[_model_key(subclass)] = subclass
+                register_ids(subclass)
+
+    register_ids(UUIDId)
     return allowed
 
 
