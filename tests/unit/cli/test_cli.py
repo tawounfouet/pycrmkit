@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from unittest.mock import patch
 
 from pycrmkit import __version__
@@ -28,7 +29,12 @@ def test_cli_help(capsys) -> None:
     code = main(["--help"], prog_name="pck")
     assert code == int(ExitCode.SUCCESS)
     captured = capsys.readouterr()
-    assert "Usage: pck" in captured.out or "Usage: pck" in captured.err
+    # Rich/Typer may colorize Usage and the executable independently.
+    plain_help = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", captured.out + captured.err)
+    normalized = " ".join(plain_help.split())
+    assert "Usage: pck" in normalized
+    for command in ("version", "doctor", "contacts", "seed"):
+        assert command in normalized
 
 
 def test_cli_version_json(capsys) -> None:
