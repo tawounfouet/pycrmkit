@@ -1,5 +1,8 @@
 # PyCRMKit
 
+**Release channels:** The last GitHub stable release verified for this project is [v1.2.0](https://github.com/tawounfouet/pycrmkit/releases/tag/v1.2.0). The current source checkout targets `1.3.0.dev0`, a development candidate that is **not a published stable v1.3.0 release**. Verify PyPI distribution availability independently at [PyPI](https://pypi.org/project/pycrmkit/). Features on `main` (including the terminal CLI and `.agents/` guides) are not necessarily included in the stable wheel. The `.agents/` directory contains workflow guides, not an autonomous agent execution runtime.
+
+
 **Headless, framework-agnostic CRM building blocks for Python applications.**
 
 Build customer relationship workflows without running a full CRM server. PyCRMKit provides a typed domain model, a Python facade, events and pluggable persistence; your application controls its API, identity and deployment.

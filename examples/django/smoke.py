@@ -5,9 +5,10 @@ from __future__ import annotations
 import argparse
 import json
 import os
+from importlib.metadata import version
 from pathlib import Path
 
-EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", "1.2.0")
+EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", version("pycrmkit"))
 
 
 def _setup_django() -> None:
