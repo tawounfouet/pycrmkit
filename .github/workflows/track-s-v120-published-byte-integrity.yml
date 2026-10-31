@@ -1,0 +1,34 @@
+name: Track S - Published v1.2.0 Byte Integrity
+
+on:
+  pull_request:
+    paths:
+      - "scripts/track_s_verify_v120_published_bytes.py"
+      - ".github/workflows/track-s-v120-published-byte-integrity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independently-verify-published-bytes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Verify GitHub Releases against PyPI bytes and SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/track_s_verify_v120_published_bytes.py | tee track-s-v120-byte-evidence.json
+      - name: Archive byte verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: track-s-v120-byte-integrity
+          path: track-s-v120-byte-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
