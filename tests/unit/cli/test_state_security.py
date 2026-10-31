@@ -153,3 +153,17 @@ def test_malformed_state_does_not_overwrite_prior_valid_bytes(tmp_path: Path) ->
     with pytest.raises(CLIStateError):
         load_store(target)
     assert target.read_bytes() == invalid
+
+
+def test_state_rejects_forged_repository_id_and_aggregate_types() -> None:
+    obj = json.loads(dump_state(MemoryStore()._state))
+    # A primitive string must never become a ContactId key.
+    obj["state"]["fields"]["contacts"]["items"] = [["not-a-contact-id", "not-a-contact"]]
+    with pytest.raises(CLIStateError, match="key/value contract: contacts"):
+        load_state(json.dumps(obj).encode())
+
+    # Even apparently harmless string-keyed pipelines need Pipeline values.
+    obj = json.loads(dump_state(MemoryStore()._state))
+    obj["state"]["fields"]["pipelines"]["items"] = [["known-pipeline", 123]]
+    with pytest.raises(CLIStateError, match="key/value contract: pipelines"):
+        load_state(json.dumps(obj).encode())
