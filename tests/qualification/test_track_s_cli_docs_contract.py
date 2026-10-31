@@ -22,10 +22,9 @@ SKILLS = (
 
 
 def test_readme_shell_commands_match_registered_cli() -> None:
-    from click import Group
-
     group = get_command(app)
-    assert isinstance(group, Group)
+    commands = getattr(group, "commands", None)
+    assert isinstance(commands, dict)
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     for line in readme.splitlines():
         match = re.match(r"^\s*pck\s+([\w-]+)(?:\s+([\w-]+))?", line)
@@ -34,10 +33,11 @@ def test_readme_shell_commands_match_registered_cli() -> None:
         first, second = match.groups()
         if first.startswith("-"):
             continue
-        assert first in group.commands, f"README advertises unknown pck group: {first}"
-        subgroup = group.commands[first]
-        if second and not second.startswith("-") and isinstance(subgroup, Group):
-            assert second in subgroup.commands, f"README has unsupported pck {first} {second}"
+        assert first in commands, f"README advertises unknown pck group: {first}"
+        subgroup = commands[first]
+        subcommands = getattr(subgroup, "commands", None)
+        if second and not second.startswith("-") and isinstance(subcommands, dict):
+            assert second in subcommands, f"README has unsupported pck {first} {second}"
 
 
 def test_agent_skills_are_unambiguously_labelled_as_illustrative() -> None:
