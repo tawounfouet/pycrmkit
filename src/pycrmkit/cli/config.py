@@ -248,7 +248,7 @@ def load_yaml_config(
     try:
         with open(target, encoding="utf-8") as f:
             raw = yaml.safe_load(f)
-    except Exception:
+    except (OSError, yaml.YAMLError):
         return CLIConfig(source="error", config_path=target)
 
     if not isinstance(raw, dict):
