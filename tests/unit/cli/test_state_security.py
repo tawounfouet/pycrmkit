@@ -109,3 +109,47 @@ def test_reset_never_races_a_concurrent_state_writer(tmp_path: Path, monkeypatch
 
     reset_command(force=True)
     assert not target.exists()
+
+
+def test_json_duplicate_keys_rejected_even_in_nested_models() -> None:
+    raw = dump_state(MemoryStore()._state)
+    # Duplicated top-level schema names are not silently resolved by json.loads.
+    injected = raw.replace(b'"schema_version":1,', b'"schema_version":1,"schema_version":1,')
+    with pytest.raises(CLIStateError, match="Duplicate key"):
+        load_state(injected)
+
+    nested = raw.replace(b'"kind":"model",', b'"kind":"model","kind":"model",', 1)
+    with pytest.raises(CLIStateError, match="Duplicate key"):
+        load_state(nested)
+
+
+@pytest.mark.parametrize("bad_value", [b'NaN', b'Infinity', b'-Infinity'])
+def test_json_rejects_nonstandard_float_constants(bad_value: bytes) -> None:
+    raw = dump_state(MemoryStore()._state)
+    injected = raw.replace(b'"schema_version":1', b'"schema_version":' + bad_value, 1)
+    with pytest.raises(CLIStateError):
+        load_state(injected)
+
+
+def test_state_rejects_partial_or_wrongly_typed_collections() -> None:
+    obj = json.loads(dump_state(MemoryStore()._state))
+    del obj["state"]["fields"]["contacts"]
+    with pytest.raises(CLIStateError, match="Missing or unknown"):
+        load_state(json.dumps(obj).encode())
+
+    obj = json.loads(dump_state(MemoryStore()._state))
+    obj["state"]["fields"]["contacts"] = []
+    with pytest.raises(CLIStateError, match="Invalid MemoryStore collection"):
+        load_state(json.dumps(obj).encode())
+
+
+def test_malformed_state_does_not_overwrite_prior_valid_bytes(tmp_path: Path) -> None:
+    target = tmp_path / "state.json"
+    save_store(MemoryStore(), target)
+    obj = json.loads(target.read_bytes())
+    del obj["state"]["fields"]["contacts"]
+    invalid = json.dumps(obj).encode()
+    target.write_bytes(invalid)
+    with pytest.raises(CLIStateError):
+        load_store(target)
+    assert target.read_bytes() == invalid
