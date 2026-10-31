@@ -21,12 +21,25 @@ from pycrmkit.cli.state import (
 )
 
 
+def _is_production_profile() -> bool:
+    """Honor all declared runtime profiles before any demo or destructive write."""
+    profiles = (
+        load_yaml_config().runtime.environment,
+        os.getenv("PYCRMKIT_ENV", ""),
+        os.getenv("CRM_ENV", ""),
+    )
+    return any(value.casefold() in ("prod", "production") for value in profiles)
+
+
 def seed_command(
     database: Annotated[bool, typer.Option("--database", help="Explicitly select configured persistent database")] = False,
     local: Annotated[bool, typer.Option("--local", help="Explicitly select local CLI state")] = False,
     yes: Annotated[bool, typer.Option("--yes", help="Authorize persistent demo writes")] = False,
 ) -> None:
     """Seed demonstration data. A persistent database needs explicit authorization."""
+    if _is_production_profile():
+        console.print("[red]Demo seeding is prohibited in production.[/red]")
+        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
     if database and local:
         console.print("[red]Choose either --database or --local, not both.[/red]")
         raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
@@ -34,14 +47,6 @@ def seed_command(
     if database:
         if not configured_url:
             console.print("[red]No persistent database is configured.[/red]")
-            raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
-        environments = (
-            load_yaml_config().runtime.environment,
-            os.getenv("PYCRMKIT_ENV", ""),
-            os.getenv("CRM_ENV", ""),
-        )
-        if any(value.casefold() in ("production", "prod") for value in environments):
-            console.print("[red]Demo seeding is prohibited in production.[/red]")
             raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
         if not yes:
             console.print("[red]Persistent demo writes require --database --yes.[/red]")
@@ -73,6 +78,9 @@ def reset_command(
     force: bool = typer.Option(False, "--force", "-f", help="Bypass confirmation prompt"),
 ) -> None:
     """Reset the local CRM state file and clear all stored records."""
+    if _is_production_profile():
+        console.print("[red]Local state reset is prohibited in production.[/red]")
+        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
     target = _resolve_store_path()
     if not target.exists():
         console.print("[dim]Local CRM store is already empty (no state file found).[/dim]")
