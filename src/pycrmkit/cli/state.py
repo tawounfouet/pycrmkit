@@ -10,8 +10,8 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
-
 from pycrmkit import CRM
+from pycrmkit.cli.state_codec import CLIStateError, MAX_STATE_BYTES, dump_state, load_state
 from pycrmkit.communication.email.messages import EmailMessage
 from pycrmkit.communication.email.provider import EmailDeliveryStatus, EmailProviderResult
 from pycrmkit.contacts import ContactEmail, ContactPhone
@@ -19,7 +19,6 @@ from pycrmkit.core.pagination import OffsetPageRequest, Page
 from pycrmkit.core.references import EntityReference
 from pycrmkit.custom_fields import CustomFieldType
 from pycrmkit.events import InProcessEventBus
-from pycrmkit.cli.state_codec import CLIStateError, MAX_STATE_BYTES, dump_state, load_state
 from pycrmkit.opportunities import Opportunity, OpportunityId, OpportunityQuery
 from pycrmkit.pipelines import Stage, StageOutcome, StageTransition
 from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
@@ -27,11 +26,9 @@ from pycrmkit.storage.memory._state import MemoryStore
 from pycrmkit.storage.memory.unit_of_work import MemoryUnitOfWork
 
 
-
 DEFAULT_STORE_DIR = Path.home() / ".pycrmkit"
 DEFAULT_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.json"
 LEGACY_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.pickle"
-
 
 
 class MockCliEmailProvider:
@@ -115,7 +112,8 @@ def _save_unlocked(store: MemoryStore, target: Path) -> None:
     try:
         fd, name = tempfile.mkstemp(prefix=".pycrmkit-state-", suffix=".tmp", dir=target.parent)
         with os.fdopen(fd, "wb") as stream:
-            os.fchmod(stream.fileno(), 0o600) if hasattr(os, "fchmod") else None
+            if hasattr(os, "fchmod"):
+                os.fchmod(stream.fileno(), 0o600)
             stream.write(raw)
             stream.flush()
             os.fsync(stream.fileno())
