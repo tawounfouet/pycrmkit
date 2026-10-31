@@ -1,5 +1,9 @@
 # Public Tender Qualifier - Practical Examples & Recipes
 
+> **AUD-FIX-09: ILLUSTRATIVE RECIPE / NOT VERIFIED FOR EXECUTION.** The workflow for public procurement qualification is a conceptual example. Commands and facade calls may not exist in the current distribution. Confirm `pck --help` / public SDK signatures and the exact installed version before treating a snippet as executable.  
+> **Personal data:** The host must define purpose, legal basis, data subject notice, access controls, data minimization, retention/deletion, review of third-party sharing and authorization before any upload, message, export or write. AI-generated notes must be reviewed for accuracy and sensitive content. Do not persist raw WhatsApp/voice/email dumps or passwords/tokens in a CRM timeline.  
+> **Execution authority:** these Markdown files do not provide authentication, a tool sandbox, autonomous execution or permission to contact real people. Test emails use `example.org`. See [Track S privacy governance](../../../docs/development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`public-tender-qualifier`](SKILL.md)  
 > **Workflow Détaillé** : [`workflow.md`](workflow.md)
@@ -26,7 +30,7 @@ pck orgs create \
 pck contacts create \
     --first-name "Guillaume" \
     --last-name "Perrin" \
-    --email "guillaume.perrin@iledefrance.fr"
+    --email "demo.person01@example.org"
 
 # 3. Création de l'opportunité dans le pipeline marché public
 pck sales opps create \

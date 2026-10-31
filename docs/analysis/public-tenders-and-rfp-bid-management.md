@@ -1,5 +1,11 @@
 # Analyse Exhaustive : Commande Publique, Appels d'Offres & Bid Management d'Agence Web avec PyCRMKit
 
+> **Privacy and implementation notice (Track S / AUD-FIX-09)**  
+> **Classification: ILLUSTRATIVE / NON-EXECUTABLE without verification.** This is a design scenario, not proof of a working CLI command, full agent runtime, deployed integration, production-grade security, external email delivery or regulatory compliance. Validate every code snippet against the exact installed PyCRMKit version and obtain host approval before live use.  
+> **Intended use:** Public-tender qualification and submission administration. **Data at risk:** Public-official contact details, procurement correspondence, partner records and deadlines.  
+> The deploying organization must document a valid processing purpose and lawful basis, inform data subjects, restrict collection and access, set and enforce a retention/deletion schedule, and review third-party processing and international transfers where applicable. Consent must be recorded where it is the applicable legal basis or channel requirement; consent is not automatically the lawful basis for every CRM operation.  
+> Do not import personal chat transcripts, audio, financial/payment evidence or private contact lists wholesale into CRM. Retain approved summaries/identifiers only, with host authorization and safeguards. Email addresses below use the reserved `example.org` domain as synthetic test fixtures. See [Track S privacy governance](../development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Document de Référence Métier, Stratégie & Procédures**  
 > **Auteur** : Thomas Awounfouet / WebTech Forge  
 > **Cible** : Développeur solo, agence web, studio tech répondant aux marchés publics  
@@ -281,7 +287,7 @@ Vous repérez l'avis suivant : *"Marché Public de Refonte du Portail Citoyen - 
 ```bash
 # 1. Création de l'acheteur public et du contact prescripteur
 pck orgs create --name "Ville de Métropole Ouest" --industry "Collectivité Territoriale"
-pck contacts create --first-name "Laurent" --last-name "Morel" --email "l.morel@metropoleouest.fr"
+pck contacts create --first-name "Laurent" --last-name "Morel" --email "demo.person01@example.org"
 
 # 2. Enregistrement des données du marché
 pck orgs update <org-id> \

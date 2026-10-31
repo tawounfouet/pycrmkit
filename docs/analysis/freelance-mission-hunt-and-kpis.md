@@ -1,5 +1,11 @@
 # Analyse Exhaustive : Recherche de Mission Freelance, Pilotage de Candidatures & KPIs avec PyCRMKit
 
+> **Privacy and implementation notice (Track S / AUD-FIX-09)**  
+> **Classification: ILLUSTRATIVE / NON-EXECUTABLE without verification.** This is a design scenario, not proof of a working CLI command, full agent runtime, deployed integration, production-grade security, external email delivery or regulatory compliance. Validate every code snippet against the exact installed PyCRMKit version and obtain host approval before live use.  
+> **Intended use:** Professional opportunity and recruitment follow-up. **Data at risk:** Recruiter contact details, interview notes, prospecting, automated follow-ups and ATS history.  
+> The deploying organization must document a valid processing purpose and lawful basis, inform data subjects, restrict collection and access, set and enforce a retention/deletion schedule, and review third-party processing and international transfers where applicable. Consent must be recorded where it is the applicable legal basis or channel requirement; consent is not automatically the lawful basis for every CRM operation.  
+> Do not import personal chat transcripts, audio, financial/payment evidence or private contact lists wholesale into CRM. Retain approved summaries/identifiers only, with host authorization and safeguards. Email addresses below use the reserved `example.org` domain as synthetic test fixtures. See [Track S privacy governance](../development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Document de Référence Métier, Stratégie & Analytics**  
 > **Auteur** : Thomas Awounfouet / WebTech Forge  
 > **Cible** : Développeur freelance, artisan tech indépendant en période de prospection ou d'inter-contrat  
@@ -228,7 +234,7 @@ Vous trouvez une annonce intéressante sur Malt ou Freelance-Info.
 ```bash
 # Création de l'entreprise et du contact recruteur
 pck orgs create --name "DataPulse Solutions" --industry "Big Data / Cloud"
-pck contacts create --first-name "Guillaume" --last-name "Vasseur" --email "g.vasseur@datapulse.io"
+pck contacts create --first-name "Guillaume" --last-name "Vasseur" --email "demo.person01@example.org"
 
 # Rattachement des informations spécifiques à l'offre
 pck orgs update <org-id> \
