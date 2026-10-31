@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Annotated
 
 import typer
@@ -28,8 +29,12 @@ def seed_command(
         if not configured_url:
             console.print("[red]No persistent database is configured.[/red]")
             raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
-        environment = load_yaml_config().runtime.environment.casefold()
-        if environment in ("production", "prod"):
+        environments = (
+            load_yaml_config().runtime.environment,
+            os.getenv("PYCRMKIT_ENV", ""),
+            os.getenv("CRM_ENV", ""),
+        )
+        if any(value.casefold() in ("production", "prod") for value in environments):
             console.print("[red]Demo seeding is prohibited in production.[/red]")
             raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
         if not yes:
