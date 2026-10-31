@@ -76,7 +76,7 @@ def doctor_command(
         c = crm.contacts.create(first_name="Doctor", last_name="Check", source="cli-doctor")
         assert org.id is not None
         assert c.id is not None
-    except Exception as exc:  # noqa: BLE001
+    except Exception:  # noqa: BLE001 - diagnostic boundary, suppress internals
         in_memory_healthy = False
         in_memory_detail = "In-memory CRM diagnostic failed (details suppressed)"
 
