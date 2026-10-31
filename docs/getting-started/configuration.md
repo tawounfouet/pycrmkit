@@ -116,3 +116,24 @@ Output:
 │ Storage       │ PostgreSQL Live Ping    │ ✓ PASS │ Connected (48 tables)     │
 └───────────────┴─────────────────────────┴────────┴───────────────────────────┘
 ```
+
+---
+
+## Explicit demo-write policy (v1.3 development, AUD-FIX-03)
+
+The `seed` command is a demonstration tool, not a production data loader. When a persistent
+SQLAlchemy database is configured, `pck seed` refuses to write by default. Select the
+local store with `pck seed --local`, or, in a non-production environment only, explicitly
+authorize the configured persistent target with `pck seed --database --yes`.
+
+`pck dashboard --demo` runs on a fresh, ephemeral Memory adapter. It does not seed the
+configured SQLAlchemy database or write to the local state file. Ordinary dashboard
+reads use the configured backend.
+
+Malformed YAML, a missing explicitly configured file, or a selected persistent backend
+without a URL now results in a nonzero configuration error rather than silent fallback.
+Secrets should never be printed while diagnosing configuration problems.
+
+**Security qualification status:** AUD-FIX-03 is still under review and does not constitute
+a Gate S0 approval. The legacy CLI local state uses pickle until AUD-FIX-02 is completed;
+local state files must not be treated as safe for untrusted input or production customer data.

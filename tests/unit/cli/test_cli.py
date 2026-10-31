@@ -197,3 +197,45 @@ def test_cli_campaigns_and_tasks(tmp_path, monkeypatch, capsys) -> None:
     assert code == int(ExitCode.SUCCESS)
     captured = capsys.readouterr()
     assert "CRM State Successfully Cleared" in captured.out
+
+
+def test_cli_rejects_invalid_explicit_yaml(tmp_path, monkeypatch, capsys) -> None:
+    config = tmp_path / "invalid.yml"
+    config.write_text("database: [unclosed\n", encoding="utf-8")
+    monkeypatch.setenv("PYCRMKIT_CONFIG", str(config))
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    assert main(["version", "--json"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert "Configuration error:" in capsys.readouterr().err
+
+
+def test_seed_refuses_implicit_persistent_database(tmp_path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/not_a_test_db")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    assert main(["seed"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert "database is configured" in capsys.readouterr().out
+    assert main(["seed", "--database"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert "require --database --yes" in capsys.readouterr().out
+    assert not (tmp_path / "cli_state.pickle").exists()
+
+
+def test_dashboard_demo_never_contacts_configured_database(tmp_path, monkeypatch, capsys) -> None:
+    state_file = tmp_path / "should_not_exist.pickle"
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(state_file))
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/unreachable_db")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    code = main(["dashboard", "--demo"], prog_name="pck")
+    assert code == int(ExitCode.SUCCESS)
+    out = capsys.readouterr().out
+    # Rich can wrap the mode label at different terminal widths.
+    assert "Ephemeral" in out
+    assert not state_file.exists()
+
+
+def test_seed_rejects_production_profile_without_database_access(monkeypatch, capsys) -> None:
+    monkeypatch.setenv("PYCRMKIT_ENV", "production")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/production")
+    assert main(["seed", "--database", "--yes"], prog_name="pck") == int(
+        ExitCode.VALIDATION_ERROR
+    )
+    assert "prohibited in production" in capsys.readouterr().out
