@@ -11,6 +11,8 @@ Demonstrates and verifies:
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from pycrmkit import CRM, __version__
 from pycrmkit.contacts import ContactEmail
 from pycrmkit.pipelines import (
