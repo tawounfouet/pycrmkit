@@ -26,14 +26,11 @@ def migration_config(database_url: str | None = None) -> Config:
 
     url = database_url or os.environ.get(DATABASE_ENV) or os.environ.get("DATABASE_URL")
     if not url:
-        try:
-            from pycrmkit.cli.config import resolve_database_url
+        from pycrmkit.cli.config import resolve_database_url
 
-            resolved, _ = resolve_database_url()
-            if resolved:
-                url = resolved
-        except Exception:
-            pass
+        resolved, _ = resolve_database_url()
+        if resolved:
+            url = resolved
     if not url:
         raise ValueError(
             f"Set {DATABASE_ENV}, DATABASE_URL or pass --database-url before running migrations"
