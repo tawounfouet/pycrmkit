@@ -4,6 +4,9 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ## [Unreleased]
 
+**Development identity:** `1.3.0.dev0` for the development source tree. The GitHub `v1.2.0` tag and four GitHub release assets were published on 2026-10-31. Historical prepublication evidence below remains archived; it must not be mistaken for the current release status. The status of PyPI publication requires independent registry evidence. See `docs/development/1.3.0/aud-fix-04-release-provenance.md`.
+
+
 ### Added
 - **Executive Terminal CLI (`pck` / `pycrm`)**: Modern command center powered by Typer and Rich with real-time visual sales pipeline funnel, conversion analytics, B2B enterprise dataset seeding (`pck seed`), state reset (`pck reset -f`), environment diagnostics (`pck doctor`), and capability versioning (`pck version`).
 - **Declarative Configuration Engine**: Hierarchical configuration resolver prioritizing CLI flags > environment variables (`.env`, `PYCRMKIT_*`, `DATABASE_URL`) > YAML project configuration files (`pycrm.yml`, `pycrmkit.yml`) > in-memory safe defaults.
