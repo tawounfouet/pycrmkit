@@ -5,9 +5,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from pathlib import Path
-
 from importlib.metadata import version
+from pathlib import Path
 
 EXPECTED_VERSION = os.environ.get("PYCRMKIT_EXPECTED_VERSION", version("pycrmkit"))
 
