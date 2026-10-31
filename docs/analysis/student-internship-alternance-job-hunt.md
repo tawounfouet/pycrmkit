@@ -1,5 +1,11 @@
 # Analyse Exhaustive : Recherche de Stages, Alternances & Premier Emploi (CDD/CDI) avec PyCRMKit
 
+> **Privacy and implementation notice (Track S / AUD-FIX-09)**  
+> **Classification: ILLUSTRATIVE / NON-EXECUTABLE without verification.** This is a design scenario, not proof of a working CLI command, full agent runtime, deployed integration, production-grade security, external email delivery or regulatory compliance. Validate every code snippet against the exact installed PyCRMKit version and obtain host approval before live use.  
+> **Intended use:** Student application follow-up. **Data at risk:** Student and recruiter personal information, interview notes, resumes and job-search timelines.  
+> The deploying organization must document a valid processing purpose and lawful basis, inform data subjects, restrict collection and access, set and enforce a retention/deletion schedule, and review third-party processing and international transfers where applicable. Consent must be recorded where it is the applicable legal basis or channel requirement; consent is not automatically the lawful basis for every CRM operation.  
+> Do not import personal chat transcripts, audio, financial/payment evidence or private contact lists wholesale into CRM. Retain approved summaries/identifiers only, with host authorization and safeguards. Email addresses below use the reserved `example.org` domain as synthetic test fixtures. See [Track S privacy governance](../development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Document de Référence Méthodologique & Insertion Professionnelle**  
 > **Auteur** : Thomas Awounfouet / WebTech Forge  
 > **Cible** : Étudiants en informatique, alternants, jeunes diplômés, reconversions vers le dev  
@@ -193,7 +199,7 @@ L'étudiant trouve une offre intéressante : *"Alternant Développeur Backend Py
 ```bash
 # 1. Création de l'entreprise et du recruteur
 pck orgs create --name "Swile" --industry "Fintech / B2B SaaS"
-pck contacts create --first-name "Maxime" --last-name "Perrin" --email "m.perrin@swile.co"
+pck contacts create --first-name "Maxime" --last-name "Perrin" --email "demo.person01@example.org"
 
 # 2. Ajout des critères scolaires et contractuels
 pck orgs update <org-id> \

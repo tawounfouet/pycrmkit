@@ -33,7 +33,12 @@ def doctor_command(
     checks: list[dict[str, object]] = []
 
     # 1. Configuration & Dotenv Discovery
-    from pycrmkit.cli.config import find_config_file, find_dotenv_file, resolve_database_url
+    from pycrmkit.cli.config import (
+        find_config_file,
+        find_dotenv_file,
+        resolve_actor_id,
+        resolve_database_url,
+    )
 
     cfg_file = find_config_file()
     checks.append(
@@ -106,6 +111,21 @@ def doctor_command(
                 "details": f"{_redact_value(val)} ({var_desc})" + (f" [{source}]" if val else ""),
             }
         )
+
+    # Report the actual actor source and mock transport without disclosing actor PII.
+    _actor, actor_source = resolve_actor_id()
+    checks.append({
+        "category": "Identity",
+        "name": "CLI Actor Claim",
+        "status": "INFO",
+        "details": f"Declared actor from {actor_source}; not an authenticated principal",
+    })
+    checks.append({
+        "category": "Communication",
+        "name": "Effective CLI Email Provider",
+        "status": "INFO",
+        "details": "mock-cli-mailer: simulated acceptance only; no external delivery",
+    })
 
     # 5. Storage & Migrations assets check
     migrations_dir = Path.cwd() / "migrations"

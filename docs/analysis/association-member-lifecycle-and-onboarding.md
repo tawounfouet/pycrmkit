@@ -1,5 +1,11 @@
 # Analyse Approfondie : Cycle de Vie Adhérents, Onboarding & Rétention Associative avec PyCRMKit
 
+> **Privacy and implementation notice (Track S / AUD-FIX-09)**  
+> **Classification: ILLUSTRATIVE / NON-EXECUTABLE without verification.** This is a design scenario, not proof of a working CLI command, full agent runtime, deployed integration, production-grade security, external email delivery or regulatory compliance. Validate every code snippet against the exact installed PyCRMKit version and obtain host approval before live use.  
+> **Intended use:** Association membership administration. **Data at risk:** Membership applications, payment reconciliation, Microsoft 365 accounts, group membership and volunteer records.  
+> The deploying organization must document a valid processing purpose and lawful basis, inform data subjects, restrict collection and access, set and enforce a retention/deletion schedule, and review third-party processing and international transfers where applicable. Consent must be recorded where it is the applicable legal basis or channel requirement; consent is not automatically the lawful basis for every CRM operation.  
+> Do not import personal chat transcripts, audio, financial/payment evidence or private contact lists wholesale into CRM. Retain approved summaries/identifiers only, with host authorization and safeguards. Email addresses below use the reserved `example.org` domain as synthetic test fixtures. See [Track S privacy governance](../development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Document de Référence Méthodologique & Transformation Associative**  
 > **Auteur** : Thomas Awounfouet / WebTech Forge  
 > **Cas d'Usage** : Association *Diversité Alternative*  
@@ -132,7 +138,7 @@ flowchart TD
 │  [ FORMULAIRE ANNUAIRE (Forms 2) ] ──► Enrichissement Custom Fields & Compétences              │
 │             │                                                                                   │
 │             ▼                                                                                   │
-│  [ TEAM IT & ADMIN M365 ] ──► Provisioning du compte M365 (prenom.nom@asso.org)                │
+│  [ TEAM IT & ADMIN M365 ] ──► Provisioning du compte M365 (demo.person01@example.org)                │
 │             │                                                                                   │
 │             ▼                                                                                   │
 │  [ ONBOARDING COMMUNAUTÉ ] ──► Boucles WhatsApp (Général + Pôle) & Canaux Teams                │
@@ -179,7 +185,7 @@ crm = CRM.memory()  # ou persistance PostgreSQL locale pycrm
 contact = crm.contacts.create(
     first_name="Khadija",
     last_name="Benali",
-    emails=(ContactEmail("khadija.benali.perso@gmail.com", is_primary=True),),
+    emails=(ContactEmail("demo.person02@example.org", is_primary=True),),
     phones=(ContactPhone("+33698765432", is_primary=True),),
     source="eventbrite_gala_annuel",
 )
@@ -245,7 +251,7 @@ champs_associatifs = [
     CustomFieldDefinition(
         key="m365_upn",
         name="Compte Email Microsoft 365",
-        field_type=CustomFieldType.TEXT,  # ex: khadija.benali@diversite-alternative.org
+        field_type=CustomFieldType.TEXT,  # ex: demo.person03@example.org
     ),
     CustomFieldDefinition(
         key="m365_license_active",

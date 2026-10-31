@@ -1,62 +1,79 @@
-# PyCRMKit Agentic Ecosystem - Orchestration des Agents Autonomes
+# PyCRMKit Agent Playbooks - scope and execution policy
 
-> **Manifeste de l'Architecture Agentique de PyCRMKit**  
-> **Localisation** : `professionnal/webtech/packages/pycrmkit/.agents/`  
-> **Socle Exécutable** : CLI `pck` + Facades Python de PyCRMKit (v1.2.0+)  
-> **Version de l'Écosystème** : 1.0.0
+**Status:** DOCUMENTATION ONLY / ILLUSTRATIVE / NOT EXECUTABLE as a complete workflow
+**Track:** PyCRMKit 1.3.0, AUD-FIX-05 and AUD-FIX-08
+**Scope:** Six role guides and seven skill collections
 
----
+## What exists
 
-## 1. Philosophie : Du « Vaporware » des Réseaux aux Vrais Agents Exécutables
+PyCRMKit provides a CRM domain library with a public Python API plus an
+optional Typer/Rich CLI. The files in `.agents/agents/` and
+`.agents/skills/` describe candidate business workflows for *external*
+assistants and human maintainers. They do **not** provide an autonomous
+agent runtime, scheduler, sandbox, authenticated principal, tool gateway
+or implicit authority to read or mutate personal data.
 
-Les réseaux sociaux regorgent d'infographies théoriques promettant des dizaines d'agents IA autonomes sans aucune assise technique.  
-**PyCRMKit prend le contre-pied absolu de cette approche :**
-* Chaque agent défini dans ce répertoire repose sur un **moteur CRM transactionnel réel** (architecture hexagonale, transactions Unit of Work, validation d'invariants métier).
-* Chaque skill fournit des **procédures déterministes et exécutables** via la CLI `pck` et le SDK Python `from pycrmkit.facade.crm import CRM`.
-* Les agents n'hallucinent pas : ils manipulent des entités persistées (Organisations, Contacts, Opportunités, Pipelines, Tâches, Timeline, Custom Fields, Tags).
+Some `SKILL.md`, `workflow.md` and `examples.md` snippets describe
+**proposed** commands, domain methods or integrations that have **not**
+been implemented in the shipped CLI or public facade. Such snippets are
+illustrations only and MUST NOT be presented or executed as verified commands.
 
----
+## Safe execution principles
 
-## 2. Cartographie des 6 Agents Métiers Spécialisés
+1. Inspect `pck --help` and each subcommand's `--help` in the installed
+   version before assuming a command is available.
+2. For Python, use documented public APIs such as
+   `from pycrmkit import CRM` and explicit `CRM.memory()`; do not use
+   the absent `pycrmkit.facade.crm` module or `CRM()` without the
+   required injected dependencies.
+3. Where a method or workflow is not implemented, label it *pseudocode*
+   and create a separate approved feature request rather than fabricating
+   a CLI command.
+4. The host application is responsible for authentication, tenant and
+   actor authorization, lawful processing and consent.
+5. Treat outreach, exports, writes, deletions and sensitive reads as
+   privileged operations requiring host authorization and appropriate
+   human confirmation. A markdown guide cannot override these controls.
+6. Mock email providers and in-memory demo data do not demonstrate external
+   delivery or durable production writes.
+7. Maintain evidence of installed wheel/sdist, exact SHA, CLI help and
+   integration tests before reclassifying an example as executable.
 
-| Agent | Rôle Stratégique | Cas d'Usage Couvert | Skills Associés |
-|---|---|---|---|
-| **`agency-copilot`** | Copilote Studio Web & MCO | Pilotage de studio web solo : avant-vente, devis, delivery logiciel, contrats de MCO, et formalisation des flux WhatsApp. | `agency-client-lifecycle`, `whatsapp-dialog-processor` |
-| **`freelance-hunter`** | Chasseur de Missions & ATS | Recherche de missions en inter-contrat : suivi de candidatures, relances automatiques à J+5, négociation TJM et KPIs d'entonnoir. | `freelance-mission-hunter` |
-| **`tender-bid-manager`** | Spécialiste Commande Publique | Réponse aux marchés publics & appels d'offres : analyse Go/No-Go, verrouillage de la DLRO à J-1, cotraitance GME et capitalisation des débriefings. | `public-tender-qualifier` |
-| **`student-career-coach`** | Coach Insertion Professionnelle | Accompagnement d'étudiants & juniors : stages, alternances, premier emploi CDD/CDI, préparation d'entretiens et rapport pédagogique. | `student-career-launch` |
-| **`association-coordinator`** | Coordinateur Vie Associative | Onboarding bénévoles, adhésions multi-canal, provisioning Microsoft 365, groupes WhatsApp et réadhésions annuelles (Diversité Alternative). | `association-member-onboarding` |
-| **`alumni-network-manager`** | Coordinateur Réseau Alumni | Constitution d'annuaire d'anciens Django, référents de promo, ingestion Google Forms, invitations tokenisées et activation. | `alumni-directory-activation` |
+## Concrete CLI inventory at S0 candidate SHA
 
----
+| Group | Commands registered |
+|---|---|
+| Top-level | `dashboard`, `seed`, `reset`, `version`, `doctor`, `tours`, `demo` |
+| `contacts` | `list`, `create`, `show` |
+| `orgs` | `list`, `create`, `show` |
+| `sales` | `pipelines`, `opps`, `move`, `create` |
+| `tasks` | `list`, `create`, `complete` |
+| `campaigns` | `list`, `create`, `activate`, `complete`, `audience` |
+| `migrate` | `upgrade`, `downgrade`, `check`, `current` |
 
-## 3. Répertoire des Skills Opérationnels
+Examples **not** supported in this snapshot:
+`pck config show`, `pck leads create`, `pck orgs update`,
+`pck contacts update`, `pck orgs tag`,
+`pck sales move <id> <stage> --pipeline ...`,
+`pck tasks create --title ...`, and passing a date-time where
+the `--due` option requires `YYYY-MM-DD`.
 
-Les compétences spécialisées sont localisées dans `.agents/skills/` :
+## Role guide directory
 
-```text
-.agents/skills/
-├── agency-client-lifecycle/          # Pilotage commercial, delivery et maintenance MCO d'agence
-├── whatsapp-dialog-processor/        # Extraction et formalisation des messages & vocaux WhatsApp
-├── freelance-mission-hunter/         # Suivi de candidatures freelance, TJM et KPIs d'entonnoir
-├── public-tender-qualifier/          # Analyse Go/No-Go, calendrier DLRO J-1 et mémoires techniques
-├── student-career-launch/            # Gestion de candidatures stages/alternances et mémo d'entretiens
-├── association-member-onboarding/    # Onboarding associatif, cotisations multi-canal, M365 et N+1
-└── alumni-directory-activation/      # Déploiement annuaire alumni Django, référents promo et activation
-```
+- agency-copilot
+- alumni-network-manager
+- association-coordinator
+- freelance-hunter
+- student-career-coach
+- tender-bid-manager
 
----
+## Acceptance and migration
 
-## 4. Règles d'Exécution pour les LLMs et Assistants IA
+The seven `SKILL.md` entrypoints must warn that their steps are not
+executable as written. Associated `workflow.md` and `examples.md`
+inherit this disclaimer. Subsequent work must provide tested, corrected
+runnable examples with CLI and public API conformance, or keep them
+explicitly non-executable. See AUD-FIX-05 (#122), AUD-FIX-08 (#125),
+the proposed ADR-DX-001 (#130) and S1 qualification.
 
-Lorsqu'un agent IA (Antigravity, OpenCode, Claude Code, etc.) intervient dans le cadre de ce dépôt :
-
-1. **Priorité à l'Action Déterministe** :  
-   Toujours privilégier les commandes CLI `pck` documentées dans les skills (`pck orgs`, `pck contacts`, `pck sales`, `pck tasks`, `pck dashboard`) ou les appels SDK Python. Ne jamais inventer d'étapes hors contrat.
-2. **La Règle de l'Horodatage et des Délais** :  
-   Pour les marchés publics, la tâche de dépôt DLRO **doit impérativement être fixée à J-1 à 16h00** avec la priorité `URGENT`.  
-   Pour les candidatures freelance et étudiantes, la tâche de relance **doit être fixée à J+5**.
-3. **Respect de l'Isolation Hexagonale** :  
-   Les scripts ou automatisations créés par les agents ne doivent jamais importer directement de drivers de stockage physiques (`sqlalchemy`, `psycopg`) ; ils doivent passer exclusivement par la facade `CRM` ou la CLI `pck`.
-4. **Conservation de la Mémoire Opposable** :  
-   Chaque interaction client clé (décision orale, note vocale, retour de débriefing) doit être enregistrée dans la `crm.timeline` sous forme de note ou d'activité horodatée.
+**No claim of S1 acceptance or production agent support is made here.**

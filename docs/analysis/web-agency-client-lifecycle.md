@@ -1,5 +1,11 @@
 # Analyse Exhaustive : Gestion du Cycle de Vie Client d'une Agence Web Solo avec PyCRMKit
 
+> **Privacy and implementation notice (Track S / AUD-FIX-09)**  
+> **Classification: ILLUSTRATIVE / NON-EXECUTABLE without verification.** This is a design scenario, not proof of a working CLI command, full agent runtime, deployed integration, production-grade security, external email delivery or regulatory compliance. Validate every code snippet against the exact installed PyCRMKit version and obtain host approval before live use.  
+> **Intended use:** Agency client and support contract administration. **Data at risk:** Customer inquiries, emails, phone numbers, WhatsApp notes and service-contract records.  
+> The deploying organization must document a valid processing purpose and lawful basis, inform data subjects, restrict collection and access, set and enforce a retention/deletion schedule, and review third-party processing and international transfers where applicable. Consent must be recorded where it is the applicable legal basis or channel requirement; consent is not automatically the lawful basis for every CRM operation.  
+> Do not import personal chat transcripts, audio, financial/payment evidence or private contact lists wholesale into CRM. Retain approved summaries/identifiers only, with host authorization and safeguards. Email addresses below use the reserved `example.org` domain as synthetic test fixtures. See [Track S privacy governance](../development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Document de Référence Métier & Architecture**  
 > **Auteur** : Thomas Awounfouet / WebTech Forge  
 > **Cible** : Développeur solo, artisan du logiciel, fondateur d'agence web ou studio tech  
@@ -312,7 +318,7 @@ Voici le déroulé pas à pas d'un projet client type en ligne de commande :
 pck leads create \
     --name "Alexandre Martin" \
     --org "Krono Logistics" \
-    --email "a.martin@kronologistics.com" \
+    --email "demo.person01@example.org" \
     --phone "+33 6 12 34 56 78" \
     --source "Site Web"
 ```
