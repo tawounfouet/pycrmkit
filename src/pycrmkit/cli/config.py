@@ -77,7 +77,7 @@ class CLIConfig:
 def _substitute_env_vars(text: str) -> str:
     """Replace ${VAR} or ${VAR:-default} with environment values."""
 
-    def _replacer(match: re.Match) -> str:
+    def _replacer(match: re.Match[str]) -> str:
         var_name = match.group(1)
         default_val = match.group(2) if match.group(2) is not None else ""
         return os.environ.get(var_name, default_val)
