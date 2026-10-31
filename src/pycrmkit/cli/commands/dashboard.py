@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 from decimal import Decimal
 from typing import Annotated
 
@@ -12,7 +13,7 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
-from pycrmkit import __version__
+from pycrmkit import CRM, __version__
 from pycrmkit.campaigns import CampaignStatus
 from pycrmkit.cli.console import console
 from pycrmkit.cli.state import (
@@ -45,7 +46,9 @@ def dashboard_command(
     ] = False,
 ) -> None:
     """Executive CRM Command Center: KPI cards, visual sales funnel, campaigns, and action items."""
-    with get_crm_context(save=True) as crm:
+    # --demo always uses an ephemeral CRM, even when PostgreSQL is configured.
+    context = nullcontext(CRM.memory()) if demo else get_crm_context(save=False)
+    with context as crm:
         # Check if store has records
         contact_page = crm.contacts.search(page=OffsetPageRequest(limit=1))
         opp_page = query_opportunities(crm, page=OffsetPageRequest(limit=100))
@@ -94,8 +97,10 @@ def dashboard_command(
         open_tasks = [t for t in tasks if t.status in (TaskStatus.OPEN, TaskStatus.IN_PROGRESS)]
 
         # --- HEADER BANNER ---
-        db_url = get_database_url()
-        if db_url:
+        db_url = None if demo else get_database_url()
+        if demo:
+            mode_text = "  •  Mode: Ephemeral demo (no persistence)\n"
+        elif db_url:
             db_label = db_url.split("/")[-1].split("?")[0] or "PostgreSQL"
             mode_text = f"  •  Mode: PostgreSQL ({db_label})\n"
         else:

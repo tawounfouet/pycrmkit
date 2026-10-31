@@ -60,8 +60,14 @@ def main(argv: Sequence[str] | None = None, prog_name: str | None = None) -> int
         )
         return MISSING_DEPENDENCY_EXIT_CODE
 
-    # Load local environment and declarative YAML configuration
-    _bootstrap_environment()
+    # A declared but invalid configuration is an error, never an implicit local fallback.
+    from pycrmkit.cli.config import CLIConfigurationError
+
+    try:
+        _bootstrap_environment()
+    except CLIConfigurationError as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return int(ExitCode.VALIDATION_ERROR)
 
     # Dynamic import of heavy Typer application
     from pycrmkit.cli.app import app

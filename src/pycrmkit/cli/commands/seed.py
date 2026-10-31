@@ -2,17 +2,44 @@
 
 from __future__ import annotations
 
+from typing import Annotated
+
 import typer
 from rich.panel import Panel
 from rich.table import Table
 
+from pycrmkit.cli.config import load_yaml_config, resolve_database_url
 from pycrmkit.cli.console import console
+from pycrmkit.cli.exit_codes import ExitCode
 from pycrmkit.cli.state import _resolve_store_path, get_crm_context, seed_demo_data
 
 
-def seed_command() -> None:
-    """Seed the local CRM state with a realistic enterprise B2B scenario."""
-    with get_crm_context(save=True) as crm:
+def seed_command(
+    database: Annotated[bool, typer.Option("--database", help="Explicitly select configured persistent database")] = False,
+    local: Annotated[bool, typer.Option("--local", help="Explicitly select local CLI state")] = False,
+    yes: Annotated[bool, typer.Option("--yes", help="Authorize persistent demo writes")] = False,
+) -> None:
+    """Seed demonstration data. A persistent database needs explicit authorization."""
+    if database and local:
+        console.print("[red]Choose either --database or --local, not both.[/red]")
+        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+    configured_url, source = resolve_database_url()
+    if database:
+        if not configured_url:
+            console.print("[red]No persistent database is configured.[/red]")
+            raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        environment = load_yaml_config().runtime.environment.casefold()
+        if environment in ("production", "prod"):
+            console.print("[red]Demo seeding is prohibited in production.[/red]")
+            raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        if not yes:
+            console.print("[red]Persistent demo writes require --database --yes.[/red]")
+            raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+        console.print(f"[yellow]Authorized demo write to configured database ({source}).[/yellow]")
+    elif configured_url and not local:
+        console.print("[red]A database is configured. Use --local for local state, or --database --yes for persistent demo writes.[/red]")
+        raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR))
+    with get_crm_context(save=not database, force_local=not database) as crm:
         counts = seed_demo_data(crm)
 
     table = Table(title="Demo Enterprise Scenario Loaded", border_style="green")

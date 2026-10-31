@@ -105,10 +105,10 @@ def get_database_url() -> str | None:
 
 @contextmanager
 def get_crm_context(
-    save: bool = True, actor_id: str = "cli-operator"
+    save: bool = True, actor_id: str = "cli-operator", *, force_local: bool = False
 ) -> Generator[CRM, None, None]:
     """Context manager providing a populated CRM instance and auto-saving mutations."""
-    db_url = get_database_url()
+    db_url = None if force_local else get_database_url()
     if db_url:
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
