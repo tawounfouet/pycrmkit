@@ -12,6 +12,9 @@ Build customer relationship workflows without running a full CRM server. PyCRMKi
 - **Automation:** domain events, audit history, webhooks and provider-neutral email workflows.
 - **Data operations:** CSV/JSON/JSONL import and export, external identities, duplicate review and contact merge.
 - **Integrations:** in-memory storage, SQLAlchemy/PostgreSQL, FastAPI, Django and Django REST Framework.
+- **CLI & Executive Diagnostics:** terminal command center (`pck` / `pycrm`), live visual sales funnel, pipeline KPIs, environment diagnostics (`pck doctor`), and declarative config (`pycrm.yml`, `.env`).
+- **Autonomous Agent Ecosystem:** orchestration layer (`.agents/`) with 6 specialized domain agents and 7 operational skill triads equipped with dual Mermaid and clean ASCII workflows.
+- **Business Architecture Blueprints:** 7 production-grade blueprints (`docs/analysis/`) covering web agencies, WhatsApp CRM, freelance hunting, public tenders, student careers, non-profit onboarding, and alumni networks.
 
 ## Installation
 
@@ -62,6 +65,7 @@ uv pip install -e ".[cli]"
 
 # Executive CRM Command Center & Analytics Dashboard
 pck dashboard         # Live KPIs, visual sales funnel, campaigns, action items
+pck config show       # Show active configuration (env, pycrm.yml, safe defaults)
 pck seed              # Seed realistic B2B enterprise demonstration scenario
 pck reset -f          # Reset local CRM store state
 
@@ -83,6 +87,25 @@ pck tours             # Run autonomous feature tours suite (< 150 ms)
 pck migrate --help    # Manage database schema migrations via Alembic
 ```
 
+## Business Architecture Blueprints
+
+Real-world architectural blueprints with transactional code patterns, Mermaid flows, and ASCII schemas:
+
+- [Web Agency Client Lifecycle](docs/analysis/web-agency-client-lifecycle.md) — Commercial avant-vente, devis, delivery & ongoing MCO contracts.
+- [WhatsApp Dialog Processor](docs/analysis/whatsapp-and-referral-crm-analysis.md) — Conversational intake, phone identity (E.164) & entity extraction.
+- [Freelance Mission Hunter](docs/analysis/freelance-mission-hunt-and-kpis.md) — Personal ATS, application tracking & J+5 relances.
+- [Public Procurement & Tender Qualification](docs/analysis/public-tenders-and-rfp-bid-management.md) — Go/No-Go scorecard, GME consortia & J-1 16h00 DLRO deadline lock.
+- [Student Career Launch](docs/analysis/student-internship-alternance-job-hunt.md) — Junior & student job hunt, interview notes & academic exports.
+- [Non-Profit Member Onboarding](docs/analysis/association-member-lifecycle-and-onboarding.md) — Multi-channel fees (HelloAsso/virement/PayPal), M365 IT tasks & annual renewal campaigns (*Diversité Alternative*).
+- [Alumni Directory & Network Activation](docs/analysis/alumni-directory-and-network-activation.md) — Cohort ambassadors, Google Forms import, tokenized invite & Django account activation.
+
+## Autonomous Agent Ecosystem (`.agents/`)
+
+PyCRMKit embeds an operational agent ecosystem in `.agents/`:
+- **6 Autonomous Agents** (`.agents/agents/`): `agency-copilot`, `freelance-hunter`, `tender-bid-manager`, `student-career-coach`, `association-coordinator`, `alumni-network-manager`.
+- **7 Operational Skill Triads** (`.agents/skills/`): complete specification (`SKILL.md`), operational workflow with dual Mermaid & ASCII diagrams (`workflow.md`), and concrete recipes (`examples.md`).
+- **Standardized Workflows**: all skill workflows include dual Mermaid and ASCII diagrams, and strictly use relative links.
+
 ## Architecture
 
 ```text
@@ -95,9 +118,9 @@ The core has **no mandatory third-party runtime dependencies**. SQLAlchemy, Post
 
 ## Documentation
 
-- [Quickstart](https://github.com/tawounfouet/pycrmkit/blob/main/docs/getting-started/quickstart.md) · [Guides](https://github.com/tawounfouet/pycrmkit/blob/main/docs/guides/index.md)
-- [Campaigns](https://github.com/tawounfouet/pycrmkit/blob/main/docs/campaigns/index.md) · [Compatibility](https://github.com/tawounfouet/pycrmkit/blob/main/docs/reference/1.2.0-support-and-compatibility.md)
-- [Releases](https://github.com/tawounfouet/pycrmkit/releases) · [Changelog](https://github.com/tawounfouet/pycrmkit/blob/main/CHANGELOG.md) · [Contributing](https://github.com/tawounfouet/pycrmkit/blob/main/CONTRIBUTING.md)
+- [Quickstart](docs/getting-started/quickstart.md) · [Guides](docs/guides/index.md) · [Blueprints & Analysis](docs/analysis/web-agency-client-lifecycle.md)
+- [Campaigns](docs/campaigns/index.md) · [Compatibility](docs/reference/1.2.0-support-and-compatibility.md) · [Agent Ecosystem](.agents/AGENTS.md)
+- [Releases](https://github.com/tawounfouet/pycrmkit/releases) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 **Release availability:** Check the GitHub Releases page and PyPI independently. A version present in source control is not necessarily published on either platform.
 

@@ -4,8 +4,26 @@ All notable changes to PyCRMKit are documented here. Releases follow Semantic Ve
 
 ## [Unreleased]
 
+### Added
+- **Executive Terminal CLI (`pck` / `pycrm`)**: Modern command center powered by Typer and Rich with real-time visual sales pipeline funnel, conversion analytics, B2B enterprise dataset seeding (`pck seed`), state reset (`pck reset -f`), environment diagnostics (`pck doctor`), and capability versioning (`pck version`).
+- **Declarative Configuration Engine**: Hierarchical configuration resolver prioritizing CLI flags > environment variables (`.env`, `PYCRMKIT_*`, `DATABASE_URL`) > YAML project configuration files (`pycrm.yml`, `pycrmkit.yml`) > in-memory safe defaults.
+- **Autonomous Agent Ecosystem (`.agents/`)**: Six deterministic domain agents (`agency-copilot`, `freelance-hunter`, `tender-bid-manager`, `student-career-coach`, `association-coordinator`, `alumni-network-manager`) backed by real transactional CRM engine operations and hexagonal isolation.
+- **Seven Operational Domain Skills Triads**: Full `SKILL.md`, `workflow.md`, and `examples.md` triads featuring dual Mermaid and clean ASCII diagrams:
+  - `agency-client-lifecycle`: Commercial avant-vente, software delivery & ongoing MCO contracts.
+  - `whatsapp-dialog-processor`: Informal text & voice note extraction into structured CRM entities with E.164 phone identity.
+  - `freelance-mission-hunter`: Personal ATS, application tracking, weighted revenue calculation and J+5 follow-up tasks.
+  - `public-tender-qualifier`: Public procurement bid management, Go/No-Go scorecard, GME consortia modeling, and J-1 16h00 DLRO submission deadline lock.
+  - `student-career-launch`: Student & junior job hunt, polite J+5 follow-ups, interview notes and school report exports.
+  - `association-member-onboarding`: Multi-channel membership fees (HelloAsso, bank transfer, PayPal), discovery calls, automated M365 IT tasks, WhatsApp community onboarding, and dynamic annual renewal (N+1) campaigns (customized for *Diversité Alternative*).
+  - `alumni-directory-activation`: Cohort ambassadors (référents de promo), Google Forms CSV import with formula injection protection, fuzzy deduplication, tokenized email invitations (`/activate?token=...`), J+7 inactivity reminders, and Django account activation.
+- **Autonomous Feature Tours & Demonstrations**: Six self-contained, sub-second tours (`make tours` / `python3 examples/feature_tours/run_all_tours.py`) running in under 150 ms with zero external database dependencies, accompanied by 6 interactive Jupyter demonstration notebooks.
+- **Business Architecture Blueprints & Analysis Documents**: Seven comprehensive business and technical analysis papers under `docs/analysis/` fully integrated into MkDocs navigation.
+
 ### Documentation
-- Simplified the repository README to emphasize installation, the public CRM facade, integrations and documentation.
+- Standardized all internal agent and skill documentation links to relative paths (zero absolute system links).
+- Hardened all Mermaid diagrams across workflows and blueprints with quoted node labels to guarantee cross-renderer compatibility.
+- Added comprehensive ASCII schema equivalents for all Mermaid workflow diagrams.
+- Simplified the repository README to emphasize installation, the public CRM facade, CLI, blueprints and agent ecosystem.
 - Corrected the 1.2.0 source/publication status without changing runtime code, public APIs or release artifacts.
 
 ## [1.2.0] - PREPARED / NOT PUBLISHED

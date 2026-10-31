@@ -60,10 +60,20 @@ Do not defer all verification to the end of the session. The in-memory mode `CRM
 make tours
 python3 examples/feature_tours/run_all_tours.py
 
+# Executive Terminal CLI (pck) & Diagnostic
+pck doctor            # Environment sanity & database connectivity audit
+pck dashboard         # Visual sales funnel, KPIs & priority action items
+pck config show       # Show active configuration (env, pycrm.yml, defaults)
+pck contacts list     # List contacts with phone/email channels & status
+pck orgs list         # List corporate accounts and organizations
+pck sales opps        # List deal opportunities & weighted revenue forecast
+pck sales move <id> <stage>  # Transition deal respecting pipeline rules
+
 # Targeted unit testing
 pytest tests/unit/core/test_entities.py -v
 pytest tests/unit/sales/ -v
 pytest tests/unit/campaigns/ -v
+pytest tests/unit/cli/ -v
 
 # Static analysis and quality
 make lint             # ruff check .
@@ -75,7 +85,7 @@ make quality          # ruff check + ruff format check + mypy strict
 make verify           # tours + test-unit + quality + build
 
 # Documentation
-make docs-build       # mkdocs build --strict
+make docs-build       # mkdocs build
 make docs-serve       # mkdocs serve
 
 # Database migrations (when working on PostgreSQL storage)
@@ -85,7 +95,24 @@ make migration-upgrade
 
 ---
 
-## 4. Prohibited Actions for Agents
+## 4. Agent Ecosystem & Operational Skills
+
+Autonomous agents and specialized skills live in `.agents/`:
+- **Architecture Manifest** : `.agents/AGENTS.md`
+- **Specialized Agents** (`.agents/agents/`) :
+  - `agency-copilot` : Studio web avant-vente, devis, delivery & MCO
+  - `freelance-hunter` : ATS personnel, prospection & relances J+5
+  - `tender-bid-manager` : Commande publique, Go/No-Go & verrou DLRO J-1
+  - `student-career-coach` : Insertion professionnelle stages & alternances
+  - `association-coordinator` : Onboarding associatif, cotisations multi-canal & M365
+  - `alumni-network-manager` : Annuaire alumni Django, référents promo & activation
+- **Operational Skills Triads** (`.agents/skills/<skill>/`) :
+  - Each skill provides `SKILL.md` (rules & CLI), `workflow.md` (Mermaid + ASCII), and `examples.md` (concrete recipes).
+  - All skill and agent links MUST remain relative (never use absolute `file:///Users/awf` links).
+
+---
+
+## 5. Prohibited Actions for Agents
 
 - **DO NOT** import physical storage libraries (`sqlalchemy`, `psycopg`, `alembic`) or web frameworks (`fastapi`, `django`) into domain modules (`src/pycrmkit/core/`, `sales/`, `campaigns/`, `segments/`).
 - **DO NOT** bypass the Unit of Work (`uow_factory()`) to directly mutate storage repositories.
