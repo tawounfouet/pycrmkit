@@ -13,7 +13,7 @@ import json
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import urlparse
 
@@ -106,7 +106,7 @@ def verify() -> dict[str, Any]:
     return {
         "project": REPO,
         "version": VERSION,
-        "checked_at_utc": datetime.now(timezone.utc).isoformat(),
+        "checked_at_utc": datetime.now(UTC).isoformat(),
         "github_release": github.get("html_url"),
         "github_published_at": github.get("published_at"),
         "pypi_release": f"https://pypi.org/project/pycrmkit/{VERSION}/",
