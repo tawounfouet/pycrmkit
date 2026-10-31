@@ -201,12 +201,12 @@ def _decode(value: object, depth: int = 0) -> object:
         if not isinstance(data, dict) or not all(isinstance(k, str) for k in data):
             raise CLIStateError("Invalid domain object fields")
         allowed_fields = {f.name for f in dataclasses.fields(cls) if f.init}
-        if not set(data) <= allowed_fields:
-            raise CLIStateError("Unknown domain object field")
+        if set(data) != allowed_fields:
+            raise CLIStateError("Missing or unknown domain object field")
         kwargs = {k: _decode(v, depth + 1) for k, v in data.items()}
         try:
             return cls(**kwargs)
-        except (TypeError, ValueError, AttributeError, KeyError) as exc:
+        except Exception as exc:  # noqa: BLE001 - untrusted model constructor boundary
             raise CLIStateError("Invalid domain object in local state") from exc
     if kind in ("map", "frozen_map", "tuple", "set", "frozenset"):
         _expect_keys(value, {"kind", "items"})
@@ -254,13 +254,31 @@ def dump_state(state: _MemoryState) -> bytes:
     return encoded
 
 
+def _unique_object_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject duplicate JSON object keys before they can shadow trusted fields."""
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise CLIStateError("Duplicate key in JSON CLI state")
+        result[key] = value
+    return result
+
+
+def _reject_invalid_constant(value: str) -> object:
+    raise CLIStateError(f"Invalid JSON numeric constant: {value}")
+
+
 def load_state(raw: bytes) -> _MemoryState:
-    """Reject unknown schemas, corrupted JSON and unregistered object tags."""
+    """Reject invalid schema, corrupt JSON, duplicate keys and forged type tags."""
     if len(raw) > MAX_STATE_BYTES:
         raise CLIStateError("CLI state exceeds configured maximum file size")
     try:
-        payload = json.loads(raw)
-    except (UnicodeError, json.JSONDecodeError, RecursionError) as exc:
+        payload = json.loads(
+            raw,
+            object_pairs_hook=_unique_object_pairs,
+            parse_constant=_reject_invalid_constant,
+        )
+    except (UnicodeError, ValueError, RecursionError) as exc:
         raise CLIStateError("Malformed JSON CLI state (legacy pickle is not supported)") from exc
     if not isinstance(payload, dict) or set(payload) != {"schema_version", "format", "state"}:
         raise CLIStateError("Invalid local CLI state envelope")
@@ -272,6 +290,11 @@ def load_state(raw: bytes) -> _MemoryState:
         decoded = _decode(payload["state"])
     except (RecursionError, OverflowError) as exc:
         raise CLIStateError("Malformed or deeply nested local state") from exc
-    if not isinstance(decoded, _MemoryState):
+    if type(decoded) is not _MemoryState:
         raise CLIStateError("CLI state root must be a MemoryStore snapshot")
+    # All root collections are real dicts in this schema. Bad JSON must never
+    # silently become an empty, partially missing or incorrectly typed store.
+    for field in dataclasses.fields(_MemoryState):
+        if type(getattr(decoded, field.name)) is not dict:
+            raise CLIStateError(f"Invalid MemoryStore collection: {field.name}")
     return decoded
