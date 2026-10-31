@@ -8,6 +8,16 @@ description: >
 user-invocable: true
 ---
 
+> **Execution status: ILLUSTRATIVE / NOT EXECUTABLE as written.**
+> This is a conceptual agent playbook, not a deployed autonomous runtime.
+> Some commands and Python methods in this file and its linked `workflow.md`
+> and `examples.md` do not exist in the current PyCRMKit CLI/public API.
+> Do not execute them without checking `pck --help` and the installed API.
+> Use `from pycrmkit import CRM` and explicit setup for real Python workflows.
+> Any access to personal data or external write requires host authorization.
+> See [Agent execution policy](../../AGENTS.md) and AUD-FIX-05 (#122).
+
+
 # Student Career Launch & ATS
 
 Use this skill when managing the job search for internships (stages), work-study programs (alternances), or early-career CDD/CDI positions with PyCRMKit.

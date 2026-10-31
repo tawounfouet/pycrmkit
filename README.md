@@ -15,9 +15,9 @@ Build customer relationship workflows without running a full CRM server. PyCRMKi
 - **Automation:** domain events, audit history, webhooks and provider-neutral email workflows.
 - **Data operations:** CSV/JSON/JSONL import and export, external identities, duplicate review and contact merge.
 - **Integrations:** in-memory storage, SQLAlchemy/PostgreSQL, FastAPI, Django and Django REST Framework.
-- **CLI & Executive Diagnostics:** terminal command center (`pck` / `pycrm`), live visual sales funnel, pipeline KPIs, environment diagnostics (`pck doctor`), and declarative config (`pycrm.yml`, `.env`).
-- **Autonomous Agent Ecosystem:** orchestration layer (`.agents/`) with 6 specialized domain agents and 7 operational skill triads equipped with dual Mermaid and clean ASCII workflows.
-- **Business Architecture Blueprints:** 7 production-grade blueprints (`docs/analysis/`) covering web agencies, WhatsApp CRM, freelance hunting, public tenders, student careers, non-profit onboarding, and alumni networks.
+- **CLI & Diagnostics (optional):** terminal commands (`pck` / `pycrm`), demonstration dashboards, diagnostic checks (`pck doctor`) and declarative configuration (`pycrm.yml`, `.env`). Dashboard metrics require verification of limits, completeness and currency handling.
+- **Agent playbooks (documentation only):** 6 role guides and 7 skill collections in `.agents/`. These are illustrative instructions, not an autonomous agent execution runtime or verified callable toolset.
+- **Business Architecture Blueprints:** 7 illustrative design blueprints (`docs/analysis/`) covering web agencies, WhatsApp CRM, freelance hunting, public tenders, student careers, non-profit onboarding, and alumni networks.
 
 ## Installation
 
@@ -56,9 +56,9 @@ for entry in crm.timeline.for_contact(contact.id).items:
 
 `CRM.memory()` requires no database or web framework. Add an adapter for durable storage or HTTP endpoints.
 
-## CLI Tool (`pck` / `pycrm`)
+## Optional CLI Tool (`pck` / `pycrm`)
 
-PyCRMKit includes an optional modern terminal CLI powered by Typer and Rich with zero external database dependencies:
+The development checkout includes an optional Typer/Rich CLI. Commands below were checked against the current command registration; inspect `pck --help` for the exact installed version. Persistent database operations require explicit configuration and authorization:
 
 ```bash
 # Install CLI optional dependencies (from local editable checkout)
@@ -67,10 +67,10 @@ pip install -e ".[cli]"
 uv pip install -e ".[cli]"
 
 # Executive CRM Command Center & Analytics Dashboard
-pck dashboard         # Live KPIs, visual sales funnel, campaigns, action items
-pck config show       # Show active configuration (env, pycrm.yml, safe defaults)
-pck seed              # Seed realistic B2B enterprise demonstration scenario
-pck reset -f          # Reset local CRM store state
+pck dashboard --demo  # Ephemeral in-memory demonstration; no persistent seed
+pck --help            # Discover supported commands; 'config show' is not registered
+pck seed --local      # Explicitly select local demo state; never silently write a DB
+pck reset             # Interactively confirm removal of local CRM state
 
 # Domain Management Commands
 pck contacts list     # List contacts with phone/email channels & status
@@ -86,7 +86,7 @@ pck tasks complete <id>      # Mark action item as completed
 # Diagnostics & Engine
 pck doctor            # Run diagnostic checks & environment audit
 pck version           # Show capability extras (SQLAlchemy, PostgreSQL, FastAPI, etc.)
-pck tours             # Run autonomous feature tours suite (< 150 ms)
+pck tours             # Run six self-contained demonstration tours
 pck migrate --help    # Manage database schema migrations via Alembic
 ```
 
@@ -102,11 +102,11 @@ Real-world architectural blueprints with transactional code patterns, Mermaid fl
 - [Non-Profit Member Onboarding](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/association-member-lifecycle-and-onboarding.md) - Multi-channel fees (HelloAsso/virement/PayPal), M365 IT tasks & annual renewal campaigns (*Diversité Alternative*).
 - [Alumni Directory & Network Activation](https://github.com/tawounfouet/pycrmkit/blob/main/docs/analysis/alumni-directory-and-network-activation.md) - Cohort ambassadors, Google Forms import, tokenized invite & Django account activation.
 
-## Autonomous Agent Ecosystem (`.agents/`)
+## Agent Playbooks (`.agents/`) - Documentation Only
 
-PyCRMKit embeds an operational agent ecosystem in `.agents/`:
-- **6 Autonomous Agents** (`.agents/agents/`): `agency-copilot`, `freelance-hunter`, `tender-bid-manager`, `student-career-coach`, `association-coordinator`, `alumni-network-manager`.
-- **7 Operational Skill Triads** (`.agents/skills/`): complete specification (`SKILL.md`), operational workflow with dual Mermaid & ASCII diagrams (`workflow.md`), and concrete recipes (`examples.md`).
+PyCRMKit provides role and workflow documents in `.agents/`. These instructions have not been qualified as an agent runtime, and their sample commands are illustrative unless validated against the installed CLI and public Python API:
+- **6 Agent Role Guides** (`.agents/agents/`): `agency-copilot`, `freelance-hunter`, `tender-bid-manager`, `student-career-coach`, `association-coordinator`, `alumni-network-manager`.
+- **7 Illustrative Skill Triads** (`.agents/skills/`): complete specification (`SKILL.md`), operational workflow with dual Mermaid & ASCII diagrams (`workflow.md`), and candidate recipes (`examples.md`). Some commands in these recipes are not currently supported and must not be executed without verification.
 - **Standardized Workflows**: all skill workflows include dual Mermaid and ASCII diagrams, and strictly use relative links.
 
 ## Architecture
