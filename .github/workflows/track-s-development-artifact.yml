@@ -1,0 +1,68 @@
+name: Track S - Development Artifact Qualification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  installed-wheel:
+    name: Track S wheel and CLI on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build and validate development source distributions
+        run: |
+          python -m pip install --upgrade "build>=1.2" "twine>=6"
+          python -m build
+          python -m twine check dist/*
+      - name: Verify metadata and run installed CLI outside checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          from email.parser import Parser
+
+          wheel = next(Path("dist").glob("pycrmkit-*.whl"))
+          with ZipFile(wheel) as archive:
+              metadata = Parser().parsestr(archive.read(next(
+                  name for name in archive.namelist() if name.endswith(".dist-info/METADATA")
+              )).decode())
+              extras = set(metadata.get_all("Provides-Extra", []))
+              assert "cli" in extras, extras
+              entries = archive.read(next(
+                  name for name in archive.namelist() if name.endswith(".dist-info/entry_points.txt")
+              )).decode()
+              for script in ("pck =", "pycrm =", "pycrmkit ="):
+                  assert script in entries, (script, entries)
+          print("CLI extra and all three console scripts declared")
+          PY
+          python -m venv /tmp/pycrmkit-track-s-cli
+          /tmp/pycrmkit-track-s-cli/bin/python -m pip install --upgrade pip
+          /tmp/pycrmkit-track-s-cli/bin/python -m pip install "$(pwd)/$(ls dist/*.whl | head -1)[cli]"
+          (
+            cd /tmp
+            PYTHONPATH="" /tmp/pycrmkit-track-s-cli/bin/pck version --json > /tmp/pycrmkit-version.json
+            PYTHONPATH="" /tmp/pycrmkit-track-s-cli/bin/pck --help > /tmp/pycrmkit-help.txt
+            /tmp/pycrmkit-track-s-cli/bin/python - <<'PY'
+          import json
+          from importlib.metadata import version
+          data = json.load(open("/tmp/pycrmkit-version.json", encoding="utf-8"))
+          assert data["pycrmkit"]["version"] == version("pycrmkit")
+          assert "cli" in data["extras"]
+          print("Installed wheel CLI smoke: PASS")
+          PY
+          )
+          /tmp/pycrmkit-track-s-cli/bin/python -m pip check

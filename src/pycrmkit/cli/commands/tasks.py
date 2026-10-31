@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -9,6 +10,7 @@ import typer
 from rich.panel import Panel
 from rich.table import Table
 
+from pycrmkit import CRM
 from pycrmkit.cli.console import console
 from pycrmkit.cli.exit_codes import ExitCode
 from pycrmkit.cli.state import get_crm_context
@@ -23,12 +25,12 @@ tasks_app = typer.Typer(
 )
 
 
-def _resolve_task_id(crm, prefix_or_id: str) -> TaskId:
+def _resolve_task_id(crm: CRM, prefix_or_id: str) -> TaskId:
     """Resolve a task ID from full UUID or prefix."""
     clean = prefix_or_id.strip().rstrip(".")
     if len(clean) == 36 and "-" in clean:
         try:
-            return TaskId(clean)
+            return TaskId.parse(clean)
         except (ValueError, TypeError):
             pass
 
@@ -59,7 +61,7 @@ def list_tasks(
     query = TaskQuery()
     if status_filter:
         try:
-            query = query.with_status(TaskStatus(status_filter.lower()))
+            query = replace(query, status=TaskStatus(status_filter.lower()))
         except ValueError:
             console.print(
                 f"[bold red]Unknown status:[/bold red] '{status_filter}'. Allowed: open, in_progress, completed, cancelled."
@@ -69,7 +71,7 @@ def list_tasks(
     if priority_filter:
         try:
             prio = TaskPriority[priority_filter.upper()]
-            query = query.with_priority(prio)
+            query = replace(query, priority=prio)
         except KeyError:
             console.print(
                 f"[bold red]Unknown priority:[/bold red] '{priority_filter}'. Allowed: low, normal, high, urgent."

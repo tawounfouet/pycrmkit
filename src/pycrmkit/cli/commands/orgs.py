@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Annotated
 
 import typer
@@ -12,6 +13,7 @@ from pycrmkit import CRM
 from pycrmkit.cli.console import console
 from pycrmkit.cli.exit_codes import ExitCode
 from pycrmkit.cli.state import get_crm_context, query_opportunities
+from pycrmkit.contacts import ContactId
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import NotFoundError
@@ -31,7 +33,7 @@ def _resolve_organization(crm: CRM, query_str: str) -> Organization:
     query_clean = query_str.strip().rstrip(".")
 
     try:
-        oid = OrganizationId(query_clean)
+        oid = OrganizationId.parse(query_clean)
         return crm.organizations.get(oid)
     except (ValueError, TypeError, NotFoundError):
         pass
@@ -157,8 +159,8 @@ def show_organization(
             endpoint = rel.source if rel.source.kind == "contact" else rel.target
             if endpoint.kind == "contact":
                 try:
-                    c = crm.contacts.get(endpoint.id)
-                    role = rel.role or rel.title or rel.relationship_type.value
+                    c = crm.contacts.get(ContactId.parse(endpoint.id))
+                    role = rel.role or rel.title or rel.relationship_type.code
                     contact_rows.append((c, role, rel.is_primary))
                 except NotFoundError:
                     pass
@@ -169,8 +171,11 @@ def show_organization(
             for opp in query_opportunities(crm, page=OffsetPageRequest(limit=100)).items
             if opp.organization_id == org.id
         ]
-        total_pipeline = sum((o.estimated_value for o in opps), start=0)
-        total_weighted = sum((o.estimated_value * o.probability for o in opps), start=0)
+        total_pipeline = sum((o.estimated_value or Decimal(0) for o in opps), start=Decimal(0))
+        total_weighted = sum((
+            (o.estimated_value or Decimal(0)) * (o.probability or Decimal(0))
+            for o in opps
+        ), start=Decimal(0))
 
         # 3. Pending tasks
         tasks = crm.tasks.list(
@@ -298,17 +303,19 @@ def show_organization(
 
     if opps:
         for opp in opps:
-            weighted = opp.estimated_value * opp.probability
-            stage_badge = f"[bold cyan]{opp.stage_id.upper()}[/bold cyan]"
+            value = opp.estimated_value or Decimal(0)
+            probability = opp.probability or Decimal(0)
+            weighted = value * probability
+            stage_badge = f"[bold cyan]{(opp.stage_id or 'unassigned').upper()}[/bold cyan]"
             status_text = (
-                "[bold green]En cours[/bold green]" if opp.probability > 0 else "[dim]Terminé[/dim]"
+                "[bold green]En cours[/bold green]" if probability > 0 else "[dim]Terminé[/dim]"
             )
             o_table.add_row(
                 opp.name,
                 stage_badge,
-                f"{opp.estimated_value:,.2f} {opp.currency}",
-                f"{int(opp.probability * 100)} %",
-                f"{weighted:,.2f} {opp.currency}",
+                f"{value:,.2f} {opp.currency or 'N/A'}",
+                f"{int(probability * 100)} %",
+                f"{weighted:,.2f} {opp.currency or 'N/A'}",
                 status_text,
             )
         o_table.add_section()
@@ -355,7 +362,7 @@ def show_organization(
                 "call": "📞 Appel",
                 "email": "✉️ E-mail",
                 "note": "📝 Note",
-            }.get(act_type)
+            }.get(act_type if isinstance(act_type, str) else "")
             if not icon:
                 icon = {
                     "activity": "⚡ Activité",

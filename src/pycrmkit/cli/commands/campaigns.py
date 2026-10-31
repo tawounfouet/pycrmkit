@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Annotated
 
 import typer
 from rich.panel import Panel
 from rich.table import Table
 
+from pycrmkit import CRM
 from pycrmkit.campaigns import CampaignId, CampaignQuery, CampaignStatus
 from pycrmkit.cli.console import console
 from pycrmkit.cli.exit_codes import ExitCode
@@ -22,11 +24,11 @@ campaigns_app = typer.Typer(
 )
 
 
-def _resolve_campaign_id(crm, key_or_id: str) -> CampaignId:
+def _resolve_campaign_id(crm: CRM, key_or_id: str) -> CampaignId:
     """Resolve a campaign by UUID or slug key."""
     if len(key_or_id) == 36 and "-" in key_or_id:
         try:
-            return CampaignId(key_or_id)
+            return CampaignId.parse(key_or_id)
         except (ValueError, TypeError):
             pass
 
@@ -54,7 +56,7 @@ def list_campaigns(
     query = CampaignQuery()
     if status_filter:
         try:
-            query = query.with_status(CampaignStatus(status_filter.lower()))
+            query = replace(query, status=CampaignStatus(status_filter.lower()))
         except ValueError:
             console.print(
                 f"[bold red]Unknown status:[/bold red] '{status_filter}'. Allowed: draft, active, completed, archived."

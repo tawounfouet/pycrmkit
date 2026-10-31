@@ -10,22 +10,15 @@ Demonstrates and verifies:
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
-
 from pycrmkit import CRM, __version__
-from pycrmkit.contacts import ContactEmail
-from pycrmkit.communication.email.provider import EmailProviderResult, EmailDeliveryStatus
 from pycrmkit.communication import (
     CommunicationAddress,
-    CommunicationRecipient,
-    CommunicationContent,
     CommunicationChannel,
+    CommunicationContent,
+    CommunicationRecipient,
 )
+from pycrmkit.communication.email.provider import EmailDeliveryStatus, EmailProviderResult
+from pycrmkit.contacts import ContactEmail
 from pycrmkit.core.references import EntityReference
 
 

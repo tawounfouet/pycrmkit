@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from examples.production_qualification.scenario import run_scenario
+from pycrmkit import __version__
 
 
 def test_v1_cross_layer_production_qualification() -> None:
     summary = run_scenario()
 
-    assert summary["version"] == "1.2.0"
+    assert summary["version"] == __version__
     assert summary["qualification"] == "1.0.0-rc02-cross-layer-e2e"
 
     headless = summary["headless_customer_journey"]

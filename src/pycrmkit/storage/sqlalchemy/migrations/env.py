@@ -22,14 +22,11 @@ def _database_url() -> str:
     value = os.environ.get("PYCRMKIT_DATABASE_URL") or os.environ.get("DATABASE_URL")
     if value:
         return value
-    try:
-        from pycrmkit.cli.config import resolve_database_url
+    from pycrmkit.cli.config import resolve_database_url
 
-        resolved, _ = resolve_database_url()
-        if resolved:
-            return resolved
-    except Exception:
-        pass
+    resolved, _ = resolve_database_url()
+    if resolved:
+        return resolved
     configured = config.get_main_option("sqlalchemy.url")
     if not configured or configured.startswith("driver://"):
         raise RuntimeError(

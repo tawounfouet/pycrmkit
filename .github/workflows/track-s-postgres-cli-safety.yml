@@ -1,0 +1,40 @@
+name: Track S - PostgreSQL CLI No-Mutation Gate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard-real-postgres:
+    name: S0 / PostgreSQL 17 / demo no-mutation
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: pycrmkit
+          POSTGRES_DB: pycrmkit_s0_guard
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pycrmkit -d pycrmkit_s0_guard"
+          --health-interval 3s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      PYCRMKIT_TEST_POSTGRES_URL: postgresql+psycopg://pycrmkit@localhost:5432/pycrmkit_s0_guard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install current source and PostgreSQL test dependencies
+        run: python -m pip install -e ".[cli,postgresql]" "pytest>=8"
+      - name: No-mutation and production-write denial against isolated Postgres
+        run: python -m pytest -q tests/integrations/test_cli_postgresql_no_mutation.py -m postgresql

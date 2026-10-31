@@ -13,20 +13,12 @@ Demonstrates and verifies:
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Ensure pycrmkit package from src is accessible
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
-
 from pycrmkit import CRM, __version__
+from pycrmkit.calendars import BusinessCalendar
 from pycrmkit.contacts import ContactEmail, ContactPhone
 from pycrmkit.core.references import EntityReference
-from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 from pycrmkit.custom_fields import CustomFieldType
-from pycrmkit.calendars import BusinessCalendar
+from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 from pycrmkit.tasks import TaskPriority
 
 

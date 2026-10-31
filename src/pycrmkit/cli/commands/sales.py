@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from decimal import Decimal
 from typing import Annotated
 
@@ -77,10 +78,10 @@ def list_opportunities(
     """List deal opportunities, stage progressions, and weighted values."""
     query = OpportunityQuery()
     if stage:
-        query = query.in_stage(stage)
+        query = replace(query, stage_id=stage)
     if status_filter:
         try:
-            query = query.with_status(OpportunityStatus(status_filter.lower()))
+            query = replace(query, status=OpportunityStatus(status_filter.lower()))
         except ValueError:
             console.print(
                 f"[bold red]Unknown status:[/bold red] '{status_filter}'. Allowed: open, won, lost, cancelled."
@@ -161,7 +162,7 @@ def move_opportunity(
                 raise typer.Exit(code=int(ExitCode.GENERAL_ERROR))
         else:
             try:
-                resolved_id = OpportunityId(clean_opp)
+                resolved_id = OpportunityId.parse(clean_opp)
             except Exception as exc:
                 console.print(f"[bold red]Invalid opportunity UUID:[/bold red] {exc}")
                 raise typer.Exit(code=int(ExitCode.VALIDATION_ERROR)) from exc
@@ -215,8 +216,8 @@ def create_opportunity(
     """Create a new commercial deal in a pipeline."""
     with get_crm_context(save=True) as crm:
         try:
-            cid = ContactId(contact_id)
-            oid = OrganizationId(org_id) if org_id else None
+            cid = ContactId.parse(contact_id)
+            oid = OrganizationId.parse(org_id) if org_id else None
             est_val = Decimal(str(value)) if value is not None else None
 
             opp = crm.opportunities.create(
