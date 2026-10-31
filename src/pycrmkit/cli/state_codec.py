@@ -312,6 +312,10 @@ def load_state(raw: bytes) -> _MemoryState:
             object_pairs_hook=_unique_object_pairs,
             parse_constant=_reject_invalid_constant,
         )
+    except CLIStateError:
+        # The validation hooks have already identified a specific unsafe input.
+        # CLIStateError derives from ValueError, so preserve it explicitly.
+        raise
     except (UnicodeError, ValueError, RecursionError) as exc:
         raise CLIStateError("Malformed JSON CLI state (legacy pickle is not supported)") from exc
     if not isinstance(payload, dict) or set(payload) != {"schema_version", "format", "state"}:
