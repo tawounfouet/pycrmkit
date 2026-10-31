@@ -1,10 +1,9 @@
 name: Campaign 1.2 Stable DataOps Qualification
 
+# Frozen v1.2.0 promotion job: manual replay against the historical tag only.
+# Do not run a 1.2.0 promotion qualification against 1.3.0 development PRs.
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [release/1.2.0-campaign-metadata-stable, main]
+  workflow_dispatch:
 
 permissions:
   contents: read
