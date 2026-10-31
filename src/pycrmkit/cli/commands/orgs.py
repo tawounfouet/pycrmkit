@@ -11,9 +11,9 @@ from rich.table import Table
 
 from pycrmkit import CRM
 from pycrmkit.cli.console import console
-from pycrmkit.contacts import ContactId
 from pycrmkit.cli.exit_codes import ExitCode
 from pycrmkit.cli.state import get_crm_context, query_opportunities
+from pycrmkit.contacts import ContactId
 from pycrmkit.core.pagination import OffsetPageRequest
 from pycrmkit.core.references import EntityReference
 from pycrmkit.exceptions import NotFoundError
