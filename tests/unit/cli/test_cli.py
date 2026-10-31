@@ -301,3 +301,24 @@ def test_production_profile_refuses_local_seed_and_reset(
     assert main(["reset", "--force"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
     assert target.read_bytes() == original
     assert "prohibited in production" in capsys.readouterr().out
+
+
+def test_explicit_local_seed_does_not_access_configured_database(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    from pycrmkit.cli.state import load_store
+
+    state_path = tmp_path / "explicit-local.json"
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(state_path))
+    monkeypatch.setenv(
+        "PYCRMKIT_DATABASE_URL",
+        "postgresql+psycopg://127.0.0.1:1/unreachable_test_database",
+    )
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.setenv("PYCRMKIT_ENV", "development")
+    monkeypatch.delenv("PYCRMKIT_CONFIG", raising=False)
+
+    assert main(["seed", "--local"], prog_name="pck") == int(ExitCode.SUCCESS)
+    capsys.readouterr()
+    assert state_path.is_file()
+    assert load_store(state_path)._state.contacts
