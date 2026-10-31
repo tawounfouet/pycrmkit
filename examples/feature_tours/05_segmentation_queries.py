@@ -11,13 +11,6 @@ Demonstrates and verifies:
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
-
 from pycrmkit import CRM, __version__
 from pycrmkit.core.references import EntityReference
 from pycrmkit.segments import Predicate, QueryOperator, SegmentMode
@@ -37,10 +30,9 @@ def run_tour() -> dict[str, object]:
     print(f"\n[1/5] CRM initialisé (Acteur: {crm.context.actor_id})")
 
     c1 = crm.contacts.create(first_name="Alice", last_name="Dubois", source="linkedin")
-    c2 = crm.contacts.create(first_name="Bernard", last_name="Lemoine", source="linkedin")
     c3 = crm.contacts.create(first_name="Claire", last_name="Moreau", source="webinar")
     c4 = crm.contacts.create(first_name="David", last_name="Rousseau", source="cold_call")
-    print(f"[2/5] Base de contacts peuplée : 4 contacts créés avec sources distinctes")
+    print("[2/5] Base de contacts peuplée : 3 contacts créés avec sources distinctes")
 
     # 2. Static Segment
     static_seg = crm.segments.create_static(
