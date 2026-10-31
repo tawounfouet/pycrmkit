@@ -2,17 +2,17 @@
 
 from __future__ import annotations
 
-import copyreg
 import os
-import pickle
-import types
-from collections.abc import Generator
+import tempfile
+from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
 from pycrmkit import CRM
+from pycrmkit.cli.state_codec import MAX_STATE_BYTES, CLIStateError, dump_state, load_state
+from pycrmkit.communication.email.messages import EmailMessage
 from pycrmkit.communication.email.provider import EmailDeliveryStatus, EmailProviderResult
 from pycrmkit.contacts import ContactEmail, ContactPhone
 from pycrmkit.core.pagination import OffsetPageRequest, Page
@@ -21,29 +21,20 @@ from pycrmkit.custom_fields import CustomFieldType
 from pycrmkit.events import InProcessEventBus
 from pycrmkit.opportunities import Opportunity, OpportunityId, OpportunityQuery
 from pycrmkit.pipelines import Stage, StageOutcome, StageTransition
-from pycrmkit.relationships.entities import RelationshipEndpoint, RelationshipType
+from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 from pycrmkit.storage.memory._state import MemoryStore
 from pycrmkit.storage.memory.unit_of_work import MemoryUnitOfWork
 
 
-def _unpickle_mappingproxy(data: dict) -> types.MappingProxyType:
-    return types.MappingProxyType(data)
-
-
-def _reduce_mappingproxy(mp: types.MappingProxyType):
-    return _unpickle_mappingproxy, (dict(mp),)
-
-
-copyreg.pickle(types.MappingProxyType, _reduce_mappingproxy)
-
 DEFAULT_STORE_DIR = Path.home() / ".pycrmkit"
-DEFAULT_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.pickle"
+DEFAULT_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.json"
+LEGACY_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.pickle"
 
 
 class MockCliEmailProvider:
     """Zero-dependency in-memory email provider for CLI demonstrations."""
 
-    def send(self, message) -> EmailProviderResult:
+    def send(self, message: EmailMessage) -> EmailProviderResult:
         return EmailProviderResult(
             provider="cli-mailer",
             status=EmailDeliveryStatus.ACCEPTED,
@@ -58,27 +49,98 @@ def _resolve_store_path() -> Path:
     return DEFAULT_STORE_FILE
 
 
-def load_store(path: Path | None = None) -> MemoryStore:
-    """Load MemoryStore from disk if available, otherwise return an empty store."""
-    target = path or _resolve_store_path()
-    store = MemoryStore()
-    if target.is_file():
+@contextmanager
+def _exclusive_state_lock(target: Path) -> Iterator[None]:
+    """Lock the entire local read/modify/write transaction using exclusive creation.
+
+    A crash may leave a stale .lock file. Operators must inspect and remove it
+    manually after confirming no CLI process still owns that state.
+    """
+    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    lock_path = target.with_name(target.name + ".lock")
+    if lock_path.is_symlink():
+        raise CLIStateError("Unsafe symlink for CLI state lock")
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError as exc:
+        raise CLIStateError("Local CLI state is locked by another process") from exc
+    except OSError as exc:
+        raise CLIStateError("Cannot acquire local CLI state lock") from exc
+    try:
+        yield
+    finally:
+        os.close(fd)
         try:
-            with open(target, "rb") as f:
-                saved_state = pickle.load(f)
-                store._state = saved_state
-        except (pickle.PickleError, EOFError, AttributeError, ValueError):
-            # Fallback to empty store if corrupt
+            lock_path.unlink()
+        except FileNotFoundError:
             pass
+
+
+def _checked_path(target: Path) -> Path:
+    if target.suffix.lower() == ".pickle":
+        raise CLIStateError("Legacy pickle storage is not supported; archive and re-seed")
+    if target.is_symlink():
+        raise CLIStateError("Symlink-backed CLI state is not supported")
+    if target == DEFAULT_STORE_FILE and LEGACY_STORE_FILE.exists() and not target.exists():
+        raise CLIStateError("Legacy pickle state detected; archive it and re-seed a new JSON store")
+    return target
+
+
+def load_store(path: Path | None = None) -> MemoryStore:
+    """Read versioned JSON state or initialize a new store; never unpickle files."""
+    target = _checked_path(path if path is not None else _resolve_store_path())
+    store = MemoryStore()
+    if not target.exists():
+        return store
+    if not target.is_file():
+        raise CLIStateError("CLI state path is not a regular file")
+    try:
+        with target.open("rb") as stream:
+            raw = stream.read(MAX_STATE_BYTES + 1)
+    except OSError as exc:
+        raise CLIStateError("Unable to read local CLI state") from exc
+    store._state = load_state(raw)
     return store
 
 
+def _save_unlocked(store: MemoryStore, target: Path) -> None:
+    """Atomic same-filesystem replacement; caller owns any multi-process lock."""
+    target = _checked_path(target)
+    target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    raw = dump_state(store._state)
+    name: str | None = None
+    try:
+        fd, name = tempfile.mkstemp(prefix=".pycrmkit-state-", suffix=".tmp", dir=target.parent)
+        with os.fdopen(fd, "wb") as stream:
+            if hasattr(os, "fchmod"):
+                os.fchmod(stream.fileno(), 0o600)
+            stream.write(raw)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(name, target)
+        name = None
+        if hasattr(os, "O_DIRECTORY"):
+            fd_dir = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY)
+            try:
+                os.fsync(fd_dir)
+            finally:
+                os.close(fd_dir)
+    except OSError as exc:
+        raise CLIStateError("Unable to atomically save local CLI state") from exc
+    finally:
+        if name is not None:
+            try:
+                os.unlink(name)
+            except FileNotFoundError:
+                pass
+
+
 def save_store(store: MemoryStore, path: Path | None = None) -> None:
-    """Serialize MemoryStore state to disk."""
-    target = path or _resolve_store_path()
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with open(target, "wb") as f:
-        pickle.dump(store._state, f)
+    """Persist versioned state with a per-store exclusive lock and atomic replace."""
+    target = path if path is not None else _resolve_store_path()
+    with _exclusive_state_lock(target):
+        _save_unlocked(store, target)
+
 
 
 def build_crm_from_store(store: MemoryStore, actor_id: str = "cli-operator") -> CRM:
@@ -129,13 +191,17 @@ def get_crm_context(
         ).with_context(actor_id=actor_id)
         yield crm
     else:
-        store = load_store()
-        crm = build_crm_from_store(store, actor_id=actor_id)
-        try:
-            yield crm
-        finally:
-            if save:
-                save_store(store)
+        target = _resolve_store_path()
+        if save:
+            # Serialize the full read/modify/write transaction, not only the write.
+            with _exclusive_state_lock(target):
+                store = load_store(target)
+                crm = build_crm_from_store(store, actor_id=actor_id)
+                yield crm
+                _save_unlocked(store, target)
+        else:
+            store = load_store(target)
+            yield build_crm_from_store(store, actor_id=actor_id)
 
 
 def query_opportunities(

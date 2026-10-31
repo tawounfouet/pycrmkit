@@ -23,7 +23,7 @@ When executing CLI commands or initializing storage backends, PyCRMKit resolves 
 │    (pycrm.yml, pycrm.yaml, pycrm.yml.{profile})             │
 ├─────────────────────────────────────────────────────────────┤
 │ 5. Safe Defaults / In-Memory Store                          │
-│    (Zero-dependency local store: ~/.pycrmkit/crm_state.db)  │
+│    (Zero-dependency local store: ~/.pycrmkit/crm_state.json)  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -116,3 +116,18 @@ Output:
 │ Storage       │ PostgreSQL Live Ping    │ ✓ PASS │ Connected (48 tables)     │
 └───────────────┴─────────────────────────┴────────┴───────────────────────────┘
 ```
+
+
+## CLI state security (v1.3.0 development candidate)
+
+Local Memory mode now uses a versioned JSON store at ~/.pycrmkit/crm_state.json
+or a path set by PYCRMKIT_CLI_STATE_FILE. The codec uses a trusted, validated
+model allowlist and never unpickles local state. Writes are atomic and guarded
+by a sibling exclusive lock. A stale lock following a crashed process needs
+manual inspection before removal.
+
+**Legacy pickle files are not loaded or automatically migrated.** Archive
+crm_state.pickle and re-seed from known, trusted data. Do not persist
+production personal data or credentials in local CLI demonstration state.
+
+This change remains unqualified until AUD-FIX-02 review and Gate S0 pass.
