@@ -98,7 +98,7 @@ def test_production_demo_write_rejected_before_persistent_access(
         assert main(["seed", "--database", "--yes"], prog_name="pck") == int(
             ExitCode.VALIDATION_ERROR
         )
-        assert main(["reset", "--database", "--yes"], prog_name="pck") == int(
+        assert main(["reset", "--force"], prog_name="pck") == int(
             ExitCode.VALIDATION_ERROR
         )
 
