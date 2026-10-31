@@ -6,7 +6,7 @@ import copyreg
 import os
 import pickle
 import types
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
@@ -33,7 +33,7 @@ def _unpickle_mappingproxy(data: dict[str, object]) -> types.MappingProxyType[st
 
 def _reduce_mappingproxy(
     mp: types.MappingProxyType[str, object],
-) -> tuple[object, tuple[dict[str, object]]]:
+) -> tuple[Callable[[dict[str, object]], types.MappingProxyType[str, object]], tuple[dict[str, object]]]:
     return _unpickle_mappingproxy, (dict(mp),)
 
 
