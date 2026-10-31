@@ -52,4 +52,4 @@ def test_agent_skills_are_unambiguously_labelled_as_illustrative() -> None:
 def test_agent_manifest_does_not_claim_qualified_runtime() -> None:
     content = (ROOT / ".agents" / "AGENTS.md").read_text(encoding="utf-8")
     assert "DOCUMENTATION ONLY" in content
-    assert "not provide an autonomous" in content
+    assert "do **not** provide an autonomous" in content
