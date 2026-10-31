@@ -13,15 +13,7 @@ introduced in PyCRMKit 1.2.0:
 from __future__ import annotations
 
 import io
-import sys
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-
-# Ensure src/ is importable
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
+from datetime import UTC, datetime, timedelta
 
 from pycrmkit import CRM, __version__
 from pycrmkit.campaigns import CampaignUpdate
@@ -70,7 +62,7 @@ def run_tour() -> dict[str, object]:
     print("\n[1/7] CRM initialisé avec MockEmailProvider et contexte d'acteur.")
 
     # 2. Campaign Creation & Optimistic Concurrency Control
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     campaign = crm.campaigns.create(
         key="summit-europe-2026",
         name="Campagne Tech Summit Europe 2026",
@@ -116,16 +108,8 @@ def run_tour() -> dict[str, object]:
         last_name="Hugo",
         source="direct_invite",
     )
-    web_contact1 = crm.contacts.create(
-        first_name="George",
-        last_name="Sand",
-        source="web_event",
-    )
-    web_contact2 = crm.contacts.create(
-        first_name="Gustave",
-        last_name="Flaubert",
-        source="web_event",
-    )
+    crm.contacts.create(first_name="George", last_name="Sand", source="web_event")
+    crm.contacts.create(first_name="Gustave", last_name="Flaubert", source="web_event")
 
     direct_member = crm.campaigns.add_member(
         campaign.id,
@@ -208,7 +192,7 @@ def run_tour() -> dict[str, object]:
     )
     assert exported_count == 3
     exported_data = export_buffer.getvalue().strip()
-    print(f"\n[6/7] DataOps Campagnes validé :")
+    print("\n[6/7] DataOps Campagnes validé :")
     print(f"      • Limite maximale d'import par lot : {MAX_CAMPAIGN_IMPORT_ROWS} lignes")
     print(f"      • Export JSONL audience : {exported_count} lignes exportées")
     for sample_line in exported_data.splitlines()[:2]:
@@ -217,7 +201,7 @@ def run_tour() -> dict[str, object]:
     # 7. Campaign Lifecycle Transitions (Activate & Complete)
     activated = crm.campaigns.activate(campaign.id)
     assert activated.status.value == "active"
-    print(f"\n[7/7] Cycle de vie de la campagne :")
+    print("\n[7/7] Cycle de vie de la campagne :")
     print(f"      • Statut après activation : {activated.status.value}")
 
     completed = crm.campaigns.complete(campaign.id)

@@ -11,21 +11,15 @@ Demonstrates and verifies:
 from __future__ import annotations
 
 import io
-import sys
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT / "src") not in sys.path:
-    sys.path.insert(0, str(ROOT / "src"))
 
 from pycrmkit import __version__
-from pycrmkit.importers import CSVReader, ImportRow
 from pycrmkit.dedup import (
-    DeduplicationEngine,
     CandidateRecord,
-    InMemoryCandidateSource,
     DedupDecision,
+    DeduplicationEngine,
+    InMemoryCandidateSource,
 )
+from pycrmkit.importers import CSVReader, ImportRow
 
 
 def run_tour() -> dict[str, object]:
