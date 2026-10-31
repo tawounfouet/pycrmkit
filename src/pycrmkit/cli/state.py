@@ -13,6 +13,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from pycrmkit import CRM
+from pycrmkit.communication.email.messages import EmailMessage
 from pycrmkit.communication.email.provider import EmailDeliveryStatus, EmailProviderResult
 from pycrmkit.contacts import ContactEmail, ContactPhone
 from pycrmkit.core.pagination import OffsetPageRequest, Page
@@ -21,16 +22,18 @@ from pycrmkit.custom_fields import CustomFieldType
 from pycrmkit.events import InProcessEventBus
 from pycrmkit.opportunities import Opportunity, OpportunityId, OpportunityQuery
 from pycrmkit.pipelines import Stage, StageOutcome, StageTransition
-from pycrmkit.relationships.entities import RelationshipEndpoint, RelationshipType
+from pycrmkit.relationships import RelationshipEndpoint, RelationshipType
 from pycrmkit.storage.memory._state import MemoryStore
 from pycrmkit.storage.memory.unit_of_work import MemoryUnitOfWork
 
 
-def _unpickle_mappingproxy(data: dict) -> types.MappingProxyType:
+def _unpickle_mappingproxy(data: dict[str, object]) -> types.MappingProxyType[str, object]:
     return types.MappingProxyType(data)
 
 
-def _reduce_mappingproxy(mp: types.MappingProxyType):
+def _reduce_mappingproxy(
+    mp: types.MappingProxyType[str, object],
+) -> tuple[object, tuple[dict[str, object]]]:
     return _unpickle_mappingproxy, (dict(mp),)
 
 
@@ -43,7 +46,7 @@ DEFAULT_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.pickle"
 class MockCliEmailProvider:
     """Zero-dependency in-memory email provider for CLI demonstrations."""
 
-    def send(self, message) -> EmailProviderResult:
+    def send(self, message: EmailMessage) -> EmailProviderResult:
         return EmailProviderResult(
             provider="cli-mailer",
             status=EmailDeliveryStatus.ACCEPTED,
