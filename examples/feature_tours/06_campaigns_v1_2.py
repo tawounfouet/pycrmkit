@@ -108,6 +108,9 @@ def run_tour() -> dict[str, object]:
         last_name="Hugo",
         source="direct_invite",
     )
+    crm.contacts.create(first_name="George", last_name="Sand", source="web_event")
+    crm.contacts.create(first_name="Gustave", last_name="Flaubert", source="web_event")
+
     direct_member = crm.campaigns.add_member(
         campaign.id,
         EntityReference("contact", vip_contact.id),
