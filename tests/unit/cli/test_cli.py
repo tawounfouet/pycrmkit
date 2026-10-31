@@ -229,3 +229,13 @@ def test_dashboard_demo_never_contacts_configured_database(tmp_path, monkeypatch
     # Rich can wrap the mode label at different terminal widths.
     assert "Ephemeral" in out
     assert not state_file.exists()
+
+
+def test_seed_rejects_production_profile_without_database_access(monkeypatch, capsys) -> None:
+    monkeypatch.setenv("PYCRMKIT_ENV", "production")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.setenv("PYCRMKIT_DATABASE_URL", "postgresql+psycopg://localhost/production")
+    assert main(["seed", "--database", "--yes"], prog_name="pck") == int(
+        ExitCode.VALIDATION_ERROR
+    )
+    assert "prohibited in production" in capsys.readouterr().out
