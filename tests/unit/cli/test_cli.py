@@ -282,3 +282,22 @@ def test_cli_never_prints_credentials_on_database_connection_failure(
     out = capsys.readouterr()
     assert secret not in out.out + out.err
     assert "ci_operator" not in out.out + out.err
+
+
+def test_production_profile_refuses_local_seed_and_reset(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    from pycrmkit.cli.state import MemoryStore, save_store
+
+    target = tmp_path / "existing.json"
+    save_store(MemoryStore(), target)
+    original = target.read_bytes()
+    monkeypatch.setenv("PYCRMKIT_CLI_STATE_FILE", str(target))
+    monkeypatch.setenv("PYCRMKIT_ENV", "production")
+    monkeypatch.setenv("PYCRMKIT_TEST_ENABLE_ENV", "1")
+    monkeypatch.delenv("PYCRMKIT_CONFIG", raising=False)
+
+    assert main(["seed", "--local"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert main(["reset", "--force"], prog_name="pck") == int(ExitCode.VALIDATION_ERROR)
+    assert target.read_bytes() == original
+    assert "prohibited in production" in capsys.readouterr().out
