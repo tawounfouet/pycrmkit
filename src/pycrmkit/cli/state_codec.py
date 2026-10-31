@@ -92,8 +92,8 @@ def _encode(value: object, depth: int = 0) -> object:
     if isinstance(value, bytes):
         return {"kind": "bytes", "value": base64.b64encode(value).decode("ascii")}
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
-        cls = type(value)
-        name = _model_key(cls)
+        model_cls = type(value)
+        name = _model_key(model_cls)
         if name not in _allowed_models():
             raise CLIStateError(f"Unregistered domain object: {name}")
         return {
