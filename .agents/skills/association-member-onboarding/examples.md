@@ -1,5 +1,9 @@
 # Association Member Onboarding - Practical Examples & Recipes
 
+> **AUD-FIX-09: ILLUSTRATIVE RECIPE / NOT VERIFIED FOR EXECUTION.** The workflow for association member enrollment is a conceptual example. Commands and facade calls may not exist in the current distribution. Confirm `pck --help` / public SDK signatures and the exact installed version before treating a snippet as executable.  
+> **Personal data:** The host must define purpose, legal basis, data subject notice, access controls, data minimization, retention/deletion, review of third-party sharing and authorization before any upload, message, export or write. AI-generated notes must be reviewed for accuracy and sensitive content. Do not persist raw WhatsApp/voice/email dumps or passwords/tokens in a CRM timeline.  
+> **Execution authority:** these Markdown files do not provide authentication, a tool sandbox, autonomous execution or permission to contact real people. Test emails use `example.org`. See [Track S privacy governance](../../../docs/development/1.3.0/aud-fix-09-privacy-governance.md).
+
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
 > **Skill Associé** : [`association-member-onboarding`](SKILL.md)  
 > **Workflow Détaillé** : [`workflow.md`](workflow.md)  
@@ -21,7 +25,7 @@
 pck contacts create \
     --first-name "Aminata" \
     --last-name "Diallo" \
-    --email "aminata.diallo.perso@yahoo.fr" \
+    --email "demo.person01@example.org" \
     --phone "+33611223344"
 
 # 2. Tag de promotion et d'événement
@@ -79,7 +83,7 @@ crm.contacts.update_custom_fields(
 # D. Création de la tâche IT pour l'administrateur Microsoft 365
 ref = EntityReference("contact", contact_id)
 crm.tasks.create(
-    title="Créer UPN aminata.diallo@diversite-alternative.org + licence Teams",
+    title="Créer UPN demo.person02@example.org + licence Teams",
     references=(ref,),
     priority="HIGH",
     due_date="2026-11-04",
@@ -90,7 +94,7 @@ crm.tasks.create(
 ```bash
 # Renseignement de l'email officiel M365 et validation WhatsApp
 pck contacts update contact_aminata_diallo \
-    --custom "m365_upn:aminata.diallo@diversite-alternative.org" \
+    --custom "m365_upn:demo.person03@example.org" \
     --custom "m365_license_active:true" \
     --custom "whatsapp_joined:true"
 
