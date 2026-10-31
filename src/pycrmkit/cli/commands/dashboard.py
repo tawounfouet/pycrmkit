@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from contextlib import nullcontext
 from decimal import Decimal
 from typing import Annotated
@@ -23,13 +24,42 @@ from pycrmkit.cli.state import (
     seed_demo_data,
 )
 from pycrmkit.core.pagination import OffsetPageRequest
-from pycrmkit.opportunities import OpportunityStatus
+from pycrmkit.opportunities import Opportunity, OpportunityStatus
 from pycrmkit.tasks import TaskPriority, TaskStatus
 
 
 def _format_currency(value: Decimal | float, currency: str = "EUR") -> str:
     symbol = "€" if currency == "EUR" else f"{currency} "
     return f"{value:,.2f} {symbol}".strip()
+
+
+def _sum_by_currency(
+    opportunities: Iterable[Opportunity],
+    *,
+    weighted: bool = False,
+) -> dict[str, Decimal]:
+    """Sum monetary amounts by currency, without fictitious FX conversion."""
+    amounts: dict[str, Decimal] = {}
+    for opportunity in opportunities:
+        if opportunity.estimated_value is None:
+            continue
+        currency = opportunity.currency or "UNKNOWN"
+        factor = (
+            opportunity.probability if opportunity.probability is not None else Decimal(0)
+        ) if weighted else Decimal(1)
+        amounts[currency] = (
+            amounts.get(currency, Decimal(0)) + opportunity.estimated_value * factor
+        )
+    return amounts
+
+
+def _display_amounts(amounts: dict[str, Decimal]) -> str:
+    """Keep multiple currencies separate and missing values distinct from zero."""
+    if not amounts:
+        return "N/A (no priced deals)"
+    return " | ".join(
+        _format_currency(value, currency) for currency, value in sorted(amounts.items())
+    )
 
 
 def _render_bar(percentage: float, width: int = 20) -> str:
@@ -71,21 +101,29 @@ def dashboard_command(
         # Fetch aggregated metrics across all core domains
         contacts_total = crm.contacts.search(page=OffsetPageRequest(limit=1)).total
         orgs_total = crm.organizations.search(page=OffsetPageRequest(limit=1)).total
-        opps = query_opportunities(crm, page=OffsetPageRequest(limit=100)).items
-        campaigns = crm.campaigns.list(page=OffsetPageRequest(limit=50)).items
-        tasks = crm.tasks.list(page=OffsetPageRequest(limit=50)).items
+        opportunity_page = query_opportunities(crm, page=OffsetPageRequest(limit=100))
+        campaign_page = crm.campaigns.list(page=OffsetPageRequest(limit=50))
+        task_page = crm.tasks.list(page=OffsetPageRequest(limit=50))
+        opps = opportunity_page.items
+        campaigns = campaign_page.items
+        tasks = task_page.items
         activities = crm.activities.list(page=OffsetPageRequest(limit=10)).items
+        is_partial = (
+            opportunity_page.total > len(opps)
+            or campaign_page.total > len(campaigns)
+            or task_page.total > len(tasks)
+        )
 
         # 1. Pipeline & Deal Calculations
         open_opps = [o for o in opps if o.status == OpportunityStatus.OPEN]
         won_opps = [o for o in opps if o.status == OpportunityStatus.WON]
         lost_opps = [o for o in opps if o.status == OpportunityStatus.LOST]
 
-        active_pipeline_val = sum((o.estimated_value or Decimal(0)) for o in open_opps)
-        weighted_forecast_val = sum(
-            ((o.estimated_value or Decimal(0)) * (o.probability or Decimal(0))) for o in open_opps
+        active_pipeline_val = _display_amounts(_sum_by_currency(open_opps))
+        weighted_forecast_val = _display_amounts(
+            _sum_by_currency(open_opps, weighted=True)
         )
-        won_val = sum((o.estimated_value or Decimal(0)) for o in won_opps)
+        won_val = _display_amounts(_sum_by_currency(won_opps))
 
         total_closed = len(won_opps) + len(lost_opps)
         win_rate = (len(won_opps) / total_closed * 100) if total_closed > 0 else 0.0
@@ -101,8 +139,7 @@ def dashboard_command(
         if demo:
             mode_text = "  •  Mode: Ephemeral demo (no persistence)\n"
         elif db_url:
-            db_label = db_url.split("/")[-1].split("?")[0] or "PostgreSQL"
-            mode_text = f"  •  Mode: PostgreSQL ({db_label})\n"
+            mode_text = "  •  Mode: configured database (connection details redacted)\n"
         else:
             mode_text = "  •  Mode: Headless In-Memory / Local State\n"
 
@@ -111,27 +148,38 @@ def dashboard_command(
         header_text.append(f"  •  v{__version__}", style="dim")
         header_text.append(mode_text, style="dim green")
         header_text.append(
-            "Real-time Operational Telemetry & Commercial Funnel Analytics", style="italic white"
+            "Observed read-only CRM snapshot; not a complete Customer 360 read model", style="italic white"
         )
         console.print(Panel(header_text, border_style="cyan", padding=(0, 2)))
+        if is_partial:
+            console.print(
+                Panel(
+                    "[bold yellow]PARTIAL RESULTS[/bold yellow]: "
+                    f"opportunities {len(opps)}/{opportunity_page.total}, "
+                    f"campaigns {len(campaigns)}/{campaign_page.total}, "
+                    f"tasks {len(tasks)}/{task_page.total}. "
+                    "All sampled KPI figures, win rates and reach counts are incomplete.",
+                    border_style="yellow",
+                )
+            )
 
         # --- KPI CARDS ROW 1 ---
         kpi_cards_1 = [
             Panel(
-                f"[bold green]{_format_currency(active_pipeline_val)}[/bold green]\n"
+                f"[bold green]{active_pipeline_val}[/bold green]\n"
                 f"[dim]{len(open_opps)} active deals in flight[/dim]",
                 title="💼 Active Pipeline",
                 border_style="green",
             ),
             Panel(
-                f"[bold cyan]{_format_currency(weighted_forecast_val)}[/bold cyan]\n"
-                f"[dim]Probability-weighted forecast[/dim]",
+                f"[bold cyan]{weighted_forecast_val}[/bold cyan]\n"
+                f"[dim]Observed probability-weighted forecast[/dim]",
                 title="🎯 Weighted Revenue",
                 border_style="cyan",
             ),
             Panel(
-                f"[bold magenta]{_format_currency(won_val)}[/bold magenta]\n"
-                f"[dim]Win Rate: {win_rate:.0f}% ({len(won_opps)} won)[/dim]",
+                f"[bold magenta]{won_val}[/bold magenta]\n"
+                f"[dim]Observed Win Rate: {win_rate:.0f}% ({len(won_opps)} won)[/dim]",
                 title="🏆 Closed Won",
                 border_style="magenta",
             ),
@@ -141,8 +189,8 @@ def dashboard_command(
         # --- KPI CARDS ROW 2 ---
         kpi_cards_2 = [
             Panel(
-                f"[bold yellow]{total_audience_reach} VIPs[/bold yellow]\n"
-                f"[dim]{len(campaigns)} marketing campaigns[/dim]",
+                f"[bold yellow]{total_audience_reach} memberships[/bold yellow]\n"
+                f"[dim]{len(campaigns)} observed campaigns (not deduplicated)[/dim]",
                 title="📣 Audience Reach",
                 border_style="yellow",
             ),
@@ -154,7 +202,7 @@ def dashboard_command(
             ),
             Panel(
                 f"[bold white]{contacts_total} People[/bold white]\n"
-                f"[dim]{len(open_tasks)} pending action items[/dim]",
+                f"[dim]{len(open_tasks)} observed pending action items[/dim]",
                 title="👥 Key Contacts",
                 border_style="white",
             ),
@@ -175,30 +223,24 @@ def dashboard_command(
         pipeline_table.add_column("Weighted", justify="right", style="cyan", width=18)
         pipeline_table.add_column("Funnel Distribution Bar", style="magenta")
 
-        # Group opportunities by stage
-        stages_order = [
-            ("qualification", "Qualification & Cadrage", Decimal("0.20")),
-            ("demo", "Démonstration Technique", Decimal("0.50")),
-            ("proposal", "Offre & Proposition", Decimal("0.80")),
-            ("won", "Gagné / Contrat Signé", Decimal("1.00")),
-        ]
-
-        total_all_deals_val = max(Decimal(1), sum((o.estimated_value or Decimal(0)) for o in opps))
-
-        for stage_id, stage_name, prob in stages_order:
-            stage_deals = [o for o in opps if o.stage_id == stage_id]
-            val = sum((o.estimated_value or Decimal(0)) for o in stage_deals)
-            weighted = val * prob
-            ratio = float(val / total_all_deals_val)
-            bar = _render_bar(ratio, width=22)
-            pct = int(ratio * 100)
-
+        # Real pipeline/stage identifiers. No fixed demo stages or invented probabilities.
+        stage_keys = sorted(
+            {(o.pipeline_id or "unassigned", o.stage_id or "unassigned") for o in opps}
+        )
+        for pipeline_id, stage_id in stage_keys:
+            stage_deals = [
+                o for o in opps
+                if (o.pipeline_id or "unassigned", o.stage_id or "unassigned")
+                == (pipeline_id, stage_id)
+            ]
+            ratio = len(stage_deals) / len(opps) if opps else 0.0
             pipeline_table.add_row(
-                f"{stage_name} ({prob * 100:.0f}%)",
+                f"{pipeline_id} / {stage_id}",
                 str(len(stage_deals)),
-                _format_currency(val),
-                _format_currency(weighted),
-                f"[magenta]{bar}[/magenta] [dim]{pct}%[/dim]",
+                _display_amounts(_sum_by_currency(stage_deals)),
+                _display_amounts(_sum_by_currency(stage_deals, weighted=True)),
+                f"[magenta]{_render_bar(ratio, width=22)}[/magenta] "
+                f"[dim]{ratio * 100:.0f}% of sampled deals[/dim]",
             )
 
         console.print(pipeline_table)
@@ -219,7 +261,7 @@ def dashboard_command(
         for c in campaigns[:4]:
             reach = crm.campaigns.audience_count(c.id)
             budget = c.metadata.get("budget_allocated")
-            budget_str = f"{budget:,.0f} €" if isinstance(budget, (int, float)) else "-"
+            budget_str = f"{budget:,.0f} (currency unspecified)" if isinstance(budget, (int, float)) else "-"
             status_style = {
                 CampaignStatus.DRAFT: "[dim]DRAFT[/dim]",
                 CampaignStatus.ACTIVE: "[bold green]ACTIVE[/bold green]",

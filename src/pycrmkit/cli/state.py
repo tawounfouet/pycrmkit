@@ -31,11 +31,11 @@ LEGACY_STORE_FILE = DEFAULT_STORE_DIR / "crm_state.pickle"
 
 
 class MockCliEmailProvider:
-    """Zero-dependency in-memory email provider for CLI demonstrations."""
+    """Simulate local email acceptance, never actual provider delivery."""
 
     def send(self, message: EmailMessage) -> EmailProviderResult:
         return EmailProviderResult(
-            provider="cli-mailer",
+            provider="mock-cli-mailer",
             status=EmailDeliveryStatus.ACCEPTED,
             provider_message_id=f"msg-cli-{str(message.intent_id)[:8]}",
         )
@@ -141,8 +141,11 @@ def save_store(store: MemoryStore, path: Path | None = None) -> None:
         _save_unlocked(store, target)
 
 
-def build_crm_from_store(store: MemoryStore, actor_id: str = "cli-operator") -> CRM:
-    """Build a standard CRM instance bound to an existing MemoryStore."""
+def build_crm_from_store(store: MemoryStore, actor_id: str | None = None) -> CRM:
+    """Build a CRM with a declared actor ID, not an authenticated principal."""
+    from pycrmkit.cli.config import resolve_actor_id
+
+    effective_actor = actor_id if actor_id is not None else resolve_actor_id()[0]
     bus = InProcessEventBus()
 
     def uow_factory() -> MemoryUnitOfWork:
@@ -152,7 +155,7 @@ def build_crm_from_store(store: MemoryStore, actor_id: str = "cli-operator") -> 
         uow_factory=uow_factory,
         event_bus=bus,
         email_provider=MockCliEmailProvider(),
-    ).with_context(actor_id=actor_id)
+    ).with_context(actor_id=effective_actor)
 
 
 def get_database_url() -> str | None:
@@ -166,11 +169,14 @@ def get_database_url() -> str | None:
 @contextmanager
 def get_crm_context(
     save: bool = True,
-    actor_id: str = "cli-operator",
+    actor_id: str | None = None,
     *,
     force_local: bool = False,
 ) -> Generator[CRM, None, None]:
-    """Choose the explicitly requested backend and safely persist local state."""
+    """Choose the backend and pass through the effective configured actor claim."""
+    from pycrmkit.cli.config import resolve_actor_id
+
+    effective_actor = actor_id if actor_id is not None else resolve_actor_id()[0]
     db_url = None if force_local else get_database_url()
     if db_url:
         from sqlalchemy import create_engine
@@ -189,7 +195,7 @@ def get_crm_context(
             uow_factory=uow_factory,
             event_bus=bus,
             email_provider=MockCliEmailProvider(),
-        ).with_context(actor_id=actor_id)
+        ).with_context(actor_id=effective_actor)
         yield crm
     else:
         target = _resolve_store_path()
@@ -197,7 +203,7 @@ def get_crm_context(
             # Serialize the full read/modify/write transaction, not only the write.
             with _exclusive_state_lock(target):
                 store = load_store(target)
-                crm = build_crm_from_store(store, actor_id=actor_id)
+                crm = build_crm_from_store(store, actor_id=effective_actor)
                 yield crm
                 _save_unlocked(store, target)
         else:
