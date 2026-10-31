@@ -226,5 +226,6 @@ def test_dashboard_demo_never_contacts_configured_database(tmp_path, monkeypatch
     code = main(["dashboard", "--demo"], prog_name="pck")
     assert code == int(ExitCode.SUCCESS)
     out = capsys.readouterr().out
-    assert "Ephemeral demo (no persistence)" in out
+    # Rich can wrap the mode label at different terminal widths.
+    assert "Ephemeral" in out
     assert not state_file.exists()
