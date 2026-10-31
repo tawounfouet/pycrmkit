@@ -17,7 +17,7 @@ Les réseaux sociaux regorgent d'infographies théoriques promettant des dizaine
 
 ---
 
-## 2. Cartographie des 4 Agents Métiers Spécialisés
+## 2. Cartographie des 5 Agents Métiers Spécialisés
 
 | Agent | Rôle Stratégique | Cas d'Usage Couvert | Skills Associés |
 |---|---|---|---|
@@ -25,6 +25,7 @@ Les réseaux sociaux regorgent d'infographies théoriques promettant des dizaine
 | **`freelance-hunter`** | Chasseur de Missions & ATS | Recherche de missions en inter-contrat : suivi de candidatures, relances automatiques à J+5, négociation TJM et KPIs d'entonnoir. | `freelance-mission-hunter` |
 | **`tender-bid-manager`** | Spécialiste Commande Publique | Réponse aux marchés publics & appels d'offres : analyse Go/No-Go, verrouillage de la DLRO à J-1, cotraitance GME et capitalisation des débriefings. | `public-tender-qualifier` |
 | **`student-career-coach`** | Coach Insertion Professionnelle | Accompagnement d'étudiants & juniors : stages, alternances, premier emploi CDD/CDI, préparation d'entretiens et rapport pédagogique. | `student-career-launch` |
+| **`association-coordinator`** | Coordinateur Vie Associative | Onboarding bénévoles, adhésions multi-canal, provisioning Microsoft 365, groupes WhatsApp et réadhésions annuelles (Diversité Alternative). | `association-member-onboarding` |
 
 ---
 
@@ -34,11 +35,12 @@ Les compétences spécialisées sont localisées dans `.agents/skills/` :
 
 ```text
 .agents/skills/
-├── agency-client-lifecycle/       # Pilotage commercial, delivery et maintenance MCO d'agence
-├── whatsapp-dialog-processor/     # Extraction et formalisation des messages & vocaux WhatsApp
-├── freelance-mission-hunter/      # Suivi de candidatures freelance, TJM et KPIs d'entonnoir
-├── public-tender-qualifier/       # Analyse Go/No-Go, calendrier DLRO J-1 et mémoires techniques
-└── student-career-launch/         # Gestion de candidatures stages/alternances et mémo d'entretiens
+├── agency-client-lifecycle/          # Pilotage commercial, delivery et maintenance MCO d'agence
+├── whatsapp-dialog-processor/        # Extraction et formalisation des messages & vocaux WhatsApp
+├── freelance-mission-hunter/         # Suivi de candidatures freelance, TJM et KPIs d'entonnoir
+├── public-tender-qualifier/          # Analyse Go/No-Go, calendrier DLRO J-1 et mémoires techniques
+├── student-career-launch/            # Gestion de candidatures stages/alternances et mémo d'entretiens
+└── association-member-onboarding/    # Onboarding associatif, cotisations multi-canal, M365 et N+1
 ```
 
 ---
