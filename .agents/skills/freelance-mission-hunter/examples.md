@@ -1,8 +1,8 @@
 # Freelance Mission Hunter — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
-> **Skill Associé** : [`freelance-mission-hunter`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/workflow.md)
+> **Skill Associé** : [`freelance-mission-hunter`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)
 
 ---
 

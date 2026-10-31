@@ -32,23 +32,23 @@ Contrairement à la vente privée où la négociation est souple et informelle, 
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Sourcing des Marchés Publics"]
-        BOAMP[Avis BOAMP / TED] --> Tender[Marché Public / Lot]
-        PLACE[Plateforme PLACE / AWS / Maximilien] --> Tender
-        Direct[Veille Territoriale & Sourçage] --> Tender
+        BOAMP["Avis BOAMP / TED"] --> Tender["Marché Public / Lot"]
+        PLACE["Plateforme PLACE / AWS / Maximilien"] --> Tender
+        Direct["Veille Territoriale & Sourçage"] --> Tender
     end
 
     subgraph Core ["2. Moteur de Bid Management (PyCRMKit)"]
-        Tender --> Pipe[Pipeline : Commande Publique]
-        Pipe --> Org[Organizations : Acheteur Public & Collectivité]
-        Pipe --> Cont[Contacts : DSI, Responsable Numérique & Acheteur]
-        Pipe --> Rel[Relationships : Cotraitance GME & Partenaires]
-        Pipe --> Tasks[Tasks : J-1 Dépôt DLRO & Questions]
-        Pipe --> Hist[Timeline : Grilles de Notation & Débriefings]
+        Tender --> Pipe["Pipeline : Commande Publique"]
+        Pipe --> Org["Organizations : Acheteur Public & Collectivité"]
+        Pipe --> Cont["Contacts : DSI, Responsable Numérique & Acheteur"]
+        Pipe --> Rel["Relationships : Cotraitance GME & Partenaires"]
+        Pipe --> Tasks["Tasks : J-1 Dépôt DLRO & Questions"]
+        Pipe --> Hist["Timeline : Grilles de Notation & Débriefings"]
     end
 
     subgraph Execution ["3. Verdict & Exécution"]
-        Pipe --> Won[Marché Notifié 🎉 ➔ Pipeline Delivery CCTP]
-        Pipe --> Lost[Rejet ➔ Analyse Débriefing pour Amélioration]
+        Pipe --> Won["Marché Notifié (Pipeline Delivery CCTP)"]
+        Pipe --> Lost["Rejet (Analyse Débriefing pour Amélioration)"]
     end
 ```
 
@@ -107,21 +107,21 @@ Le cycle de réponse à un marché public ne souffre aucune improvisation. PyCRM
 ```mermaid
 flowchart TD
     subgraph Phase1 ["1. Cadrage & Décision"]
-        S1[1. Veille & Détection de l'Avis] --> S2[2. Analyse Go / No-Go]
+        S1["1. Veille & Détection de l'Avis"] --> S2["2. Analyse Go / No-Go"]
     end
 
     subgraph Phase2 ["2. Montage & Sécurisation"]
-        S2 -->|Go| S3[3. Rédaction Dossier Technique & Financier]
-        S2 -->|No-Go| S_N[Classé Sans Suite : Hors cible / Budget insuffisant]
-        S3 --> S4[4. Questions / Réponses sur la Plateforme]
-        S4 --> S5[5. Dépôt Sécurisé du Pli Horodaté à J-1]
+        S2 -->|"Go"| S3["3. Rédaction Dossier Technique & Financier"]
+        S2 -->|"No-Go"| S_N["Classé Sans Suite : Hors cible / Budget insuffisant"]
+        S3 --> S4["4. Questions / Réponses sur la Plateforme"]
+        S4 --> S5["5. Dépôt Sécurisé du Pli Horodaté à J-1"]
     end
 
     subgraph Phase3 ["3. Verdict & Capitalisation"]
-        S5 --> S6[6. Soutenance Orale / Négociation MAPA]
-        S6 --> S7[7. Notification Officielle du Marché]
-        S7 -->|Won| S8[8. Marché Remporté 🎉 ➔ Exécution CCTP & Bons de Cde]
-        S7 -->|Lost| S9[9. Rejet ➔ Enregistrement de la Grille de Notation]
+        S5 --> S6["6. Soutenance Orale / Négociation MAPA"]
+        S6 --> S7["7. Notification Officielle du Marché"]
+        S7 -->|"Won"| S8["8. Marché Remporté : Exécution CCTP & Bons de Cde"]
+        S7 -->|"Lost"| S9["9. Rejet : Enregistrement de la Grille de Notation"]
     end
 ```
 
@@ -214,7 +214,7 @@ Au bout de 6 mois, **votre CRM contient un trésor d'intelligence économique** 
 
 En tant qu'artisan dev ou agence web boutique, vous n'avez pas toujours toutes les casquettes exigées par un CCTP global (ex: développement web + audit accessibilité RGAA + hébergement certifié HDS/SecNumCloud + design de marque).
 
-Grâce à [`RelationshipsAPI`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/src/pycrmkit/facade/relationships.py), vous modélisez formellement vos alliances :
+Grâce à [`RelationshipsAPI`](../guides/05_relationships.md), vous modélisez formellement vos alliances :
 ```python
 # Lier l'agence de design au marché en tant que cotraitant
 crm.relationships.create(
@@ -237,22 +237,22 @@ Il convient de distinguer nettement les responsabilités au sein du système d'i
 flowchart LR
     subgraph Interne ["1. Pilotage Interne & Décision (PyCRMKit)"]
         direction TB
-        A[Veille & Décision Go/No-Go]
-        B[Calendrier J-1 & Alertes DLRO]
-        C[Suivi Rédaction Mémoire & DPGF]
-        D[Historique des Notes & Débriefings]
-        E[Gestion des Cotraitants GME]
+        A["Veille & Décision Go/No-Go"]
+        B["Calendrier J-1 & Alertes DLRO"]
+        C["Suivi Rédaction Mémoire & DPGF"]
+        D["Historique des Notes & Débriefings"]
+        E["Gestion des Cotraitants GME"]
     end
 
     subgraph Legal ["2. Plateformes Officielles de l'État"]
         direction TB
-        F[PLACE / AWS Achats / Maximilien<br/>• Téléchargement DCE<br/>• Dépôt du pli crypté<br/>• Accusé horodaté]
-        G[Chorus Pro<br/>• Facturation dématérialisée<br/>• Dépôt factures & mandats]
+        F["PLACE / AWS Achats / Maximilien (Dépôt sécurisé du pli)"]
+        G["Chorus Pro (Facturation dématérialisée)"]
     end
 
-    Interne -->|Dépôt manuel sécurisé| F
-    F -->|Rapport de notation| Interne
-    Interne -->|Bons de commande validés| G
+    Interne -->|"Dépôt manuel sécurisé"| F
+    F -->|"Rapport de notation"| Interne
+    Interne -->|"Bons de commande validés"| G
 ```
 
 #### Équivalent Schéma ASCII :

@@ -12,7 +12,7 @@ Il transforme la recherche de mission en une campagne Outbound structurée, en �
 
 ## 2. Skills Autorisés & Activables
 
-* [`freelance-mission-hunter`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/SKILL.md) : Suivi des candidatures, alertes de relance J+5 et calcul des KPIs d'entonnoir.
+* [`freelance-mission-hunter`](../skills/freelance-mission-hunter/SKILL.md) : Suivi des candidatures, alertes de relance J+5 et calcul des KPIs d'entonnoir.
 
 ## 3. Directives Opérationnelles
 

@@ -1,8 +1,8 @@
 # Public Tender Qualifier — Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Commande Publique**  
-> **Skill Associé** : [`public-tender-qualifier`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/SKILL.md)  
-> **Exemples Concrets** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/examples.md)
+> **Skill Associé** : [`public-tender-qualifier`](SKILL.md)  
+> **Exemples Concrets** : [`examples.md`](examples.md)
 
 ---
 
@@ -13,29 +13,60 @@ La commande publique impose un formalisme strict régi par le Code de la Command
 ```mermaid
 flowchart TD
     subgraph Veille ["1. Veille & Ingestion"]
-        BOAMP[BOAMP / PLACE / JOUE] --> Avis[Avis d'Appel Public à Concurrence]
-        Avis --> Dossier[Téléchargement DCE : RC + CCTP + CCAP + BPU]
+        BOAMP["BOAMP / PLACE / JOUE"] --> Avis["Avis d'Appel Public à Concurrence"]
+        Avis --> Dossier["Téléchargement DCE : RC + CCTP + CCAP + BPU"]
     end
 
     subgraph GoNoGo ["2. Décision Go / No-Go (Scorecard)"]
-        Dossier --> Matrix{Matrice d'Éligibilité}
-        Matrix -->|Score >= 75/100| Go[GO : Passage en Rédaction]
-        Matrix -->|Score < 75/100| NoGo[NO-GO : Archivage Motivé]
+        Dossier --> Matrix{"Matrice d'Éligibilité"}
+        Matrix -->|"Score >= 75/100"| Go["GO : Passage en Rédaction"]
+        Matrix -->|"Score < 75/100"| NoGo["NO-GO : Archivage Motivé"]
     end
 
     subgraph Redaction ["3. Préparation de l'Offre & Verrou J-1"]
-        Go --> Admin[Candidature Administrative : DC1, DC2, DUME, NOTI2]
-        Go --> Tech[Offre Technique : Mémoire Justificatif Structuré]
-        Go --> Price[Offre Financière : BPU / DPGF / DQE]
-        Admin & Tech & Price --> Review[Revue Croisée Qualité & Signature Électronique]
-        Review --> Lock[Verrouillage DLRO : Dépôt Ferme à J-1 16h00]
+        Go --> Admin["Candidature Administrative : DC1, DC2, DUME, NOTI2"]
+        Go --> Tech["Offre Technique : Mémoire Justificatif Structuré"]
+        Go --> Price["Offre Financière : BPU / DPGF / DQE"]
+        Admin & Tech & Price --> Review["Revue Croisée Qualité & Signature Électronique"]
+        Review --> Lock["Verrouillage DLRO : Dépôt Ferme à J-1 16h00"]
     end
 
     subgraph Attribution ["4. Jugement des Offres & Débriefing"]
-        Lock --> Decision{Attribution par l'Acheteur}
-        Decision -->|Attribué 🎉| Won[Notification Marché + Ordre de Service]
-        Decision -->|Rejeté ❌| Debrief[Demande Grille de Notation & Bilan REX]
+        Lock --> Decision{"Attribution par l'Acheteur"}
+        Decision -->|"Attribué"| Won["Notification Marché + Ordre de Service"]
+        Decision -->|"Rejeté"| Debrief["Demande Grille de Notation & Bilan REX"]
     end
+```
+
+#### Équivalent Schéma ASCII :
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                   CYCLE DE VIE D'UNE RÉPONSE À MARCHÉ PUBLIC                           │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│  [ 1. VEILLE & INGESTION ]                                                             │
+│    BOAMP / PLACE / JOUE ──► Avis d'Appel Public ──► Téléchargement DCE (RC, CCTP, BPU) │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 2. DÉCISION GO / NO-GO (SCORECARD) ]                                                │
+│    Dossier DCE ──► Évaluation Critères (/100) :                                        │
+│                     ├── Score >= 75/100 ──► GO : Passage en Rédaction                  │
+│                     └── Score <  75/100 ──► NO-GO : Archivage Motif & REX              │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 3. PRÉPARATION DE L'OFFRE & VERROU J-1 ]                                            │
+│    • Candidature Admin (DC1, DC2, DUME) ─┐                                             │
+│    • Mémoire Technique Justificatif     ─┼──► Revue Qualité ──► Dépôt J-1 à 16h00      │
+│    • Offre Financière (BPU / DPGF)      ─┘                      (Verrouillage DLRO)    │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 4. ATTRIBUTION & CAPITALISATION ]                                                   │
+│    Commission d'Appel d'Offres ──► Décision Acheteur :                                 │
+│                                     ├── Attribué 🎉 ──► Notification & Ordre Service   │
+│                                     └── Rejeté   ❌ ──► Demande Grille Notation & REX   │
+│                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

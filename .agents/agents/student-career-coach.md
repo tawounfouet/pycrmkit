@@ -12,7 +12,7 @@ Il transforme une recherche souvent vécue dans l'angoisse en une méthode d'ing
 
 ## 2. Skills Autorisés & Activables
 
-* [`student-career-launch`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/SKILL.md) : Suivi des candidatures d'alternance/stage, relances J+5 et rapports académiques.
+* [`student-career-launch`](../skills/student-career-launch/SKILL.md) : Suivi des candidatures d'alternance/stage, relances J+5 et rapports académiques.
 
 ## 3. Directives Opérationnelles
 

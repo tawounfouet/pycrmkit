@@ -17,17 +17,17 @@ Pour une grande majorité d'artisans développeurs et de créateurs d'agence web
 ```mermaid
 flowchart TD
     subgraph Acquisition ["1. Canaux d'Acquisition Réels"]
-        R1[Réseau Historique Personnel & Amis<br/>Témoins de l'évolution vers le dev] --> Deals[Opportunités & Clients]
-        R2[Associations Bénévoles & Pro-Bono<br/>Sites vitrines comme preuve par l'exemple] --> Deals
-        R3[Recommandations & Bouche-à-Oreille<br/>Prescripteurs satisfaits] --> Deals
+        R1["Réseau Historique Personnel & Amis"] --> Deals["Opportunités & Clients"]
+        R2["Associations Bénévoles & Pro-Bono"] --> Deals
+        R3["Recommandations & Bouche-à-Oreille"] --> Deals
     end
 
     subgraph Vecteur ["2. Vecteur Unique de Relation Client"]
-        Deals --> WA["WhatsApp (100% du Cycle)<br/>• Call de découverte<br/>• Présentation & Audit<br/>• Devis & Négociation<br/>• Points synchro & Démos<br/>• Recette & Livraison<br/>• Support & MCO"]
+        Deals --> WA["WhatsApp (100% du Cycle Relationnel)"]
     end
 
     subgraph Risque ["3. Risque Opérationnel Majeur"]
-        WA --> Dilution["La Noyade WhatsApp<br/>• Mélange perso / pro<br/>• Accords oraux oubliés<br/>• Tickets MCO perdus<br/>• Perte de visibilité CA"]
+        WA --> Dilution["La Noyade WhatsApp (Mélange perso / pro, accords oraux)"]
     end
 ```
 
@@ -104,9 +104,9 @@ PyCRMKit n'a pas vocation à remplacer WhatsApp ni à vous imposer un formulaire
 flowchart LR
     subgraph Mobile ["Terrain & Relation Humaine"]
         direction TB
-        WA_Call[Calls Audio / Vidéo]
-        WA_Msg[Notes Vocales & Messages]
-        WA_Doc[Envoi Devis PDF]
+        WA_Call["Calls Audio / Vidéo"]
+        WA_Msg["Notes Vocales & Messages"]
+        WA_Doc["Envoi Devis PDF"]
     end
 
     subgraph Pont ["Le Pont des 30 Secondes"]
@@ -116,16 +116,16 @@ flowchart LR
 
     subgraph Cerveau ["PyCRMKit (Socle de Gestion)"]
         direction TB
-        Rel[Relationships : Prescripteurs]
-        Ext[External Identities : WhatsApp ID]
-        Pipe[Pipelines Vente & Delivery]
-        Tasks[Tâches Prioritaires & MCO]
-        Hist[Timeline Chronologique]
+        Rel["Relationships : Prescripteurs"]
+        Ext["External Identities : WhatsApp ID"]
+        Pipe["Pipelines Vente & Delivery"]
+        Tasks["Tâches Prioritaires & MCO"]
+        Hist["Timeline Chronologique"]
     end
 
-    Mobile -->|Formalisation instantanée| CLI
+    Mobile -->|"Formalisation instantanée"| CLI
     CLI --> Cerveau
-    Cerveau --> Cockpit[Tableau de Bord : pck dashboard]
+    Cerveau --> Cockpit["Tableau de Bord : pck dashboard"]
 ```
 
 #### Équivalent Schéma ASCII :
@@ -157,7 +157,7 @@ PyCRMKit permet de tracer précisément d'où vient chaque euro de votre chiffre
   * `source="asso_benevole"` : Contact ayant vu le site développé pour l'association.
   * `source="bouche_a_oreille"` : Recommandation d'un tiers.
 
-* **Réseau de recommandation ([`RelationshipsAPI`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/src/pycrmkit/facade/relationships.py))** :
+* **Réseau de recommandation ([`RelationshipsAPI`](../guides/05_relationships.md))** :
   Vous pouvez relier formellement le prescripteur au nouveau client :
   ```python
   crm.relationships.create(
@@ -170,7 +170,7 @@ PyCRMKit permet de tracer précisément d'où vient chaque euro de votre chiffre
   ```
   *Bénéfice* : Vous savez exactement quels contacts de votre réseau sont vos meilleurs apporteurs d'affaires pour les soigner (cadeaux de fin d'année, commissions, invitations).
 
-### 3.2. Rattachement de l'Identité WhatsApp ([`ExternalIdentitiesAPI`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/src/pycrmkit/facade/external_identities.py))
+### 3.2. Rattachement de l'Identité WhatsApp ([`ExternalIdentitiesAPI`](../guides/17_external_identities.md))
 
 Chaque fiche contact et organisation peut être indexée par son numéro WhatsApp au format E.164 :
 ```python

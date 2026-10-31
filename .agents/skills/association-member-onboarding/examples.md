@@ -1,8 +1,8 @@
 # Association Member Onboarding — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
-> **Skill Associé** : [`association-member-onboarding`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/association-member-onboarding/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/association-member-onboarding/workflow.md)  
+> **Skill Associé** : [`association-member-onboarding`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)  
 > **Organisation de Référence** : Association *Diversité Alternative*
 
 ---

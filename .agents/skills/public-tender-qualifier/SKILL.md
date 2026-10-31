@@ -11,8 +11,8 @@ user-invocable: true
 
 Use this skill when analyzing, preparing, and tracking public procurement tenders (appels d'offres, MAPA, accords-cadres de l'État ou des collectivités) with PyCRMKit.
 
-* **Detailed Procurement Lifecycle & Go/No-Go Scorecard** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/workflow.md)
-* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/examples.md)
+* **Detailed Procurement Lifecycle & Go/No-Go Scorecard** : [`workflow.md`](workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](examples.md)
 
 ## Core Rules & Invariants
 

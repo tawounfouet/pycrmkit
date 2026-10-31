@@ -15,7 +15,7 @@ Il fait le pont entre les plateformes d'inscriptions aux événements (Eventbrit
 
 ## 2. Skills Autorisés & Activables
 
-* [`association-member-onboarding`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/association-member-onboarding/SKILL.md) : Gestion de bout en bout du pipeline d'adhésion, lettrage multi-canal, tâches IT Microsoft 365 et campagnes annuelles de réadhésion N+1.
+* [`association-member-onboarding`](../skills/association-member-onboarding/SKILL.md) : Gestion de bout en bout du pipeline d'adhésion, lettrage multi-canal, tâches IT Microsoft 365 et campagnes annuelles de réadhésion N+1.
 
 ---
 

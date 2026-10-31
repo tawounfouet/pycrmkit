@@ -12,8 +12,8 @@ Il fait le pont entre les canaux informels du terrain (appels, vocaux WhatsApp, 
 
 ## 2. Skills Autorisés & Activables
 
-* [`agency-client-lifecycle`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/SKILL.md) : Orchestration des devis, bascule en delivery et gestion des forfaits MCO.
-* [`whatsapp-dialog-processor`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/SKILL.md) : Parsing et formalisation instantanée des échanges et vocaux WhatsApp.
+* [`agency-client-lifecycle`](../skills/agency-client-lifecycle/SKILL.md) : Orchestration des devis, bascule en delivery et gestion des forfaits MCO.
+* [`whatsapp-dialog-processor`](../skills/whatsapp-dialog-processor/SKILL.md) : Parsing et formalisation instantanée des échanges et vocaux WhatsApp.
 
 ## 3. Directives Opérationnelles
 

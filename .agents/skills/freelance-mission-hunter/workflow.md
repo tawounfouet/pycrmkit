@@ -1,8 +1,8 @@
 # Freelance Mission Hunter — Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Entonnoir de Chasse Freelance**  
-> **Skill Associé** : [`freelance-mission-hunter`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/SKILL.md)  
-> **Exemples Concrets** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/examples.md)
+> **Skill Associé** : [`freelance-mission-hunter`](SKILL.md)  
+> **Exemples Concrets** : [`examples.md`](examples.md)
 
 ---
 
@@ -13,27 +13,57 @@ La recherche de mission en période d'inter-contrat ou de transition s'opère se
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Sourcing Multi-Plateformes"]
-        Malt[Malt / Comet] --> Lead[Opportunité Créée]
-        LI[LinkedIn / Réseau] --> Lead
-        FI[Freelance-Info / LeHibou] --> Lead
-        Direct[Démarchage Direct / Anciens Clients] --> Lead
+        Malt["Malt / Comet"] --> Lead["Opportunité Créée"]
+        LI["LinkedIn / Réseau"] --> Lead
+        FI["Freelance-Info / LeHibou"] --> Lead
+        Direct["Démarchage Direct / Anciens Clients"] --> Lead
     end
 
     subgraph Pipeline ["2. Pipeline de Sélection & Négociation"]
-        Lead --> S1[Stage 1 : Offre Repérée - 10%]
-        S1 --> S2[Stage 2 : Candidature Envoyée - 25%]
-        S2 -->|Tâche J+5| S3[Stage 3 : Entretien RH / Qualif - 50%]
-        S3 --> S4[Stage 4 : Entretien Technique / Test - 75%]
-        S4 --> S5[Stage 5 : Proposition / Taux Journalier - 90%]
-        S5 -->|Négociation Gagnée| Won[Stage 6 : Contrat Signé 🎉 - 100%]
-        S5 -->|Refus / TJM Inadéquat| Lost[Stage : Débriefing & Capitalisation - 0%]
+        Lead --> S1["Stage 1 : Offre Repérée (10%)"]
+        S1 --> S2["Stage 2 : Candidature Envoyée (25%)"]
+        S2 -->|"Tâche J+5"| S3["Stage 3 : Entretien RH / Qualif (50%)"]
+        S3 --> S4["Stage 4 : Entretien Technique / Test (75%)"]
+        S4 --> S5["Stage 5 : Proposition / Taux Journalier (90%)"]
+        S5 -->|"Négociation Gagnée"| Won["Stage 6 : Contrat Signé (100% Won)"]
+        S5 -->|"Refus / TJM Inadéquat"| Lost["Stage : Débriefing & Capitalisation (0% Lost)"]
     end
 
     subgraph Analytics ["3. KPIs & Pilotage du Freelance"]
-        Won --> KPI1[Taux de Conversion Global]
-        Won --> KPI2[TJM Moyen Pondéré Réalisé]
-        Lead --> KPI3[Vélocité Moyenne du Pipeline en Jours]
+        Won --> KPI1["Taux de Conversion Global"]
+        Won --> KPI2["TJM Moyen Pondéré Réalisé"]
+        Lead --> KPI3["Vélocité Moyenne du Pipeline en Jours"]
     end
+```
+
+#### Équivalent Schéma ASCII :
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                   ENTONNOIR DE CHASSE DE MISSIONS FREELANCE & ATS                      │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│  [ 1. SOURCING MULTI-PLATEFORMES ]                                                     │
+│    • Malt / Comet ────────┐                                                            │
+│    • LinkedIn / Réseau ───┼──► Opportunité créée (Client / ESN + TJM cible)            │
+│    • Freelance-Info ──────┤                                                            │
+│    • Démarchage Direct ───┘                                                            │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 2. PIPELINE DE SÉLECTION & NÉGOCIATION ]                                            │
+│    Offre Repérée (10%) ──► Candidature Envoyée (25%) ──► Entretien RH (50%)            │
+│                                    │ (Tâche Relance J+5)            │                  │
+│                                    ▼                                ▼                  │
+│    Débriefing / Refus (0%) ◄── Négociation TJM (90%) ◄── Entretien Tech / CTO (75%)    │
+│            │                               │                                           │
+│            ▼                               ▼                                           │
+│    Capitalisation                Contrat Signé 🎉 (100% Won)                           │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 3. KPIS & ANALYTICS ]                                                               │
+│    Taux de Conversion Global  •  TJM Moyen Pondéré  •  Vélocité Pipeline (Jours)       │
+│                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

@@ -1,8 +1,8 @@
 # Public Tender Qualifier — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
-> **Skill Associé** : [`public-tender-qualifier`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/workflow.md)
+> **Skill Associé** : [`public-tender-qualifier`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)
 
 ---
 

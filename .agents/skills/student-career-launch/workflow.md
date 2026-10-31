@@ -1,8 +1,8 @@
 # Student Career Launch — Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & ATS Étudiant / Alternance**  
-> **Skill Associé** : [`student-career-launch`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/SKILL.md)  
-> **Exemples Concrets** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/examples.md)
+> **Skill Associé** : [`student-career-launch`](SKILL.md)  
+> **Exemples Concrets** : [`examples.md`](examples.md)
 
 ---
 
@@ -13,23 +13,51 @@ Le pipeline `student-career-launch` structure les démarches pour décrocher un 
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Curation d'Offres Ciblées"]
-        WTTJ[Welcome to the Jungle / LinkedIn] --> Offer[Offre Repérée]
-        JobTeaser[JobTeaser / Réseau Alumni] --> Offer
+        WTTJ["Welcome to the Jungle / LinkedIn"] --> Offer["Offre Repérée"]
+        JobTeaser["JobTeaser / Réseau Alumni"] --> Offer
     end
 
     subgraph Pipeline ["2. Pipeline de Sélection Étudiante"]
-        Offer --> S1[Stage 1 : Offre Ciblée]
-        S1 --> S2[Stage 2 : Candidature Envoyée]
-        S2 -->|Relance J+5| S3[Stage 3 : Entretien RH / Visio]
-        S3 --> S4[Stage 4 : Test Technique / Take-home]
-        S4 --> S5[Stage 5 : Entretien Final / Offre Reçue]
-        S5 -->|Offre Acceptée 🎉| Won[Stage 6 : Convention / Contrat Signé]
-        S5 -->|Refus / Débriefing| Lost[Stage : Débriefing & Questions d'Entretien]
+        Offer --> S1["Stage 1 : Offre Ciblée"]
+        S1 --> S2["Stage 2 : Candidature Envoyée"]
+        S2 -->|"Relance J+5"| S3["Stage 3 : Entretien RH / Visio"]
+        S3 --> S4["Stage 4 : Test Technique / Take-home"]
+        S4 --> S5["Stage 5 : Entretien Final / Offre Reçue"]
+        S5 -->|"Offre Acceptée"| Won["Stage 6 : Convention / Contrat Signé"]
+        S5 -->|"Refus / Débriefing"| Lost["Stage : Débriefing & Questions d'Entretien"]
     end
 
     subgraph Academic ["3. Restitution Académique & Écoles"]
-        Won --> Report[Export Rapport de Recherche pour l'École]
+        Won --> Report["Export Rapport de Recherche pour l'École"]
     end
+```
+
+#### Équivalent Schéma ASCII :
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                   INSERTION PROFESSIONNELLE ÉTUDIANTS & ALTERNANTS                     │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│  [ 1. SOURCING & CURATION CIBLÉE ]                                                     │
+│    • Welcome to the Jungle / LinkedIn ──┐                                              │
+│    • JobTeaser / Réseau Alumni        ──┴──► Offre Repérée & Ciblée (Stack / Profil)    │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 2. PIPELINE DE SÉLECTION & ENTRETIENS ]                                             │
+│    Offre Ciblée (10%) ──► Candidature Envoyée (25%) ──► Entretien RH (50%)            │
+│                                   │ (Relance J+5)                  │                   │
+│                                   ▼                                ▼                   │
+│    Rejet / Débriefing (0%) ◄── Offre Reçue (85%) ◄── Test Technique / Take-home (70%)  │
+│            │                              │                                            │
+│            ▼                              ▼                                            │
+│    Bilan & Questions           Convention / Contrat CERFA Signé 🎉 (100% Won)          │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ 3. RESTITUTION PÉDAGOGIQUE ]                                                        │
+│    Export du Journal de Recherche pour le Tuteur École & Validation Académique         │
+│                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

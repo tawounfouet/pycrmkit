@@ -30,24 +30,24 @@ En tant que **développeur solo dirigeant une agence web**, vous portez simultan
 ```mermaid
 flowchart TD
     subgraph Phase1 ["1. AVANT-VENTE & PROPOSITION"]
-        L[Lead entrant / Prospect] --> Q[Qualification & Cadrage]
-        Q --> C[Conversion : Org + Contact + Deal]
-        C --> P1[Pipeline Commercial : Devis & Négociation]
-        P1 -->|Gagné / Won| W[Affaire Conclue]
+        L["Lead entrant / Prospect"] --> Q["Qualification & Cadrage"]
+        Q --> C["Conversion : Org + Contact + Deal"]
+        C --> P1["Pipeline Commercial : Devis & Négociation"]
+        P1 -->|"Gagné / Won"| W["Affaire Conclue"]
     end
 
     subgraph Phase2 ["2. LIVRAISON LOGICIELLE & DELIVERY"]
-        W --> P2[Pipeline Delivery : Spécifications]
-        P2 --> S[Sprints Dev & Jalons]
-        S --> R[Recette Staging & Validation]
-        R --> MEP[Mise en Production & PV de Recette]
+        W --> P2["Pipeline Delivery : Spécifications"]
+        P2 --> S["Sprints Dev & Jalons"]
+        S --> R["Recette Staging & Validation"]
+        R --> MEP["Mise en Production & PV de Recette"]
     end
 
     subgraph Phase3 ["3. POST-LIVRAISON & MCO"]
-        MEP --> MCO[Activation Contrat MCO]
-        MCO --> PREV[Maintenance Préventive Récurrente]
-        MCO --> SUP[Support & Correctifs Urgents]
-        MCO --> REN[Reconduction Annuelle du Contrat]
+        MEP --> MCO["Activation Contrat MCO"]
+        MCO --> PREV["Maintenance Préventive Récurrente"]
+        MCO --> SUP["Support & Correctifs Urgents"]
+        MCO --> REN["Reconduction Annuelle du Contrat"]
     end
 ```
 
@@ -246,25 +246,25 @@ PyCRMKit se positionne comme le **cockpit centralisateur (Single Source of Truth
 flowchart TD
     subgraph Core ["Cockpit Central de l'Agence (PyCRMKit)"]
         direction TB
-        DB[(Fiches 360° Clients & Orgs)]
-        P_Sales[Pipeline Vente & Devis]
-        P_Deliv[Pipeline Delivery Logiciel]
-        Hist[Timeline & Traçabilité Complète]
-        Tasks[Tâches, Relances & MCO]
+        DB["Fiches 360 Clients & Orgs"]
+        P_Sales["Pipeline Vente & Devis"]
+        P_Deliv["Pipeline Delivery Logiciel"]
+        Hist["Timeline & Traçabilité Complète"]
+        Tasks["Tâches, Relances & MCO"]
     end
 
     subgraph AvantVente ["1. Entrée Leads"]
-        Site[Formulaire Site Web / Inbound] -->|API REST / SDK| Core
+        Site["Formulaire Site Web / Inbound"] -->|"API REST / SDK"| Core
     end
 
     subgraph DevOps ["2. Production & Delivery"]
-        Core -->|Lien repo / staging| GH[GitHub / GitLab]
-        GH -->|Webhooks Déploiements / Releases| Hist
-        GH -->|Issues Bugs fermées| Hist
+        Core -->|"Lien repo / staging"| GH["GitHub / GitLab"]
+        GH -->|"Webhooks Déploiements / Releases"| Hist
+        GH -->|"Issues Bugs fermées"| Hist
     end
 
     subgraph Finance ["3. Facturation & Encaissement"]
-        P_Sales -->|Webhook Deal Won| Bill[Pennylane / Stripe / Tiime]
+        P_Sales -->|"Webhook Deal Won"| Bill["Pennylane / Stripe / Tiime"]
     end
 ```
 

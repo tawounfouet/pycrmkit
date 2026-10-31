@@ -1,8 +1,8 @@
 # Agency Client Lifecycle — Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Spécifications Métier**  
-> **Skill Associé** : [`agency-client-lifecycle`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/SKILL.md)  
-> **Exemples Concrets** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/examples.md)
+> **Skill Associé** : [`agency-client-lifecycle`](SKILL.md)  
+> **Exemples Concrets** : [`examples.md`](examples.md)
 
 ---
 
@@ -13,28 +13,55 @@ Le cycle de vie complet d'une agence web ou d'un développeur indépendant se d�
 ```mermaid
 flowchart TD
     subgraph Phase1 ["Phase 1 : Avant-Vente & Cadrage"]
-        Lead[Lead Inbound / Outbound] --> Qualif[Qualification Budget & Stack]
-        Qualif --> Conversion[Conversion Atomique : Org + Contact + Deal]
-        Conversion --> Negoc[Négociation & Signature Devis + Acompte 30%]
+        Lead["Lead Inbound / Outbound"] --> Qualif["Qualification Budget & Stack"]
+        Qualif --> Conversion["Conversion Atomique : Org + Contact + Deal"]
+        Conversion --> Negoc["Négociation & Signature Devis + Acompte 30%"]
     end
 
     subgraph Phase2 ["Phase 2 : Delivery Logiciel (Pipeline Dual)"]
-        Negoc --> Kickoff[Kickoff & Dépôt Git Initialisé]
-        Kickoff --> Sprint[Sprints de Dev & Livraisons Staging]
-        Sprint --> Recette[Recette Client & PV de Recette Signé]
-        Recette --> Prod[Mise en Production & Facture Solde 70%]
+        Negoc --> Kickoff["Kickoff & Dépôt Git Initialisé"]
+        Kickoff --> Sprint["Sprints de Dev & Livraisons Staging"]
+        Sprint --> Recette["Recette Client & PV de Recette Signé"]
+        Recette --> Prod["Mise en Production & Facture Solde 70%"]
     end
 
     subgraph Phase3 ["Phase 3 : MCO & Maintenance Mensuelle"]
-        Prod --> SLA[Contrat MCO : Forfait d'heures + SLA Garanti]
-        SLA --> Monitoring[Monitoring 24/7 & Audits Mensuels]
-        SLA --> Tickets[Gestion des Tickets & Décompte d'Heures]
+        Prod --> SLA["Contrat MCO : Forfait d'heures + SLA Garanti"]
+        SLA --> Monitoring["Monitoring 24/7 & Audits Mensuels"]
+        SLA --> Tickets["Gestion des Tickets & Décompte d'Heures"]
     end
 
     subgraph Phase4 ["Phase 4 : Rétention & Upsell"]
-        Monitoring --> QBR[Point Trimestriel QBR & Proposition Phase 2]
-        QBR --> NewDeal[Nouveau Deal Recommandation / Évolution]
+        Monitoring --> QBR["Point Trimestriel QBR & Proposition Phase 2"]
+        QBR --> NewDeal["Nouveau Deal Recommandation / Évolution"]
     end
+```
+
+#### Équivalent Schéma ASCII :
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        FLUX DE VALEUR STUDIO WEB & MCO                                 │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│  [ PHASE 1 : AVANT-VENTE & CADRAGE ]                                                   │
+│    Lead Inbound/Outbound ──► Qualification ──► Conversion Atomique ──► Négoc / Devis    │
+│                                (Budget & Stack)  (Org + Contact + Deal) (Acompte 30%)  │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ PHASE 2 : DELIVERY LOGICIEL ]                                                       │
+│    Kickoff (Dépôt Git) ──► Sprints Dev (Staging) ──► Recette (PV Signé) ──► Production  │
+│                                                                           (Solde 70%)  │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ PHASE 3 : MCO & MAINTENANCE ]                                                       │
+│    Contrat MCO (Forfait d'heures) ──► Monitoring 24/7 & Audits / Décompte Tickets       │
+│                                                                │                       │
+│                                                                ▼                       │
+│  [ PHASE 4 : RÉTENTION & UPSELL ]                                                      │
+│    Point Trimestriel QBR ──► Proposition Phase 2 / Nouveau Deal Recommandation        │
+│                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

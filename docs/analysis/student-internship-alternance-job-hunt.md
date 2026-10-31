@@ -30,22 +30,22 @@ L'architecture de PyCRMKit s'adapte naturellement à la recherche d'emploi et d'
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Sourcing Multi-Canal"]
-        WTTJ[Welcome to the Jungle / LinkedIn] --> Offers[Offres Repérées]
-        JT[JobTeaser / Forums Écoles] --> Offers
-        Alumni[Réseau Alumni & Candidatures Spontanées] --> Offers
+        WTTJ["Welcome to the Jungle / LinkedIn"] --> Offers["Offres Repérées"]
+        JT["JobTeaser / Forums Écoles"] --> Offers
+        Alumni["Réseau Alumni & Candidatures Spontanées"] --> Offers
     end
 
     subgraph ATS ["2. ATS Personnel (PyCRMKit Core)"]
-        Offers --> Pipe[Pipeline : Insertion Professionnelle]
-        Pipe --> Org[Organizations : Entreprises, Startups & ESN]
-        Pipe --> Cont[Contacts : Campus Managers, RH & Lead Devs]
-        Pipe --> Tasks[Tasks : Relances à J+5 & Tests Techniques]
-        Pipe --> Hist[Timeline : Notes d'Entretiens & Feedbacks]
+        Offers --> Pipe["Pipeline : Insertion Professionnelle"]
+        Pipe --> Org["Organizations : Entreprises, Startups & ESN"]
+        Pipe --> Cont["Contacts : Campus Managers, RH & Lead Devs"]
+        Pipe --> Tasks["Tasks : Relances à J+5 & Tests Techniques"]
+        Pipe --> Hist["Timeline : Notes d'Entretiens & Feedbacks"]
     end
 
     subgraph Verdict ["3. Décision & Carrière"]
-        Pipe --> Won[Contrat Signé 🎉 ➔ Convention / Alternance validée]
-        Pipe --> Lost[Refus & Débriefing ➔ Capitalisation des questions posées]
+        Pipe --> Won["Contrat Signé (Convention / Alternance validée)"]
+        Pipe --> Lost["Refus & Débriefing (Capitalisation des questions posées)"]
     end
 ```
 
@@ -101,14 +101,14 @@ Le pipeline modélise précisément chaque étape franchie par l'étudiant :
 
 ```mermaid
 flowchart LR
-    S1[1. Veille & Repérage] --> S2[2. Candidature Envoyée]
-    S2 --> S3[3. Relance Polie J+5]
-    S3 --> S4[4. Screening RH]
-    S4 --> S5[5. Test Technique]
-    S5 --> S6[6. Entretien Manager]
-    S6 --> S7[7. Offre de Contrat]
-    S7 -->|Won| S8[8. Contrat Signé 🎉]
-    S7 -->|Lost| S9[9. Refus & Débriefing]
+    S1["1. Veille & Repérage"] --> S2["2. Candidature Envoyée"]
+    S2 --> S3["3. Relance Polie J+5"]
+    S3 --> S4["4. Screening RH"]
+    S4 --> S5["5. Test Technique"]
+    S5 --> S6["6. Entretien Manager"]
+    S6 --> S7["7. Offre de Contrat"]
+    S7 -->|"Won"| S8["8. Contrat Signé (100% Won)"]
+    S7 -->|"Lost"| S9["9. Refus & Débriefing"]
 ```
 
 #### Équivalent Schéma ASCII :

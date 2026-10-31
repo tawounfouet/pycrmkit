@@ -1,8 +1,8 @@
 # WhatsApp Dialog Processor — Detailed Workflow & Architecture
 
 > **Guide Opérationnel Détaillé & Transformation Conversationnelle**  
-> **Skill Associé** : [`whatsapp-dialog-processor`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/SKILL.md)  
-> **Exemples Concrets** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/examples.md)
+> **Skill Associé** : [`whatsapp-dialog-processor`](SKILL.md)  
+> **Exemples Concrets** : [`examples.md`](examples.md)
 
 ---
 
@@ -15,25 +15,51 @@ Le rôle du processeur WhatsApp est de **cristalliser l'informel en données opp
 ```mermaid
 flowchart LR
     subgraph Informal ["1. Flux Informel Entrant"]
-        WA_Text[Message Texte WhatsApp] --> Parser[Moteur d'Extraction & Intentions]
-        WA_Voice[Note Vocale / Audio] --> STT[Transcription Audio Whisper/OpenAI]
+        WA_Text["Message Texte WhatsApp"] --> Parser["Moteur d'Extraction & Intentions"]
+        WA_Voice["Note Vocale / Audio"] --> STT["Transcription Audio Whisper/OpenAI"]
         STT --> Parser
     end
 
     subgraph Structuring ["2. Structuration PyCRMKit"]
-        Parser --> Intent{Classification de l'Intention}
-        Intent -->|Nouveau Projet / Lead| LeadFlow[Création Lead + ExternalIdentity E.164]
-        Intent -->|Accord Oral Devis / Scope| TimelineFlow[Consignation Timeline Note Horodatée]
-        Intent -->|Urgence / Bug / MCO| TaskFlow[Tâche Prioritaire Assignée avec Deadline]
-        Intent -->|Recommandation Réseau| ReferralFlow[Liaison Relationship referrer_of]
+        Parser --> Intent{"Classification de l'Intention"}
+        Intent -->|"Nouveau Projet / Lead"| LeadFlow["Création Lead + ExternalIdentity E.164"]
+        Intent -->|"Accord Oral Devis / Scope"| TimelineFlow["Consignation Timeline Note Horodatée"]
+        Intent -->|"Urgence / Bug / MCO"| TaskFlow["Tâche Prioritaire Assignée avec Deadline"]
+        Intent -->|"Recommandation Réseau"| ReferralFlow["Liaison Relationship referrer_of"]
     end
 
     subgraph Execution ["3. Handoff Opérationnel"]
-        LeadFlow --> Pipeline[Pipeline Commercial]
-        TimelineFlow --> Audit[Audit Trail & Traçabilité]
-        TaskFlow --> Notification[Alerte Développeur / Support]
-        ReferralFlow --> Reward[Remerciement Parrain]
+        LeadFlow --> Pipeline["Pipeline Commercial"]
+        TimelineFlow --> Audit["Audit Trail & Traçabilité"]
+        TaskFlow --> Notification["Alerte Développeur / Support"]
+        ReferralFlow --> Reward["Remerciement Parrain"]
     end
+```
+
+#### Équivalent Schéma ASCII :
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                   DU FLUX INFORMEL WHATSAPP AU MODÈLE RELATIONNEL                      │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│  [ 1. FLUX INFORMEL ENTRANT ]                                                          │
+│    • Message Texte WhatsApp ──┐                                                        │
+│    • Note Vocale / Audio   ──► Transcription STT ──► Moteur d'Extraction               │
+│                                                              │                         │
+│                                                              ▼                         │
+│  [ 2. STRUCTURATION PYCRMKIT ]                                                         │
+│    Moteur d'Extraction ──► Classification d'Intention :                                │
+│                             ├── Nouveau Projet ──► Création Lead + E.164 Externe       │
+│                             ├── Accord Oral    ──► Note Horodatée dans la Timeline     │
+│                             ├── Bug / Urgence  ──► Tâche Priorité URGENT + Échéance    │
+│                             └── Recommandation ──► Liaison Relationship (Parrain)      │
+│                                                              │                         │
+│                                                              ▼                         │
+│  [ 3. HANDOFF OPÉRATIONNEL ]                                                           │
+│    Pipeline Commercial  ◄── Audit Trail  ◄── Alerte Support  ◄── Remerciement Parrain   │
+│                                                                                        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---

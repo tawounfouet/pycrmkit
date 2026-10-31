@@ -15,7 +15,7 @@ Il assure le lien entre les collectes terrain menées par les **Référents de P
 
 ## 2. Skills Autorisés & Activables
 
-* [`alumni-directory-activation`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/alumni-directory-activation/SKILL.md) : Ingestion sécurisée CSV/Excel post-Google Forms, déduplication floue, pipeline d'activation des comptes Django, traçabilité des invitations par jetons et reporting pour référents de promo.
+* [`alumni-directory-activation`](../skills/alumni-directory-activation/SKILL.md) : Ingestion sécurisée CSV/Excel post-Google Forms, déduplication floue, pipeline d'activation des comptes Django, traçabilité des invitations par jetons et reporting pour référents de promo.
 
 ---
 

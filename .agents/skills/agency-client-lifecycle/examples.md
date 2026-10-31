@@ -1,8 +1,8 @@
 # Agency Client Lifecycle — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
-> **Skill Associé** : [`agency-client-lifecycle`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/agency-client-lifecycle/workflow.md)
+> **Skill Associé** : [`agency-client-lifecycle`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)
 
 ---
 

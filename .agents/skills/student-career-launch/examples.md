@@ -1,8 +1,8 @@
 # Student Career Launch — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
-> **Skill Associé** : [`student-career-launch`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/workflow.md)
+> **Skill Associé** : [`student-career-launch`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)
 
 ---
 

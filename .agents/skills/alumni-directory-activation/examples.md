@@ -1,8 +1,8 @@
 # Alumni Directory Activation — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Recettes SDK**  
-> **Skill Associé** : [`alumni-directory-activation`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/alumni-directory-activation/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/alumni-directory-activation/workflow.md)  
+> **Skill Associé** : [`alumni-directory-activation`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)  
 > **Cadre d'Application** : Réseaux d'Anciens Élèves & Écoles d'Ingénieurs
 
 ---

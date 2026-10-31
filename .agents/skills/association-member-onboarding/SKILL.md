@@ -13,8 +13,8 @@ user-invocable: true
 
 Use this skill when managing the volunteer recruitment funnel, membership fees, IT account provisioning, and annual renewals for non-profit organizations and associations (specifically tailored for **Diversité Alternative**).
 
-* **Detailed Funnel Architecture & Multi-Team Workflow** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/association-member-onboarding/workflow.md)
-* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/association-member-onboarding/examples.md)
+* **Detailed Funnel Architecture & Multi-Team Workflow** : [`workflow.md`](workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](examples.md)
 
 ---
 

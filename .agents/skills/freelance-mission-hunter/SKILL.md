@@ -11,8 +11,8 @@ user-invocable: true
 
 Use this skill when prospecting, applying, and negotiating freelance missions during inter-contract periods, using PyCRMKit as a personal Applicant Tracking System (ATS).
 
-* **Detailed Funnel Architecture & Stage Definitions** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/workflow.md)
-* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/freelance-mission-hunter/examples.md)
+* **Detailed Funnel Architecture & Stage Definitions** : [`workflow.md`](workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](examples.md)
 
 ## Core Principles
 

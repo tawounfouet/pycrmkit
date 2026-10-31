@@ -1,8 +1,8 @@
 # WhatsApp Dialog Processor — Practical Examples & Recipes
 
 > **Exemples Concrets, Commandes CLI & Scripts SDK**  
-> **Skill Associé** : [`whatsapp-dialog-processor`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/SKILL.md)  
-> **Workflow Détaillé** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/workflow.md)
+> **Skill Associé** : [`whatsapp-dialog-processor`](SKILL.md)  
+> **Workflow Détaillé** : [`workflow.md`](workflow.md)
 
 ---
 

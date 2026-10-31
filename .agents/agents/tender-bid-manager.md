@@ -12,7 +12,7 @@ Il garantit le respect scrupuleux du Code de la commande publique, évite les ca
 
 ## 2. Skills Autorisés & Activables
 
-* [`public-tender-qualifier`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/public-tender-qualifier/SKILL.md) : Analyse Go/No-Go, verrouillage DLRO à J-1 et gestion des partenariats GME.
+* [`public-tender-qualifier`](../skills/public-tender-qualifier/SKILL.md) : Analyse Go/No-Go, verrouillage DLRO à J-1 et gestion des partenariats GME.
 
 ## 3. Directives Opérationnelles
 

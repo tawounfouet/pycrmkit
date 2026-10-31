@@ -13,8 +13,8 @@ user-invocable: true
 
 Use this skill when deploying, populating, and activating a verified alumni directory for higher education institutions, engineering schools, universities, or alumni associations integrating with Django.
 
-* **Detailed Funnel Architecture & Multi-Team Workflow** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/alumni-directory-activation/workflow.md)
-* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/alumni-directory-activation/examples.md)
+* **Detailed Funnel Architecture & Multi-Team Workflow** : [`workflow.md`](workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](examples.md)
 
 ---
 

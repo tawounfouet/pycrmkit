@@ -12,8 +12,8 @@ user-invocable: true
 
 Use this skill when managing the job search for internships (stages), work-study programs (alternances), or early-career CDD/CDI positions with PyCRMKit.
 
-* **Detailed Funnel Architecture & Academic Workflow** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/workflow.md)
-* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/student-career-launch/examples.md)
+* **Detailed Funnel Architecture & Academic Workflow** : [`workflow.md`](workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](examples.md)
 
 ## Core Rules
 

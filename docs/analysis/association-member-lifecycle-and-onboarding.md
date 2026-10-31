@@ -72,42 +72,42 @@ PyCRMKit unifie l'ensemble des acteurs au sein d'une **source unique de vérité
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Pôle Événements & Sourcing"]
-        EB[Eventbrite] -->|Webhooks / CSV| Sync[PyCRMKit Ingestion]
-        HA[HelloAsso] -->|Webhooks / CSV| Sync
-        Sync --> Cont[Contact créé avec Tags d'Événements]
+        EB["Eventbrite"] -->|"Webhooks / CSV"| Sync["PyCRMKit Ingestion"]
+        HA["HelloAsso"] -->|"Webhooks / CSV"| Sync
+        Sync --> Cont["Contact créé avec Tags d'Événements"]
     end
 
     subgraph TA ["2. Pôle Talent Acquisition"]
-        Cont -->|Forms 1 soumis| Opp[Opportunité créée : Pipeline Recrutement]
-        Opp --> Stage1[Stage : Candidature Reçue]
-        Stage1 --> Stage2[Stage : Call Découverte Planifié]
-        Stage2 --> Eval[Entretien mené & Notes consignées dans la Timeline]
-        Eval -->|Validé par TA| Stage3[Stage : Attente Paiement Cotisation]
-        Eval -->|Non retenu / Désistement| Lost[Stage : Vivier Futur / Candidature Classée]
+        Cont -->|"Forms 1 soumis"| Opp["Opportunité créée : Pipeline Recrutement"]
+        Opp --> Stage1["Stage : Candidature Reçue"]
+        Stage1 --> Stage2["Stage : Call Découverte Planifié"]
+        Stage2 --> Eval["Entretien mené & Notes consignées dans la Timeline"]
+        Eval -->|"Validé par TA"| Stage3["Stage : Attente Paiement Cotisation"]
+        Eval -->|"Non retenu / Désistement"| Lost["Stage : Vivier Futur / Candidature Classée"]
     end
 
     subgraph Treso ["3. Pôle Trésorerie"]
-        Stage3 --> PayChoice{Canal de Paiement}
-        PayChoice -->|HelloAsso CB| PayHook[Rapprochement automatique Webhook]
-        PayChoice -->|Virement| BankCheck[Pointage Relevé Bancaire]
-        PayChoice -->|PayPal| PPCheck[Notification Réception PayPal]
-        PayHook --> Paid[Cotisation Réglée : Passage en Stage Validé]
+        Stage3 --> PayChoice{"Canal de Paiement"}
+        PayChoice -->|"HelloAsso CB"| PayHook["Rapprochement automatique Webhook"]
+        PayChoice -->|"Virement"| BankCheck["Pointage Relevé Bancaire"]
+        PayChoice -->|"PayPal"| PPCheck["Notification Réception PayPal"]
+        PayHook --> Paid["Cotisation Réglée : Passage en Stage Validé"]
         BankCheck --> Paid
         PPCheck --> Paid
     end
 
     subgraph IT_Comm ["4. Pôle IT & Intégration Communauté"]
-        Paid --> Forms2[Forms 2 : Annuaire & Compétences complété]
-        Forms2 --> ITTask[Tâche Automatique assignée à l'équipe IT]
-        ITTask --> M365[Création UPN & Licence Microsoft 365]
-        M365 --> Comm[Ajout Groupes WhatsApp Officiels & Équipes Teams]
-        Comm --> Active[Stage : Membre Actif & Opérationnel 🎉]
+        Paid --> Forms2["Forms 2 : Annuaire & Compétences complété"]
+        Forms2 --> ITTask["Tâche Automatique assignée à l'équipe IT"]
+        ITTask --> M365["Création UPN & Licence Microsoft 365"]
+        M365 --> Comm["Ajout Groupes WhatsApp Officiels & Équipes Teams"]
+        Comm --> Active["Stage : Membre Actif & Opérationnel (100% Won)"]
     end
 
     subgraph Retention ["5. Pôle Vie Associative & Trésorerie N+1"]
-        Active --> Timer[Surveillance échéance date_expiration_adhesion]
-        Timer -->|J-30 avant échéance| RenewCamp[Campagne Automatique de Renouvellement]
-        RenewCamp --> Renewed[Réadhésion Encaissée ➔ Cycle Reconduit]
+        Active --> Timer["Surveillance échéance date_expiration_adhesion"]
+        Timer -->|"J-30 avant échéance"| RenewCamp["Campagne Automatique de Renouvellement"]
+        RenewCamp --> Renewed["Réadhésion Encaissée : Cycle Reconduit"]
     end
 ```
 

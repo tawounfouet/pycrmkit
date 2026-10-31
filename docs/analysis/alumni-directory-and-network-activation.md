@@ -49,31 +49,31 @@ La force d'un réseau d'anciens élèves (écoles d'ingénieurs, universités, i
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Mobilisation & Collecte Décentralisée"]
-        Ambassadors[Référents de Promotion Nommés] -->|Diffusion Liens WhatsApp Promo| Network[Réseau des Anciens Élèves]
-        Network --> GForms[Google Forms : Questionnaire Annuaire]
-        GForms --> Export[Export CSV / Excel des Réponses]
+        Ambassadors["Référents de Promotion Nommés"] -->|"Diffusion Liens WhatsApp Promo"| Network["Réseau des Anciens Élèves"]
+        Network --> GForms["Google Forms : Questionnaire Annuaire"]
+        GForms --> Export["Export CSV / Excel des Réponses"]
     end
 
     subgraph Ingestion ["2. Ingestion & Data Operations (Django + PyCRMKit)"]
-        Export --> Script[Import sécurisé Django / CLI pck]
-        Script --> DedupGuard[Guard Anti-Injection Tableur & Moteur Dédup]
-        DedupGuard --> Contact[Contact créé + ExternalIdentity google_forms_id]
-        Contact --> CF[Custom Fields : Promo, Filière, Poste, Entreprise, Mentorat]
+        Export --> Script["Import sécurisé Django / CLI pck"]
+        Script --> DedupGuard["Guard Anti-Injection Tableur & Moteur Dédup"]
+        DedupGuard --> Contact["Contact créé + ExternalIdentity google_forms_id"]
+        Contact --> CF["Custom Fields : Promo, Filière, Poste, Entreprise, Mentorat"]
     end
 
     subgraph Activation ["3. Pipeline d'Activation & Campagnes (v1.2.0)"]
-        CF --> Opp[Opportunité créée au Stage : formulaire_ingere]
-        Opp --> InviteCampaign[Campagne d'Emailing d'Invitation avec Token]
-        InviteCampaign --> Email[Email personnalisé envoyé avec lien /activate?token=...]
-        Email --> TokenClick{Alumni clique sur le lien ?}
-        TokenClick -->|Oui ➔ Mot de passe défini| Won[Stage : Compte Activé 🎉]
-        TokenClick -->|Non après J+7| Pending[Stage : Relance J+7]
+        CF --> Opp["Opportunité créée au Stage : formulaire_ingere"]
+        Opp --> InviteCampaign["Campagne d'Emailing d'Invitation avec Token"]
+        InviteCampaign --> Email["Email personnalisé envoyé avec lien /activate?token=..."]
+        Email --> TokenClick{"Alumni clique sur le lien ?"}
+        TokenClick -->|"Oui : Mot de passe défini"| Won["Stage : Compte Activé (100% Won)"]
+        TokenClick -->|"Non après J+7"| Pending["Stage : Relance J+7"]
     end
 
     subgraph Relance ["4. Relance Ciblée par Référent de Promo"]
-        Pending --> PromoSeg[Segment Dynamique par Année de Promotion]
-        PromoSeg --> Alert[Liste de relance transmise au Référent de Promo]
-        Alert --> WARemind[Message amical sur le groupe WhatsApp de promo]
+        Pending --> PromoSeg["Segment Dynamique par Année de Promotion"]
+        PromoSeg --> Alert["Liste de relance transmise au Référent de Promo"]
+        Alert --> WARemind["Message amical sur le groupe WhatsApp de promo"]
         WARemind --> Won
     end
 ```

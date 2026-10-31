@@ -12,8 +12,8 @@ user-invocable: true
 
 Use this skill whenever processing informal WhatsApp exchanges, voice note transcripts, or audio call summaries with clients, non-profit contacts, or network referrals.
 
-* **Detailed Processing Architecture & Intent Routing** : [`workflow.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/workflow.md)
-* **Real-World Examples & CLI Recipes** : [`examples.md`](file:///Users/awf/workspace/professionnal/webtech/packages/pycrmkit/.agents/skills/whatsapp-dialog-processor/examples.md)
+* **Detailed Processing Architecture & Intent Routing** : [`workflow.md`](workflow.md)
+* **Real-World Examples & CLI Recipes** : [`examples.md`](examples.md)
 
 ## Core Rules
 

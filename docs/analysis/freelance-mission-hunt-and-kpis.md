@@ -33,22 +33,22 @@ PyCRMKit s'adapte immédiatement à ce cas d'usage sans modifier le code source 
 ```mermaid
 flowchart TD
     subgraph Sourcing ["1. Sourcing Multi-Canal"]
-        Malt[Plateformes : Malt / Freelance-Info] --> Opps[Opportunités de Mission]
-        LI[Réseau Pro : LinkedIn / InMail] --> Opps
-        Direct[Sites Carrières & Clients Directs] --> Opps
+        Malt["Plateformes : Malt / Freelance-Info"] --> Opps["Opportunités de Mission"]
+        LI["Réseau Pro : LinkedIn / InMail"] --> Opps
+        Direct["Sites Carrières & Clients Directs"] --> Opps
     end
 
     subgraph ATS ["2. ATS Personnel PyCRMKit"]
-        Opps --> Pipe[Pipeline : Chasse Mission Freelance]
-        Pipe --> Org[Organizations : Entreprise & ESN]
-        Pipe --> Cont[Contacts : Recruteurs & CTOs]
-        Pipe --> Tasks[Tasks : Relances à J+4 & Entretiens]
-        Pipe --> Hist[Timeline : Notes & Questions Tech]
+        Opps --> Pipe["Pipeline : Chasse Mission Freelance"]
+        Pipe --> Org["Organizations : Entreprise & ESN"]
+        Pipe --> Cont["Contacts : Recruteurs & CTOs"]
+        Pipe --> Tasks["Tasks : Relances à J+4 & Entretiens"]
+        Pipe --> Hist["Timeline : Notes & Questions Tech"]
     end
 
     subgraph Analytics ["3. Cockpit & Décision"]
-        ATS --> Dash[pck dashboard : Funnel & CA Prévisionnel]
-        ATS --> KPI[KPIs : Taux de Conversion & TJM Moyen]
+        ATS --> Dash["pck dashboard : Funnel & CA Prévisionnel"]
+        ATS --> KPI["KPIs : Taux de Conversion & TJM Moyen"]
     end
 ```
 
@@ -104,13 +104,13 @@ Le pipeline de chasse de mission modélise les passages d'étapes éliminatoires
 
 ```mermaid
 flowchart LR
-    S1[1. Veille / Repérage] --> S2[2. Candidature Envoyée]
-    S2 --> S3[3. Screening RH / ESN]
-    S3 --> S4[4. Entretien Tech / CTO]
-    S4 --> S5[5. Validation Finale]
-    S5 --> S6[6. Négociation & Offre]
-    S6 -->|Won| S7[7. Mission Signée 🎉]
-    S6 -->|Lost| S8[8. Archivé / Motif]
+    S1["1. Veille / Repérage"] --> S2["2. Candidature Envoyée"]
+    S2 --> S3["3. Screening RH / ESN"]
+    S3 --> S4["4. Entretien Tech / CTO"]
+    S4 --> S5["5. Validation Finale"]
+    S5 --> S6["6. Négociation & Offre"]
+    S6 -->|"Won"| S7["7. Mission Signée (100% Won)"]
+    S6 -->|"Lost"| S8["8. Archivé / Motif"]
 ```
 
 #### Équivalent Schéma ASCII :
