@@ -28,12 +28,9 @@ def _bootstrap_environment() -> None:
     from pycrmkit.cli.config import load_local_dotenv, load_yaml_config
 
     load_local_dotenv()
-    cfg = load_yaml_config()
-    if cfg.source == "file":
-        if cfg.database.url and "DATABASE_URL" not in os.environ and "PYCRMKIT_DATABASE_URL" not in os.environ:
-            os.environ["DATABASE_URL"] = cfg.database.url
-        if cfg.runtime.actor_id and "CRM_ACTOR_ID" not in os.environ:
-            os.environ["CRM_ACTOR_ID"] = cfg.runtime.actor_id
+    # Validate YAML without polluting the process environment. Backend and actor
+    # resolution already consult the file using the correct precedence.
+    load_yaml_config()
 
 
 def _detect_prog_name(argv: Sequence[str] | None = None) -> str:
