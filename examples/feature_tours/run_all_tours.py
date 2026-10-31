@@ -18,12 +18,6 @@ import sys
 import time
 from pathlib import Path
 
-# Ensure src/ is on sys.path
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-
 from pycrmkit import __version__
 
 TOURS = [
@@ -77,7 +71,7 @@ def main() -> int:
                 tour_summary = mod.run_tour()
             else:
                 raise AttributeError(f"Module {filename} has no run_tour() entry point")
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - isolate failed tours and continue scorecard
             status = "FAIL"
             error_msg = str(exc)
             import traceback
