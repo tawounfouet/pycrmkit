@@ -48,7 +48,7 @@ def test_agent_recipe_has_independent_privacy_and_execution_warning(slug: str) -
     )
     assert "AUD-FIX-09: ILLUSTRATIVE RECIPE / NOT VERIFIED FOR EXECUTION" in source
     assert "legal basis" in source
-    assert "host authorization" in source
+    assert "authorization before any upload" in source
     assert "not provide authentication" in source
     assert all(m.group(1).lower() in {"example.org", "example.com", "example.net"}
                for m in EMAIL_PATTERN.finditer(source))
