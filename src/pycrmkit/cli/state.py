@@ -11,7 +11,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from pycrmkit import CRM
-from pycrmkit.cli.state_codec import CLIStateError, MAX_STATE_BYTES, dump_state, load_state
+from pycrmkit.cli.state_codec import MAX_STATE_BYTES, CLIStateError, dump_state, load_state
 from pycrmkit.communication.email.messages import EmailMessage
 from pycrmkit.communication.email.provider import EmailDeliveryStatus, EmailProviderResult
 from pycrmkit.contacts import ContactEmail, ContactPhone
