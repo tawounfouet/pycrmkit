@@ -1,0 +1,44 @@
+name: Track S - S0 Governance Preflight
+
+on:
+  pull_request:
+    paths:
+      - "scripts/track_s_s0_governance_preflight.py"
+      - "tests/qualification/test_track_s_s0_governance_preflight.py"
+      - ".github/workflows/track-s-s0-governance-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  actions: read
+
+jobs:
+  s0-governance-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Test preflight fail-closed rules
+        run: |
+          python -m pip install pytest
+          python -m pytest tests/qualification/test_track_s_s0_governance_preflight.py -q
+      - name: Evaluate actual S0 governance - expected NO-GO until remediated
+        shell: bash
+        run: |
+          set -o pipefail
+          python scripts/track_s_s0_governance_preflight.py | tee s0-governance-evidence.json
+      - name: Archive machine-readable report even on NO-GO
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s0-governance-evidence
+          path: s0-governance-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
